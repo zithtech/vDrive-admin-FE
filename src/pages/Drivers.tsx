@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { IoMdRefresh } from "react-icons/io";
-import { CarOutlined, FilterOutlined, CloseCircleOutlined, SafetyCertificateOutlined, ExclamationCircleOutlined, EnvironmentOutlined } from "@ant-design/icons";
+import { CarOutlined, FilterOutlined, CloseCircleOutlined, ExclamationCircleOutlined, EnvironmentOutlined } from "@ant-design/icons";
 import { Button, Select, DatePicker, Divider, Slider, Input, Spin, Tabs } from "antd";
 import DriverTable from "../components/DriverTable/DriverTable";
 import dayjs from "dayjs";
@@ -18,7 +18,7 @@ export interface Filters {
   joined_at: Date | null;
 }
 
-const STATUSES: DriverStatus[] = ["active", "inactive", "suspended", "pending", "pending_verification", "rejected", "blocked"];
+const STATUSES: DriverStatus[] = ["active", "inactive", "suspended", "rejected", "blocked"];
 
 const Drivers = () => {
   const dispatch = useAppDispatch();
@@ -50,6 +50,14 @@ const Drivers = () => {
 
   useEffect(() => {
     let tempData = Array.isArray(DATA) ? [...DATA] : [];
+
+    // Exclude pending / awaiting approval drivers from this page
+    tempData = tempData.filter(d => 
+      d.status !== "pending" && 
+      d.status !== "pending_verification" && 
+      d.onboarding_status !== "DOCS_SUBMITTED" &&
+      d.onboarding_status !== "DOCS_REJECTED"
+    );
 
     // Search by Name, System ID, or vDrive ID
     if (filters.search) {
@@ -99,15 +107,9 @@ const Drivers = () => {
     setFilteredData(tempData);
   }, [DATA, filters]);
 
-  const { activeDrivers, pendingDrivers, restrictedDrivers } = useMemo(() => {
+  const { activeDrivers, restrictedDrivers } = useMemo(() => {
     return {
       activeDrivers: filteredData.filter(d => d.status === "active"),
-      pendingDrivers: filteredData.filter(d => 
-        d.status === "pending" || 
-        d.status === "pending_verification" || 
-        d.onboarding_status === "DOCS_SUBMITTED" || 
-        d.onboarding_status === "DOCS_REJECTED"
-      ),
       restrictedDrivers: filteredData.filter(d => 
         d.status !== "active" && 
         d.status !== "pending" && 
@@ -260,7 +262,7 @@ const Drivers = () => {
             </div>
           ) : (
             <Tabs
-              defaultActiveKey="pending"
+              defaultActiveKey="all"
               className="premium-driver-tabs"
               items={[
                 {
@@ -284,33 +286,6 @@ const Drivers = () => {
                       colorClass="bg-indigo-600"
                       bgColorClass="from-indigo-50"
                       borderColorClass="border-indigo-200 text-indigo-700 bg-indigo-100/50 font-black"
-                    />
-                  ),
-                },
-                {
-                  key: 'pending',
-                  label: (
-                    <div className="flex items-center gap-2 px-1">
-                      <SafetyCertificateOutlined />
-                      <span>Awaiting Approval</span>
-                      {pendingDrivers.length > 0 && (
-                        <div className="px-2 py-0.5 rounded-full bg-orange-100 text-orange-600 text-[10px] font-black min-w-[20px] text-center">
-                          {pendingDrivers.length}
-                        </div>
-                      )}
-                    </div>
-                  ),
-                  children: (
-                    <TableSection
-                      title="Pending Verification"
-                      icon={<SafetyCertificateOutlined />}
-                      data={pendingDrivers}
-                      count={pendingDrivers.length}
-                      flexClass="h-[calc(100vh-480px)]"
-                      extraClasses="border-orange-500/20 shadow-lg shadow-orange-500/5 ring-4 ring-orange-500/5"
-                      colorClass="bg-orange-500 shadow-lg shadow-orange-500/40"
-                      bgColorClass="from-orange-50 via-orange-50/10"
-                      borderColorClass="border-orange-200 text-orange-700 bg-orange-100/50 font-black"
                     />
                   ),
                 },

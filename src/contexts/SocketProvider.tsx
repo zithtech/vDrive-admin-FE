@@ -54,6 +54,8 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
         if (id) {
           setSocketId(id);
           axiosIns.defaults.headers.common["x-socket-id"] = id;
+          // Join the admin room for global notifications
+          socketRef.current?.emit('joinAdminRoom');
         }
       });
 

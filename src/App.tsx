@@ -13,6 +13,9 @@ import {
   TableOutlined,
   CheckCircleOutlined,
   BellOutlined,
+  CustomerServiceOutlined,
+  PieChartOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import {
@@ -93,6 +96,7 @@ const Admins = lazy(() => import("./pages/Admins") as Promise<{ default: React.C
 const InvoiceTemplates = lazy(() => import("./pages/InvoiceTemplates") as Promise<{ default: React.ComponentType<any> }>);
 const TripDetails = lazy(() => import("./pages/TripDetails") as Promise<{ default: React.ComponentType<any> }>);
 const Drivers = lazy(() => import("./pages/Drivers") as Promise<{ default: React.ComponentType<any> }>);
+const DriverApplications = lazy(() => import("./pages/DriverApplications") as Promise<{ default: React.ComponentType<any> }>);
 const DriverPricing = lazy(() => import("./pages/DriverPricing") as Promise<{ default: React.ComponentType<any> }>);
 const PricingAndFareRules = lazy(() => import("./pages/Pricing&FareRules") as Promise<{ default: React.ComponentType<any> }>);
 const Deductions = lazy(() => import("./pages/Deductions") as Promise<{ default: React.ComponentType<any> }>);
@@ -107,6 +111,8 @@ const Coupons = lazy(() => import("./pages/Coupons") as Promise<{ default: React
 const DriverReconciliation = lazy(() => import("./pages/DriverReconciliation") as Promise<{ default: React.ComponentType<any> }>);
 const TripVerifications = lazy(() => import("./pages/TripVerifications") as Promise<{ default: React.ComponentType<any> }>);
 const Notifications = lazy(() => import("./pages/Notifications"));
+const SupportTickets = lazy(() => import("./pages/SupportTickets"));
+const SupportAnalytics = lazy(() => import("./pages/SupportAnalytics"));
 
 // RBAC: Higher-order component to protect sensitive routes
 const RoleProtectedRoute = ({
@@ -210,8 +216,19 @@ const RootLayout: React.FC = () => {
 
     socket.on("driver_event", handleDriverEvent);
 
+    socket.on("newSupportMessageNotification", (data: any) => {
+      notificationApi?.info({
+        message: 'New Support Message',
+        description: data.message,
+        placement: 'bottomRight',
+        duration: 4,
+        onClick: () => navigate(`/support-tickets?ticketId=${data.ticketId}`)
+      });
+    });
+
     return () => {
       socket.off("driver_event", handleDriverEvent);
+      socket.off("newSupportMessageNotification");
     };
   }, [socket]);
 
@@ -454,6 +471,7 @@ const RootLayout: React.FC = () => {
       { label: <Link to="/customers">Customers</Link>, key: "/customers", icon: <UserOutlined /> },
       { label: <Link to="/PricingAndFareRules">Pricing And Fare Rules</Link>, key: "/PricingAndFareRules", icon: <DollarOutlined /> },
       { label: <Link to="/drivers">Drivers</Link>, key: "/drivers", icon: <PiSteeringWheel /> },
+      { label: <Link to="/driver-applications">Awaiting Approval</Link>, key: "/driver-applications", icon: <SafetyCertificateOutlined /> },
       { label: <Link to="/driver-reconciliation">Driver Outreach</Link>, key: "/driver-reconciliation", icon: <TableOutlined /> },
     ];
 
@@ -474,6 +492,8 @@ const RootLayout: React.FC = () => {
       { label: <Link to="/taxes">Tax Management</Link>, key: "/taxes", icon: <DollarOutlined /> },
       // { label: <Link to="/pricing-combinations">Pricing Combinations</Link>, key: "/pricing-combinations", icon: <TableOutlined /> },
       { label: <Link to="/coupons">Coupons</Link>, key: "/coupons", icon: <DollarOutlined /> },
+      { label: <Link to="/support-tickets">Support Tickets</Link>, key: "/support-tickets", icon: <CustomerServiceOutlined /> },
+      { label: <Link to="/support-analytics">Support Analytics</Link>, key: "/support-analytics", icon: <PieChartOutlined /> },
       { label: <Link to="/notifications">Notifications</Link>, key: "/notifications", icon: <BellOutlined /> }
     );
 
@@ -793,10 +813,34 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "driver-applications",
+        element: (
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <DriverApplications />
+          </Suspense>
+        ),
+      },
+      {
         path: "Deductions",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
             <Deductions />
+          </Suspense>
+        ),
+      },
+      {
+        path: "support-tickets",
+        element: (
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <SupportTickets />
+          </Suspense>
+        ),
+      },
+      {
+        path: "support-analytics",
+        element: (
+          <Suspense fallback={<RouteLoadingFallback />}>
+            <SupportAnalytics />
           </Suspense>
         ),
       },

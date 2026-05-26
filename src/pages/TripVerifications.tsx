@@ -369,18 +369,35 @@ const TripVerifications: React.FC = () => {
                 </Card>
               </Col>
 
-              {/* Vehicle Verification (Car Image) */}
+              {/* Vehicle Verification (Car Images) */}
               <Col span={12}>
                 <Card title="Vehicle Verification" size="small" className="h-full">
-                  <div className="flex flex-col items-center mb-4">
-                    <Text type="secondary" className="mb-2 text-xs">Live Car Image</Text>
-                    <Image
-                      src={selectedVerification.car_image_url}
-                      alt="Car Image"
-                      className="rounded-lg object-cover"
-                      height={150}
-                      width={250}
-                    />
+                  <div className="flex flex-col items-center mb-4 w-full">
+                    <Text type="secondary" className="mb-2 text-xs">Live Car Images (4 Sides)</Text>
+                    {selectedVerification.car_images && selectedVerification.car_images.length > 0 ? (
+                      <div className="grid grid-cols-2 gap-2 w-full">
+                        {selectedVerification.car_images.map((img: string, idx: number) => (
+                          <div key={idx} className="flex flex-col items-center w-full">
+                            <Text type="secondary" className="mb-1 text-[10px] uppercase">View {idx + 1}</Text>
+                            <Image
+                              src={img}
+                              alt={`Car Image ${idx + 1}`}
+                              className="rounded-lg object-cover w-full"
+                              height={100}
+                              style={{ width: '100%', objectFit: 'cover' }}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <Image
+                        src={selectedVerification.car_image_url}
+                        alt="Car Image"
+                        className="rounded-lg object-cover"
+                        height={150}
+                        width={250}
+                      />
+                    )}
                   </div>
 
                   {selectedVerification.car_image_status === "pending" && rejectingImage !== "car" ? (
@@ -475,7 +492,15 @@ const TripVerifications: React.FC = () => {
               render: (_: any, record: any) => (
                 <Space>
                   <Image src={record.selfie_url} width={50} height={50} className="rounded object-cover" />
-                  {record.car_image_url && <Image src={record.car_image_url} width={80} height={50} className="rounded object-cover" />}
+                  {record.car_images && record.car_images.length > 0 ? (
+                    <Space size={4}>
+                      {record.car_images.map((img: string, i: number) => (
+                        <Image key={i} src={img} width={40} height={40} className="rounded object-cover" />
+                      ))}
+                    </Space>
+                  ) : record.car_image_url ? (
+                    <Image src={record.car_image_url} width={80} height={50} className="rounded object-cover" />
+                  ) : null}
                 </Space>
               ),
             },
