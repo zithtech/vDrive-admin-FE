@@ -467,10 +467,10 @@ const TripVerifications: React.FC = () => {
           columns={[
             {
               title: "Time",
-              dataIndex: "event_timestamp",
-              key: "event_timestamp",
+              dataIndex: "created_at",
+              key: "created_at",
               width: 180,
-              render: (text: string) => dayjs(text).format("MMM D, YYYY HH:mm:ss"),
+              render: (text: string) => text ? dayjs(text).format("MMM D, YYYY HH:mm:ss") : "—",
             },
             {
               title: "Event",
