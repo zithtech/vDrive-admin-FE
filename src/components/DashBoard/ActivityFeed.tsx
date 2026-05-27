@@ -12,6 +12,7 @@ import {
   ReloadOutlined
 } from "@ant-design/icons";
 import { useSocket } from "../../hooks/useSocket";
+import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
@@ -76,6 +77,21 @@ const eventConfigs: Record<string, { icon: React.ReactNode, color: string, label
     color: "magenta",
     label: "Renewal"
   },
+  TRIP_VERIFICATION_REQUIRED: {
+    icon: <WarningOutlined />,
+    color: "volcano",
+    label: "Verification"
+  },
+  TRIP_VERIFICATION_APPROVED: {
+    icon: <CheckCircleOutlined />,
+    color: "green",
+    label: "Verification"
+  },
+  TRIP_VERIFICATION_REJECTED: {
+    icon: <WarningOutlined />,
+    color: "red",
+    label: "Verification"
+  },
   DEFAULT: {
     icon: <BellOutlined />,
     color: "gray",
@@ -109,6 +125,7 @@ const ActivityFeed: React.FC = () => {
     };
   }, [socket]);
 
+  const navigate = useNavigate();
   return (
     <div className="bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
       {/* Header */}
@@ -152,10 +169,23 @@ const ActivityFeed: React.FC = () => {
               const config = eventConfigs[item.eventType] || eventConfigs.DEFAULT;
               const isUrgent = item.eventType === "SOS_ALERT" || item.eventType === "SOS_TRIGGERED";
 
+              const handleRowClick = () => {
+                if (item.eventType === "TRIP_VERIFICATION_REQUIRED") {
+                  navigate("/trip-verifications");
+                } else if (item.eventType === "NEW_DRIVER") {
+                  navigate("/drivers");
+                } else if (item.eventType === "DRIVER_PROFILE_COMPLETED") {
+                  navigate("/drivers");
+                } else if (item.eventType === "TRIP_COMPLETED") {
+                  navigate("/TripDetails");
+                }
+              };
+
               return (
                 <div
                   key={item.id}
-                  className={`grid grid-cols-12 px-4 py-3 hover:bg-gray-50/80 transition-all cursor-crosshair group ${isUrgent ? 'bg-red-50/40' : ''}`}
+                  onClick={handleRowClick}
+                  className={`grid grid-cols-12 px-4 py-3 hover:bg-gray-50/80 transition-all cursor-pointer group ${isUrgent ? 'bg-red-50/40' : ''}`}
                 >
                   {/* Column 1: Type */}
                   <div className="col-span-3 flex items-center gap-2">

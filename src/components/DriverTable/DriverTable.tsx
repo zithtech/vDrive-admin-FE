@@ -10,10 +10,17 @@ import {
   Space,
   Dropdown,
   AutoComplete,
+  Typography,
+  message,
+  Modal,
 } from "antd";
+import { useAppDispatch } from "../../store/hooks";
+import { updateDriverStatus } from "../../store/slices/driverSlice";
 import dayjs from "dayjs";
-import { messageApi as message } from "../../utilities/antdStaticHolder";
+import { format } from "date-fns-tz";
 import type { ColumnsType } from "antd/es/table";
+
+const { Text } = Typography;
 
 import Highlighter from "react-highlight-words";
 import type { Driver } from "../../store/slices/driverSlice";
@@ -29,7 +36,7 @@ import {
 import type { FilterDropdownProps } from "antd/es/table/interface";
 import type { InputRef, TableColumnType } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import DriverDetails from "../DriverDetails/DriverDetails";
+import DriverDetails, { getMediaUrl } from "../DriverDetails/DriverDetails";
 import { useGetHeight } from "../../utilities/customheightWidth";
 interface DriverTableProps {
   data: Driver[];
@@ -45,6 +52,12 @@ const DriverTable = ({ data }: DriverTableProps) => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef<InputRef>(null);
+  
+  const dispatch = useAppDispatch();
+  const [statusModalOpen, setStatusModalOpen] = useState(false);
+  const [statusAction, setStatusAction] = useState<"blocked" | "suspended" | null>(null);
+  const [statusReason, setStatusReason] = useState("");
+  const [selectedDriverForStatus, setSelectedDriverForStatus] = useState<Driver | null>(null);
 
   const selectedDriver = selectedDriverId
     ? data.find(
@@ -67,20 +80,61 @@ const DriverTable = ({ data }: DriverTableProps) => {
   const handleMenuClick = (key: string, record: Driver) => {
     switch (key) {
       case "view":
-        openDrawer(record);
-        break;
       case "edit":
         openDrawer(record);
-        // We could also potentially trigger the edit modal directly here if needed
         break;
       case "block":
+        setSelectedDriverForStatus(record);
+        setStatusAction("blocked");
+        setStatusReason("");
+        setStatusModalOpen(true);
+        break;
       case "suspend":
-        openDrawer(record); // Default to opening details for now
+        setSelectedDriverForStatus(record);
+        setStatusAction("suspended");
+        setStatusReason("");
+        setStatusModalOpen(true);
         break;
       default:
         break;
     }
   };
+
+  const handleStatusSubmit = async () => {
+    if (!statusReason.trim()) {
+      message.error("Please provide a reason for this action.");
+      return;
+    }
+    if (selectedDriverForStatus && statusAction) {
+      const driverId = String(selectedDriverForStatus.driverId || selectedDriverForStatus.driver_id || selectedDriverForStatus.id);
+      try {
+        await dispatch(updateDriverStatus({ 
+          driver_id: driverId, 
+          status: statusAction as any, 
+          status_reason: statusReason 
+        })).unwrap();
+        message.success(`Driver ${statusAction} successfully.`);
+        setStatusModalOpen(false);
+        setStatusReason("");
+      } catch (err) {
+        message.error("Failed to update driver status.");
+      }
+    }
+  };
+
+  const BLOCK_REASONS = [
+    "Serious safety violation or physical altercation.",
+    "Fraudulent activity or trip manipulation detected.",
+    "Sharing account with unauthorized persons.",
+    "Repeat offenses after multiple suspensions."
+  ];
+
+  const SUSPEND_REASONS = [
+    "Pending investigation of a recent customer complaint.",
+    "Low completion rate consistently below threshold.",
+    "Vehicle maintenance or document audit required.",
+    "Inappropriate behavior reported by passenger."
+  ];
   const handleSearch = (
     selectedKeys: string[],
     confirm: FilterDropdownProps["confirm"],
@@ -228,28 +282,46 @@ const DriverTable = ({ data }: DriverTableProps) => {
       title: "Driver",
       dataIndex: "full_name",
       key: "driver",
-      minWidth: 180,
+      width: 220,
+      fixed: "left" as const,
+      sorter: (a: Driver, b: Driver) => a.full_name.localeCompare(b.full_name),
       ...getColumnSearchProps("full_name", "driver_id", ["vdrive_id", "id"]),
       render: (_, record) => (
-        <div className="flex items-center gap-4 py-1">
+        <div className="flex items-center gap-3">
           <Avatar
-            src={record.profilePicUrl || record.profile_pic_url}
-            size={48}
-            className="border-2 border-slate-100 shadow-sm"
+            src={getMediaUrl(record.profilePicUrl || record.profile_pic_url)}
+            size={38}
+            style={{
+              background: (record.profilePicUrl || record.profile_pic_url)
+                ? undefined
+                : "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
+              boxShadow: "0 4px 12px rgba(99, 102, 241, 0.2)"
+            }}
+            className="border-2 border-white flex-shrink-0"
           >
             {record.full_name?.charAt(0)}
           </Avatar>
-          <div className="flex flex-col gap-0.5">
-            <div className="text-[15px] font-bold text-slate-800 leading-tight">
-              {record.full_name}
-            </div>
-            <div className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
-              <span className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">
-                {record.vdrive_id || record.driverId || record.driver_id || record.id || "N/A"}
-              </span>
-            </div>
-            <div className="text-[11px] text-slate-400">
-              {record.address?.city}, {record.address?.state}
+          <div className="flex flex-col justify-center gap-0.5 min-w-0">
+            <Text className="font-extrabold text-slate-800 tracking-tight text-[13px] leading-none truncate">{record.full_name}</Text>
+            <div className="flex items-center gap-1.5 group/copy">
+              <Text style={{ color: '#6b7280' }} className="text-[10px] font-black uppercase tracking-tight font-mono leading-none truncate">
+                {record.vdrive_id || record.driverId || record.driver_id || record.id || "VDD-NEW"}
+              </Text>
+              <Tooltip title="Copy ID">
+                <CopyOutlined
+                  className="text-[10px] text-slate-300 hover:text-indigo-500 cursor-pointer transition-colors opacity-0 group-hover/copy:opacity-100 flex-shrink-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const idToCopy = record.vdrive_id || record.driver_id || record.id || "";
+                    navigator.clipboard.writeText(idToCopy);
+                    message.success({
+                      content: 'Driver ID copied',
+                      className: 'premium-message',
+                      icon: <CopyOutlined className="text-indigo-500" />
+                    });
+                  }}
+                />
+              </Tooltip>
             </div>
           </div>
         </div>
@@ -258,34 +330,36 @@ const DriverTable = ({ data }: DriverTableProps) => {
     {
       title: "Contact",
       key: "contact",
-      minWidth: 160,
+      width: 200,
       render: (_, record) => (
-        <div className="flex flex-col gap-1">
-          <div className="text-[13px] font-medium text-slate-700">{record.phone_number}</div>
-          <div className="text-[11px] text-slate-400 truncate max-w-[140px]">{record.email}</div>
+        <div className="flex flex-col gap-0.5">
+          <Text className="text-xs font-semibold text-slate-700 leading-tight">{record.phone_number}</Text>
+          <Text className="text-[11px] font-medium text-slate-400 leading-tight truncate" style={{ maxWidth: 180 }}>{record.email}</Text>
         </div>
       ),
     },
-
-
     {
       title: "Status",
       dataIndex: "status",
-      minWidth: 120,
+      width: 120,
       key: "status",
+      align: "center" as const,
+      sorter: (a: Driver, b: Driver) => a.status.localeCompare(b.status),
       render: (status: string) => {
-        const colors: Record<string, string> = {
-          active: "success",
-          inactive: "default",
-          suspended: "warning",
-          pending: "processing",
-          blocked: "error",
-        };
+        let config = { color: "#10b981", bg: "#ecfdf5", border: "#a7f3d0" }; // active
+        if (status === "inactive") config = { color: "#f59e0b", bg: "#fffbeb", border: "#fde68a" };
+        if (status === "suspended") config = { color: "#f97316", bg: "#fff7ed", border: "#fed7aa" };
+        if (status === "pending" || status === "pending_verification") config = { color: "#6366f1", bg: "#eef2ff", border: "#c7d2fe" };
+        if (status === "blocked") config = { color: "#ef4444", bg: "#fef2f2", border: "#fecaca" };
+
         return (
           <Tag
-            bordered={false}
-            color={colors[status]}
-            className="capitalize font-medium px-3 rounded-full"
+            className="m-0 rounded-full px-3 py-0.5 font-bold text-[11px] border shadow-sm uppercase tracking-wider"
+            style={{
+              color: config.color,
+              backgroundColor: config.bg,
+              borderColor: config.border
+            }}
           >
             {status}
           </Tag>
@@ -293,23 +367,39 @@ const DriverTable = ({ data }: DriverTableProps) => {
       },
     },
     {
-      title: "Recharge Plan",
+      title: "Plan",
       key: "recharge_plan",
-      minWidth: 160,
+      width: 140,
       render: (_, record) => {
         const plan = record.active_subscription;
-        if (!plan) return <Tag color="default">No Plan</Tag>;
+        if (!plan) {
+          return (
+            <Tag
+              className="m-0 rounded-full px-3 py-0.5 font-bold text-[11px] border shadow-sm uppercase tracking-wider"
+              style={{ color: "#94a3b8", backgroundColor: "#f8fafc", borderColor: "#e2e8f0" }}
+            >
+              No Plan
+            </Tag>
+          );
+        }
 
         const isExpired = dayjs(plan.expiry_date).isBefore(dayjs());
 
         return (
           <div className="flex flex-col gap-0.5">
-            <Tag bordered={false} color={isExpired ? "error" : "success"} className="capitalize font-medium px-3 rounded-full w-fit">
+            <Tag
+              className="m-0 rounded-full px-3 py-0.5 font-bold text-[11px] border shadow-sm uppercase tracking-wider w-fit"
+              style={{
+                color: isExpired ? "#ef4444" : "#10b981",
+                backgroundColor: isExpired ? "#fef2f2" : "#ecfdf5",
+                borderColor: isExpired ? "#fecaca" : "#a7f3d0"
+              }}
+            >
               {plan.plan_name}
             </Tag>
-            <div className="text-[10px] text-slate-400 mt-1 ml-1 font-medium">
-              Exp: {dayjs(plan.expiry_date).format("DD MMM YYYY")}
-            </div>
+            <Text className="text-[10px] text-slate-400 font-medium leading-none mt-1 ml-0.5">
+              {dayjs(plan.expiry_date).format("DD MMM YY")}
+            </Text>
           </div>
         );
       },
@@ -317,8 +407,10 @@ const DriverTable = ({ data }: DriverTableProps) => {
     {
       title: "Rating",
       dataIndex: "rating",
-      minWidth: 100,
+      width: 90,
       key: "rating",
+      align: "center" as const,
+      sorter: (a: Driver, b: Driver) => (Number(a.rating) || 0) - (Number(b.rating) || 0),
       render: (rating: any) => {
         const numericRating = Number(rating) || 0;
         const isHigh = numericRating >= 4.5;
@@ -327,11 +419,11 @@ const DriverTable = ({ data }: DriverTableProps) => {
         return (
           <Tooltip title={`${numericRating.toFixed(1)} / 5.0 Rating`}>
             <div className={`
-              flex items-center gap-1.5 px-3 py-1 rounded-full border transition-all duration-300 w-fit 
+              inline-flex items-center gap-1 px-2.5 py-1 rounded-full border transition-all duration-300
               ${isHigh ? 'bg-amber-50 border-amber-100' : isGood ? 'bg-orange-50 border-orange-100' : 'bg-slate-50 border-slate-100'}
             `}>
-              <StarFilled style={{ color: "#EAB308", fontSize: 13 }} />
-              <span className={`text-[13px] font-black tracking-tight ${isHigh ? 'text-amber-700' : isGood ? 'text-orange-700' : 'text-slate-600'}`}>
+              <StarFilled style={{ color: "#EAB308", fontSize: 12 }} />
+              <span className={`text-[12px] font-black tracking-tight ${isHigh ? 'text-amber-700' : isGood ? 'text-orange-700' : 'text-slate-600'}`}>
                 {numericRating.toFixed(1)}
               </span>
             </div>
@@ -340,83 +432,101 @@ const DriverTable = ({ data }: DriverTableProps) => {
       },
     },
     {
-      title: "Total Trips",
+      title: "Trips",
       dataIndex: "total_trips",
-      minWidth: 120,
+      width: 80,
       key: "total_trips",
+      align: "center" as const,
+      sorter: (a: Driver, b: Driver) => (a.total_trips || 0) - (b.total_trips || 0),
+      render: (trips: number) => (
+        <Text className="text-[13px] font-black text-slate-800 tracking-tight">
+          {(trips || 0).toLocaleString()}
+        </Text>
+      ),
     },
-
     {
       title: "Earnings",
       dataIndex: ["payments", "total_earnings"],
-      minWidth: 160,
+      width: 110,
       key: "earnings",
+      align: "right" as const,
+      sorter: (a: Driver, b: Driver) => (a.payments?.total_earnings || 0) - (b.payments?.total_earnings || 0),
       render: (earnings: number) => (
-        <span className="text-[14px] text-emerald-600 font-bold">
-          ₹{earnings?.toLocaleString() || 0}
-        </span>
+        <Text className="text-[13px] text-emerald-600 font-black tracking-tight">
+          ₹{(earnings || 0).toLocaleString()}
+        </Text>
       ),
     },
-
-
     {
       title: "Joined",
       dataIndex: "created_at",
-      minWidth: 160,
+      width: 150,
       key: "joined",
-      render: (date: string) =>
-        date
-          ? new Date(date).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })
-          : "N/A",
+      sorter: (a: Driver, b: Driver) => {
+        const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return timeA - timeB;
+      },
+      render: (text: string) => (
+        <div className="flex flex-col gap-0.5">
+          <Text className="text-[11px] font-black text-slate-800 uppercase tracking-tight leading-tight">
+            {text ? format(new Date(text), "MMM dd, yyyy") : "-"}
+          </Text>
+          <Text className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest leading-tight">
+            {text ? format(new Date(text), "hh:mm a") : "-"}
+          </Text>
+        </div>
+      ),
     },
-
     {
-      title: "Action",
+      title: "",
       key: "action",
+      width: 90,
+      fixed: "right" as const,
       render: (_, record) => {
         const menuItems = [
           {
             key: "view",
-            icon: <EyeOutlined />,
-            label: "View Details",
+            icon: <EyeOutlined className="text-gray-400" />,
+            label: <span className="font-bold text-gray-700">View Details</span>,
           },
           {
             key: "edit",
-            icon: <EditOutlined />,
-            label: "Edit Profile",
+            icon: <EditOutlined className="text-blue-400" />,
+            label: <span className="font-bold text-blue-600">Edit Profile</span>,
           },
           {
             key: "block",
             icon: <StopOutlined />,
-            label: "Block Driver",
+            label: <span className="font-bold">Block Driver</span>,
             danger: true,
           },
           {
             key: "suspend",
-            icon: <ClockCircleOutlined />,
-            label: "Suspend Driver",
-            style: { color: "#fa8c16" },
+            icon: <ClockCircleOutlined className="text-orange-400" />,
+            label: <span className="font-bold text-orange-600">Suspend Driver</span>,
           },
         ];
         return (
           <Space className="driver-action">
-            <Button
-              type="text"
-              icon={<EyeOutlined />}
-              onClick={() => openDrawer(record)}
-            />
+            <Tooltip title="View Details">
+              <Button
+                type="text"
+                size="small"
+                className="hover:bg-blue-50 text-blue-600 transition-colors"
+                icon={<EyeOutlined />}
+                onClick={() => openDrawer(record)}
+              />
+            </Tooltip>
             <Dropdown
               menu={{
                 items: menuItems,
                 onClick: ({ key }) => handleMenuClick(key, record),
               }}
               trigger={["click"]}
+              placement="bottomRight"
             >
-              <Button type="text" icon={<EllipsisOutlined />} />
+              <Button type="text" size="small" className="text-gray-400 hover:text-gray-600" icon={<EllipsisOutlined />} />
             </Dropdown>
           </Space>
         );
@@ -426,18 +536,64 @@ const DriverTable = ({ data }: DriverTableProps) => {
 
   return (
     <>
-      <div ref={contentRef} className="h-full w-full bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <style>
+        {`
+          .premium-table-flat .ant-table-thead > tr > th {
+            background: #f8fafc !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            font-weight: 800 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            font-size: 10px !important;
+            color: #64748b !important;
+            padding: 10px 16px !important;
+          }
+          .premium-table-flat .ant-table-row {
+            cursor: pointer;
+            transition: all 0.2s ease;
+          }
+          .premium-table-flat .ant-table-row:hover > td {
+            background: #f1f5f9 !important;
+          }
+          .premium-table-flat .ant-table {
+            background: transparent !important;
+          }
+          .premium-table-flat .ant-table-cell {
+            padding: 10px 16px !important;
+            vertical-align: middle !important;
+          }
+          .premium-table-flat .ant-table-cell-fix-left,
+          .premium-table-flat .ant-table-cell-fix-right {
+            background: #ffffff !important;
+          }
+          .premium-table-flat .ant-table-row:hover > .ant-table-cell-fix-left,
+          .premium-table-flat .ant-table-row:hover > .ant-table-cell-fix-right {
+            background: #f1f5f9 !important;
+          }
+          .premium-table-flat .ant-table-thead > tr > .ant-table-cell-fix-left,
+          .premium-table-flat .ant-table-thead > tr > .ant-table-cell-fix-right {
+            background: #f8fafc !important;
+          }
+          .premium-table-flat .ant-table-cell-fix-left-last::after {
+            box-shadow: inset 10px 0 8px -8px rgba(0,0,0,0.04) !important;
+          }
+          .premium-table-flat .ant-table-cell-fix-right-first::after {
+            box-shadow: inset -10px 0 8px -8px rgba(0,0,0,0.04) !important;
+          }
+        `}
+      </style>
+      <div ref={contentRef} className="h-full w-full bg-white">
         <Table
-          className="custom-ant-table"
           key={tableHeight}
-          rowKey={(record) => record.driver_id || record.id || ""}
           columns={columns}
           dataSource={data}
-          showSorterTooltip={false}
-          tableLayout="auto"
-          scroll={{ y: Math.floor(tableHeight || 0), x: "max-content" }}
-          sticky
+          rowKey={(record) => record.driver_id || record.id || ""}
           pagination={false}
+          showSorterTooltip={false}
+          tableLayout="fixed"
+          size="middle"
+          scroll={{ y: Math.floor(tableHeight || 0), x: 1200 }}
+          className="premium-table-flat"
           onRow={(record) => ({
             onClick: (event) => {
               const isActionClick = (event.target as HTMLElement).closest(
@@ -447,7 +603,6 @@ const DriverTable = ({ data }: DriverTableProps) => {
                 openDrawer(record);
               }
             },
-            className: "cursor-pointer hover:bg-slate-50/50 transition-colors",
           })}
         />
       </div>
@@ -459,6 +614,45 @@ const DriverTable = ({ data }: DriverTableProps) => {
           setSelectedDriverId(null);
         }}
       />
+      <Modal
+        title={statusAction === "blocked" ? "Block Driver Account" : "Suspend Driver Account"}
+        open={statusModalOpen}
+        onOk={handleStatusSubmit}
+        onCancel={() => setStatusModalOpen(false)}
+        okText={statusAction === "blocked" ? "Block Driver" : "Suspend Driver"}
+        okButtonProps={{ danger: statusAction === "blocked", className: statusAction === "suspended" ? "bg-orange-500 hover:bg-orange-600" : "" }}
+      >
+        <div className="py-4">
+          <p className="mb-4 text-slate-600">
+            You are about to {statusAction === "blocked" ? "permanently block" : "temporarily suspend"}{" "}
+            <span className="font-bold text-slate-800">{selectedDriverForStatus?.full_name}</span>. 
+            The driver will be notified immediately.
+          </p>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-semibold text-slate-700">
+              Reason <span className="text-red-500">*</span>
+            </label>
+            <Input.TextArea
+              rows={3}
+              placeholder={`Enter the reason for ${statusAction}...`}
+              value={statusReason}
+              onChange={(e) => setStatusReason(e.target.value)}
+              className="rounded-xl"
+            />
+            <div className="flex flex-wrap gap-1 mt-2">
+              {(statusAction === "blocked" ? BLOCK_REASONS : SUSPEND_REASONS).map((reason, idx) => (
+                <Tag 
+                  key={idx}
+                  className="cursor-pointer hover:border-blue-400 transition-all m-0 px-2 py-0.5 text-[10px] rounded-md bg-slate-50 text-slate-500 font-medium"
+                  onClick={() => setStatusReason(reason)}
+                >
+                  {reason}
+                </Tag>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 };

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { logger } from "../../utils/logger";
+
 import {
   Table,
   Tag,
@@ -91,35 +93,7 @@ const titleMap = {
   TRIGGER_DRIVER: "Trigger Broadcast Alert",
 };
 
-// const mockDrivers: Driver[] = [
-//   {
-//     id: "driver_1",
-//     name: "Sathish",
-//     status: "ACTIVE",
-//     location: "Anna Nagar",
-//     distanceKm: 3.2,
-//     etaMinutes: 8,
-//     phonenumber: "8825857024",
-//   },
-//   {
-//     id: "driver_2",
-//     name: "Senthil",
-//     status: "ACTIVE",
-//     location: "Velachery",
-//     distanceKm: 6.5,
-//     etaMinutes: 18,
-//     phonenumber: "8825857026",
-//   },
-//   {
-//     id: "driver_3",
-//     name: "Karthik",
-//     status: "INACTIVE",
-//     location: "KK Nagar",
-//     distanceKm: 4.1,
-//     etaMinutes: 12,
-//     phonenumber: "8855857024",
-//   },
-// ];
+
 
 const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
   const dispatch = useDispatch();
@@ -149,7 +123,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
   const [cancelReason, setCancelReason] = useState<string | null>(null);
   const [cancelNotes, setCancelNotes] = useState<string>("");
 
-  console.log("activeAction", activeAction, trip);
+  logger.debug("activeAction", { activeAction, trip });
 
   // Reset driver selection when trip changes
   React.useEffect(() => {
@@ -158,7 +132,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
   }, [trip]);
 
   const fetchAvailableDrivers = async (radius: number) => {
-    console.log(`[DriverFetch] Triggered for trip ${trip?.trip_code} within ${radius}m`);
+    logger.debug(`[DriverFetch] Triggered for trip ${trip?.trip_code} within ${radius}m`);
     if (!trip) return;
     try {
       setDriverLoading(true);
@@ -169,7 +143,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
       });
 
       const driverData = response.data?.data || [];
-      console.log(`[DriverFetch] Successfully found ${response.data?.data?.length || 0} drivers`);
+      logger.debug(`[DriverFetch] Successfully found ${response.data?.data?.length || 0} drivers`);
 
       const mappedDrivers: Driver[] = driverData.map((d: any) => ({
         id: d.id,
@@ -183,7 +157,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
 
       setDrivers(mappedDrivers);
     } catch (error) {
-      console.error("Error fetching available drivers:", error);
+      logger.error("Error fetching available drivers:", error);
       notification.error({
         message: "Error",
         description: "Failed to fetch nearby drivers."
@@ -416,7 +390,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
                 items: menuItems(r),
                 onClick: ({ key }) => {
                   setActionTrip(r);
-                  console.log(`[TableAction] Menu item clicked: ${key} for trip ${r.trip_code}`);
+                  logger.debug(`[TableAction] Menu item clicked: ${key} for trip ${r.trip_code}`);
                   if (key === "assign_driver") setActiveAction("ASSIGN_DRIVER");
                   if (key === "fare") setActiveAction("ADJUST_FARE");
                   if (key === "cancel") setActiveAction("CANCEL_TRIP");
@@ -693,7 +667,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
   // ============================================
 
   const confirmAssignDriver = async (trip: TripDetailsType | null) => {
-    console.log(`[AssignAction] Confirming assignment for trip ${trip?.trip_code} to driver ${selectedDriver?.name}`);
+    logger.info(`[AssignAction] Confirming assignment for trip ${trip?.trip_code} to driver ${selectedDriver?.name}`);
     if (!trip || !selectedDriver) return;
 
     const key = `assign-driver-${trip.trip_id}`;
@@ -731,7 +705,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
         duration: 4,
       });
     } catch (error: any) {
-      console.error("[AssignAction] Failed:", error);
+      logger.error("[AssignAction] Failed:", error);
       notification.error({
         key,
         message: "Assignment Failed",
@@ -791,7 +765,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
   );
 
   const confirmAdjustFare = (trip: TripDetailsType | null) => {
-    console.log(`[AdjustFare] Confirming fare adjustment for trip ${trip?.trip_code}`);
+    logger.info(`[AdjustFare] Confirming fare adjustment for trip ${trip?.trip_code}`);
     if (!trip || !adjustedFare) return;
 
     dispatch(
@@ -1101,14 +1075,14 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
           loading: driverLoading,
           className: `!h-11 !px-8 !rounded-2xl !font-black !italic !text-xs !tracking-tight !shadow-lg !transition-all !duration-300 !transform !hover:scale-[1.03] !active:scale-95 !border-none
             ${((activeAction === "ASSIGN_DRIVER" && !selectedDriver) ||
-                (activeAction === "ADJUST_FARE" && !adjustedFare) ||
-                (activeAction === "CANCEL_TRIP" && cancelStep === 1 && !cancelReason) ||
-                (activeAction === "CANCEL_TRIP" && cancelStep === 1 && cancelReason === "OTHER" && !cancelNotes.trim()))
-                ? '!bg-slate-100 !text-slate-400 !shadow-none !cursor-not-allowed hover:!scale-100'
-                : activeAction === 'ASSIGN_DRIVER' ? '!bg-indigo-500 hover:!bg-indigo-600' :
-                  activeAction === 'TRIGGER_DRIVER' ? '!bg-amber-500 hover:!bg-amber-600' :
-                    activeAction === 'CANCEL_TRIP' ? '!bg-rose-600 !text-white hover:!bg-rose-700' :
-                      '!bg-slate-900 hover:!bg-slate-800'}`
+              (activeAction === "ADJUST_FARE" && !adjustedFare) ||
+              (activeAction === "CANCEL_TRIP" && cancelStep === 1 && !cancelReason) ||
+              (activeAction === "CANCEL_TRIP" && cancelStep === 1 && cancelReason === "OTHER" && !cancelNotes.trim()))
+              ? '!bg-slate-100 !text-slate-400 !shadow-none !cursor-not-allowed hover:!scale-100'
+              : activeAction === 'ASSIGN_DRIVER' ? '!bg-indigo-500 hover:!bg-indigo-600' :
+                activeAction === 'TRIGGER_DRIVER' ? '!bg-amber-500 hover:!bg-amber-600' :
+                  activeAction === 'CANCEL_TRIP' ? '!bg-rose-600 !text-white hover:!bg-rose-700' :
+                    '!bg-slate-900 hover:!bg-slate-800'}`
         }}
         cancelButtonProps={{
           className: "!h-11 !px-6 !rounded-2xl !font-bold !text-xs !border-none !bg-slate-100 !text-slate-500 hover:!bg-slate-200 !hover:text-slate-600 !transition-all !duration-300"

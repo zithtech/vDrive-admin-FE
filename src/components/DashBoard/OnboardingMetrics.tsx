@@ -8,11 +8,28 @@ interface OnboardingMetricsProps {
   stats: {
     pendingVerifications: number;
     documentExpiryAlerts: number;
+    complianceHealth: number;
+    lastSyncAt: string;
     loading: boolean;
   };
 }
 
 const OnboardingMetrics: React.FC<OnboardingMetricsProps> = ({ stats }) => {
+  const [timeAgo, setTimeAgo] = React.useState("0m");
+
+  React.useEffect(() => {
+    const calculateTimeAgo = () => {
+      const diff = Math.floor((new Date().getTime() - new Date(stats.lastSyncAt).getTime()) / 60000);
+      if (diff < 1) setTimeAgo("now");
+      else if (diff < 60) setTimeAgo(`${diff}m`);
+      else setTimeAgo(`${Math.floor(diff / 60)}h`);
+    };
+
+    calculateTimeAgo();
+    const interval = setInterval(calculateTimeAgo, 60000);
+    return () => clearInterval(interval);
+  }, [stats.lastSyncAt]);
+
   const MetricItem = ({
     title,
     value,
@@ -82,12 +99,14 @@ const OnboardingMetrics: React.FC<OnboardingMetricsProps> = ({ stats }) => {
         <div className="bg-gray-50/30 rounded-xl p-2.5 border border-gray-100">
           <div className="flex items-center justify-between mb-1.5">
             <span className="text-[11px] font-semibold text-gray-800 tracking-tight">Compliance Health</span>
-            <span className="text-[12px] font-bold text-gray-900">94%</span>
+            <span className="text-[12px] font-bold text-gray-900">
+              {stats.loading ? "..." : `${stats.complianceHealth}%`}
+            </span>
           </div>
           
           <div className="relative">
             <Progress 
-              percent={94} 
+              percent={stats.complianceHealth} 
               size="small" 
               showInfo={false} 
               strokeColor="#3b82f6"
@@ -97,7 +116,7 @@ const OnboardingMetrics: React.FC<OnboardingMetricsProps> = ({ stats }) => {
             />
             <div className="flex items-center justify-end gap-1 mt-1">
               <Clock size={9} className="text-gray-400" />
-              <span className="text-[9px] text-gray-400 font-medium tracking-tight">Sync: 5m</span>
+              <span className="text-[9px] text-gray-400 font-medium tracking-tight">Sync: {timeAgo}</span>
             </div>
           </div>
         </div>

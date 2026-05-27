@@ -12,9 +12,45 @@ interface TripManagementProps {
     documentExpiryAlerts: number;
     loading: boolean;
   };
+  trips: any[];
 }
 
-const TripManagement: React.FC<TripManagementProps> = ({ stats }) => {
+const TripManagement: React.FC<TripManagementProps> = ({ stats, trips }) => {
+  const getStatusColor = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case "REQUESTED":
+        return "warning";
+      case "ACCEPTED":
+        return "processing";
+      case "ARRIVING":
+      case "ARRIVED":
+        return "magenta";
+      case "LIVE":
+        return "success";
+      case "COMPLETED":
+        return "cyan";
+      case "CANCELLED":
+      case "MID_CANCELLED":
+        return "error";
+      default:
+        return "default";
+    }
+  };
+
+  const getRelativeTime = (dateString: string) => {
+    if (!dateString) return "Just now";
+    const now = new Date();
+    const past = new Date(dateString);
+    const diffInMs = now.getTime() - past.getTime();
+    const diffInMins = Math.floor(diffInMs / (1000 * 60));
+
+    if (diffInMins < 1) return "Just now";
+    if (diffInMins < 60) return `${diffInMins}m ago`;
+    const diffInHours = Math.floor(diffInMins / 60);
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    return past.toLocaleDateString();
+  };
+
   const StatItem = ({
     title,
     value,
@@ -85,38 +121,51 @@ const TripManagement: React.FC<TripManagementProps> = ({ stats }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar p-1.5 space-y-1">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div
-              key={i}
-              className="p-3 rounded-xl hover:bg-gray-50 transition-all group flex flex-col gap-2"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">
-                    <User size={14} className="text-gray-400" />
+          {trips.length > 0 ? (
+            trips.map((trip) => (
+              <div
+                key={trip.trip_id}
+                className="p-3 rounded-xl hover:bg-gray-50 transition-all group flex flex-col gap-2"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0">
+                      <User size={14} className="text-gray-400" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[12px] font-bold text-gray-900">Trip #{trip.trip_id?.slice(0, 8)}</span>
+                      <span className="text-[10px] text-gray-400 font-medium font-outfit uppercase tracking-wider">
+                        {trip.driver_name || "Unassigned"} • {trip.user_name || "Passenger"}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-[12px] font-bold text-gray-900">Trip #{1000 + i}</span>
-                    <span className="text-[10px] text-gray-400 font-medium font-outfit uppercase tracking-wider">DRV-{i}0{i} • Alex M.</span>
-                  </div>
+                  <Tag color={getStatusColor(trip.trip_status)} className="text-[9px] font-extrabold m-0 border-0 rounded-full px-2 leading-tight uppercase">
+                    {trip.trip_status?.replace("_", " ")}
+                  </Tag>
                 </div>
-                <Tag color={i % 2 === 0 ? "processing" : "warning"} className="text-[9px] font-extrabold m-0 border-0 rounded-full px-2 leading-tight uppercase">
-                  {i % 2 === 0 ? "In Transit" : "Pick Up"}
-                </Tag>
-              </div>
 
-              <div className="flex items-center justify-between pl-10.5">
-                <div className="flex items-center gap-1.5 text-gray-400 overflow-hidden">
-                  <MapPin size={10} className="shrink-0" />
-                  <span className="text-[10px] font-medium truncate">Central Park → Times Square</span>
-                </div>
-                <div className="flex items-center gap-1 text-gray-400">
-                  <Clock size={10} />
-                  <span className="text-[9px] font-bold uppercase tracking-tighter">{4 + i}m ago</span>
+                <div className="flex items-center justify-between pl-10.5">
+                  <div className="flex items-center gap-1.5 text-gray-400 overflow-hidden">
+                    <MapPin size={10} className="shrink-0" />
+                    <span className="text-[10px] font-medium truncate">
+                      {trip.pickup_address?.split(",")[0]} → {trip.drop_address?.split(",")[0]}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 text-gray-400">
+                    <Clock size={10} />
+                    <span className="text-[9px] font-bold uppercase tracking-tighter">
+                      {getRelativeTime(trip.created_at)}
+                    </span>
+                  </div>
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center h-full py-10 opacity-40">
+              <Car size={32} className="mb-2 text-gray-300" />
+              <span className="text-xs font-medium uppercase tracking-widest">No active trips found</span>
             </div>
-          ))}
+          )}
         </div>
       </div>
 

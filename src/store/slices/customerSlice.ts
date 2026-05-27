@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosIns from "../../api/axios";
+import { logger } from "../../utils/logger";
+
 import type { Customer } from "../../pages/Customers";
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -28,7 +30,7 @@ const refetchCustomer = async (id: string): Promise<Customer | null> => {
         return response.data?.data || response.data;
     } catch (error: any) {
         if (error.response?.status === 404) {
-            console.warn(`Customer info not found at /api/users/${id}. Backend might not support single fetch.`);
+            logger.warn(`Customer info not found at /api/users/${id}. Backend might not support single fetch.`);
             return null;
         }
         throw error;
@@ -42,7 +44,6 @@ export const fetchCustomers = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await axiosIns.get("/api/users");
-
             const candidate = response.data?.data || response.data?.users || response.data;
 
             if (Array.isArray(candidate)) {
@@ -54,7 +55,7 @@ export const fetchCustomers = createAsyncThunk(
                 return response.data.data.users;
             }
 
-            console.error("fetchCustomers: expected array but got:", candidate);
+            logger.error("fetchCustomers: expected array but got:", candidate);
             return []; // Fallback to empty array to avoid .map errors
         } catch (err: any) {
             return rejectWithValue(err.response?.data?.message || err.message || "Failed to fetch customers");
@@ -145,13 +146,7 @@ export const enableCustomer = createAsyncThunk(
 );
 
 // ─── Helper: sync updated customer into list + open drawer ────────────────────
-// const syncCustomer = (state: CustomerState, updatedCustomer: Customer) => {
-//     const index = state.customers.findIndex((c) => c.id === updatedCustomer.id);
-//     if (index !== -1) state.customers[index] = updatedCustomer;
-//     if (state.selectedCustomer?.id === updatedCustomer.id) {
-//         state.selectedCustomer = updatedCustomer;
-//     }
-// };
+
 
 // ─── Slice ────────────────────────────────────────────────────────────────────
 const customerSlice = createSlice({

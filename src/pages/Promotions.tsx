@@ -5,14 +5,11 @@ import {
   Trash2,
   Edit2,
   Users,
-  Trophy,
-  Filter,
   Ticket,
   BarChart3,
   Percent,
   IndianRupee,
-  Clock,
-  ArrowRight
+  Clock
 } from 'lucide-react';
 import axios from '../api/axios';
 import { 
@@ -23,8 +20,7 @@ import {
   DatePicker, 
   Switch, 
   Form,
-  InputNumber,
-  Empty
+  InputNumber
 } from 'antd';
 import { messageApi, modalApi, notificationApi } from '../utilities/antdStaticHolder';
 import dayjs from 'dayjs';
@@ -180,76 +176,79 @@ const PromotionsPage: React.FC = () => {
   }, [promos]);
 
   return (
-    <div className="p-4">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
-            <Ticket className="text-indigo-600" size={20} />
-            Promotions & Offers
-          </h2>
-          <p className="text-slate-500 mt-0.5 text-xs font-medium">Create targeted discounts for your high-performing drivers</p>
+    <div className="flex flex-col h-full overflow-hidden p-3 gap-3 bg-gray-50/50 min-h-screen font-sans">
+      {/* Header section */}
+      <div className="flex items-center space-x-3 shrink-0">
+        <div className="flex items-center justify-center w-10 h-10 bg-indigo-500 rounded-xl shadow-lg shadow-indigo-500/20">
+          <Ticket className="text-white text-xl" />
         </div>
+        <div>
+          <h1 className="!m-0 text-lg sm:text-xl font-extrabold text-gray-900 tracking-tight">Campaign Management</h1>
+          <p className="block text-[9px] text-gray-400 font-medium font-outfit uppercase tracking-widest">
+            Promotions, Offers & Loyalty Rewards
+          </p>
+        </div>
+        <div className="flex-1" />
         <button 
           onClick={() => handleOpenDrawer()} 
           className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 bg-white border border-gray-100 hover:border-indigo-100 px-4 py-1.5 rounded-lg transition-all active:scale-95 text-xs font-bold shadow-sm"
         > 
           <Plus size={14} /> 
           Create New Offer 
-        </button> 
+        </button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:border-indigo-100 transition-all cursor-default group relative overflow-hidden">
+      {/* Premium Stats Dashboard */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 group relative overflow-hidden transition-all hover:shadow-md">
           <div className="flex items-center gap-4 relative z-10">
-            <div className="bg-indigo-50/50 p-3 rounded-xl text-indigo-500 group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300">
-              <BarChart3 size={24} strokeWidth={2.5} />
+            <div className="bg-indigo-50 p-3 rounded-xl text-indigo-500 group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300">
+              <BarChart3 size={20} />
             </div>
             <div>
-              <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest mb-1">Active Offers</p>
-              <h3 className="text-2xl font-black text-slate-900 tracking-tighter">{stats.active}</h3>
+              <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Active Offers</p>
+              <h3 className="text-xl font-black text-gray-900">{stats.active}</h3>
             </div>
           </div>
-          <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-indigo-50 opacity-10 rounded-full group-hover:scale-150 transition-transform duration-700" />
+          <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-indigo-50/50 rounded-full group-hover:scale-150 transition-transform duration-700" />
         </div>
 
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:border-emerald-100 transition-all cursor-default group relative overflow-hidden">
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 group relative overflow-hidden transition-all hover:shadow-md">
           <div className="flex items-center gap-4 relative z-10">
-            <div className="bg-emerald-50/50 p-3 rounded-xl text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
-              <IndianRupee size={24} strokeWidth={2.5} />
+            <div className="bg-emerald-50 p-3 rounded-xl text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300">
+              <IndianRupee size={20} />
             </div>
             <div>
-              <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest mb-1">Impact Delivered</p>
-              <h3 className="text-2xl font-black text-slate-900 tracking-tighter">₹{stats.totalDiscount.toLocaleString()}</h3>
+              <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Total Savings</p>
+              <h3 className="text-xl font-black text-gray-900">₹{stats.totalDiscount.toLocaleString()}</h3>
             </div>
           </div>
-          <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-emerald-50 opacity-10 rounded-full group-hover:scale-150 transition-transform duration-700" />
+          <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-emerald-50/50 rounded-full group-hover:scale-150 transition-transform duration-700" />
         </div>
 
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:border-orange-100 transition-all cursor-default group relative overflow-hidden">
+        <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 group relative overflow-hidden transition-all hover:shadow-md">
           <div className="flex items-center gap-4 relative z-10">
-            <div className="bg-orange-50/50 p-3 rounded-xl text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-all duration-300">
-              <Users size={24} strokeWidth={2.5} />
+            <div className="bg-orange-50 p-3 rounded-xl text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-all duration-300">
+              <Users size={20} />
             </div>
             <div>
-              <p className="text-slate-400 text-[9px] font-black uppercase tracking-widest mb-1">Driver Outreach</p>
-              <h3 className="text-2xl font-black text-slate-900 tracking-tighter">{promos.reduce((a, b) => a + Number(b.usage_count || 0), 0)}</h3>
+              <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider mb-0.5">Total Usage</p>
+              <h3 className="text-xl font-black text-gray-900">{promos.reduce((a, b) => a + Number(b.usage_count || 0), 0)}</h3>
             </div>
           </div>
-          <div className="absolute -right-4 -bottom-4 w-20 h-20 bg-orange-50 opacity-10 rounded-full group-hover:scale-150 transition-transform duration-700" />
+          <div className="absolute -right-2 -bottom-2 w-16 h-16 bg-orange-50/50 rounded-full group-hover:scale-150 transition-transform duration-700" />
         </div>
       </div>
 
       {/* Filters & Search */}
-      <div className="bg-white p-2 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 mb-8 overflow-hidden">
-        <div className="flex items-center gap-4 flex-1 w-full sm:w-auto">
+      <div className="bg-white p-2 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0">
+        <div className="flex items-center gap-4 flex-1 w-full">
           <div className="relative flex-1 max-w-md group/search">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within/search:text-indigo-500 transition-colors" size={16} />
             <input 
               type="text" 
-              placeholder="Analyze offers by promo code..." 
-              className="w-full pl-9 pr-4 py-1.5 bg-white border border-gray-100 rounded-xl text-xs focus:outline-none focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-400 transition-all shadow-sm"
+              placeholder="Search by code or description..." 
+              className="w-full pl-9 pr-4 py-1.5 bg-gray-50/50 border border-transparent focus:bg-white focus:border-indigo-400 rounded-xl text-xs focus:outline-none transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -259,7 +258,6 @@ const PromotionsPage: React.FC = () => {
             style={{ width: 130, height: 32 }}
             onChange={setStatusFilter}
             className="custom-select-dashboard"
-            suffixIcon={<Filter size={14} className="text-gray-400" />}
             options={[
               { value: 'all', label: 'All Status' },
               { value: 'active', label: 'Active' },
@@ -267,127 +265,114 @@ const PromotionsPage: React.FC = () => {
             ]}
           />
         </div>
-        <div className="hidden md:flex items-center gap-4 px-3 py-1 bg-gray-50/50 rounded-xl border border-gray-100">
+        <div className="hidden md:flex items-center gap-3 px-3 py-1 bg-gray-50/50 rounded-xl border border-gray-100">
            <div className="flex items-center gap-1.5">
              <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></div>
-             <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{filteredPromos.length} Offers Tracking</span>
+             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{filteredPromos.length} Campaigns</span>
            </div>
         </div>
       </div>
 
-      {/* Grid Content */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
-        {loading ? (
-          [1, 2, 3, 4].map(i => <div key={i} className="bg-white h-48 rounded-2xl animate-pulse" />)
-        ) : filteredPromos.length > 0 ? (
-          filteredPromos.map(promo => {
-            const usageRate = Math.round((promo.usage_count / (promo.max_uses || 100)) * 100);
-            const isPercentage = promo.discount_type === 'percentage';
-            const themeColor = isPercentage ? '#4f46e5' : '#10b981';
-            const themeBg = isPercentage ? 'bg-indigo-600' : 'bg-emerald-600';
-            const shadowColor = isPercentage ? 'shadow-indigo-500/20' : 'shadow-emerald-500/20';
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar pr-1">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pb-4">
+          {loading ? (
+            [1, 2, 3, 4].map(i => <div key={i} className="bg-white h-40 rounded-2xl animate-pulse border border-gray-100" />)
+          ) : filteredPromos.length > 0 ? (
+            filteredPromos.map(promo => {
+              const usageRate = Math.round((promo.usage_count / (promo.max_uses || 100)) * 100);
+              const isPercentage = promo.discount_type === 'percentage';
+              const themeBg = isPercentage ? 'bg-indigo-600' : 'bg-emerald-600';
+              const shadowColor = isPercentage ? 'shadow-indigo-500/20' : 'shadow-emerald-500/20';
 
-            return (
-              <div 
-                key={promo.id} 
-                className="bg-white rounded-xl border border-gray-100 transition-all duration-300 hover:border-gray-200 flex flex-col overflow-hidden relative group/card"
-              >
-                {/* Top colored border */}
+              return (
                 <div 
-                  className="absolute top-0 left-0 right-0 h-[4px] z-20"
-                  style={{ backgroundColor: themeColor }}
-                />
+                  key={promo.id} 
+                  className="bg-white rounded-2xl border border-gray-100 transition-all duration-300 hover:shadow-md flex overflow-hidden group/card relative"
+                >
+                  {/* Left Accent Bar */}
+                  <div className={`w-1.5 ${themeBg}`} />
 
-                <div className="p-4 pt-6 relative flex-1 flex flex-col">
-                  <div className="flex justify-between items-start mb-5">
-                    <div className="flex items-center gap-3">
-                       {/* Icon Box */}
-                       <div className={`w-9 h-9 rounded-lg ${themeBg} flex items-center justify-center text-white shadow-lg ${shadowColor}`}>
-                         {isPercentage ? <Percent size={18} strokeWidth={3} /> : <IndianRupee size={18} strokeWidth={3} />}
-                       </div>
-                       
-                       <div className="flex flex-col">
-                         <div className="flex items-center gap-2">
-                           <h3 className="text-lg font-black text-slate-900 tracking-tight font-mono leading-none">{promo.code}</h3>
-                           <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full border text-[8px] font-black uppercase tracking-wider ${promo.is_active ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-gray-50 border-gray-100 text-gray-400'}`}>
-                              <div className={`w-1 h-1 rounded-full ${promo.is_active ? 'bg-emerald-500' : 'bg-gray-400'}`}></div>
-                              {promo.is_active ? 'Active' : 'Hidden'}
-                           </div>
-                         </div>
-                         <p className="text-[10px] font-bold text-gray-400 mt-1 line-clamp-1">{promo.description || 'Global Campaign Offer'}</p>
-                       </div>
+                  <div className="p-4 flex-1 flex flex-col gap-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex gap-3">
+                        <div className={`w-10 h-10 rounded-xl ${themeBg} flex items-center justify-center text-white shadow-lg ${shadowColor}`}>
+                          {isPercentage ? <Percent size={20} strokeWidth={3} /> : <IndianRupee size={20} strokeWidth={3} />}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-black text-gray-900 font-mono tracking-tight">{promo.code}</h3>
+                            {promo.is_active ? (
+                              <span className="bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-emerald-100">Live</span>
+                            ) : (
+                              <span className="bg-gray-100 text-gray-400 text-[9px] font-black uppercase px-2 py-0.5 rounded-full border border-gray-200">Paused</span>
+                            )}
+                          </div>
+                          <p className="text-[11px] font-medium text-gray-500 line-clamp-1 mt-0.5">{promo.description || 'Campaign Offer'}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Usage</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-black text-indigo-600">{usageRate}%</span>
+                          <div className="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden border border-gray-50">
+                            <div className="h-full bg-indigo-500 rounded-full transition-all duration-1000" style={{ width: `${usageRate}%` }} />
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="flex flex-col items-end">
-                       <div className="flex items-center gap-1.5 mb-1">
-                         <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">Usage Density</span>
-                         <span className="text-[11px] font-black text-indigo-500">{usageRate}%</span>
-                       </div>
-                       <div className="w-16 h-1 bg-gray-50 rounded-full overflow-hidden border border-gray-100">
-                         <div 
-                           className="h-full bg-indigo-500 rounded-full transition-all duration-1000"
-                           style={{ width: `${usageRate}%` }}
-                         />
-                       </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="bg-gray-50/50 p-2 rounded-xl border border-gray-100 flex flex-col items-center">
+                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Type</span>
+                        <span className="text-[10px] font-extrabold text-gray-700 capitalize">{promo.target_type.replace(/_/g, ' ')}</span>
+                      </div>
+                      <div className="bg-gray-50/50 p-2 rounded-xl border border-gray-100 flex flex-col items-center">
+                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Total Used</span>
+                        <span className="text-[10px] font-extrabold text-gray-700">{promo.usage_count}</span>
+                      </div>
+                      <div className="bg-gray-50/50 p-2 rounded-xl border border-gray-100 flex flex-col items-center">
+                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest">Saved Drivers</span>
+                        <span className="text-[10px] font-extrabold text-emerald-600">₹{promo.total_discount?.toLocaleString()}</span>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Operational Details Grid */}
-                  <div className="grid grid-cols-2 gap-2 mb-6">
-                     <div className="bg-gray-50/50 p-3 rounded-xl border border-gray-100/50 flex flex-col items-center justify-center gap-1">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Targeting</span>
-                        <div className="flex items-center gap-1 text-[11px] font-black text-slate-700">
-                          {promo.target_type === 'specific_driver' ? <Users size={12} className="text-indigo-400" /> : <Trophy size={12} className="text-amber-400" />}
-                          <span className="truncate">
-                            {promo.target_type === 'ride_count_based' ? `${promo.min_rides_required} Rides` : 
-                             promo.target_type === 'specific_driver' ? '1 Driver' : 'Global'}
-                          </span>
-                        </div>
-                     </div>
-                     <div className="bg-gray-50/50 p-3 rounded-xl border border-gray-100/50 flex flex-col items-center justify-center gap-1">
-                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Discounts</span>
-                        <div className="flex items-center gap-1 text-[11px] font-black text-emerald-600">
-                           <Ticket size={12} />
-                           <span>₹{promo.total_discount?.toLocaleString()} Total</span>
-                        </div>
-                     </div>
-                  </div>
-
-                  {/* Validity Info */}
-                  <div className="mt-auto pt-4 border-t border-gray-50 flex items-center justify-between">
-                     <div className="flex items-center gap-2">
+                    <div className="flex items-center justify-between pt-2 border-t border-gray-50 mt-auto">
+                      <div className="flex items-center gap-2">
                         <Clock size={12} className="text-gray-300" />
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
-                          {promo.expiry_date ? `Expires ${dayjs(promo.expiry_date).format('DD MMM')}` : 'Operational Forever'}
+                        <span className="text-[10px] font-bold text-gray-400">
+                          {promo.expiry_date ? `Expires ${dayjs(promo.expiry_date).format('DD MMM')}` : 'No Expiry'}
                         </span>
-                     </div>
-                     <div className="flex items-center gap-1">
-                        <button 
-                          onClick={() => handleOpenDrawer(promo)}
-                          className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
-                        >
+                      </div>
+                      <div className="flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                        <button onClick={() => handleOpenDrawer(promo)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
                           <Edit2 size={14} />
                         </button>
-                        <button 
-                          onClick={() => handleDelete(promo.id, promo.code)}
-                          className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-                        >
+                        <button onClick={() => handleDelete(promo.id, promo.code)} className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all">
                           <Trash2 size={14} />
                         </button>
-                     </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
+              );
+            })
+          ) : (
+            <div className="col-span-full py-16 bg-white rounded-3xl text-center border border-dashed border-gray-200 flex flex-col items-center justify-center gap-4">
+              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300">
+                <Ticket size={32} />
               </div>
-            );
-          })
-        ) : (
-          <div className="col-span-full py-20 bg-white rounded-3xl text-center border-2 border-dashed border-slate-100 flex flex-col items-center">
-            <Empty description={<span className="text-slate-400 font-medium">No active promotions found</span>} />
-            <Button type="link" onClick={() => handleOpenDrawer()} className="font-bold text-indigo-600 flex items-center gap-2 mt-4">
-              Click here to create one <ArrowRight size={14} />
-            </Button>
-          </div>
-        )}
+              <div>
+                <p className="text-gray-500 font-bold">No campaigns found</p>
+                <p className="text-gray-400 text-xs mt-1">Refine your search or create a new offer</p>
+              </div>
+              <Button type="primary" onClick={() => handleOpenDrawer()} className="bg-indigo-600 border-none rounded-xl font-bold h-10 px-6">
+                Create New Offer
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Editor Drawer */}
