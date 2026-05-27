@@ -29,13 +29,15 @@ const MetricCard: React.FC<Metric> = ({
         <div className="text-gray-300 text-lg opacity-60 font-light">{icon}</div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <p className="text-[28px] font-bold text-[#262626] leading-none tracking-tighter">
+      <div className="flex flex-wrap items-center gap-2">
+        <p className={`font-bold text-[#262626] leading-none tracking-tighter ${value.length > 12 ? 'text-[16px]' : 'text-[22px]'}`}>
           {value}
         </p>
-        <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold ${pillColor} self-center mt-1`}>
-          {subtitle}
-        </span>
+        {subtitle && (
+          <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold ${pillColor} self-center mt-1`}>
+            {subtitle}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -50,10 +52,12 @@ interface DashboardCardProps {
     totalScheduledRides: number;
     acceptedScheduledRides: number;
     totalUsers: number;
+    activeUsers: number;
     todayNewDrivers: number;
     todaySubscriptions: number;
     totalSubscriptions: number;
     totalEarnings: number;
+    todayRevenue: number;
     loading: boolean;
   };
 }
@@ -61,9 +65,11 @@ interface DashboardCardProps {
 const DashboardCard: React.FC<DashboardCardProps> = ({ stats }) => {
   const metrics: Metric[] = [
     {
-      title: "Total User",
-      value: stats.loading ? "..." : stats.totalUsers.toLocaleString(),
-      subtitle: "Total Registered",
+      title: "Active / Total Users",
+      value: stats.loading
+        ? "..."
+        : `${stats.activeUsers.toLocaleString()} / ${stats.totalUsers.toLocaleString()}`,
+      subtitle: "Verified Customers",
       pillColor: "bg-blue-50 text-blue-500",
       icon: <TeamOutlined />,
     },
@@ -77,18 +83,20 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ stats }) => {
       icon: <CarOutlined />,
     },
     {
-      title: "Total Subscription",
-      value: stats.loading ? "..." : stats.totalSubscriptions.toLocaleString(),
+      title: "Subscriptions Today / Total",
+      value: stats.loading
+        ? "..."
+        : `${stats.todaySubscriptions.toLocaleString()} / ${stats.totalSubscriptions.toLocaleString()}`,
       subtitle: "Active Plans",
       pillColor: "bg-purple-50 text-purple-500",
       icon: <ThunderboltOutlined />,
     },
     {
-      title: "Total Earnings",
+      title: "Earnings Today / Total",
       value: stats.loading
         ? "..."
-        : `₹${stats.totalEarnings.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-      subtitle: "Lifetime",
+        : `₹${stats.todayRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / ₹${stats.totalEarnings.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+      subtitle: "",
       pillColor: "bg-green-50 text-green-500",
       icon: <DollarOutlined />,
     },

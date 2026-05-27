@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Button, Modal, notification, Tabs, Segmented } from "antd";
-import { PlusOutlined, ExclamationCircleOutlined, TagOutlined, GiftOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined, ExclamationCircleOutlined, TagOutlined, GiftOutlined,
+  // HistoryOutlined 
+} from "@ant-design/icons";
 import TitleBar from "../components/TitleBarCommon/TitleBar";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
@@ -16,6 +19,7 @@ import {
   addReferralConfig,
   updateReferralConfig,
   deleteReferralConfig,
+  fetchReferralLogs,
   type ReferralConfig,
   type ReferralConfigPayload,
 } from "../store/slices/referralSlice";
@@ -23,6 +27,7 @@ import CouponTable from "../components/Coupons/CouponTable";
 import CouponFormDrawer from "../components/Coupons/CouponFormDrawer";
 import ReferralTable from "../components/Referrals/ReferralTable";
 import ReferralFormDrawer from "../components/Referrals/ReferralFormDrawer";
+import ReferralLogsTable from "../components/Referrals/ReferralLogsTable";
 import PromoDrawer from "../components/Promos/PromoDrawer";
 import axios from "../api/axios";
 import { fetchPromos, updatePromoStatus, addPromo, updatePromo } from "../store/slices/promoSlice";
@@ -34,8 +39,7 @@ const CouponsPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { coupons, isLoading: couponsLoading } = useAppSelector((state) => state.coupon);
   const { promos } = useAppSelector((state) => state.promo);
-  const { configs, isLoading: referralsLoading } = useAppSelector((state) => state.referral);
-
+  const { configs, logs, isLoading: referralsLoading } = useAppSelector((state) => state.referral);
   const { role } = useAppSelector((state) => state.auth);
   const isSuperAdmin = role === 'super_admin';
 
@@ -45,7 +49,7 @@ const CouponsPage: React.FC = () => {
   const hasDriverReferralsRead = useHasPermission("driver_referrals", "read");
 
   const [mainTab, setMainTab] = useState<"CUSTOMER" | "DRIVER">("CUSTOMER");
-  const [subTab, setSubTab] = useState<"COUPONS" | "REFERRALS">("COUPONS");
+  const [subTab, setSubTab] = useState<"COUPONS" | "REFERRALS" | "LOGS">("COUPONS");
 
   const [couponDrawerVisible, setCouponDrawerVisible] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
@@ -137,18 +141,24 @@ const CouponsPage: React.FC = () => {
     },
   ].filter(Boolean) as any[];
 
-  const customerTabAllowed = subTab === "COUPONS" 
-    ? (isSuperAdmin || hasCouponsRead) 
+  const customerTabAllowed = subTab === "COUPONS"
+    ? (isSuperAdmin || hasCouponsRead)
     : (isSuperAdmin || hasUserReferralsRead);
 
-  const driverTabAllowed = subTab === "COUPONS" 
-    ? (isSuperAdmin || hasPromosRead) 
+  const driverTabAllowed = subTab === "COUPONS"
+    ? (isSuperAdmin || hasPromosRead)
     : (isSuperAdmin || hasDriverReferralsRead);
 
   const tabItems = [
     customerTabAllowed && { key: "CUSTOMER", label: <span className="px-4 font-black uppercase tracking-widest text-[11px]">Customers Only</span> },
     driverTabAllowed && { key: "DRIVER", label: <span className="px-4 font-black uppercase tracking-widest text-[11px]">Drivers Only</span> },
   ].filter(Boolean) as any[];
+
+  useEffect(() => {
+    if (subTab === "LOGS") {
+      dispatch(fetchReferralLogs(mainTab));
+    }
+  }, [dispatch, subTab, mainTab]);
 
   const handleCreateNew = () => {
     if (subTab === "COUPONS") {
@@ -363,7 +373,9 @@ const CouponsPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <div className="text-right hidden sm:block">
               <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black leading-none mb-1">Active Ledger</p>
-              <p className="text-[11px] text-gray-500 font-bold">{subTab === 'COUPONS' ? 'Historical Promo Records' : 'Loyalty Incentive Rules'}</p>
+              <p className="text-[11px] text-gray-500 font-bold">
+                {subTab === 'COUPONS' ? 'Historical Promo Records' : subTab === 'REFERRALS' ? 'Loyalty Incentive Rules' : 'Real-time referral activity'}
+              </p>
             </div>
           </div>
         </div>
@@ -383,7 +395,7 @@ const CouponsPage: React.FC = () => {
               canUpdate={hasUpdateAccess}
               canDelete={hasDeleteAccess}
             />
-          ) : (
+          ) : subTab === "REFERRALS" ? (
             <ReferralTable
               data={filteredReferrals}
               loading={referralsLoading}
@@ -392,6 +404,12 @@ const CouponsPage: React.FC = () => {
               onToggleStatus={handleReferralToggle}
               canUpdate={hasUpdateAccess}
               canDelete={hasDeleteAccess}
+            />
+          ) : (
+            <ReferralLogsTable
+              data={logs}
+              loading={referralsLoading}
+              type={mainTab}
             />
           )}
         </div>

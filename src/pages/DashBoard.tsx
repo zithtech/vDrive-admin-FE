@@ -2,10 +2,11 @@ import { FiActivity } from "react-icons/fi";
 import { Typography } from "antd";
 import DashboardCard from "../components/DashBoard/DashBoardCard";
 import DriverMetricsColumn from "../components/DashBoard/DriverMetricsColumn";
-import TodayGrowthColumn from "../components/DashBoard/TodayGrowthColumn";
 import OnboardingMetrics from "../components/DashBoard/OnboardingMetrics";
 import ActivityFeed from "../components/DashBoard/ActivityFeed";
 import TripManagement from "../components/DashBoard/TripManagement";
+import QuickActions from "../components/DashBoard/QuickActions";
+
 
 import { useEffect, useState } from "react";
 import axiosIns from "../api/axios";
@@ -13,6 +14,7 @@ import { useSocket } from "../hooks/useSocket";
 
 const Dashboard = () => {
   const { socket } = useSocket();
+  const [trips, setTrips] = useState<any[]>([]);
   const [stats, setStats] = useState({
     activeDrivers: 0,
     totalDrivers: 0,
@@ -21,6 +23,7 @@ const Dashboard = () => {
     totalScheduledRides: 0,
     acceptedScheduledRides: 0,
     totalUsers: 0,
+    activeUsers: 0,
     todayNewUsers: 0,
     todayNewDrivers: 0,
     todaySubscriptions: 0,
@@ -31,6 +34,8 @@ const Dashboard = () => {
     totalCancellationsToday: 0,
     pendingVerifications: 0,
     documentExpiryAlerts: 0,
+    complianceHealth: 0,
+    lastSyncAt: new Date().toISOString(),
     trends: {
       users: "0%",
       drivers: "0%",
@@ -60,8 +65,21 @@ const Dashboard = () => {
     }
   };
 
+  const fetchLatestTrips = async () => {
+    try {
+      const response = await axiosIns.get("/api/trips");
+      if (response.data.success) {
+        // Take only the last 15 trips for the dashboard feed
+        setTrips(response.data.data.slice(0, 15));
+      }
+    } catch (error) {
+      console.error("Failed to fetch latest trips:", error);
+    }
+  };
+
   useEffect(() => {
     fetchStats();
+    fetchLatestTrips();
   }, []);
 
   useEffect(() => {
@@ -74,14 +92,31 @@ const Dashboard = () => {
       fetchStats();
     };
 
+    const handleNewTrip = () => {
+      fetchLatestTrips();
+      fetchStats();
+    };
+
+    const handleTripUpdate = () => {
+      fetchLatestTrips();
+      fetchStats();
+    };
+
     socket.on("driver_event", handleDriverEvent);
+    socket.on("ADMIN_NEW_TRIP_ALERT", handleNewTrip);
+    socket.on("ADMIN_TRIP_ACCEPTED", handleTripUpdate);
+    socket.on("ADMIN_TRIP_STATUS_UPDATE", handleTripUpdate);
+
     return () => {
       socket.off("driver_event", handleDriverEvent);
+      socket.off("ADMIN_NEW_TRIP_ALERT", handleNewTrip);
+      socket.off("ADMIN_TRIP_ACCEPTED", handleTripUpdate);
+      socket.off("ADMIN_TRIP_STATUS_UPDATE", handleTripUpdate);
     };
   }, [socket]);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden p-3 gap-3 bg-gray-50/50">
+    <div className="flex flex-col h-full overflow-hidden p-3 gap-4 bg-gray-50/50">
       <div className="flex items-center space-x-3 shrink-0">
         <div className="flex items-center justify-center w-10 h-10 bg-blue-500 rounded-xl shadow-lg shadow-blue-500/20">
           <FiActivity className="text-white text-2xl" />
@@ -98,7 +133,7 @@ const Dashboard = () => {
           </Typography.Text>
         </div>
       </div>
-      
+
       <div className="shrink-0">
         <DashboardCard stats={stats} />
       </div>
@@ -111,12 +146,12 @@ const Dashboard = () => {
       </div>
 
       {/* Main Dashboard Layout - 4 Column Top Grid with adjusted widths (3:2:3:2) */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-4 min-h-0 overflow-hidden text-sm">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-3 min-h-0 overflow-hidden text-sm">
         <div className="lg:col-span-3 flex flex-col min-h-0">
           <DriverMetricsColumn stats={stats} />
         </div>
         <div className="lg:col-span-3 flex flex-col min-h-0">
-          <TripManagement stats={stats} />
+          <TripManagement stats={stats} trips={trips} />
         </div>
         <div className="lg:col-span-4 flex flex-col min-h-0 gap-4 h-105">
           <OnboardingMetrics stats={stats} />
@@ -124,16 +159,12 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Bottom Horizontal Row - Today's Overview & Divider */}
-      <div className="shrink-0 h-32 mt-1 flex items-center gap-6">
-        <div className="flex-1 h-full">
-          <TodayGrowthColumn stats={stats} isHorizontal={true} />
-        </div>
-        <div className="flex-1 flex items-center gap-4 pr-4">
-          <div className="h-px bg-gray-200 flex-1"></div>
-          <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest whitespace-nowrap">Dashboard End</span>
-        </div>
+      {/* Bottom Horizontal Row - Full Width Quick Actions */}
+      <div className="shrink-0 h-32 mt-1">
+        <QuickActions />
       </div>
+
+
 
     </div>
   );

@@ -18,11 +18,12 @@ import {
   ArrowUpRight,
   MoreVertical,
   Filter,
-  CreditCard
+  Clock,
+  BellRing
 } from 'lucide-react';
 import axios from '../api/axios';
 import { messageApi, modalApi, notificationApi } from '../utilities/antdStaticHolder';
-import { Checkbox, Select, Drawer, Button, Avatar, Tag, Dropdown } from 'antd';
+import { Checkbox, Select, Drawer, Button, Avatar, Tag, Dropdown, Spin } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
 const PromotionsTab = lazy(() => import('./Promotions'));
@@ -71,12 +72,18 @@ const CountdownTimer: React.FC<{ expiryDate: string }> = ({ expiryDate }) => {
   if (!timeLeft) return null;
 
   return (
-    <div className="flex items-center gap-1 bg-rose-600 text-white px-1.5 py-0.5 rounded text-[9px] font-bold font-mono animate-pulse shadow-sm border border-rose-500 whitespace-nowrap">
-      <span>{String(timeLeft.hours).padStart(2, '0')}</span>
-      <span className="opacity-50">:</span>
-      <span>{String(timeLeft.minutes).padStart(2, '0')}</span>
-      <span className="opacity-50">:</span>
-      <span>{String(timeLeft.seconds).padStart(2, '0')}</span>
+    <div className="flex items-center gap-1.5 bg-white text-rose-600 px-2 py-1 rounded-md text-[10px] font-black font-mono shadow-sm border border-rose-200 whitespace-nowrap tracking-widest">
+      <div className="flex flex-col items-center leading-none">
+        <span>{String(timeLeft.hours).padStart(2, '0')}</span>
+      </div>
+      <span className="opacity-40 animate-pulse">:</span>
+      <div className="flex flex-col items-center leading-none">
+        <span>{String(timeLeft.minutes).padStart(2, '0')}</span>
+      </div>
+      <span className="opacity-40 animate-pulse">:</span>
+      <div className="flex flex-col items-center leading-none">
+        <span>{String(timeLeft.seconds).padStart(2, '0')}</span>
+      </div>
     </div>
   );
 };
@@ -118,6 +125,14 @@ const RechargePlanPage: React.FC = () => {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyData, setHistoryData] = useState<any[]>([]);
   const [historyPlanName, setHistoryPlanName] = useState("");
+
+  const [expandedRowId, setExpandedRowId] = useState<number | null>(null);
+  const [subStats, setSubStats] = useState<any>(null);
+  const [isDriverHistoryOpen, setIsDriverHistoryOpen] = useState(false);
+  const [driverHistoryLoading, setDriverHistoryLoading] = useState(false);
+  const [driverHistoryData, setDriverHistoryData] = useState<any>(null);
+  const [selectedDriver, setSelectedDriver] = useState<any>(null);
+  const [notifyingSubscribers, setNotifyingSubscribers] = useState(false);
 
   /* ---- Fetch Plans ---- */
   const fetchPlans = async () => {
@@ -184,7 +199,69 @@ const RechargePlanPage: React.FC = () => {
   useEffect(() => {
     fetchPlans();
     fetchActiveSubscriptions();
+    fetchSubscriptionStats();
   }, []);
+
+  const fetchSubscriptionStats = async () => {
+    try {
+      const res = await axios.get("/api/recharge-plans/stats");
+      setSubStats(res.data.data);
+    } catch (err) {
+      console.error("Failed to fetch subscription stats:", err);
+    }
+  };
+
+  const handleNotifyExpiring = async () => {
+    try {
+      setNotifyingSubscribers(true);
+      const res = await axios.post('/api/recharge-plans/notify-expiring');
+      
+      if (res.data.data.sentCount > 0) {
+        messageApi.success(`Successfully notified ${res.data.data.sentCount} expiring drivers!`);
+      } else {
+        messageApi.info('No expiring subscriptions found to notify.');
+      }
+    } catch (err) {
+      console.error("Failed to send notifications:", err);
+      messageApi.error('Failed to send expiry notifications');
+    } finally {
+      setNotifyingSubscribers(false);
+    }
+  };
+
+  const handleNotifyIndividual = async (driverId: string) => {
+    try {
+      await axios.post('/api/recharge-plans/notify-individual', { driverId });
+      messageApi.success('Status notification sent to driver!');
+    } catch (err) {
+      console.error("Failed to notify driver:", err);
+      messageApi.error('Failed to send notification');
+    }
+  };
+
+  const fetchDriverHistory = async (driver: any, mode: 'DRAWER' | 'INLINE' = 'DRAWER') => {
+    try {
+      setSelectedDriver(driver);
+      if (mode === 'DRAWER') {
+        setIsDriverHistoryOpen(true);
+      } else {
+        if (expandedRowId === driver.id) {
+          setExpandedRowId(null);
+          return;
+        }
+        setExpandedRowId(driver.id);
+      }
+
+      setDriverHistoryLoading(true);
+      const res = await axios.get(`/api/recharge-plans/driver-history/${driver.driverId || driver.driver_id || driver.driver_id}`);
+      setDriverHistoryData(res.data.data);
+    } catch (err) {
+      console.error("Failed to fetch driver history:", err);
+      messageApi.error("Failed to fetch driver subscription history");
+    } finally {
+      setDriverHistoryLoading(false);
+    }
+  };
 
   const fetchActiveSubscriptions = async () => {
     try {
@@ -219,6 +296,8 @@ const RechargePlanPage: React.FC = () => {
         billingCycle: s.billing_cycle || s.billingCycle || 'N/A',
         startDate: s.start_date || s.startDate,
         expiryDate: s.expiry_date || s.expiryDate,
+        amountPaid: s.amount_paid || s.amountPaid,
+        driverId: s.driver_id || s.driverId,
       }));
 
       setActiveSubscriptions(mappedSubs);
@@ -462,7 +541,7 @@ const RechargePlanPage: React.FC = () => {
   });
 
   return (
-    <div className="flex flex-col h-full overflow-hidden p-3 gap-3 bg-gray-50/50 min-h-screen font-sans">
+    <div className="flex flex-col h-full overflow-hidden p-3 gap-3 bg-white min-h-screen font-sans">
       {/* Header section */}
       <div className="flex items-center space-x-3 shrink-0">
         <div className="flex items-center justify-center w-10 h-10 bg-indigo-500 rounded-xl shadow-lg shadow-indigo-500/20">
@@ -478,31 +557,31 @@ const RechargePlanPage: React.FC = () => {
 
       {/* Dashboard-Style Navigation Toolbelt */}
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-2 rounded-2xl border border-gray-100 shadow-sm shrink-0">
-        <div className="flex gap-1 p-1 bg-gray-50/80 rounded-xl border border-gray-100">
+        <div className="flex gap-1 p-1 bg-white rounded-xl border border-gray-100">
           <button
             onClick={() => setActiveTab("plans")}
-            className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all flex items-center gap-2 ${activeTab === "plans" 
-              ? "bg-white text-indigo-600 shadow-sm border border-gray-200" 
+            className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all flex items-center gap-2 ${activeTab === "plans"
+              ? "bg-white text-indigo-600 shadow-sm border border-gray-200"
               : "text-gray-500 hover:text-indigo-600"}`}
           >
             <Crown size={14} />
             Manage Plans
-            <span className="ml-1 px-1.5 py-0.5 bg-gray-200/50 text-gray-500 text-[10px] rounded-md">{plans.length}</span>
+            <span className="ml-1 px-1.5 py-0.5 bg-white text-gray-500 text-[10px] rounded-md border border-gray-100">{plans.length}</span>
           </button>
           <button
             onClick={() => setActiveTab("subscriptions")}
-            className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all flex items-center gap-2 ${activeTab === "subscriptions" 
-              ? "bg-white text-indigo-600 shadow-sm border border-gray-200" 
+            className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all flex items-center gap-2 ${activeTab === "subscriptions"
+              ? "bg-white text-indigo-600 shadow-sm border border-gray-200"
               : "text-gray-500 hover:text-indigo-600"}`}
           >
             <Users size={14} />
             Subscriptions
-            <span className="ml-1 px-1.5 py-0.5 bg-gray-200/50 text-gray-500 text-[10px] rounded-md">{activeSubscriptions.length}</span>
+            <span className="ml-1 px-1.5 py-0.5 bg-white text-gray-500 text-[10px] rounded-md border border-gray-100">{activeSubscriptions.length}</span>
           </button>
           <button
             onClick={() => setActiveTab("promotions")}
-            className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all flex items-center gap-2 ${activeTab === "promotions" 
-              ? "bg-white text-indigo-600 shadow-sm border border-gray-200" 
+            className={`px-4 py-1.5 text-[11px] font-bold rounded-lg transition-all flex items-center gap-2 ${activeTab === "promotions"
+              ? "bg-white text-indigo-600 shadow-sm border border-gray-200"
               : "text-gray-500 hover:text-indigo-600"}`}
           >
             <Zap size={14} />
@@ -572,7 +651,7 @@ const RechargePlanPage: React.FC = () => {
                 ]}
               />
             </div>
-            
+
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
@@ -584,7 +663,7 @@ const RechargePlanPage: React.FC = () => {
               filteredPlans.map((plan, index) => {
                 const isExpanded = expandedPlanId === plan.id;
                 const activeSubCount = activeSubscriptions.filter(s => s.planName?.toLowerCase() === plan.planName?.toLowerCase()).length;
-                
+
                 const planNameLower = plan.planName?.toLowerCase() || '';
                 let themeConfig = { color: '#0ea5e9', bg: 'bg-sky-500', shadow: 'shadow-sky-500/20', Icon: Zap };
 
@@ -605,7 +684,7 @@ const RechargePlanPage: React.FC = () => {
                       }`}
                   >
                     {/* Top colored border */}
-                    <div 
+                    <div
                       className="absolute top-0 left-0 right-0 h-[4px] z-20"
                       style={{ backgroundColor: themeConfig.color }}
                     />
@@ -660,78 +739,78 @@ const RechargePlanPage: React.FC = () => {
 
                         {/* Density Metric */}
                         <div className="flex flex-col items-end">
-                           <div className="flex items-center gap-1.5 mb-1">
-                             <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest font-outfit">Density</span>
-                             <span className="text-[14px] font-extrabold text-indigo-500">{Math.round((activeSubCount / (activeSubscriptions.length || 1)) * 100)}%</span>
-                           </div>
-                           <div className="w-16 h-1 bg-gray-50 rounded-full overflow-hidden border border-gray-100">
-                             <div 
-                               className="h-full bg-indigo-500 rounded-full transition-all duration-1000"
-                               style={{ width: `${(activeSubCount / (activeSubscriptions.length || 1)) * 100}%` }}
-                             />
-                           </div>
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest font-outfit">Density</span>
+                            <span className="text-[14px] font-extrabold text-indigo-500">{Math.round((activeSubCount / (activeSubscriptions.length || 1)) * 100)}%</span>
+                          </div>
+                          <div className="w-16 h-1 bg-white rounded-full overflow-hidden border border-gray-200">
+                            <div
+                              className="h-full bg-indigo-500 rounded-full transition-all duration-1000"
+                              style={{ width: `${(activeSubCount / (activeSubscriptions.length || 1)) * 100}%` }}
+                            />
+                          </div>
                         </div>
                       </div>
 
                       {/* Triple Pricing Grid - Exact replication */}
                       <div className="grid grid-cols-3 gap-2 mb-6 h-28">
                         <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-1 group/price cursor-pointer transition-all hover:border-gray-200">
-                           <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest text-center">Daily</span>
-                           <span className="text-2xl font-black text-[#111827] tracking-tighter">₹{plan.dailyPrice}</span>
+                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest text-center">Daily</span>
+                          <span className="text-2xl font-black text-[#111827] tracking-tighter">₹{plan.dailyPrice}</span>
                         </div>
                         <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center justify-center gap-1 group/price cursor-pointer transition-all hover:border-gray-200">
-                           <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest text-center">Weekly</span>
-                           <span className="text-2xl font-black text-[#111827] tracking-tighter">₹{plan.weeklyPrice}</span>
+                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest text-center">Weekly</span>
+                          <span className="text-2xl font-black text-[#111827] tracking-tighter">₹{plan.weeklyPrice}</span>
                         </div>
                         <div className={`relative p-3 rounded-xl shadow-lg border-indigo-400/20 flex flex-col items-center justify-center gap-1 group/price cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.98] ${index === 0 ? 'bg-indigo-600' : 'bg-gradient-to-br from-indigo-500 to-purple-600'}`}>
-                           <span className="text-[9px] font-bold text-white/70 uppercase tracking-widest text-center">Monthly</span>
-                           <span className="text-2xl font-black text-white tracking-tighter">₹{plan.monthlyPrice}</span>
-                           <div className="flex items-center gap-1">
-                              <div className="w-1 h-1 bg-white/60 rounded-full"></div>
-                              <span className="text-[8px] font-black text-white uppercase tracking-tighter">Best Ops</span>
-                           </div>
+                          <span className="text-[9px] font-bold text-white/70 uppercase tracking-widest text-center">Monthly</span>
+                          <span className="text-2xl font-black text-white tracking-tighter">₹{plan.monthlyPrice}</span>
+                          <div className="flex items-center gap-1">
+                            <div className="w-1 h-1 bg-white/60 rounded-full"></div>
+                            <span className="text-[8px] font-black text-white uppercase tracking-tighter">Best Ops</span>
+                          </div>
                         </div>
                       </div>
 
                       {/* Plan Configuration with separator */}
                       <div className="mt-4">
-                         <div className="flex items-center gap-3 mb-4">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Plan Configuration</span>
-                            <div className="h-px flex-1 bg-gray-100"></div>
-                         </div>
-                         <div className="grid grid-cols-2 gap-x-6 gap-y-3 px-1 h-32 overflow-hidden items-start">
-                            {plan.features.slice(0, 6).map((feat: string, i: number) => {
-                              const isNegative = feat.toLowerCase().startsWith('no ') || feat.toLowerCase().includes('not included') || feat.toLowerCase() === 'local bookings only';
-                              return (
-                               <div key={i} className="flex items-center gap-2.5">
-                                  {isNegative ? (
-                                    <div className="shrink-0 w-5 h-5 rounded-full bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500">
-                                      <X size={11} strokeWidth={3} />
-                                    </div>
-                                  ) : (
-                                    <div className="shrink-0 w-5 h-5 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-500">
-                                      <CheckCircle2 size={11} strokeWidth={3} />
-                                    </div>
-                                  )}
-                                  <span className={`text-[12px] font-semibold truncate ${isNegative ? 'text-gray-400 line-through' : 'text-gray-600'}`}>{feat}</span>
-                               </div>
-                              )
-                            })}
-                         </div>
+                        <div className="flex items-center gap-3 mb-4">
+                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Plan Configuration</span>
+                          <div className="h-px flex-1 bg-gray-100"></div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-x-6 gap-y-3 px-1 h-32 overflow-hidden items-start">
+                          {plan.features.slice(0, 6).map((feat: string, i: number) => {
+                            const isNegative = feat.toLowerCase().startsWith('no ') || feat.toLowerCase().includes('not included') || feat.toLowerCase() === 'local bookings only';
+                            return (
+                              <div key={i} className="flex items-center gap-2.5">
+                                {isNegative ? (
+                                  <div className="shrink-0 w-5 h-5 rounded-full bg-white border border-rose-200 flex items-center justify-center text-rose-500 shadow-sm">
+                                    <X size={11} strokeWidth={3} />
+                                  </div>
+                                ) : (
+                                  <div className="shrink-0 w-5 h-5 rounded-full bg-white border border-emerald-200 flex items-center justify-center text-emerald-500 shadow-sm">
+                                    <CheckCircle2 size={11} strokeWidth={3} />
+                                  </div>
+                                )}
+                                <span className={`text-[12px] font-semibold truncate ${isNegative ? 'text-gray-400 line-through' : 'text-gray-600'}`}>{feat}</span>
+                              </div>
+                            )
+                          })}
+                        </div>
                       </div>
 
                       {/* Card Footer Metric & Action */}
                       <div className="mt-8 pt-4 border-t border-gray-50 flex items-center justify-between">
-                         <div className="flex items-center gap-2 text-emerald-500">
-                            <ArrowUpRight size={14} strokeWidth={3} />
-                            <span className="text-[11px] font-bold tracking-tight">Conversion 40%</span>
-                         </div>
-                         <button 
-                           onClick={(e) => { e.stopPropagation(); setExpandedPlanId(isExpanded ? null : plan.id); }}
-                           className="px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-900 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all active:scale-95"
-                         >
-                           Manage
-                         </button>
+                        <div className="flex items-center gap-2 text-emerald-500">
+                          <ArrowUpRight size={14} strokeWidth={3} />
+                          <span className="text-[11px] font-bold tracking-tight">Conversion 40%</span>
+                        </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setExpandedPlanId(isExpanded ? null : plan.id); }}
+                          className="px-4 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-900 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all active:scale-95"
+                        >
+                          Manage
+                        </button>
                       </div>
 
                       {/* Original Expanded Actions area moved inside for consistency */}
@@ -739,28 +818,28 @@ const RechargePlanPage: React.FC = () => {
                         <div className="mt-6 flex gap-4 animate-in slide-in-from-top-2 duration-300">
                           <button
                             onClick={(e) => { e.stopPropagation(); handleOpenModal(plan); }}
-                            className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-600 py-2 rounded-lg text-xs font-semibold hover:border-slate-300 hover:bg-slate-50 transition-all shadow-sm"
+                            className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-600 py-2 rounded-lg text-xs font-semibold hover:border-indigo-400 hover:text-indigo-600 transition-all shadow-sm"
                           >
                             <Edit3 size={14} />
                             Edit
                           </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); toggleStatus(plan.id, plan.isActive); }}
-                            className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-600 py-2 rounded-lg text-xs font-semibold hover:border-slate-300 hover:bg-slate-50 transition-all shadow-sm"
+                            className="flex-1 flex items-center justify-center gap-2 bg-white border border-slate-200 text-slate-600 py-2 rounded-lg text-xs font-semibold hover:border-slate-300 hover:bg-white transition-all shadow-sm"
                           >
                             <Power size={14} className={plan.isActive ? 'text-rose-500' : 'text-emerald-500'} />
                             {plan.isActive ? 'Off' : 'On'}
                           </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); handleDelete(plan.id); }}
-                            className="p-2 bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-100 hover:bg-slate-50 rounded-lg transition-all shadow-sm"
+                            className="p-2 bg-white border border-slate-200 text-slate-400 hover:text-rose-600 hover:border-rose-400 transition-all shadow-sm"
                             title="Delete Plan"
                           >
                             <Trash2 size={16} />
                           </button>
                           <button
                             onClick={(e) => { e.stopPropagation(); fetchPlanHistory(plan.id, plan.planName); }}
-                            className="p-2 bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-100 hover:bg-slate-50 rounded-lg transition-all shadow-sm"
+                            className="p-2 bg-white border border-slate-200 text-slate-400 hover:text-indigo-600 hover:border-indigo-100 hover:bg-white rounded-lg transition-all shadow-sm"
                             title="View History"
                           >
                             <History size={16} />
@@ -779,7 +858,84 @@ const RechargePlanPage: React.FC = () => {
           </div>
         </>
       ) : activeTab === "subscriptions" ? (
-        <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-right-2 duration-500">
+        <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-right-2 duration-500">
+          {/* High-Density Stats Strip */}
+          <div className="bg-white px-6 py-3 rounded-2xl border border-gray-100 shadow-sm flex items-center overflow-x-auto custom-scrollbar gap-10">
+            {/* Today Segment */}
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="w-10 h-10 bg-white text-indigo-600 rounded-xl flex items-center justify-center font-black text-xs shadow-sm border border-indigo-200">T</div>
+              <div className="flex flex-col">
+                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Today</span>
+                 <div className="flex items-center gap-3">
+                   <div className="flex items-baseline gap-1">
+                     <span className="text-[15px] font-black text-slate-900 tracking-tight">{subStats?.today_count || 0}</span>
+                     <span className="text-[9px] text-slate-400 font-black uppercase tracking-tighter">Subs</span>
+                   </div>
+                   <div className="w-px h-3 bg-slate-200"></div>
+                   <span className="text-[15px] font-black text-indigo-600 tracking-tight">₹{Number(subStats?.today_amount || 0).toLocaleString()}</span>
+                 </div>
+              </div>
+            </div>
+
+            <div className="w-px h-8 bg-slate-100"></div>
+
+            {/* Week Segment */}
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="w-10 h-10 bg-white text-emerald-600 rounded-xl flex items-center justify-center font-black text-xs shadow-sm border border-emerald-200">W</div>
+              <div className="flex flex-col">
+                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">This Week</span>
+                 <div className="flex items-center gap-3">
+                   <div className="flex items-baseline gap-1">
+                     <span className="text-[15px] font-black text-slate-900 tracking-tight">{subStats?.week_count || 0}</span>
+                     <span className="text-[9px] text-slate-400 font-black uppercase tracking-tighter">Subs</span>
+                   </div>
+                   <div className="w-px h-3 bg-slate-200"></div>
+                   <span className="text-[15px] font-black text-emerald-600 tracking-tight">₹{Number(subStats?.week_amount || 0).toLocaleString()}</span>
+                 </div>
+              </div>
+            </div>
+
+            <div className="w-px h-8 bg-slate-100"></div>
+
+            {/* Month Segment */}
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="w-10 h-10 bg-white text-purple-600 rounded-xl flex items-center justify-center font-black text-xs shadow-sm border border-purple-200">M</div>
+              <div className="flex flex-col">
+                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">This Month</span>
+                 <div className="flex items-center gap-3">
+                   <div className="flex items-baseline gap-1">
+                     <span className="text-[15px] font-black text-slate-900 tracking-tight">{subStats?.month_count || 0}</span>
+                     <span className="text-[9px] text-slate-400 font-black uppercase tracking-tighter">Subs</span>
+                   </div>
+                   <div className="w-px h-3 bg-slate-200"></div>
+                   <span className="text-[15px] font-black text-purple-600 tracking-tight">₹{Number(subStats?.month_amount || 0).toLocaleString()}</span>
+                 </div>
+              </div>
+            </div>
+
+            <div className="w-px h-8 bg-slate-100"></div>
+
+            {/* Lifetime Segment */}
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="w-10 h-10 bg-white text-amber-600 rounded-xl flex items-center justify-center font-black text-xs shadow-sm border border-amber-200">L</div>
+              <div className="flex flex-col">
+                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Overall Lifetime</span>
+                 <div className="flex items-center gap-3">
+                   <div className="flex items-baseline gap-1">
+                     <span className="text-[15px] font-black text-slate-900 tracking-tight">{subStats?.lifetime_count || 0}</span>
+                     <span className="text-[9px] text-slate-400 font-black uppercase tracking-tighter">Subs</span>
+                   </div>
+                   <div className="w-px h-3 bg-slate-200"></div>
+                   <span className="text-[15px] font-black text-amber-600 tracking-tight">₹{Number(subStats?.lifetime_amount || 0).toLocaleString()}</span>
+                 </div>
+              </div>
+            </div>
+
+            <div className="ml-auto flex items-center gap-2 shrink-0">
+               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Real-time Stats</span>
+            </div>
+          </div>
           {/* Dashboard-Style Controls for Subscriptions */}
           <div className="flex flex-col sm:flex-row gap-3 py-1 items-center justify-between">
             <div className="flex items-center gap-4 flex-1">
@@ -793,15 +949,29 @@ const RechargePlanPage: React.FC = () => {
                   onChange={(e) => setSubSearchTerm(e.target.value)}
                 />
               </div>
+              
+              <button
+                onClick={handleNotifyExpiring}
+                disabled={notifyingSubscribers}
+                className={`flex items-center gap-2 px-4 py-1.5 rounded-xl text-xs font-black transition-all active:scale-95 shadow-sm border ${notifyingSubscribers ? 'bg-slate-50 text-slate-400 border-slate-100' : 'bg-white text-rose-600 border-rose-100 hover:border-rose-400 hover:shadow-rose-100'}`}
+              >
+                {notifyingSubscribers ? (
+                  <Spin size="small" />
+                ) : (
+                  <BellRing size={14} className="animate-bounce" />
+                )}
+                <span>{notifyingSubscribers ? 'Notifying...' : 'Notify All Active'}</span>
+              </button>
+
               <div className="flex items-center gap-1.5 border border-gray-100 rounded-xl p-1 bg-white shadow-sm">
                 <div className="pl-2 pr-1">
                   <Filter size={14} className="text-gray-400" />
                 </div>
                 {['ALL', 'BASIC', 'ELITE', 'PREMIUM'].map(f => (
-                  <button 
+                  <button
                     key={f}
                     onClick={() => setSubFilter(f)}
-                    className={`px-3 py-1 rounded-lg text-[10px] font-extrabold transition-all uppercase tracking-widest ${subFilter === f ? 'bg-indigo-50 text-indigo-600 shadow-sm' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'}`}
+                    className={`px-3 py-1 rounded-lg text-[10px] font-extrabold transition-all uppercase tracking-widest ${subFilter === f ? 'bg-white text-indigo-600 shadow-md border border-indigo-400' : 'text-gray-400 hover:text-gray-600 hover:bg-white'}`}
                   >
                     {f}
                   </button>
@@ -821,13 +991,14 @@ const RechargePlanPage: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-gray-50/50">
-                    <th className="px-6 py-3 text-[9px] font-bold text-gray-400 uppercase tracking-widest">Driver Identity</th>
-                    <th className="px-6 py-3 text-[9px] font-bold text-gray-400 uppercase tracking-widest">Plan Config</th>
-                    <th className="px-6 py-3 text-[9px] font-bold text-gray-400 uppercase tracking-widest">Billing Cycle</th>
-                    <th className="px-6 py-3 text-[9px] font-bold text-gray-400 uppercase tracking-widest">Timeline Progress</th>
-                    <th className="px-6 py-3 text-[9px] font-bold text-gray-400 uppercase tracking-widest">Ops Delta</th>
-                    <th className="px-6 py-3 text-[9px] font-bold text-gray-400 uppercase tracking-widest w-10"></th>
+                  <tr className="bg-white">
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-100 bg-white">Driver Identity</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-100 bg-white">Plan Config</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-100 bg-white text-center">Plan Amount</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-100 bg-white">Billing Cycle</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-100 bg-white">Timeline Progress</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-100 bg-white">Ops Delta</th>
+                    <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-100 bg-white w-10"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -835,7 +1006,7 @@ const RechargePlanPage: React.FC = () => {
                     [1, 2, 3].map((i: number) => (
                       <tr key={i} className="animate-pulse">
                         <td colSpan={6} className="px-6 py-6">
-                          <div className="h-8 bg-slate-50 rounded-lg w-full"></div>
+                          <div className="h-8 bg-white rounded-lg w-full"></div>
                         </td>
                       </tr>
                     ))
@@ -856,102 +1027,161 @@ const RechargePlanPage: React.FC = () => {
                         const totalDays = Math.ceil((new Date(sub.expiryDate).getTime() - new Date(sub.startDate).getTime()) / (1000 * 60 * 60 * 24));
                         const daysElapsed = totalDays - daysLeft;
                         const progress = Math.min(100, Math.max(0, (daysElapsed / (totalDays || 1)) * 100));
-                        
-                        const planNameLower = sub.planName?.toLowerCase() || '';
-                        let badgeClass = 'bg-indigo-50/50 text-indigo-600 border-indigo-100/50';
-                        if (planNameLower.includes('basic')) badgeClass = 'bg-sky-50 text-sky-600 border-sky-100';
-                        else if (planNameLower.includes('elite')) badgeClass = 'bg-purple-50 text-purple-600 border-purple-100';
-                        else if (planNameLower.includes('premium')) badgeClass = 'bg-amber-50 text-amber-600 border-amber-100';
 
-                        return (
-                          <tr key={sub.id} className="group hover:bg-gray-50/50 transition-colors">
-                            <td className="px-6 py-3">
-                              <div className="flex items-center gap-3">
-                                <Avatar
-                                  size={32}
-                                  className="bg-indigo-50 text-indigo-500 font-extrabold border border-indigo-100 uppercase text-[10px]"
-                                >
-                                  {sub.driverName?.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
-                                </Avatar>
-                                <div className="flex flex-col">
-                                  <div className="font-extrabold text-gray-800 text-[12px] tracking-tight">{sub.driverName}</div>
-                                  <div className="text-[10px] font-bold text-gray-300 mt-0.5 tracking-tighter uppercase">{sub.driverPhone}</div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-5">
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-widest ${badgeClass}`}>
-                                {sub.planName}
-                              </span>
-                            </td>
-                            <td className="px-6 py-3">
-                              <div className="flex flex-col gap-1 items-start">
-                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest bg-gray-50/80 px-2 py-0.5 rounded border border-gray-100 transition-colors group-hover:bg-white">
-                                  {sub.billingCycle}
-                                </span>
-                                {(sub.amountPaid || sub.price) && (
-                                   <div className="flex items-center gap-1 mt-0.5 text-slate-400">
-                                      <CreditCard size={10} />
-                                      <span className="text-[9px] font-bold">₹{sub.amountPaid || sub.price || '---'}</span>
+                        const planNameLower = sub.planName?.toLowerCase() || '';
+                        let badgeClass = 'bg-white text-indigo-600 border-indigo-200 shadow-sm';
+                        if (planNameLower.includes('basic')) badgeClass = 'bg-white text-sky-600 border-sky-200 shadow-sm';
+                        else if (planNameLower.includes('elite')) badgeClass = 'bg-white text-purple-600 border-purple-200 shadow-sm';
+                        else if (planNameLower.includes('premium')) badgeClass = 'bg-white text-amber-600 border-amber-200 shadow-sm';
+
+                         const isExpanded = expandedRowId === sub.id;
+
+                         return (
+                           <React.Fragment key={sub.id}>
+                             <tr 
+                               className={`group transition-all duration-200 cursor-pointer border-b-2 border-slate-50 ${isExpanded ? 'bg-white' : 'hover:bg-white'}`} 
+                               onClick={() => fetchDriverHistory(sub, 'INLINE')}
+                             >
+                               <td className="px-6 py-5">
+                                 <div className="flex items-center gap-3">
+                                   <Avatar
+                                     size={40}
+                                     className="bg-indigo-50 text-indigo-500 font-extrabold border-2 border-white shadow-sm uppercase text-[12px]"
+                                     style={{ background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)', color: 'white' }}
+                                   >
+                                     {sub.driverName?.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+                                   </Avatar>
+                                   <div className="flex flex-col">
+                                     <div className="font-black text-slate-800 text-[13px] tracking-tight leading-none mb-1">{sub.driverName}</div>
+                                     <div className="text-[10px] font-black text-slate-400 tracking-wider uppercase font-mono">{sub.driverPhone}</div>
                                    </div>
-                                )}
-                              </div>
-                            </td>
-                            <td className="px-6 py-3 w-48">
-                               <div className="flex flex-col gap-1.5 w-full">
-                                  <div className="flex items-center justify-between text-[9px] font-bold text-gray-400 uppercase tracking-widest">
-                                    <span>{sub.startDate ? new Date(sub.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '---'}</span>
-                                    <span>{sub.expiryDate ? new Date(sub.expiryDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '---'}</span>
-                                  </div>
-                                  <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                                    <div 
-                                      className={`h-full rounded-full transition-all duration-500 ${isExpiring ? 'bg-rose-500' : 'bg-emerald-400'}`}
-                                      style={{ width: `${progress}%` }}
-                                    />
-                                  </div>
-                               </div>
-                            </td>
-                            <td className="px-6 py-3">
-                              <div className="flex flex-col gap-1 items-start">
-                                <div className={`flex items-center gap-1.5 text-[11px] font-black tracking-tight ${isExpiring ? 'text-rose-500' : 'text-emerald-500'}`}>
-                                  {isNaN(daysLeft) ? 'N/A' : `${daysLeft}D REMAINING`}
-                                  {isExpiring && !isNaN(daysLeft) && daysLeft >= 1 && (
-                                    <span className="relative flex h-1.5 w-1.5">
-                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-rose-500"></span>
-                                    </span>
-                                  )}
-                                </div>
-                                <CountdownTimer expiryDate={sub.expiryDate} />
-                              </div>
-                            </td>
-                            <td className="px-6 py-3 text-right">
-                              <Dropdown
-                                trigger={['click']}
-                                menu={{
-                                  items: [
-                                    { 
-                                      key: '1', 
-                                      label: <span className="text-xs font-semibold text-gray-700">View Driver Profile</span>,
-                                      onClick: () => navigate('/drivers') // Or `/drivers/${sub.driverId}` if you have the ID.
-                                    }
-                                  ]
-                                }}
-                                placement="bottomRight"
-                              >
-                                <button className="p-1.5 text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors">
-                                  <MoreVertical size={16} />
-                                </button>
-                              </Dropdown>
-                            </td>
-                          </tr>
-                        );
-                      })
-                  ) : (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-20 text-center">
+                                 </div>
+                               </td>
+                               <td className="px-6 py-4">
+                                 <span className={`text-[11px] font-black px-3 py-1 rounded-full border shadow-sm uppercase tracking-widest ${badgeClass}`}>
+                                   {sub.planName}
+                                 </span>
+                               </td>
+                               <td className="px-6 py-4 text-center">
+                                 <div className="flex flex-col items-center">
+                                   <span className="text-[14px] font-black text-slate-800 tracking-tighter">₹{Number(sub.amountPaid || sub.price || 0).toLocaleString()}</span>
+                                   <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest mt-0.5">Paid Amount</span>
+                                 </div>
+                               </td>
+                               <td className="px-6 py-4">
+                                 <div className="flex flex-col items-start">
+                                   <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-white px-2 py-0.5 rounded-md border border-indigo-200 shadow-sm">
+                                     {sub.billingCycle}
+                                   </span>
+                                 </div>
+                               </td>
+                               <td className="px-6 py-4 w-48">
+                                 <div className="flex flex-col gap-1.5 w-full">
+                                   <div className="flex items-center justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                                     <span className="flex items-center gap-1"><Clock size={10} /> {sub.startDate ? new Date(sub.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '---'}</span>
+                                     <span className="flex items-center gap-1">{sub.expiryDate ? new Date(sub.expiryDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '---'} <Zap size={10} /></span>
+                                   </div>
+                                   <div className="w-full h-2 bg-white rounded-full overflow-hidden shadow-inner border border-slate-100">
+                                     <div
+                                       className={`h-full rounded-full transition-all duration-1000 ease-out shadow-sm ${isExpiring ? 'bg-gradient-to-r from-rose-500 to-pink-500' : 'bg-gradient-to-r from-emerald-400 to-teal-500'}`}
+                                       style={{ width: `${progress}%` }}
+                                     />
+                                   </div>
+                                 </div>
+                               </td>
+                               <td className="px-6 py-4">
+                                 <div className="flex flex-col gap-1 items-start">
+                                   <div className={`flex items-center gap-1.5 text-[12px] font-black tracking-tight ${isExpiring ? 'text-rose-500' : 'text-emerald-600'}`}>
+                                     {isNaN(daysLeft) ? 'N/A' : `${daysLeft}D REMAINING`}
+                                     {isExpiring && !isNaN(daysLeft) && daysLeft >= 1 && (
+                                       <span className="relative flex h-2 w-2">
+                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                         <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                                       </span>
+                                     )}
+                                   </div>
+                                   <div className="mt-1">
+                                     <CountdownTimer expiryDate={sub.expiryDate} />
+                                   </div>
+                                 </div>
+                               </td>
+                               <td className="px-6 py-4 text-right">
+                                 <Dropdown
+                                   trigger={['click']}
+                                   menu={{
+                                     items: [
+                                       {
+                                         key: '1',
+                                         label: <span className="text-xs font-semibold text-gray-700">View Driver Profile</span>,
+                                         onClick: (e: any) => {
+                                           e.domEvent.stopPropagation();
+                                           navigate(`/drivers?search=${sub.driverPhone}`);
+                                         }
+                                       },
+                                       {
+                                         key: '2',
+                                         label: <span className="text-xs font-semibold text-indigo-600">View Subscription History (Drawer)</span>,
+                                         onClick: (e: any) => {
+                                           e.domEvent.stopPropagation();
+                                           fetchDriverHistory(sub, 'DRAWER');
+                                         }
+                                       },
+                                       {
+                                         key: '3',
+                                         label: (
+                                           <div className="flex items-center gap-2 text-rose-600">
+                                             <BellRing size={12} />
+                                             <span className="text-xs font-black uppercase tracking-widest">Notify Current Status</span>
+                                           </div>
+                                         ),
+                                         onClick: (e: any) => {
+                                           e.domEvent.stopPropagation();
+                                           handleNotifyIndividual(sub.driverId);
+                                         }
+                                       }
+                                     ]
+                                   }}
+                                   placement="bottomRight"
+                                 >
+                                   <button 
+                                     className="p-1.5 text-gray-300 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-colors"
+                                     onClick={(e) => e.stopPropagation()}
+                                   >
+                                     <MoreVertical size={16} />
+                                   </button>
+                                 </Dropdown>
+                               </td>
+                             </tr>
+                             {isExpanded && (
+                               <tr className="bg-white animate-in fade-in slide-in-from-top-1 duration-200 border-b-2 border-slate-100/50">
+                                 <td colSpan={7} className="px-6 py-4">
+                                   <div className="flex items-center gap-12 justify-center py-2">
+                                     <div className="flex flex-col items-center">
+                                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Lifetime Subscription Amount</span>
+                                       <span className="text-[15px] font-black text-indigo-600 tracking-tight">₹{Number(driverHistoryData?.summary?.total_spent || 0).toLocaleString()}</span>
+                                     </div>
+                                     <div className="w-px h-8 bg-slate-200"></div>
+                                     <div className="flex flex-col items-center">
+                                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Total Times Subscribed</span>
+                                       <span className="text-[15px] font-black text-slate-800 tracking-tight">{driverHistoryData?.summary?.total_subscriptions || 0} Times</span>
+                                     </div>
+                                     {driverHistoryLoading && (
+                                       <div className="ml-4">
+                                         <Spin size="small" />
+                                       </div>
+                                     )}
+                                   </div>
+                                 </td>
+                               </tr>
+                             )}
+                           </React.Fragment>
+                         );
+                       })
+                   ) : (
+                     <tr>
+                      <td colSpan={7} className="px-6 py-20 text-center bg-white">
                         <div className="flex flex-col items-center gap-3">
-                          <div className="p-3 bg-slate-50 rounded-full text-slate-200">
+                          <div className="p-3 bg-white rounded-full text-slate-200 border border-slate-100">
                             <Zap size={32} />
                           </div>
                           <p className="text-slate-400 text-xs font-medium">No active subscriptions found.</p>
@@ -967,10 +1197,10 @@ const RechargePlanPage: React.FC = () => {
       ) : (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden min-h-[600px] flex flex-col">
           <div className="p-4 border-b border-gray-50 flex items-center justify-between">
-             <div className="flex items-center gap-3">
-                <Zap size={16} className="text-indigo-500" />
-                <span className="text-xs font-extrabold text-gray-900 tracking-tight uppercase">Promotion Systems</span>
-             </div>
+            <div className="flex items-center gap-3">
+              <Zap size={16} className="text-indigo-500" />
+              <span className="text-xs font-extrabold text-gray-900 tracking-tight uppercase">Promotion Systems</span>
+            </div>
           </div>
           <div className="flex-1 bg-gray-50/30">
             <Suspense fallback={<div className="flex items-center justify-center p-20 animate-pulse text-indigo-500 font-extrabold text-xs">INITIALIZING OPS ENGINE...</div>}>
@@ -989,8 +1219,8 @@ const RechargePlanPage: React.FC = () => {
                 {selectedPlanIds.length}
               </div>
               <div className="flex flex-col">
-                 <span className="text-[11px] font-black tracking-tight uppercase">Operational Units</span>
-                 <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest leading-none mt-0.5">Selected focus</span>
+                <span className="text-[11px] font-black tracking-tight uppercase">Operational Units</span>
+                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-widest leading-none mt-0.5">Selected focus</span>
               </div>
             </div>
 
@@ -1316,19 +1546,19 @@ const RechargePlanPage: React.FC = () => {
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                       <span className="text-[12px] font-bold text-slate-800 tracking-tight flex items-center gap-1.5">
-                         <Avatar size={20} className="bg-slate-100 text-slate-600 text-[10px] font-bold">
-                           {(item.admin_name || 'A')[0].toUpperCase()}
-                         </Avatar>
-                         {item.admin_name || "Admin"}
-                       </span>
-                       <span className="text-slate-300">•</span>
-                       <Tag color={
-                          item.action === 'CREATE' ? 'blue' :
-                            item.action === 'UPDATE' ? 'orange' : 'purple'
-                        } className="m-0 text-[10px] uppercase font-bold border-0 px-2 py-0.5 rounded-md">
-                         {item.action === 'TOGGLE_STATUS' ? 'STATUS CHANGE' : item.action}
-                       </Tag>
+                      <span className="text-[12px] font-bold text-slate-800 tracking-tight flex items-center gap-1.5">
+                        <Avatar size={20} className="bg-slate-100 text-slate-600 text-[10px] font-bold">
+                          {(item.admin_name || 'A')[0].toUpperCase()}
+                        </Avatar>
+                        {item.admin_name || "Admin"}
+                      </span>
+                      <span className="text-slate-300">•</span>
+                      <Tag color={
+                        item.action === 'CREATE' ? 'blue' :
+                          item.action === 'UPDATE' ? 'orange' : 'purple'
+                      } className="m-0 text-[10px] uppercase font-bold border-0 px-2 py-0.5 rounded-md">
+                        {item.action === 'TOGGLE_STATUS' ? 'STATUS CHANGE' : item.action}
+                      </Tag>
                     </div>
                     <span className="text-[11px] font-medium text-slate-400/80 tabular-nums">
                       {new Date(item.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
@@ -1339,17 +1569,17 @@ const RechargePlanPage: React.FC = () => {
                     <div className="flex flex-col gap-2 mt-1">
                       {Object.keys(item.new_data || {}).map(field => {
                         if (['updated_at', 'created_at', 'id'].includes(field)) return null;
-                        
+
                         const oldVal = item.previous_data ? item.previous_data[field] : undefined;
                         const newVal = item.new_data[field];
 
                         if (oldVal !== undefined && JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
                           const formatValue = (val: any) => {
-                             if (val === null || val === undefined) return 'None';
-                             if (typeof val === 'boolean') return val ? 'Active' : 'Inactive';
-                             if (Array.isArray(val)) return val.join(', ');
-                             if (typeof val === 'object') return JSON.stringify(val);
-                             return String(val);
+                            if (val === null || val === undefined) return 'None';
+                            if (typeof val === 'boolean') return val ? 'Active' : 'Inactive';
+                            if (Array.isArray(val)) return val.join(', ');
+                            if (typeof val === 'object') return JSON.stringify(val);
+                            return String(val);
                           };
 
                           return (
@@ -1398,6 +1628,143 @@ const RechargePlanPage: React.FC = () => {
               <p className="text-slate-300 text-[11px] mt-1">Audit logs will appear as soon as changes are made.</p>
             </div>
           )}
+        </div>
+      </Drawer>
+
+      {/* Driver Subscription History Drawer */}
+      <Drawer
+        title={
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3">
+              <Avatar
+                size={40}
+                className="bg-indigo-50 text-indigo-500 font-extrabold border border-indigo-100 uppercase text-sm"
+              >
+                {selectedDriver?.driverName?.split(' ').map((n: string) => n[0]).join('').slice(0, 2)}
+              </Avatar>
+              <div className="flex flex-col">
+                <span className="text-lg font-bold text-slate-900 tracking-tight">{selectedDriver?.driverName}</span>
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{selectedDriver?.driverPhone}</span>
+              </div>
+            </div>
+          </div>
+        }
+        placement="right"
+        width={600}
+        onClose={() => setIsDriverHistoryOpen(false)}
+        open={isDriverHistoryOpen}
+        closeIcon={<X size={20} className="text-slate-400 hover:text-rose-500 transition-colors" />}
+        styles={{
+          header: { borderBottom: '1px solid #f1f5f9', padding: '24px', backgroundColor: '#ffffff' },
+          body: { padding: '0', backgroundColor: '#fcfcfd' },
+          footer: { borderTop: '1px solid #f1f5f9', padding: '16px' }
+        }}
+      >
+        <div className="flex flex-col h-full">
+          {/* Driver Summary Stats */}
+          <div className="grid grid-cols-2 gap-4 p-6 bg-white border-b border-gray-100">
+            <div className="bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100/50 flex flex-col gap-1">
+              <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest">Total Spent</span>
+              <span className="text-2xl font-black text-indigo-600">₹{Number(driverHistoryData?.summary?.total_spent || 0).toLocaleString()}</span>
+            </div>
+            <div className="bg-amber-50/50 p-4 rounded-2xl border border-amber-100/50 flex flex-col gap-1">
+              <span className="text-[9px] font-bold text-amber-500 uppercase tracking-widest">Total Subscriptions</span>
+              <span className="text-2xl font-black text-amber-600">{driverHistoryData?.summary?.total_subscriptions || 0}</span>
+            </div>
+          </div>
+
+          {/* AI Suggestions / Insights */}
+          {driverHistoryData?.summary?.total_subscriptions > 0 && (
+            <div className="p-6">
+              <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-4 rounded-2xl shadow-lg shadow-indigo-500/20 text-white relative overflow-hidden">
+                <div className="relative z-10">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Sparkles size={16} className="text-amber-300" />
+                    <span className="text-[10px] font-black uppercase tracking-widest opacity-80">Operational Insight</span>
+                  </div>
+                  <p className="text-sm font-bold leading-relaxed">
+                    {(() => {
+                      const spent = Number(driverHistoryData?.summary?.total_spent || 0);
+                      const history = driverHistoryData?.history || [];
+                      const weeklyCount = history.filter((h: any) => h.billing_cycle === 'WEEKLY').length;
+                      const dailyCount = history.filter((h: any) => h.billing_cycle === 'DAILY').length;
+                      
+                      if (weeklyCount >= 3) return "This driver is a frequent weekly subscriber. Suggesting a Monthly Plan could increase retention by 40% and save them ₹500/month.";
+                      if (dailyCount >= 10) return "High-frequency daily user detected. Transitioning to Weekly or Monthly billing would reduce transaction friction.";
+                      if (spent > 5000) return "V.I.P Driver identified based on lifetime value. Consider offering a loyalty discount on their next Elite plan.";
+                      return "Driver shows stable subscription patterns. Keep them engaged with upcoming promotional offers.";
+                    })()}
+                  </p>
+                </div>
+                <div className="absolute right-[-20px] top-[-20px] opacity-10">
+                  <Zap size={100} fill="white" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* History Table */}
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <div className="px-6 py-3 border-b border-gray-100 bg-white flex items-center justify-between">
+              <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Subscription History</span>
+              <History size={14} className="text-gray-300" />
+            </div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
+              <table className="w-full text-left border-collapse">
+                <thead className="sticky top-0 bg-gray-50/80 backdrop-blur-md z-10">
+                  <tr>
+                    <th className="px-6 py-3 text-[9px] font-bold text-gray-400 uppercase tracking-widest">Plan</th>
+                    <th className="px-6 py-3 text-[9px] font-bold text-gray-400 uppercase tracking-widest text-center">Amount</th>
+                    <th className="px-6 py-3 text-[9px] font-bold text-gray-400 uppercase tracking-widest">Date Range</th>
+                    <th className="px-6 py-3 text-[9px] font-bold text-gray-400 uppercase tracking-widest text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50 bg-white">
+                  {driverHistoryLoading ? (
+                    [1, 2, 3].map(i => (
+                      <tr key={i} className="animate-pulse">
+                        <td colSpan={4} className="px-6 py-4"><div className="h-4 bg-gray-50 rounded w-full"></div></td>
+                      </tr>
+                    ))
+                  ) : driverHistoryData?.history?.map((item: any) => (
+                    <tr key={item.id} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold text-gray-800">{item.plan_name}</span>
+                          <span className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">{item.billing_cycle}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="text-xs font-black text-indigo-600">₹{Number(item.amount || 0).toLocaleString()}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-bold text-gray-500">
+                            {new Date(item.start_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                          </span>
+                          <span className="text-[9px] text-gray-300 font-medium">
+                            to {new Date(item.expiry_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: '2-digit' })}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Tag color={item.status === 'active' ? 'green' : 'default'} className="m-0 text-[9px] font-black uppercase border-0 px-2 py-0.5 rounded-md">
+                          {item.status}
+                        </Tag>
+                      </td>
+                    </tr>
+                  ))}
+                  {!driverHistoryLoading && (!driverHistoryData?.history || driverHistoryData.history.length === 0) && (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-20 text-center text-gray-400 text-xs italic">
+                        No subscription history found for this driver.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </Drawer>
       <style>{`

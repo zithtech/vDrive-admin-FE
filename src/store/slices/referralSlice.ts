@@ -13,16 +13,33 @@ export interface ReferralConfig {
   updated_at: string;
 }
 
+export interface ReferralLog {
+  id: string;
+  referrer_id: string;
+  referee_id: string;
+  status: 'PENDING' | 'COMPLETED' | 'EXPIRED';
+  reward_amount: string | number;
+  referred_at: string;
+  completed_at: string | null;
+  referral_code: string;
+  referrer_name: string;
+  referrer_phone: string;
+  referee_name: string | null;
+  referee_phone: string | null;
+}
+
 export type ReferralConfigPayload = Omit<ReferralConfig, "id" | "created_at" | "updated_at">;
 
 interface ReferralState {
   configs: ReferralConfig[];
+  logs: ReferralLog[];
   isLoading: boolean;
   error: string | null;
 }
 
 const initialState: ReferralState = {
   configs: [],
+  logs: [],
   isLoading: false,
   error: null,
 };
@@ -89,6 +106,20 @@ export const deleteReferralConfig = createAsyncThunk(
   }
 );
 
+export const fetchReferralLogs = createAsyncThunk(
+  "referral/fetchLogs",
+  async (userType: string, { rejectWithValue }) => {
+    try {
+      const response = await axiosIns.get(`/api/referrals/logs?user_type=${userType}`);
+      return response.data.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch referral logs"
+      );
+    }
+  }
+);
+
 const referralSlice = createSlice({
   name: "referral",
   initialState,
@@ -130,6 +161,18 @@ const referralSlice = createSlice({
         state.isLoading = false;
       })
       .addCase(updateReferralConfig.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchReferralLogs.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchReferralLogs.fulfilled, (state, action: PayloadAction<ReferralLog[]>) => {
+        state.isLoading = false;
+        state.logs = action.payload || [];
+      })
+      .addCase(fetchReferralLogs.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });

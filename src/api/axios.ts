@@ -1,6 +1,8 @@
 import axios, { AxiosError } from "axios";
 import type { InternalAxiosRequestConfig } from "axios";
 import { messageApi } from "../utilities/antdStaticHolder";
+import { logger } from "../utils/logger";
+
 
 // Create Axios instance
 const axiosIns = axios.create({
@@ -21,12 +23,10 @@ axiosIns.interceptors.request.use(
 
     // Dev Logging
     if (import.meta.env.DEV) {
-      console.groupCollapsed(
-        `🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`,
-      );
-      console.log("Headers:", config.headers);
-      console.log("Data:", config.data);
-      console.groupEnd();
+      logger.debug(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`, {
+        headers: config.headers,
+        data: config.data,
+      });
     }
 
     return config;
@@ -56,10 +56,10 @@ axiosIns.interceptors.response.use(
   (response) => {
     // Dev Logging
     if (import.meta.env.DEV) {
-      console.groupCollapsed(`✅ API Response: ${response.config.url}`);
-      console.log("Status:", response.status);
-      console.log("Data:", response.data);
-      console.groupEnd();
+      logger.debug(`✅ API Response: ${response.config.url}`, {
+        status: response.status,
+        data: response.data,
+      });
     }
     return response;
   },
@@ -70,9 +70,7 @@ axiosIns.interceptors.response.use(
 
     // Dev Logging
     if (import.meta.env.DEV) {
-      console.groupCollapsed(`❌ API Error: ${originalRequest?.url}`);
-      console.log("Error:", error);
-      console.groupEnd();
+      logger.error(`❌ API Error: ${originalRequest?.url}`, error);
     }
 
     // Handle 401 Unauthorized (Token Expired)
