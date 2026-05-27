@@ -19,6 +19,7 @@ import type { PricingFareRule } from "../store/slices/pricingFareRulesSlice";
 import type { ColumnsType } from "antd/es/table";
 import PricingPreview from "../components/DriverPricing/PricingPreview";
 import dayjs from "dayjs";
+import { useHasPermission } from "../hooks/usePermission";
 
 // Helper to transform PricingFareRule time_slots to PricingPreview format
 const transformSlotsForPreview = (rule: PricingFareRule) => {
@@ -52,6 +53,9 @@ const PricingAndFareRules: React.FC = () => {
   const dispatch = useAppDispatch();
   const [previewRule, setPreviewRule] = useState<PricingFareRule | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  const canCreatePricing = useHasPermission("pricing", "create");
+  const canUpdatePricing = useHasPermission("pricing", "update");
 
   // Redux state
   const { fareRules, isLoading, total, currentPage, pageSize } = useAppSelector(
@@ -165,14 +169,16 @@ const PricingAndFareRules: React.FC = () => {
           >
             View
           </Button>
-          <Button
-            type="text"
-            size="small"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          >
-            Edit
-          </Button>
+          {canUpdatePricing && (
+            <Button
+              type="text"
+              size="small"
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(record)}
+            >
+              Edit
+            </Button>
+          )}
         </Space>
       ),
     },
@@ -188,15 +194,17 @@ const PricingAndFareRules: React.FC = () => {
       description="Advanced admin interface for pricing control"
       extraContent={
         <div className="flex items-center gap-2">
-          <div>
-            <Button
-              type="primary"
-              icon={<IoAdd />}
-              onClick={() => navigate("/PricingAndFareRules/pricing")}
-            >
-              Add Pricing
-            </Button>
-          </div>
+          {canCreatePricing && (
+            <div>
+              <Button
+                type="primary"
+                icon={<IoAdd />}
+                onClick={() => navigate("/PricingAndFareRules/pricing")}
+              >
+                Add Pricing
+              </Button>
+            </div>
+          )}
         </div>
       }
     >

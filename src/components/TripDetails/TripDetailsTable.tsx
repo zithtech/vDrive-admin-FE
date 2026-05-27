@@ -45,6 +45,7 @@ import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "../../store";
 import TripDetailsDrawer from "./TripDetailsDrawer";
 import axiosIns from "../../api/axios";
+import { useHasPermission } from "../../hooks/usePermission";
 
 interface Props {
   data: TripDetailsType[];
@@ -124,6 +125,9 @@ const titleMap = {
 const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
   const dispatch = useDispatch();
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const canUpdateTrips = useHasPermission("trips", "update");
+  const hasUpdateAccess = isSuperAdmin || canUpdateTrips;
 
   const trips = useSelector((state: RootState) => state.trips.trips);
 
@@ -218,7 +222,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
 
     const items = [];
 
-    if (isSuperAdmin) {
+    if (hasUpdateAccess) {
       items.push(
         {
           key: "assign_driver",
@@ -409,7 +413,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
               className="hover:bg-indigo-50 rounded-full"
             />
           </Tooltip>
-          {isSuperAdmin && (
+          {hasUpdateAccess && (
             <Dropdown
               trigger={["click"]}
               menu={{
@@ -1024,6 +1028,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
           setActionTrip(null);
           // ✅ Removed: setActiveAction(null) - Don't close modal when drawer closes
         }}
+        canUpdateTrip={hasUpdateAccess}
         activeAction={activeAction}
         onAssignDriverClick={() => {
           console.log("[DrawerCallback] Setting activeAction to ASSIGN_DRIVER");

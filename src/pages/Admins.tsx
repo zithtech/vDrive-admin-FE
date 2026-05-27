@@ -7,11 +7,12 @@ import {
   Popconfirm,
   Select,
   Table,
-  // Tag,
   Space,
+  Tabs,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { EditOutlined, DeleteOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
+import { RoleMatrixEditor } from "../components/Admins/RoleMatrixEditor";
 import { IoPersonAddOutline } from "react-icons/io5";
 import { IoMdRefresh } from "react-icons/io";
 import { format } from "date-fns";
@@ -27,6 +28,8 @@ import {
 } from "../store/slices/adminSlice";
 import { messageApi } from "../utilities/antdStaticHolder";
 import { useState } from "react";
+import axiosIns from "../api/axios";
+import { useHasPermission } from "../hooks/usePermission";
 
 type ModalMode = "create" | "edit";
 
@@ -41,6 +44,9 @@ export default function AdminPage() {
   );
   const currentRole = useAppSelector((state) => state.auth.role);
   const isSuperAdmin = currentRole === "super_admin";
+  const canCreateAdmin = useHasPermission("admins", "create");
+  const canUpdateAdmin = useHasPermission("admins", "update");
+  const canDeleteAdmin = useHasPermission("admins", "delete");
 
   const contentRef = useRef<HTMLDivElement>(null);
   const tableHeight = useGetHeight(contentRef);
@@ -49,9 +55,34 @@ export default function AdminPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState<AdminUser | null>(null);
   const [form] = Form.useForm();
+  const [roles, setRoles] = useState<any[]>([]);
+
+  const fetchRoles = async () => {
+    try {
+      const response = await axiosIns.get("/api/roles");
+      if (response.data && response.data.success) {
+        setRoles(response.data.data);
+      } else {
+        throw new Error();
+      }
+    } catch (err) {
+      console.log("Roles Endpoint not available yet. Using in-memory fallback.");
+      const saved = localStorage.getItem("vdrive_custom_roles");
+      const loadedRoles = saved
+        ? JSON.parse(saved)
+        : [
+            { id: "1a1a1a1a-1a1a-1a1a-1a1a-1a1a1a1a1a1a", name: "super_admin", description: "Complete system authority bypass", is_system: true },
+            { id: "2b2b2b2b-2b2b-2b2b-2b2b-2b2b2b2b2b2b", name: "admin", description: "Platform level operation manager", is_system: true },
+            { id: "3c3c3c3c-3c3c-3c3c-3c3c-3c3c3c3c3c3c", name: "ops_manager", description: "Operations manager focusing on fleet and driver metrics", is_system: true },
+            { id: "4d4d4d4d-4d4d-4d4d-4d4d-4d4d4d4d4d4d", name: "finance_viewer", description: "Read-only view for financial models and payouts", is_system: true },
+          ];
+      setRoles(loadedRoles);
+    }
+  };
 
   useEffect(() => {
     dispatch(fetchAdminUsers());
+    fetchRoles();
   }, [dispatch]);
 
   const openCreateModal = () => {
@@ -75,18 +106,23 @@ export default function AdminPage() {
 
   const handleModalSubmit = () => {
     form.validateFields().then(async (values) => {
+      const selectedRoleObj = roles.find((r) => r.name === values.role);
+      const role_id = selectedRoleObj ? String(selectedRoleObj.id) : undefined;
+
       if (modalMode === "create") {
         const payload: {
           name: string;
           email: string;
           password: string;
-          role: "admin" | "super_admin";
+          role: string;
+          role_id?: string;
           contact?: string;
         } = {
           name: values.name,
           email: values.email,
           password: values.password,
           role: values.role,
+          role_id,
         };
         if (values.contact) payload.contact = values.contact;
 
@@ -101,13 +137,17 @@ export default function AdminPage() {
           name?: string;
           email?: string;
           contact?: string;
-          role?: "admin" | "super_admin";
+          role?: string;
+          role_id?: string;
         } = {};
         if (values.name !== editingAdmin.name) payload.name = values.name;
         if (values.email !== editingAdmin.email) payload.email = values.email;
         if ((values.contact || null) !== editingAdmin.contact)
           payload.contact = values.contact || undefined;
-        if (values.role !== editingAdmin.role) payload.role = values.role;
+        if (values.role !== editingAdmin.role) {
+          payload.role = values.role;
+          payload.role_id = role_id;
+        }
 
         if (Object.keys(payload).length === 0) {
           setIsModalOpen(false);
@@ -183,13 +223,13 @@ export default function AdminPage() {
       render: (role: string) => (
         <span
           style={{
-            color: roleStyles[role]?.color,
-            backgroundColor: roleStyles[role]?.bg,
-            borderColor: roleStyles[role]?.border
+            color: roleStyles[role]?.color || "#4b5563",
+            backgroundColor: roleStyles[role]?.bg || "#f3f4f6",
+            borderColor: roleStyles[role]?.border || "#e5e7eb"
           }}
           className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border whitespace-nowrap"
         >
-          {roleLabel[role] ?? role}
+          {roleLabel[role] ?? role.replace(/_/g, " ")}
         </span>
       ),
     },
@@ -211,7 +251,7 @@ export default function AdminPage() {
       sorter: (a, b) =>
         new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime(),
     },
-    ...(isSuperAdmin
+    ...((canUpdateAdmin || canDeleteAdmin)
       ? [
         {
           title: "Action",
@@ -219,29 +259,33 @@ export default function AdminPage() {
           width: 140,
           render: (_: unknown, admin: AdminUser) => (
             <div className="flex items-center gap-1">
-              <Button
-                type="text"
-                size="small"
-                className="!text-indigo-600 hover:!bg-indigo-50 !flex items-center justify-center !p-1 !h-8 !w-8 rounded-lg transition-all"
-                icon={<EditOutlined className="text-lg" />}
-                onClick={() => openEditModal(admin)}
-              />
-              <Popconfirm
-                title="Delete admin user"
-                description="Are you sure you want to delete this admin user?"
-                onConfirm={() => handleDelete(admin.id)}
-                okText="Delete"
-                okButtonProps={{ danger: true }}
-                cancelText="Cancel"
-              >
+              {canUpdateAdmin && (
                 <Button
                   type="text"
-                  danger
                   size="small"
-                  className="hover:!bg-rose-50 !flex items-center justify-center !p-1 !h-8 !w-8 rounded-lg transition-all"
-                  icon={<DeleteOutlined className="text-lg" />}
+                  className="!text-indigo-600 hover:!bg-indigo-50 !flex items-center justify-center !p-1 !h-8 !w-8 rounded-lg transition-all"
+                  icon={<EditOutlined className="text-lg" />}
+                  onClick={() => openEditModal(admin)}
                 />
-              </Popconfirm>
+              )}
+              {canDeleteAdmin && (
+                <Popconfirm
+                  title="Delete admin user"
+                  description="Are you sure you want to delete this admin user?"
+                  onConfirm={() => handleDelete(admin.id)}
+                  okText="Delete"
+                  okButtonProps={{ danger: true }}
+                  cancelText="Cancel"
+                >
+                  <Button
+                    type="text"
+                    danger
+                    size="small"
+                    className="hover:!bg-rose-50 !flex items-center justify-center !p-1 !h-8 !w-8 rounded-lg transition-all"
+                    icon={<DeleteOutlined className="text-lg" />}
+                  />
+                </Popconfirm>
+              )}
             </div>
           ),
         } as ColumnsType<AdminUser>[number],
@@ -265,7 +309,7 @@ export default function AdminPage() {
             onClick={() => dispatch(fetchAdminUsers())}
             className="rounded-full h-11 w-11 flex items-center justify-center border-gray-100 text-gray-400 hover:text-indigo-600 transition-all bg-white"
           />
-          {isSuperAdmin && (
+          {canCreateAdmin && (
             <Button
               icon={<IoPersonAddOutline className="text-lg" />}
               type="primary"
@@ -278,18 +322,29 @@ export default function AdminPage() {
         </div>
       }
     >
-      <div ref={contentRef} className="h-full w-full">
-        <Table
-          key={tableHeight}
-          dataSource={admins}
-          columns={columns}
-          rowKey="id"
-          loading={loading}
-          pagination={false}
-          showSorterTooltip={false}
-          tableLayout="auto"
-          scroll={{ y: Math.floor(tableHeight || 0) }}
-        />        <Drawer
+      <div ref={contentRef} className="h-full w-full px-6 pb-6">
+        <Tabs defaultActiveKey="1" className="premium-tabs">
+          <Tabs.TabPane tab={<span className="font-bold text-sm">Administrators</span>} key="1">
+            <Table
+              key={tableHeight}
+              dataSource={admins}
+              columns={columns}
+              rowKey="id"
+              loading={loading}
+              pagination={false}
+              showSorterTooltip={false}
+              tableLayout="auto"
+              scroll={{ y: Math.max(Math.floor(tableHeight || 0) - 100, 250) }}
+            />
+          </Tabs.TabPane>
+          {isSuperAdmin && (
+            <Tabs.TabPane tab={<span className="font-bold text-sm">Role Customizer</span>} key="2">
+              <div style={{ height: Math.max(Math.floor(tableHeight || 0) - 10, 400), overflow: 'hidden' }}>
+                <RoleMatrixEditor height={Math.max(Math.floor(tableHeight || 0) - 10, 400)} />
+              </div>
+            </Tabs.TabPane>
+          )}
+        </Tabs>        <Drawer
           title={
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
@@ -360,8 +415,15 @@ export default function AdminPage() {
                 initialValue="admin"
               >
                 <Select placeholder="Select role" className="premium-select-xl">
-                  <Select.Option value="admin">Platform Admin</Select.Option>
-                  <Select.Option value="super_admin">Super Administrator</Select.Option>
+                  {roles.map((r) => (
+                    <Select.Option key={r.id} value={r.name}>
+                      {r.name === "super_admin"
+                        ? "Super Administrator"
+                        : r.name === "admin"
+                        ? "Platform Admin"
+                        : r.name.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                    </Select.Option>
+                  ))}
                 </Select>
               </Form.Item>
             </div>

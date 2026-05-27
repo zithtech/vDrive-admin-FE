@@ -8,6 +8,7 @@ export interface AdminUser {
   email: string;
   contact: string | null;
   role: string;
+  role_id?: string;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -49,7 +50,8 @@ export const createAdminUser = createAsyncThunk(
       name: string;
       email: string;
       password: string;
-      role: "admin" | "super_admin";
+      role: string;
+      role_id?: string;
       contact?: string;
     },
     { rejectWithValue }
@@ -77,7 +79,8 @@ export const updateAdminUser = createAsyncThunk(
         name?: string;
         email?: string;
         contact?: string;
-        role?: "admin" | "super_admin";
+        role?: string;
+        role_id?: string;
       };
     },
     { rejectWithValue }

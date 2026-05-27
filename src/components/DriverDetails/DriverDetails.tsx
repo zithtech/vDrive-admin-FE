@@ -26,6 +26,7 @@ import {
   updateDocumentStatus,
   resetDriverPassword,
 } from "../../store/slices/driverSlice";
+import { useHasPermission } from "../../hooks/usePermission";
 const { Text, Title } = Typography;
 import {
   UserOutlined,
@@ -63,6 +64,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
   onClose,
   open,
 }) => {
+  const canUpdateDriver = useHasPermission("drivers", "update");
   const actionLabels: Record<string, string> = {
     trip_started: "Trip Started",
     trip_completed: "Trip Completed",
@@ -258,31 +260,33 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
           <Title level={4} className="m-0 flex items-center gap-2 text-gray-800">
              <UserOutlined className="text-blue-500" /> Driver Information
           </Title>
-          <Button 
-            type="text" 
-            icon={<EditOutlined />} 
-            onClick={() => {
-              let firstName = driver?.first_name || '';
-              let lastName = driver?.last_name || '';
-              
-              if (!firstName && !lastName && driver?.full_name) {
-                const names = driver.full_name.split(' ');
-                firstName = names[0];
-                lastName = names.slice(1).join(' ');
-              }
+          {canUpdateDriver && (
+            <Button 
+              type="text" 
+              icon={<EditOutlined />} 
+              onClick={() => {
+                let firstName = driver?.first_name || '';
+                let lastName = driver?.last_name || '';
+                
+                if (!firstName && !lastName && driver?.full_name) {
+                  const names = driver.full_name.split(' ');
+                  firstName = names[0];
+                  lastName = names.slice(1).join(' ');
+                }
 
-              form.setFieldsValue({
-                ...driver,
-                first_name: firstName,
-                last_name: lastName,
-                dob: (driver?.dob || driver?.date_of_birth) ? dayjs(driver.dob || driver.date_of_birth) : null,
-              });
-              setIsEditModalOpen(true);
-            }}
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg font-medium px-4 h-9"
-          >
-            Edit Profile
-          </Button>
+                form.setFieldsValue({
+                  ...driver,
+                  first_name: firstName,
+                  last_name: lastName,
+                  dob: (driver?.dob || driver?.date_of_birth) ? dayjs(driver.dob || driver.date_of_birth) : null,
+                });
+                setIsEditModalOpen(true);
+              }}
+              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg font-medium px-4 h-9"
+            >
+              Edit Profile
+            </Button>
+          )}
         </div>
 
         <div className="info-grid">
@@ -463,7 +467,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
           </div>
 
           <div className="flex justify-end items-center pt-4 border-t border-gray-100 gap-3">
-            {doc?.license_status !== "verified" && (
+            {doc?.license_status !== "verified" && canUpdateDriver && (
               <>
                 <Button
                   danger
@@ -760,6 +764,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
   ];
 
   const renderStatusActions = () => {
+    if (!canUpdateDriver) return null;
     switch (driver?.status) {
       case "pending":
         return (

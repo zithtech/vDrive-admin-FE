@@ -31,6 +31,8 @@ import type { InputRef, TableColumnType } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import DriverDetails from "../DriverDetails/DriverDetails";
 import { useGetHeight } from "../../utilities/customheightWidth";
+import { useHasPermission } from "../../hooks/usePermission";
+
 interface DriverTableProps {
   data: Driver[];
 }
@@ -38,6 +40,7 @@ interface DriverTableProps {
 type DataIndex = keyof Driver;
 
 const DriverTable = ({ data }: DriverTableProps) => {
+  const canUpdateDriver = useHasPermission("drivers", "update");
   const contentRef = useRef<HTMLDivElement>(null);
   const tableHeight = useGetHeight(contentRef);
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
@@ -384,23 +387,25 @@ const DriverTable = ({ data }: DriverTableProps) => {
             icon: <EyeOutlined />,
             label: "View Details",
           },
-          {
-            key: "edit",
-            icon: <EditOutlined />,
-            label: "Edit Profile",
-          },
-          {
-            key: "block",
-            icon: <StopOutlined />,
-            label: "Block Driver",
-            danger: true,
-          },
-          {
-            key: "suspend",
-            icon: <ClockCircleOutlined />,
-            label: "Suspend Driver",
-            style: { color: "#fa8c16" },
-          },
+          ...(canUpdateDriver ? [
+            {
+              key: "edit",
+              icon: <EditOutlined />,
+              label: "Edit Profile",
+            },
+            {
+              key: "block",
+              icon: <StopOutlined />,
+              label: "Block Driver",
+              danger: true,
+            },
+            {
+              key: "suspend",
+              icon: <ClockCircleOutlined />,
+              label: "Suspend Driver",
+              style: { color: "#fa8c16" },
+            },
+          ] : []),
         ];
         return (
           <Space className="driver-action">

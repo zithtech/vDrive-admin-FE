@@ -30,6 +30,7 @@ import { messageApi, modalApi, notificationApi } from '../utilities/antdStaticHo
 import dayjs from 'dayjs';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { fetchDrivers } from '../store/slices/driverSlice';
+import { useHasPermission } from '../hooks/usePermission';
 
 /* ================= TYPES ================= */
 
@@ -55,6 +56,10 @@ interface Promo {
 /* ================= COMPONENT ================= */
 
 const PromotionsPage: React.FC = () => {
+  const canCreatePromo = useHasPermission("promos", "create");
+  const canUpdatePromo = useHasPermission("promos", "update");
+  const canDeletePromo = useHasPermission("promos", "delete");
+
   const [promos, setPromos] = useState<Promo[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -66,6 +71,8 @@ const PromotionsPage: React.FC = () => {
   const [form] = Form.useForm();
   const dispatch = useAppDispatch();
   const { drivers } = useAppSelector((state) => state.drivers);
+
+  const isAllowed = editingId ? canUpdatePromo : canCreatePromo;
 
   useEffect(() => {
     fetchPromos();
@@ -190,13 +197,15 @@ const PromotionsPage: React.FC = () => {
           </h2>
           <p className="text-slate-500 mt-0.5 text-xs font-medium">Create targeted discounts for your high-performing drivers</p>
         </div>
-        <button 
-          onClick={() => handleOpenDrawer()} 
-          className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 bg-white border border-gray-100 hover:border-indigo-100 px-4 py-1.5 rounded-lg transition-all active:scale-95 text-xs font-bold shadow-sm"
-        > 
-          <Plus size={14} /> 
-          Create New Offer 
-        </button> 
+        {canCreatePromo && (
+          <button 
+            onClick={() => handleOpenDrawer()} 
+            className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 bg-white border border-gray-100 hover:border-indigo-100 px-4 py-1.5 rounded-lg transition-all active:scale-95 text-xs font-bold shadow-sm"
+          > 
+            <Plus size={14} /> 
+            Create New Offer 
+          </button> 
+        )} 
       </div>
 
       {/* Stats Cards */}
@@ -362,18 +371,22 @@ const PromotionsPage: React.FC = () => {
                         </span>
                      </div>
                      <div className="flex items-center gap-1">
-                        <button 
-                          onClick={() => handleOpenDrawer(promo)}
-                          className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
-                        >
-                          <Edit2 size={14} />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(promo.id, promo.code)}
-                          className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        {canUpdatePromo && (
+                          <button 
+                            onClick={() => handleOpenDrawer(promo)}
+                            className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                        )}
+                        {canDeletePromo && (
+                          <button 
+                            onClick={() => handleDelete(promo.id, promo.code)}
+                            className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                      </div>
                   </div>
                 </div>
@@ -383,9 +396,11 @@ const PromotionsPage: React.FC = () => {
         ) : (
           <div className="col-span-full py-20 bg-white rounded-3xl text-center border-2 border-dashed border-slate-100 flex flex-col items-center">
             <Empty description={<span className="text-slate-400 font-medium">No active promotions found</span>} />
-            <Button type="link" onClick={() => handleOpenDrawer()} className="font-bold text-indigo-600 flex items-center gap-2 mt-4">
-              Click here to create one <ArrowRight size={14} />
-            </Button>
+            {canCreatePromo && (
+              <Button type="link" onClick={() => handleOpenDrawer()} className="font-bold text-indigo-600 flex items-center gap-2 mt-4">
+                Click here to create one <ArrowRight size={14} />
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -398,7 +413,7 @@ const PromotionsPage: React.FC = () => {
               <Ticket size={24} />
             </div>
             <div>
-              <h3 className="text-lg font-black text-slate-800">{editingId ? 'Edit Offer' : 'Create New Offer'}</h3>
+              <h3 className="text-lg font-black text-slate-800">{editingId ? (isAllowed ? 'Edit Offer' : 'View Offer') : 'Create New Offer'}</h3>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Define your discount logic</p>
             </div>
           </div>
@@ -409,16 +424,20 @@ const PromotionsPage: React.FC = () => {
         className="custom-drawer"
         footer={
           <div className="flex gap-4 p-4">
-             <Button variant="outlined" size="large" onClick={() => setIsDrawerOpen(false)} className="flex-1 rounded-xl h-12 font-bold">Cancel</Button>
-             <Button 
-               type="primary" 
-               size="large" 
-               loading={isSubmitting}
-               onClick={() => form.submit()}
-               className="flex-1 rounded-xl h-12 font-bold bg-indigo-600 border-none shadow-lg shadow-indigo-100"
-             >
-               {editingId ? 'Update Offer' : 'Launch Offer'}
+             <Button variant="outlined" size="large" onClick={() => setIsDrawerOpen(false)} className="flex-1 rounded-xl h-12 font-bold">
+               {isAllowed ? 'Cancel' : 'Close'}
              </Button>
+             {isAllowed && (
+               <Button 
+                 type="primary" 
+                 size="large" 
+                 loading={isSubmitting}
+                 onClick={() => form.submit()}
+                 className="flex-1 rounded-xl h-12 font-bold bg-indigo-600 border-none shadow-lg shadow-indigo-100"
+               >
+                 {editingId ? 'Update Offer' : 'Launch Offer'}
+               </Button>
+             )}
           </div>
         }
       >
@@ -427,6 +446,7 @@ const PromotionsPage: React.FC = () => {
           layout="vertical"
           onFinish={handleSubmit}
           className="space-y-6"
+          disabled={!isAllowed}
         >
           <Form.Item name="code" label="Offer Code" rules={[{ required: true, message: 'Code is required' }]}>
             <Input placeholder="E.g. DRIVE100" className="rounded-xl h-11 uppercase font-mono font-bold border-slate-200" />

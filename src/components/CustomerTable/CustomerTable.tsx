@@ -14,6 +14,8 @@ import { useGetHeight } from "../../utilities/customheightWidth";
 import type { Customer } from "../../pages/Customers";
 import CustomerDetails from "../CustomerDetails/CustomerDetails";
 
+import { useHasPermission } from "../../hooks/usePermission";
+
 interface CustomerTableProps {
     data: Customer[];
     isSuperAdmin?: boolean;
@@ -22,6 +24,7 @@ interface CustomerTableProps {
 type DataIndex = keyof Customer;
 
 const CustomerTable = ({ data, isSuperAdmin = false }: CustomerTableProps) => {
+    const canUpdateCustomer = useHasPermission("customers", "update");
     const contentRef = useRef<HTMLDivElement>(null);
     const tableHeight = useGetHeight(contentRef);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -295,7 +298,7 @@ const CustomerTable = ({ data, isSuperAdmin = false }: CustomerTableProps) => {
                             icon: <EyeOutlined className="text-gray-400" />,
                             label: <span className="font-bold text-gray-700">View Details</span>,
                         },
-                        ...(isSuperAdmin ? [
+                        ...(canUpdateCustomer ? [
                             {
                                 key: "block",
                                 icon: <StopOutlined />,
@@ -370,7 +373,8 @@ const CustomerTable = ({ data, isSuperAdmin = false }: CustomerTableProps) => {
                         className: "px-6 py-4",
                         showSizeChanger: true,
                         size: "small",
-                        position: ["bottomRight"],
+                        placement: ["bottomEnd"],
+                        pageSizeOptions: [10, 15, 20, 50, 100],
                         showTotal: (total) => total > 0 ? `Total ${total} customers` : "",
                         onChange: (page, size) => {
                             setCurrentPage(page);
