@@ -37,7 +37,7 @@ import {
   Outlet,
 } from "react-router-dom";
 import { PiSteeringWheel } from "react-icons/pi";
-import { RiAdminLine } from "react-icons/ri";
+import { RiAdminLine, RiQuestionLine } from "react-icons/ri";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import { logoutAsync, fetchCurrentUser } from "./store/slices/authSlice";
 import FullScreenLoader from "./components/FullScreenLoader";
@@ -171,6 +171,9 @@ const RootLayout: React.FC = () => {
   const notificationsAccess = useModuleAccess("notifications");
   const tripsAccess = useModuleAccess("trips");
   const tripTransactionAccess = useModuleAccess("trip_transaction");
+  const tripverificationAccess = useModuleAccess("trip_verification");
+  const supportTicketsAccess = useModuleAccess("support_tickets");
+  const supportAnalyticsAccess = useModuleAccess("support_analytics");
 
 
   useEffect(() => {
@@ -216,9 +219,31 @@ const RootLayout: React.FC = () => {
       });
     });
 
+    socket.on('ADMIN_SUPPORT_TICKET_ALERT', (newTicket: any) => {
+      notificationApi?.info({
+        message: 'New Driver Support Ticket',
+        description: newTicket.subject || 'A driver has created a new support ticket.',
+        placement: 'topRight',
+        duration: 5,
+        onClick: () => navigate(`/support-tickets?ticketId=${newTicket.id}`)
+      });
+    });
+
+    socket.on('ADMIN_SUPPORT_USER_TICKET_ALERT', (newTicket: any) => {
+      notificationApi?.info({
+        message: 'New Customer Support Ticket',
+        description: newTicket.subject || 'A customer has created a new support ticket.',
+        placement: 'topRight',
+        duration: 5,
+        onClick: () => navigate(`/support-tickets?ticketId=${newTicket.id}`)
+      });
+    });
+
     return () => {
       socket.off("driver_event", handleDriverEvent);
       socket.off("newSupportMessageNotification");
+      socket.off("ADMIN_SUPPORT_TICKET_ALERT");
+      socket.off("ADMIN_SUPPORT_USER_TICKET_ALERT");
     };
   }, [socket]);
 
@@ -484,6 +509,9 @@ const RootLayout: React.FC = () => {
       items.push({ label: <Link to="/trip-transactions">Trip Transactions</Link>, key: "/trip-transactions", icon: <EnvironmentOutlined /> });
     }
 
+    if (tripverificationAccess) {
+      items.push({ label: <Link to="/trip-verifications">Trip Verifications</Link>, key: "/trip-verifications", icon: <CheckCircleOutlined /> });
+    }
     if (deductionsAccess) {
       items.push({ label: <Link to="/Deductions">Deduction Management</Link>, key: "/Deductions", icon: <MdOutlineMoneyOff /> });
     }
@@ -503,6 +531,13 @@ const RootLayout: React.FC = () => {
       items.push({ label: <Link to="/notifications">Notifications</Link>, key: "/notifications", icon: <BellOutlined /> });
     }
 
+    if (supportTicketsAccess) {
+      items.push({ label: <Link to="/support-tickets">Support Tickets</Link>, key: "/support-tickets", icon: <RiQuestionLine /> });
+    }
+    if (supportAnalyticsAccess) {
+      items.push({ label: <Link to="/support-analytics">Support Analytics</Link>, key: "/support-analytics", icon: <RiQuestionLine /> });
+    }
+
     return items;
   }, [
     dashboardAccess,
@@ -518,7 +553,10 @@ const RootLayout: React.FC = () => {
     // promotionsAccess,
     notificationsAccess,
     tripsAccess,
-    tripTransactionAccess
+    tripTransactionAccess,
+    tripverificationAccess,
+    supportTicketsAccess,
+    supportAnalyticsAccess
   ]);
   return (
     <ConfigProvider
@@ -821,7 +859,9 @@ const router = createBrowserRouter([
         path: "trip-verifications",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <TripVerifications />
+            <ModuleProtectedRoute module="trip_verification">
+              <TripVerifications />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -849,7 +889,9 @@ const router = createBrowserRouter([
         path: "driver-applications",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <DriverApplications />
+            <ModuleProtectedRoute module="drivers">
+              <DriverApplications />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -867,7 +909,9 @@ const router = createBrowserRouter([
         path: "support-tickets",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <SupportTickets />
+            <ModuleProtectedRoute module="support_tickets">
+              <SupportTickets />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -875,7 +919,9 @@ const router = createBrowserRouter([
         path: "support-analytics",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <SupportAnalytics />
+            <ModuleProtectedRoute module="support_tickets">
+              <SupportAnalytics />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
