@@ -21,36 +21,44 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps & { secondaryValue?: string | number }> = ({ title, value, icon, description, tagColor, secondaryValue }) => {
   const colorMap = {
-    blue: "bg-blue-50 text-blue-600 border-blue-100",
-    emerald: "bg-emerald-50 text-emerald-600 border-emerald-100",
-    purple: "bg-purple-50 text-purple-600 border-purple-100",
-    rose: "bg-rose-50 text-rose-600 border-rose-100",
-    indigo: "bg-indigo-50 text-indigo-600 border-indigo-100",
+    blue: "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-800",
+    emerald: "bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800",
+    purple: "bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border-purple-100 dark:border-purple-800",
+    rose: "bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-800",
+    indigo: "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800",
+  };
+
+  const textColorMap = {
+    blue: "text-blue-600 dark:text-blue-400",
+    emerald: "text-emerald-600 dark:text-emerald-400",
+    purple: "text-purple-600 dark:text-purple-400",
+    rose: "text-rose-600 dark:text-rose-400",
+    indigo: "text-indigo-600 dark:text-indigo-400",
   };
 
   return (
-    <div className="bg-white border border-slate-300 rounded-2xl p-5 flex justify-between items-center transition-all duration-300 hover:border-indigo-100 hover:shadow-md group">
-      <div className="flex flex-col gap-1">
-        <Text className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none">
-          {title}
-        </Text>
-        <div className="flex items-baseline gap-1 mt-1">
-          <span className="text-2xl font-black text-slate-900 tracking-tighter leading-none">
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-2xl p-5 flex justify-between items-center transition-all duration-300 group">
+      <div className="flex flex-col gap-1 w-full">
+        <div className="flex items-center gap-2">
+          <span className={`text-2xl font-black tracking-tighter leading-none ${textColorMap[tagColor]}`}>
             {value.toLocaleString()}
           </span>
+          <Text className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none mt-1">
+            {title}
+          </Text>
         </div>
-        <Text className="text-[10px] text-slate-400 font-medium leading-none mt-1 whitespace-nowrap">
+        <Text className="text-[10px] text-slate-400 dark:text-slate-500 font-medium leading-none mt-1 whitespace-nowrap">
           {secondaryValue !== undefined ? (
             <span className="flex items-center gap-1">
-              <span className="font-bold text-slate-600">{value} today</span>
-              <span className="text-slate-300">•</span>
+              <span className="font-bold text-slate-600 dark:text-slate-300">{value} today</span>
+              <span className="text-slate-300 dark:text-slate-600">•</span>
               <span>{secondaryValue} in last 30 days</span>
             </span>
           ) : description}
         </Text>
       </div>
 
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${colorMap[tagColor]} bg-opacity-100 group-hover:scale-110 shadow-sm`}>
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${colorMap[tagColor]} bg-opacity-100 group-hover:scale-110`}>
         {React.cloneElement(icon as React.ReactElement, { className: "text-lg" })}
       </div>
     </div>

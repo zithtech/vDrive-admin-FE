@@ -144,7 +144,7 @@ const DeductionTable: React.FC<DeductionTableProps> = ({ data }) => {
         render: (driver: Driver) => (
           <div>
             <div className="font-medium">{driver.fullName}</div>
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-gray-500 dark:text-slate-400">
               {driver.id} • {driver.phone}
             </div>
           </div>
@@ -256,7 +256,7 @@ const DeductionTable: React.FC<DeductionTableProps> = ({ data }) => {
   return (
     <div ref={contentRef} className="h-full w-full">
       <Table
-        className="rounded-lg border border-gray-300"
+        className="rounded-lg border border-gray-300 dark:border-slate-700 premium-table"
         key={tableHeight}
         rowKey="driverId"
         columns={columns}

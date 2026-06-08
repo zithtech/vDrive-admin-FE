@@ -1,10 +1,165 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* Ant Design styles */
 @import "antd/dist/reset.css";
 
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 p {
   margin-bottom: 0;
+}
+
+/* Premium background with animated glowing mesh orbs */
+.premium-auth-bg {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: #0b0f19;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(29, 42, 92, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.1) 0px, transparent 50%);
+}
+
+.premium-auth-bg::before,
+.premium-auth-bg::after {
+  content: "";
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  filter: blur(140px);
+  opacity: 0.18;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.premium-auth-bg::before {
+  background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+  top: -10%;
+  left: -10%;
+  animation: orbFloat1 25s infinite alternate ease-in-out;
+}
+
+.premium-auth-bg::after {
+  background: radial-gradient(circle, #6366f1 0%, transparent 70%);
+  bottom: -10%;
+  right: -10%;
+  animation: orbFloat2 30s infinite alternate ease-in-out;
+}
+
+@keyframes orbFloat1 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(180px, 120px) scale(1.3); }
+}
+
+@keyframes orbFloat2 {
+  0% { transform: translate(0, 0) scale(1.3); }
+  100% { transform: translate(-120px, -180px) scale(0.95); }
+}
+
+/* Glassmorphism auth card */
+.glass-auth-card {
+  position: relative;
+  z-index: 10;
+  backdrop-filter: blur(20px) saturate(190%);
+  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  background-color: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 28px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
+              0 0 40px 0 rgba(99, 102, 241, 0.05);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-auth-card:hover {
+  border-color: rgba(99, 102, 241, 0.25);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 
+              0 0 60px 0 rgba(99, 102, 241, 0.1);
+}
+
+/* Custom styles for Ant Design inputs to fit dark glassmorphism */
+.glass-input-wrapper {
+  margin-top: 6px;
+}
+
+.glass-input-wrapper .ant-input-affix-wrapper,
+.glass-input-wrapper .ant-input,
+.glass-input-wrapper .ant-input-password {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.08) !important;
+  color: #f3f4f6 !important;
+  border-radius: 12px !important;
+  padding: 10px 16px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.glass-input-wrapper .ant-input-affix-wrapper:hover,
+.glass-input-wrapper .ant-input:hover {
+  border-color: rgba(99, 102, 241, 0.4) !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.glass-input-wrapper .ant-input-affix-wrapper-focused,
+.glass-input-wrapper .ant-input:focus {
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Remove double-boxing for nested inputs (e.g. inside Password wrapper) */
+.glass-input-wrapper .ant-input-affix-wrapper .ant-input,
+.glass-input-wrapper .ant-input-affix-wrapper .ant-input:hover,
+.glass-input-wrapper .ant-input-affix-wrapper .ant-input:focus {
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+
+.glass-input-wrapper .ant-input::placeholder {
+  color: rgba(156, 163, 175, 0.6) !important;
+}
+
+.glass-input-wrapper .ant-input-password-icon {
+  color: rgba(156, 163, 175, 0.8) !important;
+  transition: color 0.2s ease;
+}
+
+.glass-input-wrapper .ant-input-password-icon:hover {
+  color: #ffffff !important;
+}
+
+/* Premium primary button styling */
+.premium-btn-primary {
+  height: 48px !important;
+  background: linear-gradient(135deg, #1d2a5c 0%, #3b82f6 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  font-size: 15px !important;
+  letter-spacing: 0.02em !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.premium-btn-primary:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 22px rgba(59, 130, 246, 0.45) !important;
+  filter: brightness(1.15) !important;
+}
+
+.premium-btn-primary:active {
+  transform: translateY(0) !important;
 }
 
 .back-gradient-login {
@@ -141,4 +296,130 @@ p {
 
 .premium-table .ant-table-tbody > tr:hover > td {
   background: #fdfeff !important;
+}
+
+/* Dark mode for CustomerDetails drawer */
+.dark .customer-details-drawer .ant-drawer-content {
+  background-color: #0f172a !important;
+}
+
+/* Dark mode for premium-table */
+.dark .premium-table .ant-table {
+  background: transparent !important;
+}
+
+.dark .premium-table .ant-table-thead > tr > th {
+  background: #1e293b !important;
+  border-bottom: 1px solid #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .premium-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #1e293b !important;
+  color: #cbd5e1 !important;
+}
+
+.dark .premium-table .ant-table-tbody > tr:hover > td {
+  background: #334155 !important;
+}
+
+/* Dark mode for standard modals */
+.dark .dark-modal .ant-modal-content {
+  background-color: #1e293b !important;
+  border: 1px solid #334155 !important;
+}
+
+.dark .dark-modal .ant-modal-header {
+  background-color: #1e293b !important;
+  border-bottom: 1px solid #334155 !important;
+}
+
+.dark .dark-modal .ant-modal-title {
+  color: #f1f5f9 !important;
+}
+
+.dark .dark-modal .ant-modal-footer {
+  border-top: 1px solid #334155 !important;
+}
+
+.dark .dark-modal .ant-modal-close-icon {
+  color: #cbd5e1 !important;
+}
+
+/* Dark mode for cards in dark-modal */
+.dark .dark-modal .ant-card {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .dark-modal .ant-card-head {
+  border-bottom-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .dark-modal .ant-card-head-title {
+  color: #f1f5f9 !important;
+}
+
+/* Ant Typography in dark-modal */
+.dark .dark-modal .ant-typography {
+  color: #cbd5e1 !important;
+}
+.dark .dark-modal .ant-typography-secondary {
+  color: #94a3b8 !important;
+}
+
+/* Dark mode for standard drawers */
+.dark .dark-drawer .ant-drawer-content {
+  background-color: #0f172a !important;
+}
+
+.dark .dark-drawer .ant-drawer-header {
+  border-bottom: 1px solid #334155 !important;
+  background-color: #0f172a !important;
+}
+
+.dark .dark-drawer .ant-drawer-title {
+  color: #f1f5f9 !important;
+}
+
+.dark .dark-drawer .ant-drawer-close {
+  color: #cbd5e1 !important;
+}
+
+/* Ant Select Dropdown Dark Mode Overrides */
+.dark .ant-select-dropdown {
+  background-color: #1e293b !important;
+  border: 1px solid #334155 !important;
+}
+
+.dark .ant-select-item {
+  color: #cbd5e1 !important;
+}
+
+.dark .ant-select-item-option-selected {
+  background-color: #475569 !important;
+  color: #f8fafc !important;
+}
+
+.dark .ant-select-item-option-active:not(.ant-select-item-option-disabled),
+.dark .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+/* Ant Dropdown Menu (for 3-dots actions) Dark Mode Overrides */
+.dark .ant-dropdown-menu {
+  background-color: #1e293b !important;
+  border: 1px solid #334155 !important;
+}
+
+.dark .ant-dropdown-menu-item {
+  color: #cbd5e1 !important;
+}
+
+.dark .ant-dropdown-menu-item:hover,
+.dark .ant-dropdown-menu-item-active {
+  background-color: #334155 !important;
 }

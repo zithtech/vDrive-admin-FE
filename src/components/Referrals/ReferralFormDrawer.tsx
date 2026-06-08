@@ -63,10 +63,11 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
       onClose={onClose}
       open={visible}
       closable={false}
+      rootClassName="dark-drawer"
       styles={{
         header: { display: 'none' },
-        body: { padding: 0, background: "#f8fafc" },
-        footer: { borderTop: "1px solid #f1f5f9", padding: "16px 24px", background: "#fff" },
+        body: { padding: 0 },
+        footer: { padding: "16px 24px" },
       }}
       footer={
         <div className="flex justify-end gap-3 px-2">
@@ -88,18 +89,18 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
       }
     >
       {/* ─── Immersive Header ─────────────────────────────────────────── */}
-      <div className="relative overflow-hidden pt-12 pb-8 px-8 bg-white border-b border-gray-100">
+      <div className="relative overflow-hidden pt-12 pb-8 px-8 bg-white dark:bg-slate-800 border-b border-gray-100 dark:border-slate-700">
         <div className="absolute top-0 right-0 w-40 h-40 bg-amber-500/5 rounded-full -translate-y-16 translate-x-16" />
 
         <div className="flex justify-between items-start relative z-10">
           <div className="flex items-center gap-5">
             <div className="relative">
-              <div className="relative w-16 h-16 bg-amber-50 border-2 border-white flex items-center justify-center rounded-3xl text-amber-500 text-2xl">
+              <div className="relative w-16 h-16 bg-amber-50 dark:bg-amber-500/10 border-2 border-white dark:border-slate-800 flex items-center justify-center rounded-3xl text-amber-500 dark:text-amber-400 text-2xl">
                 <GiftOutlined />
               </div>
             </div>
             <div>
-              <Title level={3} className="!m-0 !mb-1 font-extrabold text-gray-800 tracking-tight">
+              <Title level={3} className="!m-0 !mb-1 font-extrabold text-gray-800 dark:text-slate-100 tracking-tight">
                 {initialValues ? "Edit Referral Rule" : "Create Referral Rule"}
               </Title>
               <Text className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">
@@ -111,7 +112,7 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
             type="text"
             icon={<CloseOutlined className="text-gray-400" />}
             onClick={onClose}
-            className="hover:bg-gray-100 rounded-full h-10 w-10 flex items-center justify-center"
+            className="hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full h-10 w-10 flex items-center justify-center"
           />
         </div>
       </div>
@@ -123,12 +124,12 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
         className="pt-6 pb-12 space-y-4"
         requiredMark={false}
       >
-        <div className="bg-white p-4 rounded-[2rem] border border-gray-100 shadow-sm space-y-4 mx-4 mt-4">
+        <div className="bg-white dark:bg-slate-800/50 p-4 rounded-[2rem] border border-gray-100 dark:border-slate-700 shadow-sm space-y-4 mx-4 mt-4">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500">
+            <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-500 dark:text-orange-400">
               <UserOutlined className="text-sm" />
             </div>
-            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-tight">Configuration</span>
+            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">Configuration</span>
           </div>
 
           <Form.Item
@@ -143,15 +144,15 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
           </Form.Item>
         </div>
 
-        <div className="bg-white p-4 rounded-[2rem] border border-gray-100 shadow-sm space-y-4 mx-4">
+        <div className="bg-white dark:bg-slate-800/50 p-4 rounded-[2rem] border border-gray-100 dark:border-slate-700 shadow-sm space-y-4 mx-4">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
+            <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-500 dark:text-amber-400">
               <GiftOutlined className="text-sm" />
             </div>
-            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-tight">Referrer Incentives</span>
+            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">Referrer Incentives</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-[1.5rem] border border-gray-100">
+          <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-slate-800 rounded-[1.5rem] border border-gray-100 dark:border-slate-700">
             <Form.Item
               name="referrer_reward_type"
               label={<span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Type</span>}
@@ -174,15 +175,15 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-[2rem] border border-gray-100 shadow-sm space-y-4 mx-4">
+        <div className="bg-white dark:bg-slate-800/50 p-4 rounded-[2rem] border border-gray-100 dark:border-slate-700 shadow-sm space-y-4 mx-4">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500 dark:text-blue-400">
               <GiftOutlined className="text-sm" />
             </div>
-            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-tight">Referee Benefits</span>
+            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">Referee Benefits</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-[1.5rem] border border-gray-100">
+          <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-slate-800 rounded-[1.5rem] border border-gray-100 dark:border-slate-700">
             <Form.Item
               name="referee_reward_type"
               label={<span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Type</span>}
@@ -205,10 +206,10 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-[2rem] border border-gray-100 shadow-sm mx-4 mb-8">
-          <div className="flex items-center justify-between p-1 px-4 bg-gray-50 rounded-2xl border border-gray-100">
+        <div className="bg-white dark:bg-slate-800/50 p-4 rounded-[2rem] border border-gray-100 dark:border-slate-700 shadow-sm mx-4 mb-8">
+          <div className="flex items-center justify-between p-1 px-4 bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700">
             <div className="flex flex-col">
-              <span className="text-xs font-bold text-gray-700">Status</span>
+              <span className="text-xs font-bold text-gray-700 dark:text-slate-200">Status</span>
               <span className="text-[10px] text-gray-400 font-medium uppercase tracking-tight">Enable or disable this rule</span>
             </div>
             <Form.Item name="is_active" valuePropName="checked" className="m-0">

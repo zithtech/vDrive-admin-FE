@@ -172,15 +172,15 @@ const TripVerifications: React.FC = () => {
       title: "Date",
       dataIndex: "created_at",
       key: "created_at",
-      render: (text: string) => dayjs(text).format("MMM D, YYYY HH:mm"),
+      render: (text: string) => <span className="dark:text-slate-300">{dayjs(text).format("MMM D, YYYY HH:mm")}</span>,
     },
     {
       title: "Driver",
       key: "driver",
       render: (_: any, record: TripVerification) => (
         <div>
-          <div className="font-bold">{record.driver_name || "Unknown"}</div>
-          <div className="text-xs text-gray-500">{record.driver_phone}</div>
+          <div className="font-bold dark:text-slate-200">{record.driver_name || "Unknown"}</div>
+          <div className="text-xs text-gray-500 dark:text-slate-400">{record.driver_phone}</div>
         </div>
       ),
     },
@@ -188,7 +188,7 @@ const TripVerifications: React.FC = () => {
       title: "Trip ID",
       dataIndex: "trip_id",
       key: "trip_id",
-      render: (id: string) => <Text copyable>{id}</Text>,
+      render: (id: string) => <Text copyable className="dark:text-slate-300 dark:[&_.anticon]:text-slate-400">{id}</Text>,
     },
     {
       title: "Attempt",
@@ -222,19 +222,20 @@ const TripVerifications: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 h-full flex flex-col">
+    <div className="p-6 h-full flex flex-col bg-slate-50 dark:bg-[#0b0f19]">
       <div className="mb-6 flex justify-between items-center">
         <div>
-          <Title level={3} className="m-0">Trip Verifications</Title>
-          <Text type="secondary">Review driver selfies and car images before ride start</Text>
+          <Title level={3} className="m-0 dark:text-slate-100">Trip Verifications</Title>
+          <Text type="secondary" className="dark:text-slate-400">Review driver selfies and car images before ride start</Text>
         </div>
         <Button onClick={fetchPendingVerifications} loading={loading}>
           Refresh
         </Button>
       </div>
 
-      <Card className="flex-1 shadow-sm overflow-hidden" bodyStyle={{ padding: 0 }}>
+      <Card className="flex-1 shadow-sm overflow-hidden dark:bg-slate-800 dark:border-slate-700" bodyStyle={{ padding: 0 }}>
         <Table
+          className="premium-table"
           columns={columns}
           dataSource={data}
           rowKey="id"
@@ -254,16 +255,17 @@ const TripVerifications: React.FC = () => {
         }}
         width={800}
         footer={null}
+        className="dark-modal"
       >
         {selectedVerification && (
           <div>
-            <div className="mb-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
               <Row gutter={16}>
-                <Col span={12}>
-                  <Text strong>Driver:</Text> {selectedVerification.driver?.name} ({selectedVerification.driver?.phone})
+                <Col span={12} className="dark:text-slate-300">
+                  <Text strong className="dark:text-slate-100">Driver:</Text> {selectedVerification.driver?.name} ({selectedVerification.driver?.phone})
                 </Col>
-                <Col span={12}>
-                  <Text strong>Trip ID:</Text> {selectedVerification.trip_id}
+                <Col span={12} className="dark:text-slate-300">
+                  <Text strong className="dark:text-slate-100">Trip ID:</Text> {selectedVerification.trip_id}
                 </Col>
               </Row>
             </div>
@@ -309,7 +311,7 @@ const TripVerifications: React.FC = () => {
                           width={150}
                         />
                       ) : (
-                        <div className="w-[150px] h-[150px] bg-gray-100 flex items-center justify-center rounded-lg text-gray-400">
+                        <div className="w-[150px] h-[150px] bg-gray-100 dark:bg-slate-700 flex items-center justify-center rounded-lg text-gray-400 dark:text-slate-400">
                           No Profile Photo
                         </div>
                       )}
@@ -453,6 +455,7 @@ const TripVerifications: React.FC = () => {
         open={historyModalVisible}
         onCancel={() => setHistoryModalVisible(false)}
         width={900}
+        className="dark-modal"
         footer={[
           <Button key="close" onClick={() => setHistoryModalVisible(false)}>
             Close

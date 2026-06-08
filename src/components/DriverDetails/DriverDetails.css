@@ -54,6 +54,11 @@
   border: 1px solid #e2e8f0;
 }
 
+.dark .custom-navigation {
+  background: #0f172a;
+  border-color: #1e293b;
+}
+
 .nav-item {
   flex: 1;
   display: flex;
@@ -75,6 +80,11 @@
   transform: translateY(-2px);
 }
 
+.dark .nav-item.active {
+  background: #1e293b;
+  color: #818cf8;
+}
+
 .nav-item.active::after {
   content: '';
   position: absolute;
@@ -85,9 +95,18 @@
   border-radius: 4px;
 }
 
+.dark .nav-item.active::after {
+  background: #818cf8;
+}
+
 .nav-item:hover:not(.active) {
   background: rgba(255, 255, 255, 0.5);
   color: #334155;
+}
+
+.dark .nav-item:hover:not(.active) {
+  background: rgba(30, 41, 59, 0.5);
+  color: #cbd5e1;
 }
 
 .nav-icon {
@@ -107,6 +126,11 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   overflow: hidden;
   animation: slideUp 0.4s ease-out;
+}
+
+.dark .content-card {
+  background: #1e293b;
+  border-color: #334155;
 }
 
 @keyframes slideUp {
@@ -139,6 +163,11 @@
   flex-shrink: 0;
 }
 
+.dark .info-icon-wrapper {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
 .info-content {
   display: flex;
   flex-direction: column;
@@ -156,6 +185,10 @@
   font-size: 14px;
   color: #1e293b;
   font-weight: 500;
+}
+
+.dark .info-value {
+  color: #f1f5f9;
 }
 
 .premium-tag {
@@ -188,6 +221,11 @@
   border: 1px solid #f1f5f9;
 }
 
+.dark .stat-box {
+  background: #0f172a;
+  border-color: #334155;
+}
+
 .action-buttons-container {
   padding: 16px 24px;
   background: rgba(255, 255, 255, 0.8);
@@ -196,6 +234,11 @@
   position: sticky;
   top: 0;
   z-index: 10;
+}
+
+.dark .action-buttons-container {
+  background: rgba(15, 23, 42, 0.8);
+  border-bottom-color: #1e293b;
 }
 
 /* Premium Modal Styling */
@@ -372,7 +415,59 @@
   color: #9ca3af !important;
 }
 
+/* Dark mode for Screenshot Form */
+.dark .screenshot-style-modal .ant-modal-content {
+  background-color: #1e293b !important;
+}
 
+.dark .screenshot-form .ant-form-item-label > label {
+  color: #cbd5e1 !important;
+}
+
+.dark .screenshot-form .ant-input,
+.dark .screenshot-form .ant-input-affix-wrapper,
+.dark .screenshot-form .ant-select-selector,
+.dark .screenshot-form .ant-picker {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .screenshot-form .ant-input-affix-wrapper .ant-input {
+  background-color: transparent !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .screenshot-form .ant-input-prefix {
+  color: #64748b !important;
+}
+
+.dark .screenshot-form .ant-select-selection-item {
+  color: #f1f5f9 !important;
+}
+
+.dark .screenshot-form .ant-input::placeholder,
+.dark .screenshot-form .ant-select-selection-placeholder,
+.dark .screenshot-form .ant-picker-input > input::placeholder {
+  color: #64748b !important;
+}
+
+.dark .screenshot-form .ant-picker-input > input {
+  color: #f1f5f9 !important;
+}
+
+.dark .screenshot-form .ant-picker-suffix {
+  color: #64748b !important;
+}
+
+.dark .screenshot-form .ant-input:focus,
+.dark .screenshot-form .ant-input-affix-wrapper-focused,
+.dark .screenshot-form .ant-select-focused .ant-select-selector,
+.dark .screenshot-form .ant-picker-focused {
+  background-color: #1e293b !important;
+  border-color: #818cf8 !important;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.2) !important;
+}
 /* Performance Section Enhancements */
 .perf-score-container {
   background: radial-gradient(circle at center, rgba(37, 99, 235, 0.05) 0%, transparent 70%);
@@ -430,6 +525,11 @@
   position: relative;
 }
 
+.dark .perf-summary-bar {
+  background: #0f172a;
+  border-color: #334155;
+}
+
 .perf-summary-item {
   flex: 1;
   text-align: center;
@@ -454,6 +554,11 @@
   overflow: hidden;
 }
 
+.dark .trip-card {
+  border-color: #334155;
+  background: #1e293b !important;
+}
+
 .trip-card:hover {
   border-color: #3b82f6;
   box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 8px 10px -6px rgba(59, 130, 246, 0.1) !important;
@@ -466,6 +571,10 @@
   background-size: 1.5px 8px;
   background-repeat: repeat-y;
   background-color: transparent !important;
+}
+
+.dark .dashed-line {
+  background-image: linear-gradient(to bottom, #334155 50%, rgba(255, 255, 255, 0) 0%);
 }
 
 .trip-card .ant-tag-success {
@@ -501,3 +610,8 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+.dark .driver-details-drawer .ant-drawer-content {
+  background-color: #0f172a;
+}
+

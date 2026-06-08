@@ -107,8 +107,9 @@ const Drivers = () => {
     setFilteredData(tempData);
   }, [DATA, filters]);
 
-  const { activeDrivers, restrictedDrivers } = useMemo(() => {
+  const { allFleetDrivers, activeDrivers, restrictedDrivers } = useMemo(() => {
     return {
+      allFleetDrivers: filteredData.filter(d => d.status !== "rejected"),
       activeDrivers: filteredData.filter(d => d.status === "active"),
       restrictedDrivers: filteredData.filter(d => 
         d.status !== "active" && 
@@ -129,15 +130,15 @@ const Drivers = () => {
   const hasActiveFilters = filters.search || filters.status.length > 0 || filters.plan.length > 0 || filters.joined_at || filters.rating[0] > 0 || filters.rating[1] < 5;
 
   const TableSection = ({ title, data, icon, colorClass, bgColorClass, borderColorClass, count, flexClass = "flex-1", extraClasses = "" }: any) => (
-    <div className={`${flexClass} flex flex-col min-h-[400px] bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden ${extraClasses}`}>
-      <div className={`px-6 py-4 border-b border-slate-50 flex items-center justify-between bg-gradient-to-r ${bgColorClass} to-white`}>
+    <div className={`${flexClass} flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden ${extraClasses}`}>
+      <div className={`px-6 py-4 border-b border-slate-50 dark:border-slate-700 flex items-center justify-between bg-gradient-to-r ${bgColorClass} to-white dark:to-slate-800`}>
         <div className="flex items-center gap-3">
           <div className={`w-8 h-8 rounded-xl ${colorClass} flex items-center justify-center text-white text-xs shadow-sm`}>
             {icon}
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-800 m-0 tracking-tight leading-none">{title}</h3>
-            <p className="text-[10px] text-slate-400 font-medium m-0 mt-1 uppercase tracking-wider">Management & Overview</p>
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 m-0 tracking-tight leading-none">{title}</h3>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium m-0 mt-1 uppercase tracking-wider">Management & Overview</p>
           </div>
         </div>
         <div className={`px-3 py-1 rounded-full ${borderColorClass} border text-[11px] font-black tracking-tighter`}>
@@ -174,17 +175,17 @@ const Drivers = () => {
         </div>
       }
     >
-      <div className="w-full h-full flex flex-col gap-6 bg-slate-50/50 p-6 overflow-hidden">
+      <div className="w-full h-full flex flex-col gap-6 bg-slate-50/50 dark:bg-slate-900/50 p-6 overflow-hidden">
         <DriverStats drivers={DATA} loading={loading} />
 
         {/* Inline Filter Bar */}
-        <div className="bg-white p-2 px-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between gap-4">
+        <div className="bg-white dark:bg-slate-800 p-2 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 flex-grow flex-wrap">
             <div className="flex items-center gap-2">
-              <FilterOutlined className="text-slate-400" />
-              <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Filters</span>
+              <FilterOutlined className="text-slate-900 dark:text-slate-100" />
+              <span className="text-[11px] font-black uppercase tracking-widest text-slate-900 dark:text-slate-100">Filters</span>
             </div>
-            <Divider type="vertical" className="h-6 border-slate-100" />
+            <Divider type="vertical" className="h-6 border-slate-100 dark:border-slate-700" />
 
             <Input
               placeholder="Search driver..."
@@ -218,7 +219,7 @@ const Drivers = () => {
             />
 
             <div className="flex items-center gap-2" style={{ minWidth: 160 }}>
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 whitespace-nowrap">Rating</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-slate-100 whitespace-nowrap">Rating</span>
               <Slider
                 range
                 min={0}
@@ -253,7 +254,7 @@ const Drivers = () => {
 
         <div className="flex-grow overflow-hidden flex flex-col pb-4">
           {loading && DATA.length === 0 ? (
-            <div className="flex items-center justify-center p-20 bg-white rounded-3xl border border-slate-100">
+            <div className="flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700">
               <Spin size="large" />
             </div>
           ) : error ? (
@@ -271,8 +272,8 @@ const Drivers = () => {
                     <div className="flex items-center gap-2 px-1">
                       <EnvironmentOutlined />
                       <span>All Drivers</span>
-                      <div className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black min-w-[20px] text-center">
-                        {filteredData.length}
+                      <div className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-black min-w-[20px] text-center">
+                        {allFleetDrivers.length}
                       </div>
                     </div>
                   ),
@@ -280,12 +281,12 @@ const Drivers = () => {
                     <TableSection
                       title="Fleet Overview"
                       icon={<EnvironmentOutlined />}
-                      data={filteredData}
-                      count={filteredData.length}
+                      data={allFleetDrivers}
+                      count={allFleetDrivers.length}
                       flexClass="h-[calc(100vh-480px)]"
                       colorClass="bg-indigo-600"
-                      bgColorClass="from-indigo-50"
-                      borderColorClass="border-indigo-200 text-indigo-700 bg-indigo-100/50 font-black"
+                      bgColorClass="from-indigo-50 dark:from-indigo-900/30"
+                      borderColorClass="border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 bg-indigo-100/50 dark:bg-indigo-900/30 font-black"
                     />
                   ),
                 },
@@ -295,7 +296,7 @@ const Drivers = () => {
                     <div className="flex items-center gap-2 px-1">
                       <CarOutlined />
                       <span>Active Drivers</span>
-                      <div className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600 text-[10px] font-black min-w-[20px] text-center">
+                      <div className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-black min-w-[20px] text-center">
                         {activeDrivers.length}
                       </div>
                     </div>
@@ -307,10 +308,10 @@ const Drivers = () => {
                       data={activeDrivers}
                       count={activeDrivers.length}
                       flexClass="h-[calc(100vh-480px)]"
-                      extraClasses="border-emerald-500/20 shadow-lg shadow-emerald-500/5 ring-4 ring-emerald-500/5"
+                      extraClasses=""
                       colorClass="bg-emerald-500 shadow-lg shadow-emerald-500/40"
-                      bgColorClass="from-emerald-50 via-emerald-50/10"
-                      borderColorClass="border-emerald-200 text-emerald-700 bg-emerald-100/50 font-black"
+                      bgColorClass="from-emerald-50 dark:from-emerald-900/30 via-emerald-50/10 dark:via-emerald-900/10"
+                      borderColorClass="border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-100/50 dark:bg-emerald-900/30 font-black"
                     />
                   ),
                 },
@@ -320,7 +321,7 @@ const Drivers = () => {
                     <div className="flex items-center gap-2 px-1">
                       <ExclamationCircleOutlined />
                       <span>Restricted & Rejected</span>
-                      <div className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black min-w-[20px] text-center">
+                      <div className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-black min-w-[20px] text-center">
                         {restrictedDrivers.length}
                       </div>
                     </div>
@@ -333,8 +334,8 @@ const Drivers = () => {
                       count={restrictedDrivers.length}
                       flexClass="h-[calc(100vh-480px)]"
                       colorClass="bg-slate-400"
-                      bgColorClass="from-slate-50"
-                      borderColorClass="border-slate-200 text-slate-500 bg-slate-50"
+                      bgColorClass="from-slate-50 dark:from-slate-800/50"
+                      borderColorClass="border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 font-black"
                     />
                   ),
                 },

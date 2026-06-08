@@ -265,10 +265,10 @@ const SupportTickets: React.FC = () => {
   });
 
   return (
-    <Layout className="h-full bg-slate-50">
-      <Sider width={380} theme="light" className="border-r border-slate-200 shadow-sm overflow-hidden flex flex-col">
-        <div className="p-4 border-b border-slate-100 bg-white">
-          <Title level={4} className="!mb-4 flex items-center gap-2">
+    <Layout className="h-full bg-slate-50 dark:bg-slate-900">
+      <Sider width={380} theme="light" className="border-r border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col !bg-white dark:!bg-slate-800">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800">
+          <Title level={4} className="!mb-4 flex items-center gap-2 dark:text-slate-100">
             <CustomerServiceOutlined className="text-indigo-600" />
             Support Center
           </Title>
@@ -281,12 +281,12 @@ const SupportTickets: React.FC = () => {
                 { label: 'Active', value: 'active', icon: <ClockCircleOutlined /> },
                 { label: 'History', value: 'resolved', icon: <HistoryOutlined /> },
               ]}
-              className="bg-slate-100 p-1 rounded-lg"
+              className="bg-slate-100 dark:bg-slate-900 p-1 rounded-lg"
             />
             <Input
               placeholder="Search by ID or subject..."
               prefix={<SearchOutlined className="text-slate-400" />}
-              className="rounded-lg bg-slate-50 border-none"
+              className="rounded-lg bg-slate-50 dark:bg-slate-900 dark:text-slate-200 border-none"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               allowClear
@@ -294,25 +294,25 @@ const SupportTickets: React.FC = () => {
           </Space>
         </div>
 
-        <div className="flex-grow overflow-y-auto bg-white">
+        <div className="flex-grow overflow-y-auto bg-white dark:bg-slate-800">
           <List
             loading={loading}
             dataSource={filteredTickets}
             renderItem={(item) => (
               <List.Item
                 onClick={() => setSelectedTicket(item)}
-                className={`px-4 py-4 cursor-pointer transition-all border-b border-slate-50 relative ${
+                className={`px-4 py-4 cursor-pointer transition-all border-b border-slate-50 dark:border-slate-700/50 relative ${
                   selectedTicket?.id === item.id 
-                    ? 'bg-indigo-50/50 border-l-4 border-l-indigo-600' 
-                    : 'hover:bg-slate-50 border-l-4 border-l-transparent'
+                    ? 'bg-indigo-50/50 dark:bg-indigo-500/10 border-l-4 border-l-indigo-600 dark:border-l-indigo-500' 
+                    : 'hover:bg-slate-50 dark:hover:bg-slate-700/50 border-l-4 border-l-transparent'
                 }`}
               >
                 <div className="w-full">
                   <div className="flex justify-between items-start mb-1">
-                    <Text strong className="text-slate-700 truncate block max-w-[200px]">
+                    <Text strong className="text-slate-700 dark:text-slate-200 truncate block max-w-[200px]">
                       {item.subject}
                     </Text>
-                    <Text className="text-[10px] text-slate-400">
+                    <Text className="text-[10px] text-slate-400 dark:text-slate-500">
                       {dayjs(item.created_at).format('MMM DD')}
                     </Text>
                   </div>
@@ -331,7 +331,7 @@ const SupportTickets: React.FC = () => {
                     {item.status === 'resolved' && <Tag color="success" className="text-[9px] border-none rounded-full px-2 leading-tight">RESOLVED</Tag>}
                   </div>
                   <div className="flex items-center justify-between">
-                    <Text type="secondary" className="text-xs truncate block max-w-[240px]">
+                    <Text type="secondary" className="text-xs truncate block max-w-[240px] dark:!text-slate-400">
                       {item.driver_name || 'Anonymous Driver'}
                     </Text>
                     {item.status === 'open' && <Badge status="processing" />}
@@ -344,15 +344,15 @@ const SupportTickets: React.FC = () => {
         </div>
       </Sider>
 
-      <Content className="bg-white flex flex-col">
+      <Content className="bg-white dark:bg-slate-900 flex flex-col">
         {selectedTicket ? (
           <>
-            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white shadow-sm z-10">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-800 shadow-sm z-10">
               <div className="flex items-center gap-3">
-                <Avatar icon={<UserOutlined />} className="bg-indigo-100 text-indigo-600" />
+                <Avatar icon={<UserOutlined />} className="bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400" />
                 <div>
-                  <Title level={5} className="!mb-0">{selectedTicket.subject}</Title>
-                  <Text type="secondary" className="text-xs">
+                  <Title level={5} className="!mb-0 dark:!text-slate-100">{selectedTicket.subject}</Title>
+                  <Text type="secondary" className="text-xs dark:!text-slate-400">
                     Ticket ID: {selectedTicket.id} • Driver ID: {selectedTicket.driver_id}
                   </Text>
                 </div>
@@ -383,7 +383,7 @@ const SupportTickets: React.FC = () => {
               </Space>
             </div>
 
-            <div className="flex-grow overflow-y-auto p-6 bg-slate-50/30">
+            <div className="flex-grow overflow-y-auto p-6 bg-slate-50/30 dark:bg-slate-900/50">
               {messagesLoading ? (
                 <div className="flex h-full items-center justify-center"><Spin /></div>
               ) : (
@@ -396,7 +396,7 @@ const SupportTickets: React.FC = () => {
                     if (isSystem) {
                       return (
                         <div key={msg.id} className="text-center my-2">
-                          <Tag className="rounded-full border-none bg-slate-100 text-slate-500 text-[10px] uppercase font-bold tracking-wider">
+                          <Tag className="rounded-full border-none bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold tracking-wider">
                             {msg.message}
                           </Tag>
                         </div>
@@ -416,8 +416,8 @@ const SupportTickets: React.FC = () => {
                           </div>
                           <div className={`
                             px-4 py-2 rounded-2xl shadow-sm text-sm
-                            ${isMe ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white text-slate-800 border border-slate-100 rounded-tl-none'}
-                            ${isBot ? 'border-dashed border-indigo-200 bg-indigo-50/30' : ''}
+                            ${isMe ? 'bg-indigo-600 dark:bg-indigo-500 text-white rounded-tr-none' : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-tl-none'}
+                            ${isBot ? 'border-dashed border-indigo-200 dark:border-indigo-500/30 bg-indigo-50/30 dark:bg-indigo-500/10' : ''}
                           `}>
                             {msg.message}
                           </div>
@@ -433,12 +433,12 @@ const SupportTickets: React.FC = () => {
               )}
             </div>
 
-            <div className="p-4 border-t border-slate-100 bg-white flex flex-col gap-3">
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800 flex flex-col gap-3">
               <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
                 {QUICK_REPLIES.map((reply, idx) => (
                   <Tag 
                     key={idx} 
-                    className="cursor-pointer px-3 py-1.5 rounded-full border border-indigo-100 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors whitespace-nowrap text-xs font-medium m-0"
+                    className="cursor-pointer px-3 py-1.5 rounded-full border border-indigo-100 dark:border-indigo-500/30 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 dark:hover:bg-indigo-500 hover:text-white transition-colors whitespace-nowrap text-xs font-medium m-0"
                     onClick={() => setReplyText(reply.text)}
                   >
                     {reply.label}
@@ -452,8 +452,8 @@ const SupportTickets: React.FC = () => {
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   onPressEnter={handleSendMessage}
-                  className="rounded-l-xl"
-                  prefix={<MessageOutlined className="text-slate-300" />}
+                  className="rounded-l-xl dark:bg-slate-900 dark:text-slate-200 dark:border-slate-700"
+                  prefix={<MessageOutlined className="text-slate-300 dark:text-slate-500" />}
                 />
                 <Button 
                   type="primary" 
@@ -471,7 +471,7 @@ const SupportTickets: React.FC = () => {
           <div className="flex h-full items-center justify-center flex-col gap-4 text-slate-400">
             <CustomerServiceOutlined style={{ fontSize: 64 }} />
             <div className="text-center">
-              <Title level={4} className="!text-slate-400">Support Chat</Title>
+              <Title level={4} className="!text-slate-400 dark:!text-slate-500">Support Chat</Title>
               <Text type="secondary">Select a ticket from the list to start chatting with the driver.</Text>
             </div>
           </div>

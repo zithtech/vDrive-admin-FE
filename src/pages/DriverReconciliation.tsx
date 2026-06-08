@@ -309,16 +309,16 @@ const DriverReconciliation: React.FC = () => {
       title: "Driver Name",
       dataIndex: "driver_name",
       key: "name",
-      render: (text: string) => <Text strong className="text-slate-700">{text}</Text>,
+      render: (text: string) => <Text strong className="text-slate-700 dark:text-slate-200">{text}</Text>,
     },
     {
       title: "Contact Info",
       key: "contact",
       render: (_: any, record: DriverData) => (
         <div className="flex items-center gap-2">
-          <Text className="text-xs font-semibold text-slate-600">{record.phone}</Text>
-          <div className="h-3 w-[1.5px] bg-indigo-200/60 rounded-full mx-1" />
-          <Text className="text-[11px] font-medium text-slate-400">{record.mail}</Text>
+          <Text className="text-xs font-semibold text-slate-600 dark:text-slate-300">{record.phone}</Text>
+          <div className="h-3 w-[1.5px] bg-indigo-200/60 dark:bg-indigo-500/30 rounded-full mx-1" />
+          <Text className="text-[11px] font-medium text-slate-400 dark:text-slate-500">{record.mail}</Text>
         </div>
       ),
     },
@@ -327,7 +327,7 @@ const DriverReconciliation: React.FC = () => {
       key: "location",
       render: (_: any, record: DriverData) => (
         <Tooltip title={`${record.address}, ${record.district}, ${record.state}, ${record.pincode}`}>
-          <div className="max-w-[200px] truncate text-[12px] text-slate-500">
+          <div className="max-w-[200px] truncate text-[12px] text-slate-500 dark:text-slate-400 dark:text-slate-500">
             {record.address}, {record.state}
           </div>
         </Tooltip>
@@ -337,7 +337,7 @@ const DriverReconciliation: React.FC = () => {
       title: "District",
       dataIndex: "district",
       key: "district",
-      render: (text: string) => <Text className="text-[12px] text-slate-600 font-medium">{text}</Text>,
+      render: (text: string) => <Text className="text-[12px] text-slate-600 dark:text-slate-300 font-medium">{text}</Text>,
     },
     {
       title: "Onboarding Status",
@@ -391,7 +391,7 @@ const DriverReconciliation: React.FC = () => {
       dataIndex: "joined_date",
       key: "joined",
       render: (date: string) => (
-        <Text className="text-[12px] font-medium text-slate-500">
+        <Text className="text-[12px] font-medium text-slate-500 dark:text-slate-400 dark:text-slate-500">
           {date ? dayjs(date).format("MMM DD, YYYY") : "N/A"}
         </Text>
       ),
@@ -429,7 +429,7 @@ const DriverReconciliation: React.FC = () => {
             icon={<SyncOutlined spin={syncing} />}
             onClick={handleSync}
             loading={syncing}
-            className="flex items-center gap-2 font-bold shadow-sm border-slate-200 text-slate-600 h-9"
+            className="flex items-center gap-2 font-bold shadow-sm border-slate-200 text-slate-600 dark:text-slate-300 h-9"
           >
             Sync
           </Button>
@@ -466,45 +466,45 @@ const DriverReconciliation: React.FC = () => {
       <div className="w-full h-full flex flex-col gap-6 animate-in fade-in duration-500">
         {/* Stats Summary Style Card (Optional but looks premium) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-          <Card size="small" className="rounded-xl border border-slate-100 shadow-sm transition-all duration-300 hover:shadow-md group">
+          <Card size="small" className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-300 hover:shadow-md group">
             <div className="flex justify-between items-center py-1 px-1">
               <div className="flex flex-col">
-                <Text className="text-[9px] font-black uppercase text-slate-400 tracking-wider leading-none">Total Imported</Text>
-                <Text className="text-[9px] text-slate-400 font-medium leading-none mt-1.5 italic">Overall records processed</Text>
+                <Text className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider leading-none">Total Imported</Text>
+                <Text className="text-[9px] text-slate-400 dark:text-slate-500 font-medium leading-none mt-1.5 italic">Overall records processed</Text>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-xl font-black text-slate-900 tracking-tight leading-none">{summaryStats.total_processed_rows}</span>
-                <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-500 flex items-center justify-center transition-all duration-300 group-hover:scale-105 border border-indigo-100/50">
+                <span className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-none">{summaryStats.total_processed_rows}</span>
+                <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 flex items-center justify-center transition-all duration-300 group-hover:scale-105 border border-indigo-100/50 dark:border-indigo-500/20">
                   <CloudUploadOutlined className="text-sm" />
                 </div>
               </div>
             </div>
           </Card>
 
-          <Card size="small" className="rounded-xl border border-slate-100 shadow-sm transition-all duration-300 hover:shadow-md group">
+          <Card size="small" className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-300 hover:shadow-md group">
             <div className="flex justify-between items-center py-1 px-1">
               <div className="flex flex-col">
-                <Text className="text-[9px] font-black uppercase text-slate-400 tracking-wider leading-none">Active Drivers</Text>
-                <Text className="text-[9px] text-slate-400 font-medium leading-none mt-1.5 italic">Verified and operational</Text>
+                <Text className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider leading-none">Active Drivers</Text>
+                <Text className="text-[9px] text-slate-400 dark:text-slate-500 font-medium leading-none mt-1.5 italic">Verified and operational</Text>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-xl font-black text-emerald-600 tracking-tight leading-none">{summaryStats.active_drivers}</span>
-                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-500 flex items-center justify-center transition-all duration-300 group-hover:scale-105 border border-emerald-100/50">
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 flex items-center justify-center transition-all duration-300 group-hover:scale-105 border border-emerald-100/50 dark:border-emerald-500/20">
                   <SafetyCertificateOutlined className="text-sm" />
                 </div>
               </div>
             </div>
           </Card>
 
-          <Card size="small" className="rounded-xl border border-slate-100 shadow-sm transition-all duration-300 hover:shadow-md group">
+          <Card size="small" className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-300 hover:shadow-md group">
             <div className="flex justify-between items-center py-1 px-1">
               <div className="flex flex-col">
-                <Text className="text-[9px] font-black uppercase text-slate-400 tracking-wider leading-none">Pending Review</Text>
-                <Text className="text-[9px] text-slate-400 font-medium leading-none mt-1.5 italic">Awaiting verification</Text>
+                <Text className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider leading-none">Pending Review</Text>
+                <Text className="text-[9px] text-slate-400 dark:text-slate-500 font-medium leading-none mt-1.5 italic">Awaiting verification</Text>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-xl font-black text-amber-500 tracking-tight leading-none">{summaryStats.pending_drivers}</span>
-                <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center transition-all duration-300 group-hover:scale-105 border border-amber-100/50">
+                <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400 flex items-center justify-center transition-all duration-300 group-hover:scale-105 border border-amber-100/50 dark:border-amber-500/20">
                   <ClockCircleOutlined className="text-sm" />
                 </div>
               </div>
@@ -528,7 +528,7 @@ const DriverReconciliation: React.FC = () => {
           />
         </div>
 
-        <div className="flex-grow bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col min-h-0 pb-2">
+        <div className="flex-grow bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col min-h-0 pb-2">
           <Table
             columns={columns}
             dataSource={filteredDrivers}
@@ -552,7 +552,7 @@ const DriverReconciliation: React.FC = () => {
             sticky
             rowKey={(record, index) => (record?.phone || index || 0).toString() + (index || 0)}
             rowClassName={(_, index) =>
-              (index || 0) % 2 === 0 ? "bg-slate-50/50 hover:bg-indigo-50/30 transition-colors" : "bg-white hover:bg-indigo-50/30 transition-colors"
+              (index || 0) % 2 === 0 ? "bg-slate-50/50 dark:bg-slate-800/50 hover:bg-indigo-50/30 dark:hover:bg-slate-700/50 transition-colors" : "bg-white dark:bg-slate-800 hover:bg-indigo-50/30 dark:hover:bg-slate-700/50 transition-colors"
             }
             locale={{
               emptyText: (
@@ -560,14 +560,14 @@ const DriverReconciliation: React.FC = () => {
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
                   description={
                     <div className="flex flex-col gap-2">
-                      <Text className="text-slate-400 font-medium">No driver data found</Text>
+                      <Text className="text-slate-400 dark:text-slate-500 font-medium">No driver data found</Text>
                       <Text type="secondary" className="text-[12px]">Please export the template and import your data to get started.</Text>
                       <div className="mt-2">
                         <Button
                           type="dashed"
                           icon={<DownloadOutlined />}
                           onClick={exportTemplate}
-                          className="rounded-lg text-indigo-500 border-indigo-200"
+                          className="rounded-lg text-indigo-500 border-indigo-200 dark:border-indigo-500/30"
                         >
                           Download Template
                         </Button>
@@ -603,6 +603,21 @@ const DriverReconciliation: React.FC = () => {
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dark .premium-table .ant-table-thead > tr > th {
+          background: #1e293b;
+          color: #94a3b8;
+          border-bottom: 2px solid #334155;
+        }
+        .dark .premium-table .ant-table-tbody > tr > td {
+          border-bottom: 1px solid #334155;
+        }
+        .dark .premium-table .ant-table-wrapper .ant-table-pagination.ant-pagination {
+          color: #cbd5e1;
+        }
+        .dark .premium-table .ant-table-cell-row-hover {
+          background: transparent !important;
         }
       `}</style>
     </TitleBar>

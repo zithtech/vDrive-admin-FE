@@ -1,6 +1,9 @@
-import React from "react";
-import { Typography, Progress } from "antd";
-import { Users, ShieldCheck, Bell, Clock } from "lucide-react";
+import React, { useEffect, useMemo } from "react";
+import { Typography, Badge } from "antd";
+import { Users, ShieldCheck, FileWarning, XCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { fetchDrivers } from "../../store/slices/driverSlice";
 
 const { Title, Text } = Typography;
 
@@ -8,27 +11,36 @@ interface OnboardingMetricsProps {
   stats: {
     pendingVerifications: number;
     documentExpiryAlerts: number;
-    complianceHealth: number;
-    lastSyncAt: string;
     loading: boolean;
   };
 }
 
 const OnboardingMetrics: React.FC<OnboardingMetricsProps> = ({ stats }) => {
-  const [timeAgo, setTimeAgo] = React.useState("0m");
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { drivers, loading: driversLoading } = useAppSelector((state) => state.drivers);
 
-  React.useEffect(() => {
-    const calculateTimeAgo = () => {
-      const diff = Math.floor((new Date().getTime() - new Date(stats.lastSyncAt).getTime()) / 60000);
-      if (diff < 1) setTimeAgo("now");
-      else if (diff < 60) setTimeAgo(`${diff}m`);
-      else setTimeAgo(`${Math.floor(diff / 60)}h`);
+  useEffect(() => {
+    dispatch(fetchDrivers());
+  }, [dispatch]);
+
+  const pipelineDrivers = useMemo(() => {
+    if (!drivers || !Array.isArray(drivers)) return [];
+    return drivers.filter(d => 
+      d.status === "pending" || 
+      d.status === "pending_verification" || 
+      d.status === "rejected" ||
+      (d.onboarding_status && !["ONBOARDING_COMPLETED", "SUBSCRIPTION_ACTIVE", "ACTIVE"].includes(d.onboarding_status))
+    );
+  }, [drivers]);
+
+  const counts = useMemo(() => {
+    return {
+      pending: pipelineDrivers.filter(d => d.status !== "rejected" && d.onboarding_status !== "DOCS_REJECTED").length,
+      docRejected: pipelineDrivers.filter(d => d.status !== "rejected" && d.onboarding_status === "DOCS_REJECTED").length,
+      rejected: pipelineDrivers.filter(d => d.status === "rejected").length,
     };
-
-    calculateTimeAgo();
-    const interval = setInterval(calculateTimeAgo, 60000);
-    return () => clearInterval(interval);
-  }, [stats.lastSyncAt]);
+  }, [pipelineDrivers]);
 
   const MetricItem = ({
     title,
@@ -36,38 +48,45 @@ const OnboardingMetrics: React.FC<OnboardingMetricsProps> = ({ stats }) => {
     icon: Icon,
     iconBgColor,
     iconColor,
+    onClick,
   }: {
     title: string;
     value: number | string;
     icon: any;
     iconBgColor: string;
     iconColor: string;
+    onClick?: () => void;
   }) => (
-    <div className="flex items-center p-3 bg-white border border-gray-100 rounded-xl hover:shadow-sm transition-all duration-300 group cursor-default h-[50px]">
+    <div 
+      onClick={onClick}
+      className={`flex items-center p-3 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl transition-all duration-300 group h-[50px] ${onClick ? 'cursor-pointer hover:shadow-md hover:border-indigo-100 dark:hover:border-indigo-900/50' : 'cursor-default hover:shadow-sm'}`}
+    >
       {/* Icon Section */}
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center mr-3 ${iconBgColor} shrink-0`}>
-        <Icon size={18} className={iconColor} />
+        <Badge dot={typeof value === 'number' && value > 0}>
+          <Icon size={18} className={iconColor} />
+        </Badge>
       </div>
 
       {/* Info Section */}
       <div className="flex flex-col flex-1 min-w-0">
-        <Text className="text-[10px] text-gray-400 font-medium mb-0 tracking-tight">
+        <Text className="text-[10px] text-gray-400 dark:text-gray-500 font-medium mb-0 tracking-tight leading-none truncate w-full" title={title}>
           {title}
         </Text>
-        <Title level={4} className="!m-0 text-gray-900 font-bold !text-[17px] leading-tight">
-          {stats.loading ? "..." : value}
+        <Title level={4} className="!m-0 text-gray-900 dark:text-white font-bold !text-[17px] leading-tight">
+          {value}
         </Title>
       </div>
     </div>
   );
 
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-sm flex flex-col shrink-0 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 dark:border-slate-700">
         <div className="flex items-center gap-2">
-          <Users size={16} className="text-gray-500" />
-          <span className="font-bold text-gray-900 text-[14px] tracking-tight">Onboarding</span>
+          <Users size={16} className="text-gray-500 dark:text-gray-400" />
+          <span className="font-bold text-gray-900 dark:text-white text-[14px] tracking-tight">Onboarding</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -77,50 +96,36 @@ const OnboardingMetrics: React.FC<OnboardingMetricsProps> = ({ stats }) => {
 
       {/* Content */}
       <div className="p-3.5 flex flex-col gap-3">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           <MetricItem
-            title="Pending Verification"
-            value={stats.pendingVerifications}
+            title="Pending"
+            value={driversLoading ? "..." : counts.pending}
             icon={ShieldCheck}
-            iconBgColor="bg-orange-50"
+            iconBgColor="bg-orange-50 dark:bg-orange-900/30"
             iconColor="text-orange-500"
+            onClick={() => navigate('/driver-applications')}
           />
 
           <MetricItem
-            title="Document Expiry"
-            value={stats.documentExpiryAlerts}
-            icon={Bell}
-            iconBgColor="bg-red-50"
-            iconColor="text-red-400"
+            title="Docs Rejected"
+            value={driversLoading ? "..." : counts.docRejected}
+            icon={FileWarning}
+            iconBgColor="bg-amber-50 dark:bg-amber-900/30"
+            iconColor="text-amber-500"
+            onClick={() => navigate('/driver-applications')}
           />
-        </div>
 
-        {/* Compliance Health Section */}
-        <div className="bg-gray-50/30 rounded-xl p-2.5 border border-gray-100">
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[11px] font-semibold text-gray-800 tracking-tight">Compliance Health</span>
-            <span className="text-[12px] font-bold text-gray-900">
-              {stats.loading ? "..." : `${stats.complianceHealth}%`}
-            </span>
-          </div>
-          
-          <div className="relative">
-            <Progress 
-              percent={stats.complianceHealth} 
-              size="small" 
-              showInfo={false} 
-              strokeColor="#3b82f6"
-              trailColor="#e5e7eb"
-              strokeWidth={4}
-              strokeLinecap="round"
-            />
-            <div className="flex items-center justify-end gap-1 mt-1">
-              <Clock size={9} className="text-gray-400" />
-              <span className="text-[9px] text-gray-400 font-medium tracking-tight">Sync: {timeAgo}</span>
-            </div>
-          </div>
+          <MetricItem
+            title="Rejected"
+            value={driversLoading ? "..." : counts.rejected}
+            icon={XCircle}
+            iconBgColor="bg-rose-50 dark:bg-rose-900/30"
+            iconColor="text-rose-500"
+            onClick={() => navigate('/driver-applications')}
+          />
         </div>
       </div>
+
     </div>
   );
 };

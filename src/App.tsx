@@ -26,8 +26,9 @@ import {
   Button,
   Drawer,
   App as AntdApp,
+  theme,
 } from "antd";
-import logo from "/logo1.png";
+import logo from "/90.png";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -53,6 +54,7 @@ import { useTripVerificationAlert } from "./hooks/useTripVerificationAlert";
 import { IoReceiptOutline, IoCarOutline } from "react-icons/io5";
 import { MdOutlineAccountBalanceWallet } from "react-icons/md";
 import SosMonitor from "./components/SosMonitor/SosMonitor";
+import { useTheme } from "./contexts/ThemeContext";
 
 // Loading component for route suspense
 const RouteLoadingFallback = () => (
@@ -153,15 +155,15 @@ const RoleProtectedRoute = ({
 const { Content, Sider, Header } = Layout;
 
 const Logo: React.FC<{ collapsed: boolean }> = ({ collapsed }) => (
-  <div className={`flex items-center justify-center gap-3 px-6 h-[80px] border-b border-gray-200 transition-all duration-300 ${collapsed ? "px-0" : ""}`}>
-    <div className="relative">
+  <div className={`flex items-center justify-center gap-3 px-6 h-[80px] border-b border-gray-200 dark:border-slate-800 transition-all duration-300 ${collapsed ? "px-0" : ""}`}>
+    <div className="relative flex items-center justify-center">
       <div className="absolute -inset-2 bg-indigo-500/10 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
-      <img height={38} width={38} src={logo} alt="" className="relative drop-shadow-sm" />
+      <img src={logo} alt="" className="w-20 h-20 object-contain relative drop-shadow-sm transition-all duration-300 dark:invert dark:brightness-200" />
     </div>
 
     {!collapsed && (
-      <span className="font-black text-xl text-slate-900 whitespace-nowrap tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-indigo-600">
-        vDrive Admin
+      <span className="font-black text-xl text-slate-900 dark:text-white whitespace-nowrap tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-indigo-600 dark:from-white dark:to-indigo-400">
+        VDrive Admin
       </span>
     )}
   </div>
@@ -174,14 +176,13 @@ const siderStyle: React.CSSProperties = {
   top: 0,
   bottom: 0,
   zIndex: 100,
-  borderRight: "1px solid rgba(226, 232, 240, 0.8)",
-  background: "#FFFFFF",
   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
 };
 const RootLayout: React.FC = () => {
   const dispatch = useAppDispatch();
   const { isAuthenticated, loading, currentUser, role } = useAppSelector((state) => state.auth);
   const location = useLocation();
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
     if (isAuthenticated && !currentUser) {
@@ -502,24 +503,26 @@ const RootLayout: React.FC = () => {
   return (
     <ConfigProvider
       theme={{
+        algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         token: {
           colorPrimary: "#1d2a5c",
           colorPrimaryBg: "#ffffff",
-          // fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         },
         components: {
           Layout: {
             siderBg: "transparent",
-            bodyBg: "#F8FAFC",
+            bodyBg: isDarkMode ? "#0f172a" : "#F8FAFC",
+            headerBg: isDarkMode ? "#0f172a" : "#ffffff",
           },
           Menu: {
             itemBg: "transparent",
             itemSelectedBg: "transparent", // Keep transparent
             itemSelectedColor: "#FFFFFF",
-            itemColor: "#64748B",
-            itemHoverColor: "#1D2A5C",
-            itemHoverBg: "rgba(29, 42, 92, 0.04)",
-            itemActiveBg: "rgba(29, 42, 92, 0.08)",
+            itemColor: isDarkMode ? "#94a3b8" : "#64748B",
+            itemHoverColor: isDarkMode ? "#ffffff" : "#1D2A5C",
+            itemHoverBg: isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(29, 42, 92, 0.04)",
+            itemActiveBg: isDarkMode ? "rgba(255,255,255,0.12)" : "rgba(29, 42, 92, 0.08)",
             itemBorderRadius: 16,
             itemMarginInline: 12,
             iconSize: 20,
@@ -548,12 +551,13 @@ const RootLayout: React.FC = () => {
           {!isMobile && isAuthenticated && location.pathname !== "/login" && (
             <Sider
               style={siderStyle}
+              className="bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800"
               collapsed={collapsed}
               width={250}
               onMouseEnter={() => setCollapsed(false)}
               onMouseLeave={() => setCollapsed(true)}
             >
-              <div className="flex flex-col h-full bg-white">
+              <div className="flex flex-col h-full bg-white dark:bg-slate-900">
                 <div className="flex-shrink-0 group">
                   <Logo collapsed={collapsed} />
                 </div>
@@ -572,10 +576,10 @@ const RootLayout: React.FC = () => {
                 </div>
 
                 <div
-                  className={`flex-shrink-0 border-t border-gray-50 mt-auto transition-all duration-300 ${collapsed ? "p-2" : "p-6"}`}
+                  className={`flex-shrink-0 border-t border-gray-50 dark:border-slate-800 mt-auto transition-all duration-300 ${collapsed ? "p-2" : "p-6"}`}
                 >
                   <div
-                    className={`flex items-center w-full p-3 rounded-2xl bg-slate-50 border border-gray-100/50 shadow-sm transition-all duration-300 group cursor-pointer ${collapsed ? "justify-center p-2" : "gap-3 mb-4"
+                    className={`flex items-center w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-gray-100/50 dark:border-slate-700 shadow-sm transition-all duration-300 group cursor-pointer ${collapsed ? "justify-center p-2" : "gap-3 mb-4"
                       }`}
                   >
                     <Avatar
@@ -586,7 +590,7 @@ const RootLayout: React.FC = () => {
 
                     {!collapsed && (
                       <div className="flex flex-col overflow-hidden transition-all duration-300">
-                        <span className="font-black text-[13px] text-slate-800 whitespace-nowrap leading-none mb-1">
+                        <span className="font-black text-[13px] text-slate-800 dark:text-slate-100 whitespace-nowrap leading-none mb-1">
                           {currentUser?.name || "Member User"}
                         </span>
                         <span className="text-[10px] text-indigo-500 font-bold uppercase tracking-wider whitespace-nowrap">
@@ -627,15 +631,13 @@ const RootLayout: React.FC = () => {
                     ? 80
                     : 250,
               transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-              backgroundColor: "#F8FAFC",
             }}
+            className="bg-[#F8FAFC] dark:bg-[#0f172a]"
           >
             {isMobile && isAuthenticated && location.pathname !== "/login" && (
               <Header
                 style={{
                   padding: "0 16px",
-                  background: "#fff",
-                  borderBottom: "1px solid #d9d9d9",
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
@@ -645,8 +647,9 @@ const RootLayout: React.FC = () => {
                   right: 0,
                   zIndex: 1000,
                 }}
+                className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800"
               >
-                <img height={32} width={32} src={logo} alt="Logo" />
+                <img src={logo} alt="Logo" className={`w-8 h-8 object-contain transition-all duration-300 ${isDarkMode ? 'invert brightness-200' : ''}`} />
                 <div
                   style={{ display: "flex", alignItems: "center", gap: "8px" }}
                 >
@@ -671,7 +674,7 @@ const RootLayout: React.FC = () => {
             )}
             <Content>
               <div
-                className={`w-full bg-[#F7F8FB] ${isMobile && isAuthenticated && location.pathname !== "/login"
+                className={`w-full bg-[#F7F8FB] dark:bg-[#0b1121] ${isMobile && isAuthenticated && location.pathname !== "/login"
                   ? "pt-16 h-[100dvh]"
                   : "h-[100dvh]"
                   }`}
@@ -685,8 +688,8 @@ const RootLayout: React.FC = () => {
             <Drawer
               title={
                 <div className="flex items-center gap-2">
-                  <img height={32} width={32} src={logo} alt="" />
-                  <span>vDrive Admin</span>
+                  <img src={logo} alt="" className={`w-8 h-8 object-contain transition-all duration-300 ${isDarkMode ? 'invert brightness-200' : ''}`} />
+                  <span>VDrive Admin</span>
                 </div>
               }
               placement="left"

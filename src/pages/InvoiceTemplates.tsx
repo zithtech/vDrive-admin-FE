@@ -63,19 +63,19 @@ const TripInvoiceList: React.FC<{
         {paginated.map((trip) => (
           <div
             key={trip.trip_id}
-            className="p-4 border bg-gray-50 rounded-lg flex justify-between items-center"
+            className="p-4 border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/50 rounded-lg flex justify-between items-center"
           >
             <div className="w-[60%]">
-              <p className="font-semibold">
+              <p className="font-semibold text-slate-800 dark:text-slate-200">
                 {type === "customer" && `${trip.user_name} • ${trip.trip_id}`}
                 {type === "driver" && `${trip.driver_name} • ${trip.trip_id}`}
                 {type === "admin" && `Trip ${trip.trip_id}`}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 dark:text-slate-400">
                 {trip.pickup_address} → {trip.drop_address}
               </p>
               {type === "driver" && (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 dark:text-slate-400">
                   Vehicle: {trip.car_number} • {trip.car_type}
                 </p>
               )}
@@ -155,8 +155,13 @@ const InvoiceTemplates: React.FC = () => {
     <TitleBar
       title="Invoice & Reports"
       description="Preview invoices and platform reports."
+      icon={
+        <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-2xl flex items-center justify-center shadow-sm">
+          <FileTextOutlined className="text-white text-xl" />
+        </div>
+      }
     >
-      <div className="bg-white p-4 rounded-xl shadow-md min-h-[80vh] overflow-y-auto">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 min-h-[80vh] overflow-y-auto">
         <Tabs
           items={[
             {
@@ -201,7 +206,7 @@ const InvoiceTemplates: React.FC = () => {
               children: (
                 <section className="p-4 space-y-6">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold">Daily Summary</h2>
+                    <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Daily Summary</h2>
 
                     <div className="flex gap-2">
                       <Button type="default" icon={<CloudDownloadOutlined />}>

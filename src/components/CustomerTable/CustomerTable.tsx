@@ -153,9 +153,9 @@ const CustomerTable = ({ data, isSuperAdmin = false }: CustomerTableProps) => {
                             {record.full_name?.charAt(0)}
                         </Avatar>
                         <div className="flex flex-col justify-center gap-0.5">
-                            <Text className="font-extrabold text-slate-800 tracking-tight text-sm leading-none">{record.full_name}</Text>
+                            <Text className="font-extrabold text-slate-800 dark:text-slate-100 tracking-tight text-sm leading-none">{record.full_name}</Text>
                             <div className="flex items-center gap-1.5 group/copy">
-                                <Text style={{ color: '#6b7280' }} className="text-[10px] font-black uppercase tracking-tight font-mono leading-none">
+                                <Text style={{ color: '#6b7280' }} className="text-[10px] font-black uppercase tracking-tight font-mono leading-none dark:text-slate-400">
                                     {record.user_code || "VDU-NEW"}
                                 </Text>
                                 <Tooltip title="Copy ID">
@@ -183,9 +183,9 @@ const CustomerTable = ({ data, isSuperAdmin = false }: CustomerTableProps) => {
                 minWidth: 160,
                 render: (_, record) => (
                     <div className="flex items-center gap-2">
-                        <Text className="text-xs font-semibold text-slate-600">{record.phone_number}</Text>
-                        <div className="h-3 w-[1.5px] bg-indigo-200/60 rounded-full mx-1" />
-                        <Text className="text-[11px] font-medium text-slate-400">{record.email}</Text>
+                        <Text className="text-xs font-semibold text-slate-600 dark:text-slate-300">{record.phone_number}</Text>
+                        <div className="h-3 w-[1.5px] bg-indigo-200/60 dark:bg-indigo-800/60 rounded-full mx-1" />
+                        <Text className="text-[11px] font-medium text-slate-400 dark:text-slate-500">{record.email}</Text>
                     </div>
                 ),
             },
@@ -205,9 +205,9 @@ const CustomerTable = ({ data, isSuperAdmin = false }: CustomerTableProps) => {
                     const popoverContent = (
                         <div className="flex flex-col gap-3 p-1">
                             {contacts.map((contact, index) => (
-                                <div key={index} className="flex flex-col border-b border-gray-100 last:border-0 pb-2 last:pb-0">
-                                    <span className="font-bold text-[13px] text-gray-800">{contact.name}</span>
-                                    <span className="text-[11px] font-semibold text-gray-500">{contact.phone}</span>
+                                <div key={index} className="flex flex-col border-b border-gray-100 dark:border-slate-700 last:border-0 pb-2 last:pb-0">
+                                    <span className="font-bold text-[13px] text-gray-800 dark:text-slate-200">{contact.name}</span>
+                                    <span className="text-[11px] font-semibold text-gray-500 dark:text-slate-400">{contact.phone}</span>
                                 </div>
                             ))}
                         </div>
@@ -216,8 +216,8 @@ const CustomerTable = ({ data, isSuperAdmin = false }: CustomerTableProps) => {
                     return (
                         <div className="flex items-center gap-2">
                             <div className="flex flex-col">
-                                <span className="text-[12px] font-bold text-gray-700 leading-tight">{firstContact.name}</span>
-                                <span className="text-[10px] font-semibold text-gray-400">{firstContact.phone}</span>
+                                <span className="text-[12px] font-bold text-gray-700 dark:text-slate-300 leading-tight">{firstContact.name}</span>
+                                <span className="text-[10px] font-semibold text-gray-400 dark:text-slate-500">{firstContact.phone}</span>
                             </div>
                             {othersCount > 0 && (
                                 <Popover
@@ -270,11 +270,11 @@ const CustomerTable = ({ data, isSuperAdmin = false }: CustomerTableProps) => {
                 key: "updated_at",
                 render: (text: string) => (
                     <div className="flex items-center gap-2">
-                        <Text className="text-[11px] font-black text-slate-800 uppercase tracking-tight">
+                        <Text className="text-[11px] font-black text-slate-800 dark:text-slate-200 uppercase tracking-tight">
                             {text ? format(new Date(text), "MMM dd, yyyy") : "-"}
                         </Text>
-                        <div className="h-3 w-[1.5px] bg-indigo-200/60 rounded-full mx-1" />
-                        <Text className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">
+                        <div className="h-3 w-[1.5px] bg-indigo-200/60 dark:bg-indigo-800/60 rounded-full mx-1" />
+                        <Text className="text-[10px] font-black text-indigo-400 dark:text-indigo-300 uppercase tracking-widest">
                             {text ? format(new Date(text), "hh:mm a") : "-"}
                         </Text>
                     </div>
@@ -348,6 +348,18 @@ const CustomerTable = ({ data, isSuperAdmin = false }: CustomerTableProps) => {
                         padding: 8px 24px !important;
                         border-bottom: 1px solid #f8fafc !important;
                     }
+                    .dark .premium-table-flat .ant-table-thead > tr > th {
+                        background: #1e293b !important;
+                        color: #94a3b8 !important;
+                        border-bottom: 2px solid #334155 !important;
+                    }
+                    .dark .premium-table-flat .ant-table-tbody > tr > td {
+                        border-bottom: 1px solid #1e293b !important;
+                        color: #f1f5f9 !important;
+                    }
+                    .dark .premium-table-flat .ant-table-row:hover > td {
+                        background: #334155 !important;
+                    }
                     .premium-table-flat .ant-table-row {
                         cursor: pointer;
                         transition: all 0.2s ease;
@@ -357,7 +369,7 @@ const CustomerTable = ({ data, isSuperAdmin = false }: CustomerTableProps) => {
                     }
                 `}
             </style>
-            <div ref={contentRef} className="flex-grow bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden flex flex-col min-h-0 pb-2">
+            <div ref={contentRef} className="flex-grow bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col min-h-0 pb-2">
                 <Table
                     key={tableHeight}
                     columns={columns}
@@ -384,7 +396,7 @@ const CustomerTable = ({ data, isSuperAdmin = false }: CustomerTableProps) => {
                     sticky
                     className="premium-table-flat"
                     rowClassName={(_, index) =>
-                        (index || 0) % 2 === 0 ? "bg-slate-50/50 hover:bg-indigo-50/30 transition-colors" : "bg-white hover:bg-indigo-50/30 transition-colors"
+                        (index || 0) % 2 === 0 ? "bg-slate-50/50 dark:bg-slate-800/50 hover:bg-indigo-50/30 dark:hover:bg-slate-700 transition-colors" : "bg-white dark:bg-slate-800 hover:bg-indigo-50/30 dark:hover:bg-slate-700 transition-colors"
                     }
                     onRow={(record) => ({
                         onClick: (event) => {
