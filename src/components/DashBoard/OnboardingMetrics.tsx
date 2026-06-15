@@ -15,7 +15,7 @@ interface OnboardingMetricsProps {
   };
 }
 
-const OnboardingMetrics: React.FC<OnboardingMetricsProps> = ({ stats }) => {
+const OnboardingMetrics: React.FC<OnboardingMetricsProps> = (_props) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { drivers, loading: driversLoading } = useAppSelector((state) => state.drivers);

@@ -253,7 +253,6 @@ const PromotionsPage: React.FC = () => {
             [1, 2, 3, 4, 5, 6].map(i => <div key={i} className="bg-white dark:bg-slate-800 h-28 rounded-xl animate-pulse border border-gray-100 dark:border-slate-700" />)
           ) : filteredPromos.length > 0 ? (
             filteredPromos.map(promo => {
-              const usageRate = Math.round((promo.usage_count / (promo.max_uses || 100)) * 100);
               const isPercentage = promo.discount_type === 'percentage';
               const themeBg = isPercentage ? 'bg-indigo-600' : 'bg-emerald-600';
               const textTheme = isPercentage ? 'text-indigo-600' : 'text-emerald-600';

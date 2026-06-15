@@ -28,8 +28,7 @@ import {
 import SubscriptionDrawer from '../components/RechargePlan/SubscriptionDrawer';
 import axios from '../api/axios';
 import { messageApi, modalApi, notificationApi } from '../utilities/antdStaticHolder';
-import { Checkbox, Select, Drawer, Button, Avatar, Tag, Dropdown, Spin } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { Checkbox, Select, Drawer, Button, Avatar, Tag, Spin } from 'antd';
 import { getMediaUrl } from '../components/DriverDetails/DriverDetails';
 import PaymentHistory from './PaymentHistory';
 
@@ -54,51 +53,10 @@ interface RechargePlan {
 
 
 
-const CountdownTimer: React.FC<{ expiryDate: string }> = ({ expiryDate }) => {
-  const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number } | null>(null);
-
-  useEffect(() => {
-    const calculateTime = () => {
-      const difference = new Date(expiryDate).getTime() - new Date().getTime();
-      if (difference > 0 && difference < 86400000) { // < 24 hours
-        setTimeLeft({
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60),
-        });
-      } else {
-        setTimeLeft(null);
-      }
-    };
-
-    calculateTime();
-    const timer = setInterval(calculateTime, 1000);
-    return () => clearInterval(timer);
-  }, [expiryDate]);
-
-  if (!timeLeft) return null;
-
-  return (
-    <div className="flex items-center gap-1.5 bg-white dark:bg-slate-800 text-rose-600 px-2 py-1 rounded-md text-[10px] font-black font-mono shadow-sm border border-rose-200 whitespace-nowrap tracking-widest">
-      <div className="flex flex-col items-center leading-none">
-        <span>{String(timeLeft.hours).padStart(2, '0')}</span>
-      </div>
-      <span className="opacity-40 animate-pulse">:</span>
-      <div className="flex flex-col items-center leading-none">
-        <span>{String(timeLeft.minutes).padStart(2, '0')}</span>
-      </div>
-      <span className="opacity-40 animate-pulse">:</span>
-      <div className="flex flex-col items-center leading-none">
-        <span>{String(timeLeft.seconds).padStart(2, '0')}</span>
-      </div>
-    </div>
-  );
-};
-
 /* ================= COMPONENT ================= */
 
 const RechargePlanPage: React.FC = () => {
-  const navigate = useNavigate();
+
   const [plans, setPlans] = useState<RechargePlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -251,15 +209,7 @@ const RechargePlanPage: React.FC = () => {
     }
   };
 
-  const handleNotifyIndividual = async (driverId: string) => {
-    try {
-      await axios.post('/api/recharge-plans/notify-individual', { driverId });
-      messageApi.success('Status notification sent to driver!');
-    } catch (err) {
-      console.error("Failed to notify driver:", err);
-      messageApi.error('Failed to send notification');
-    }
-  };
+
 
   const fetchDriverHistory = (driver: any) => {
     setSelectedDriver(driver);
@@ -1071,7 +1021,7 @@ const RechargePlanPage: React.FC = () => {
                       })
                       .map((sub: any) => {
                         const daysLeft = Math.ceil((new Date(sub.expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-                        const isExpiring = daysLeft < 3;
+
                         const totalDays = Math.ceil((new Date(sub.expiryDate).getTime() - new Date(sub.startDate).getTime()) / (1000 * 60 * 60 * 24));
                         const daysElapsed = totalDays - daysLeft;
                         const progress = Math.min(100, Math.max(0, (daysElapsed / (totalDays || 1)) * 100));
