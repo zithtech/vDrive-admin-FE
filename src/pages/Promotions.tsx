@@ -9,23 +9,26 @@ import {
   BarChart3,
   Percent,
   IndianRupee,
-  Clock
+  Clock,
+  ArrowRight
 } from 'lucide-react';
 import axios from '../api/axios';
-import { 
-  Drawer, 
-  Select, 
-  Button, 
-  Input, 
-  DatePicker, 
-  Switch, 
+import {
+  Drawer,
+  Select,
+  Button,
+  Input,
+  DatePicker,
+  Switch,
   Form,
-  InputNumber
+  InputNumber,
+  Empty
 } from 'antd';
 import { messageApi, modalApi, notificationApi } from '../utilities/antdStaticHolder';
 import dayjs from 'dayjs';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { fetchDrivers } from '../store/slices/driverSlice';
+import { useHasPermission } from '../hooks/usePermission';
 
 /* ================= TYPES ================= */
 
@@ -51,6 +54,10 @@ interface Promo {
 /* ================= COMPONENT ================= */
 
 const PromotionsPage: React.FC = () => {
+  const canCreatePromo = useHasPermission("promos", "create");
+  const canUpdatePromo = useHasPermission("promos", "update");
+  const canDeletePromo = useHasPermission("promos", "delete");
+
   const [promos, setPromos] = useState<Promo[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -58,10 +65,12 @@ const PromotionsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [form] = Form.useForm();
   const dispatch = useAppDispatch();
   const { drivers } = useAppSelector((state) => state.drivers);
+
+  const isAllowed = editingId ? canUpdatePromo : canCreatePromo;
 
   useEffect(() => {
     fetchPromos();
@@ -115,7 +124,7 @@ const PromotionsPage: React.FC = () => {
     try {
       setIsSubmitting(true);
       const [start, end] = values.dates || [];
-      
+
       const payload = {
         ...values,
         start_date: start?.toISOString(),
@@ -130,7 +139,7 @@ const PromotionsPage: React.FC = () => {
         await axios.post('/api/promos', payload);
         notificationApi.success({ message: 'Promo Created', description: `New coupon "${values.code}" is now active.` });
       }
-      
+
       setIsDrawerOpen(false);
       fetchPromos();
     } catch (err: any) {
@@ -162,9 +171,9 @@ const PromotionsPage: React.FC = () => {
   const filteredPromos = useMemo(() => {
     return promos.filter(p => {
       const matchesSearch = p.code.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || 
-                           (statusFilter === 'active' && p.is_active) || 
-                           (statusFilter === 'inactive' && !p.is_active);
+      const matchesStatus = statusFilter === 'all' ||
+        (statusFilter === 'active' && p.is_active) ||
+        (statusFilter === 'inactive' && !p.is_active);
       return matchesSearch && matchesStatus;
     });
   }, [promos, searchTerm, statusFilter]);
@@ -182,20 +191,15 @@ const PromotionsPage: React.FC = () => {
         <div className="flex items-center justify-center w-10 h-10 bg-indigo-500 rounded-xl shadow-lg shadow-indigo-500/20">
           <Ticket className="text-white text-xl" />
         </div>
-        <div>
-          <h1 className="!m-0 text-lg sm:text-xl font-extrabold text-gray-900 tracking-tight">Campaign Management</h1>
-          <p className="block text-[9px] text-gray-400 font-medium font-outfit uppercase tracking-widest">
-            Promotions, Offers & Loyalty Rewards
-          </p>
-        </div>
-        <div className="flex-1" />
-        <button 
-          onClick={() => handleOpenDrawer()} 
-          className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 bg-white border border-gray-100 hover:border-indigo-100 px-4 py-1.5 rounded-lg transition-all active:scale-95 text-xs font-bold shadow-sm"
-        > 
-          <Plus size={14} /> 
-          Create New Offer 
-        </button>
+        {canCreatePromo && (
+          <button
+            onClick={() => handleOpenDrawer()}
+            className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 bg-white border border-gray-100 hover:border-indigo-100 px-4 py-1.5 rounded-lg transition-all active:scale-95 text-xs font-bold shadow-sm"
+          >
+            <Plus size={14} />
+            Create New Offer
+          </button>
+        )}
       </div>
 
       {/* Premium Stats Dashboard */}
@@ -245,16 +249,16 @@ const PromotionsPage: React.FC = () => {
         <div className="flex items-center gap-4 flex-1 w-full">
           <div className="relative flex-1 max-w-md group/search">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300 group-focus-within/search:text-indigo-500 transition-colors" size={16} />
-            <input 
-              type="text" 
-              placeholder="Search by code or description..." 
+            <input
+              type="text"
+              placeholder="Search by code or description..."
               className="w-full pl-9 pr-4 py-1.5 bg-gray-50/50 border border-transparent focus:bg-white focus:border-indigo-400 rounded-xl text-xs focus:outline-none transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Select 
-            defaultValue="all" 
+          <Select
+            defaultValue="all"
             style={{ width: 130, height: 32 }}
             onChange={setStatusFilter}
             className="custom-select-dashboard"
@@ -266,10 +270,10 @@ const PromotionsPage: React.FC = () => {
           />
         </div>
         <div className="hidden md:flex items-center gap-3 px-3 py-1 bg-gray-50/50 rounded-xl border border-gray-100">
-           <div className="flex items-center gap-1.5">
-             <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></div>
-             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{filteredPromos.length} Campaigns</span>
-           </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></div>
+            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{filteredPromos.length} Campaigns</span>
+          </div>
         </div>
       </div>
 
@@ -286,8 +290,8 @@ const PromotionsPage: React.FC = () => {
               const shadowColor = isPercentage ? 'shadow-indigo-500/20' : 'shadow-emerald-500/20';
 
               return (
-                <div 
-                  key={promo.id} 
+                <div
+                  key={promo.id}
                   className="bg-white rounded-2xl border border-gray-100 transition-all duration-300 hover:shadow-md flex overflow-hidden group/card relative"
                 >
                   {/* Left Accent Bar */}
@@ -345,13 +349,23 @@ const PromotionsPage: React.FC = () => {
                           {promo.expiry_date ? `Expires ${dayjs(promo.expiry_date).format('DD MMM')}` : 'No Expiry'}
                         </span>
                       </div>
-                      <div className="flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity">
-                        <button onClick={() => handleOpenDrawer(promo)} className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
-                          <Edit2 size={14} />
-                        </button>
-                        <button onClick={() => handleDelete(promo.id, promo.code)} className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all">
-                          <Trash2 size={14} />
-                        </button>
+                      <div className="flex items-center gap-1">
+                        {canUpdatePromo && (
+                          <button
+                            onClick={() => handleOpenDrawer(promo)}
+                            className="p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                        )}
+                        {canDeletePromo && (
+                          <button
+                            onClick={() => handleDelete(promo.id, promo.code)}
+                            className="p-1.5 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -363,13 +377,19 @@ const PromotionsPage: React.FC = () => {
               <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-300">
                 <Ticket size={32} />
               </div>
-              <div>
+              <Empty description={<span className="text-slate-400 font-medium">No active promotions found</span>} />
+              {canCreatePromo && (
+                <Button type="link" onClick={() => handleOpenDrawer()} className="font-bold text-indigo-600 flex items-center gap-2 mt-4">
+                  Click here to create one <ArrowRight size={14} />
+                </Button>
+              )}
+              {/* <div>
                 <p className="text-gray-500 font-bold">No campaigns found</p>
                 <p className="text-gray-400 text-xs mt-1">Refine your search or create a new offer</p>
               </div>
               <Button type="primary" onClick={() => handleOpenDrawer()} className="bg-indigo-600 border-none rounded-xl font-bold h-10 px-6">
                 Create New Offer
-              </Button>
+              </Button> */}
             </div>
           )}
         </div>
@@ -383,7 +403,7 @@ const PromotionsPage: React.FC = () => {
               <Ticket size={24} />
             </div>
             <div>
-              <h3 className="text-lg font-black text-slate-800">{editingId ? 'Edit Offer' : 'Create New Offer'}</h3>
+              <h3 className="text-lg font-black text-slate-800">{editingId ? (isAllowed ? 'Edit Offer' : 'View Offer') : 'Create New Offer'}</h3>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Define your discount logic</p>
             </div>
           </div>
@@ -394,16 +414,20 @@ const PromotionsPage: React.FC = () => {
         className="custom-drawer"
         footer={
           <div className="flex gap-4 p-4">
-             <Button variant="outlined" size="large" onClick={() => setIsDrawerOpen(false)} className="flex-1 rounded-xl h-12 font-bold">Cancel</Button>
-             <Button 
-               type="primary" 
-               size="large" 
-               loading={isSubmitting}
-               onClick={() => form.submit()}
-               className="flex-1 rounded-xl h-12 font-bold bg-indigo-600 border-none shadow-lg shadow-indigo-100"
-             >
-               {editingId ? 'Update Offer' : 'Launch Offer'}
-             </Button>
+            <Button variant="outlined" size="large" onClick={() => setIsDrawerOpen(false)} className="flex-1 rounded-xl h-12 font-bold">
+              {isAllowed ? 'Cancel' : 'Close'}
+            </Button>
+            {isAllowed && (
+              <Button
+                type="primary"
+                size="large"
+                loading={isSubmitting}
+                onClick={() => form.submit()}
+                className="flex-1 rounded-xl h-12 font-bold bg-indigo-600 border-none shadow-lg shadow-indigo-100"
+              >
+                {editingId ? 'Update Offer' : 'Launch Offer'}
+              </Button>
+            )}
           </div>
         }
       >
@@ -412,6 +436,7 @@ const PromotionsPage: React.FC = () => {
           layout="vertical"
           onFinish={handleSubmit}
           className="space-y-6"
+          disabled={!isAllowed}
         >
           <Form.Item name="code" label="Offer Code" rules={[{ required: true, message: 'Code is required' }]}>
             <Input placeholder="E.g. DRIVE100" className="rounded-xl h-11 uppercase font-mono font-bold border-slate-200" />
@@ -425,7 +450,7 @@ const PromotionsPage: React.FC = () => {
               </Select>
             </Form.Item>
 
-            <Form.Item 
+            <Form.Item
               noStyle
               shouldUpdate={(prev, curr) => prev.discount_type !== curr.discount_type}
             >
@@ -433,9 +458,9 @@ const PromotionsPage: React.FC = () => {
                 const type = getFieldValue('discount_type');
                 return (
                   <Form.Item name="discount_value" label="Discount Value" rules={[{ required: true }]}>
-                    <InputNumber 
-                      className="w-full rounded-xl h-11 flex items-center border-slate-200" 
-                      min={1} 
+                    <InputNumber
+                      className="w-full rounded-xl h-11 flex items-center border-slate-200"
+                      min={1}
                       placeholder="Enter value"
                       prefix={type === 'fixed' ? <span className="text-gray-400 font-medium mr-1 border-r pr-2 border-gray-200">₹</span> : undefined}
                       suffix={type === 'percentage' ? <span className="text-gray-400 font-medium ml-1 border-l pl-2 border-gray-200">%</span> : undefined}
@@ -450,14 +475,14 @@ const PromotionsPage: React.FC = () => {
             <Form.Item name="description" label="Internal Description" className="mb-0">
               <Input.TextArea placeholder="Describe this offer for admin records..." rows={3} className="rounded-xl border-slate-200" />
             </Form.Item>
-            
+
             <div className="flex flex-wrap gap-2">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 mr-1">Quick Picks:</span>
               {[
-                "Weekend Special Drive", 
-                "New Driver Welcome Bonus", 
-                "High Demand Area Multiplier", 
-                "Festival Season Offer", 
+                "Weekend Special Drive",
+                "New Driver Welcome Bonus",
+                "High Demand Area Multiplier",
+                "Festival Season Offer",
                 "VIP Driver Loyalty Reward"
               ].map(sug => (
                 <button
@@ -465,8 +490,8 @@ const PromotionsPage: React.FC = () => {
                   key={sug}
                   onClick={() => {
                     const currentDesc = form.getFieldValue('description') || '';
-                    form.setFieldsValue({ 
-                      description: currentDesc ? `${currentDesc}. ${sug}` : sug 
+                    form.setFieldsValue({
+                      description: currentDesc ? `${currentDesc}. ${sug}` : sug
                     });
                   }}
                   className="px-3 py-1 rounded-full border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 text-[10px] font-bold text-slate-500 transition-colors"
@@ -481,7 +506,7 @@ const PromotionsPage: React.FC = () => {
             <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <Users size={14} /> Audience Targeting
             </h4>
-            
+
             <Form.Item name="target_type" label="Target Audience" rules={[{ required: true }]}>
               <Select className="h-11 custom-select-main" onChange={() => form.setFieldsValue({ target_driver_id: undefined, min_rides_required: 0 })}>
                 <Option value="global">Global (All Drivers)</Option>
@@ -490,7 +515,7 @@ const PromotionsPage: React.FC = () => {
               </Select>
             </Form.Item>
 
-            <Form.Item 
+            <Form.Item
               noStyle
               shouldUpdate={(prev, curr) => prev.target_type !== curr.target_type}
             >
@@ -498,8 +523,8 @@ const PromotionsPage: React.FC = () => {
                 <>
                   {getFieldValue('target_type') === 'specific_driver' && (
                     <Form.Item name="target_driver_id" label="Search Driver" rules={[{ required: true }]}>
-                      <Select 
-                        showSearch 
+                      <Select
+                        showSearch
                         placeholder="Search by name or phone"
                         className="h-11 custom-select-main"
                         optionFilterProp="children"
@@ -521,7 +546,7 @@ const PromotionsPage: React.FC = () => {
           </div>
 
           <div className="bg-indigo-50/30 p-6 rounded-2xl border border-indigo-100/30 space-y-4">
-             <h4 className="text-xs font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
+            <h4 className="text-xs font-black text-indigo-400 uppercase tracking-widest flex items-center gap-2">
               <Clock size={14} /> Validity & Limits
             </h4>
 
@@ -530,17 +555,17 @@ const PromotionsPage: React.FC = () => {
             </Form.Item>
 
             <div className="grid grid-cols-2 gap-4">
-               <Form.Item name="max_uses" label="Total Usage Limit">
-                  <InputNumber className="w-full rounded-xl h-11 flex items-center" placeholder="Infinite" min={1} />
-               </Form.Item>
-               <Form.Item name="max_uses_per_driver" label="Limit Per Driver">
-                  <InputNumber className="w-full rounded-xl h-11 flex items-center" min={1} defaultValue={1} />
-               </Form.Item>
+              <Form.Item name="max_uses" label="Total Usage Limit">
+                <InputNumber className="w-full rounded-xl h-11 flex items-center" placeholder="Infinite" min={1} />
+              </Form.Item>
+              <Form.Item name="max_uses_per_driver" label="Limit Per Driver">
+                <InputNumber className="w-full rounded-xl h-11 flex items-center" min={1} defaultValue={1} />
+              </Form.Item>
             </div>
           </div>
 
           <Form.Item name="is_active" label="Status" valuePropName="checked">
-             <Switch checkedChildren="Active" unCheckedChildren="Inactive" className="custom-switch-lg" />
+            <Switch checkedChildren="Active" unCheckedChildren="Inactive" className="custom-switch-lg" />
           </Form.Item>
         </Form>
       </Drawer>

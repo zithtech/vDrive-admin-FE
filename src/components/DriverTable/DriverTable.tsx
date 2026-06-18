@@ -38,6 +38,8 @@ import type { InputRef, TableColumnType } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import DriverDetails, { getMediaUrl } from "../DriverDetails/DriverDetails";
 import { useGetHeight } from "../../utilities/customheightWidth";
+import { useHasPermission } from "../../hooks/usePermission";
+
 interface DriverTableProps {
   data: Driver[];
 }
@@ -45,6 +47,7 @@ interface DriverTableProps {
 type DataIndex = keyof Driver;
 
 const DriverTable = ({ data }: DriverTableProps) => {
+  const canUpdateDriver = useHasPermission("drivers", "update");
   const contentRef = useRef<HTMLDivElement>(null);
   const tableHeight = useGetHeight(contentRef);
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
@@ -52,7 +55,7 @@ const DriverTable = ({ data }: DriverTableProps) => {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef<InputRef>(null);
-  
+
   const dispatch = useAppDispatch();
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [statusAction, setStatusAction] = useState<"blocked" | "suspended" | null>(null);
@@ -108,10 +111,10 @@ const DriverTable = ({ data }: DriverTableProps) => {
     if (selectedDriverForStatus && statusAction) {
       const driverId = String(selectedDriverForStatus.driverId || selectedDriverForStatus.driver_id || selectedDriverForStatus.id);
       try {
-        await dispatch(updateDriverStatus({ 
-          driver_id: driverId, 
-          status: statusAction as any, 
-          status_reason: statusReason 
+        await dispatch(updateDriverStatus({
+          driver_id: driverId,
+          status: statusAction as any,
+          status_reason: statusReason
         })).unwrap();
         message.success(`Driver ${statusAction} successfully.`);
         setStatusModalOpen(false);
@@ -225,56 +228,56 @@ const DriverTable = ({ data }: DriverTableProps) => {
         </div>
       ),
 
-    filterIcon: (filtered: boolean) => (
-      <SearchOutlined style={{ color: filtered ? "#1677ff" : undefined }} />
-    ),
-    onFilter: (value, record) => {
-      const searchFields = [dataIndex, ...additionalSearchFields];
-      return searchFields.some((field) =>
-        (record[field] ?? "")
-          .toString()
-          .toLowerCase()
-          .includes((value as string).toLowerCase()),
-      );
-    },
-    filterDropdownProps: {
-      onOpenChange(open) {
-        if (open) {
-          setTimeout(() => searchInput.current?.select(), 100);
-        }
-      },
-    },
-    render: (text, record) => {
-      const content =
-        searchedColumn === dataIndex ? (
-          <Highlighter
-            highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
-            searchWords={[searchText]}
-            autoEscape
-            textToHighlight={text ? text.toString() : ""}
-          />
-        ) : (
-          text
+      filterIcon: (filtered: boolean) => (
+        <SearchOutlined style={{ color: filtered ? "#1677ff" : undefined }} />
+      ),
+      onFilter: (value, record) => {
+        const searchFields = [dataIndex, ...additionalSearchFields];
+        return searchFields.some((field) =>
+          (record[field] ?? "")
+            .toString()
+            .toLowerCase()
+            .includes((value as string).toLowerCase()),
         );
-
-      return copyKey ? (
-        <div className="flex gap-6 items-center">
-          <span>{content}</span>
-          <Tooltip title={`Copy ${String(copyKey)}`}>
-            <CopyOutlined
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                const idToCopy = String(record.driver_id || record.id || "");
-                navigator.clipboard.writeText(idToCopy);
-                message.success(`${String(copyKey === "driver_id" ? "ID" : copyKey)} copied!`);
-              }}
+      },
+      filterDropdownProps: {
+        onOpenChange(open) {
+          if (open) {
+            setTimeout(() => searchInput.current?.select(), 100);
+          }
+        },
+      },
+      render: (text, record) => {
+        const content =
+          searchedColumn === dataIndex ? (
+            <Highlighter
+              highlightStyle={{ backgroundColor: "#ffc069", padding: 0 }}
+              searchWords={[searchText]}
+              autoEscape
+              textToHighlight={text ? text.toString() : ""}
             />
-          </Tooltip>
-        </div>
-      ) : (
-        content
-      );
-    },
+          ) : (
+            text
+          );
+
+        return copyKey ? (
+          <div className="flex gap-6 items-center">
+            <span>{content}</span>
+            <Tooltip title={`Copy ${String(copyKey)}`}>
+              <CopyOutlined
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  const idToCopy = String(record.driver_id || record.id || "");
+                  navigator.clipboard.writeText(idToCopy);
+                  message.success(`${String(copyKey === "driver_id" ? "ID" : copyKey)} copied!`);
+                }}
+              />
+            </Tooltip>
+          </div>
+        ) : (
+          content
+        );
+      },
     };
   };
   const columns: ColumnsType<Driver> = [
@@ -490,22 +493,25 @@ const DriverTable = ({ data }: DriverTableProps) => {
             icon: <EyeOutlined className="text-gray-400" />,
             label: <span className="font-bold text-gray-700">View Details</span>,
           },
-          {
-            key: "edit",
-            icon: <EditOutlined className="text-blue-400" />,
-            label: <span className="font-bold text-blue-600">Edit Profile</span>,
-          },
-          {
-            key: "block",
-            icon: <StopOutlined />,
-            label: <span className="font-bold">Block Driver</span>,
-            danger: true,
-          },
-          {
-            key: "suspend",
-            icon: <ClockCircleOutlined className="text-orange-400" />,
-            label: <span className="font-bold text-orange-600">Suspend Driver</span>,
-          },
+          ...(canUpdateDriver ? [
+            {
+              key: "edit",
+              icon: <EditOutlined />,
+              label: "Edit Profile",
+            },
+            {
+              key: "block",
+              icon: <StopOutlined />,
+              label: "Block Driver",
+              danger: true,
+            },
+            {
+              key: "suspend",
+              icon: <ClockCircleOutlined />,
+              label: "Suspend Driver",
+              style: { color: "#fa8c16" },
+            },
+          ] : []),
         ];
         return (
           <Space className="driver-action">
@@ -625,7 +631,7 @@ const DriverTable = ({ data }: DriverTableProps) => {
         <div className="py-4">
           <p className="mb-4 text-slate-600">
             You are about to {statusAction === "blocked" ? "permanently block" : "temporarily suspend"}{" "}
-            <span className="font-bold text-slate-800">{selectedDriverForStatus?.full_name}</span>. 
+            <span className="font-bold text-slate-800">{selectedDriverForStatus?.full_name}</span>.
             The driver will be notified immediately.
           </p>
           <div className="flex flex-col gap-2">
@@ -641,7 +647,7 @@ const DriverTable = ({ data }: DriverTableProps) => {
             />
             <div className="flex flex-wrap gap-1 mt-2">
               {(statusAction === "blocked" ? BLOCK_REASONS : SUSPEND_REASONS).map((reason, idx) => (
-                <Tag 
+                <Tag
                   key={idx}
                   className="cursor-pointer hover:border-blue-400 transition-all m-0 px-2 py-0.5 text-[10px] rounded-md bg-slate-50 text-slate-500 font-medium"
                   onClick={() => setStatusReason(reason)}

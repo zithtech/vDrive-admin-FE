@@ -43,7 +43,8 @@ export const fetchCustomers = createAsyncThunk(
     "customers/fetchCustomers",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axiosIns.get("/api/users");
+            const response = await axiosIns.get("/api/users?limit=1000");
+
             const candidate = response.data?.data || response.data?.users || response.data;
 
             if (Array.isArray(candidate)) {

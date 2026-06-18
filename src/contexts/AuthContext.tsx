@@ -19,7 +19,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
-  role: "admin" | "super_admin" | null;
+  role: string | null;
   currentUser: CurrentUser | null;
   login: (credentials: Login) => Promise<void>;
   logout: () => Promise<void>;

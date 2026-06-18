@@ -19,6 +19,7 @@ interface Props {
   open: boolean;
   trip: TripDetailsType | null;
   onClose: () => void;
+  canUpdateTrip?: boolean;
 
   activeAction: ActionType;
 
@@ -35,6 +36,7 @@ const TripDetailsDrawer: React.FC<Props> = ({
   open,
   trip,
   onClose,
+  canUpdateTrip = false,
   onAssignDriverClick,
   onAdjustFareClick,
   onCancelTripClick,
@@ -77,73 +79,75 @@ const TripDetailsDrawer: React.FC<Props> = ({
 
           <div className="flex items-center gap-3">
             {/* Action Toolbar */}
-            <div className="flex items-center gap-2 mr-4 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
-              {/* Assign Driver Button */}
-              <Tooltip title={isTripCompleted(trip) ? `Trip session in ${trip?.trip_status?.toLowerCase()} state` : "Open driver assignment modal"}>
-                <Button
-                  size="small"
-                  disabled={isTripCompleted(trip)}
-                  onClick={() => {
-                    console.log("[Drawer] Assign Driver button clicked");
-                    onAssignDriverClick();
-                  }}
-                  className={`rounded-xl h-9 px-4 font-bold flex items-center gap-2 border-none shadow-sm transition-all text-[11px]
-                    ${isDriverAssigned(trip) ? 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
-                >
-                  <UserAddOutlined className="text-sm" />
-                  {isDriverAssigned(trip) ? "Reassign" : "Assign"}
-                </Button>
-              </Tooltip>
+            {canUpdateTrip && (
+              <div className="flex items-center gap-2 mr-4 bg-gray-50 p-1.5 rounded-2xl border border-gray-100">
+                {/* Assign Driver Button */}
+                <Tooltip title={isTripCompleted(trip) ? `Trip session in ${trip?.trip_status?.toLowerCase()} state` : "Open driver assignment modal"}>
+                  <Button
+                    size="small"
+                    disabled={isTripCompleted(trip)}
+                    onClick={() => {
+                      console.log("[Drawer] Assign Driver button clicked");
+                      onAssignDriverClick();
+                    }}
+                    className={`rounded-xl h-9 px-4 font-bold flex items-center gap-2 border-none shadow-sm transition-all text-[11px]
+                      ${isDriverAssigned(trip) ? 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                  >
+                    <UserAddOutlined className="text-sm" />
+                    {isDriverAssigned(trip) ? "Reassign" : "Assign"}
+                  </Button>
+                </Tooltip>
 
-              {/* Adjust Fare Button */}
-              <Tooltip title={isTripCompleted(trip) ? `Trip session in ${trip?.trip_status?.toLowerCase()} state` : "Open fare adjustment modal"}>
-                <Button
-                  size="small"
-                  disabled={isTripCompleted(trip)}
-                  onClick={() => {
-                    console.log("[Drawer] Adjust Fare button clicked");
-                    onAdjustFareClick();
-                  }}
-                  className="rounded-xl h-9 px-4 font-bold flex items-center gap-2 border-none bg-white text-gray-600 hover:text-emerald-600 shadow-sm text-[11px]"
-                >
-                  <DollarOutlined className="text-sm" />
-                  Adjust
-                </Button>
-              </Tooltip>
+                {/* Adjust Fare Button */}
+                <Tooltip title={isTripCompleted(trip) ? `Trip session in ${trip?.trip_status?.toLowerCase()} state` : "Open fare adjustment modal"}>
+                  <Button
+                    size="small"
+                    disabled={isTripCompleted(trip)}
+                    onClick={() => {
+                      console.log("[Drawer] Adjust Fare button clicked");
+                      onAdjustFareClick();
+                    }}
+                    className="rounded-xl h-9 px-4 font-bold flex items-center gap-2 border-none bg-white text-gray-600 hover:text-emerald-600 shadow-sm text-[11px]"
+                  >
+                    <DollarOutlined className="text-sm" />
+                    Adjust
+                  </Button>
+                </Tooltip>
 
-              {/* Trigger Drivers Button */}
-              <Tooltip title={isTripCompleted(trip) ? `Trip session in ${trip?.trip_status?.toLowerCase()} state` : "Notify nearby drivers"}>
-                <Button
-                  size="small"
-                  disabled={isTripCompleted(trip)}
-                  onClick={() => {
-                    console.log("[Drawer] Trigger Drivers button clicked");
-                    onTriggerDriversClick();
-                  }}
-                  className="rounded-xl h-9 px-4 font-bold flex items-center gap-2 border-none bg-white text-gray-600 hover:text-amber-600 shadow-sm text-[11px]"
-                >
-                  <BellOutlined className="text-sm" />
-                  Notify
-                </Button>
-              </Tooltip>
+                {/* Trigger Drivers Button */}
+                <Tooltip title={isTripCompleted(trip) ? `Trip session in ${trip?.trip_status?.toLowerCase()} state` : "Notify nearby drivers"}>
+                  <Button
+                    size="small"
+                    disabled={isTripCompleted(trip)}
+                    onClick={() => {
+                      console.log("[Drawer] Trigger Drivers button clicked");
+                      onTriggerDriversClick();
+                    }}
+                    className="rounded-xl h-9 px-4 font-bold flex items-center gap-2 border-none bg-white text-gray-600 hover:text-amber-600 shadow-sm text-[11px]"
+                  >
+                    <BellOutlined className="text-sm" />
+                    Notify
+                  </Button>
+                </Tooltip>
 
-              {/* Cancel Trip Button */}
-              <Tooltip title={isTripCompleted(trip) ? `Trip session in ${trip?.trip_status?.toLowerCase()} state` : "Cancel this trip"}>
-                <Button
-                  size="small"
-                  disabled={isTripCompleted(trip)}
-                  onClick={() => {
-                    console.log("[Drawer] Cancel Trip button clicked");
-                    onCancelTripClick();
-                  }}
-                  danger
-                  className="rounded-xl h-9 px-4 font-bold flex items-center gap-2 bg-rose-50 border-rose-100 text-[11px]"
-                >
-                  <CloseCircleOutlined className="text-sm" />
-                  Terminate
-                </Button>
-              </Tooltip>
-            </div>
+                {/* Cancel Trip Button */}
+                <Tooltip title={isTripCompleted(trip) ? `Trip session in ${trip?.trip_status?.toLowerCase()} state` : "Cancel this trip"}>
+                  <Button
+                    size="small"
+                    disabled={isTripCompleted(trip)}
+                    onClick={() => {
+                      console.log("[Drawer] Cancel Trip button clicked");
+                      onCancelTripClick();
+                    }}
+                    danger
+                    className="rounded-xl h-9 px-4 font-bold flex items-center gap-2 bg-rose-50 border-rose-100 text-[11px]"
+                  >
+                    <CloseCircleOutlined className="text-sm" />
+                    Terminate
+                  </Button>
+                </Tooltip>
+              </div>
+            )}
 
             {/* Close Button */}
             <Button

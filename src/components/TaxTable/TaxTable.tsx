@@ -10,7 +10,8 @@ interface TaxTableProps {
   onDelete: (id: string) => void;
   onToggleStatus: (id: string, isActive: boolean) => void;
   loading?: boolean;
-  isSuperAdmin?: boolean;
+  canUpdate?: boolean;
+  canDelete?: boolean;
 }
 
 const TAX_TYPE_GRADIENTS: Record<string, string> = {
@@ -27,7 +28,8 @@ const TaxTable = ({
   onDelete,
   onToggleStatus,
   loading,
-  isSuperAdmin = false,
+  canUpdate = false,
+  canDelete = false,
 }: TaxTableProps) => {
 
   const columns: TableColumnsType<Tax> = [
@@ -91,9 +93,9 @@ const TaxTable = ({
           <Switch
             checked={isActive}
             size="small"
-            disabled={!isSuperAdmin}
+            disabled={!canUpdate}
             onChange={(checked) => onToggleStatus(record.id, checked)}
-            className={`${isActive ? "!bg-emerald-500" : "!bg-gray-200"} ${!isSuperAdmin ? "opacity-50" : ""}`}
+            className={`${isActive ? "!bg-emerald-500" : "!bg-gray-200"} ${!canUpdate ? "opacity-50" : ""}`}
           />
           <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? "text-emerald-600" : "text-gray-400"}`}>
             {isActive ? "Active" : "Inactive"}
@@ -117,35 +119,35 @@ const TaxTable = ({
             />
           </Tooltip>
           
-          {isSuperAdmin && (
-            <>
-              <Tooltip title="Modify Rule">
+          {canUpdate && (
+            <Tooltip title="Modify Rule">
+              <Button
+                type="text"
+                icon={<EditOutlined className="text-indigo-500 text-lg" />}
+                onClick={() => onEdit(record)}
+                className="hover:bg-indigo-50 rounded-full h-9 w-9 flex items-center justify-center p-0"
+              />
+            </Tooltip>
+          )}
+          {canDelete && (
+            <Popconfirm
+              title="Delete Tax Rule"
+              description={`Are you sure you want to delete the "${record.tax_name}" tax rule?`}
+              onConfirm={() => onDelete(record.id)}
+              okText="Delete"
+              okButtonProps={{ danger: true, className: "rounded-lg" }}
+              cancelText="Keep"
+              className="premium-popconfirm"
+            >
+              <Tooltip title="Delete Rule">
                 <Button
                   type="text"
-                  icon={<EditOutlined className="text-indigo-500 text-lg" />}
-                  onClick={() => onEdit(record)}
-                  className="hover:bg-indigo-50 rounded-full h-9 w-9 flex items-center justify-center p-0"
+                  danger
+                  icon={<DeleteOutlined className="text-lg" />}
+                  className="hover:bg-rose-50 rounded-full h-9 w-9 flex items-center justify-center p-0"
                 />
               </Tooltip>
-              <Popconfirm
-                title="Delete Tax Rule"
-                description={`Are you sure you want to delete the "${record.tax_name}" tax rule?`}
-                onConfirm={() => onDelete(record.id)}
-                okText="Delete"
-                okButtonProps={{ danger: true, className: "rounded-lg" }}
-                cancelText="Keep"
-                className="premium-popconfirm"
-              >
-                <Tooltip title="Delete Rule">
-                  <Button
-                    type="text"
-                    danger
-                    icon={<DeleteOutlined className="text-lg" />}
-                    className="hover:bg-rose-50 rounded-full h-9 w-9 flex items-center justify-center p-0"
-                  />
-                </Tooltip>
-              </Popconfirm>
-            </>
+            </Popconfirm>
           )}
         </div>
       ),

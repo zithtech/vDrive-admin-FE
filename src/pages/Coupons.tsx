@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Button, Modal, notification, Tabs, Segmented } from "antd";
-import { PlusOutlined, ExclamationCircleOutlined, TagOutlined, GiftOutlined, HistoryOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined, ExclamationCircleOutlined, TagOutlined, GiftOutlined,
+  // HistoryOutlined 
+} from "@ant-design/icons";
 import TitleBar from "../components/TitleBarCommon/TitleBar";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
@@ -28,6 +31,7 @@ import ReferralLogsTable from "../components/Referrals/ReferralLogsTable";
 import PromoDrawer from "../components/Promos/PromoDrawer";
 import axios from "../api/axios";
 import { fetchPromos, updatePromoStatus, addPromo, updatePromo } from "../store/slices/promoSlice";
+import { useHasPermission } from "../hooks/usePermission";
 
 const { confirm } = Modal;
 
@@ -38,6 +42,11 @@ const CouponsPage: React.FC = () => {
   const { configs, logs, isLoading: referralsLoading } = useAppSelector((state) => state.referral);
   const { role } = useAppSelector((state) => state.auth);
   const isSuperAdmin = role === 'super_admin';
+
+  const hasCouponsRead = useHasPermission("coupons", "read");
+  const hasPromosRead = useHasPermission("promos", "read");
+  const hasUserReferralsRead = useHasPermission("user_referrals", "read");
+  const hasDriverReferralsRead = useHasPermission("driver_referrals", "read");
 
   const [mainTab, setMainTab] = useState<"CUSTOMER" | "DRIVER">("CUSTOMER");
   const [subTab, setSubTab] = useState<"COUPONS" | "REFERRALS" | "LOGS">("COUPONS");
@@ -51,11 +60,99 @@ const CouponsPage: React.FC = () => {
   const [referralDrawerVisible, setReferralDrawerVisible] = useState(false);
   const [editingReferral, setEditingReferral] = useState<ReferralConfig | null>(null);
 
+  // Dynamically switch active subtab if permissions are missing
   useEffect(() => {
-    dispatch(fetchCoupons());
-    dispatch(fetchPromos());
-    dispatch(fetchReferralConfigs());
-  }, [dispatch]);
+    const canReadCoupons = isSuperAdmin || hasCouponsRead;
+    const canReadPromos = isSuperAdmin || hasPromosRead;
+    const canReadUserReferrals = isSuperAdmin || hasUserReferralsRead;
+    const canReadDriverReferrals = isSuperAdmin || hasDriverReferralsRead;
+
+    if (!canReadCoupons && !canReadPromos && (canReadUserReferrals || canReadDriverReferrals)) {
+      setSubTab("REFERRALS");
+    } else if (canReadCoupons || canReadPromos) {
+      setSubTab("COUPONS");
+    }
+  }, [isSuperAdmin, hasCouponsRead, hasPromosRead, hasUserReferralsRead, hasDriverReferralsRead]);
+
+  // Dynamically switch active main tab if permissions are missing
+  useEffect(() => {
+    const canReadCoupons = isSuperAdmin || hasCouponsRead;
+    const canReadPromos = isSuperAdmin || hasPromosRead;
+    const canReadUserReferrals = isSuperAdmin || hasUserReferralsRead;
+    const canReadDriverReferrals = isSuperAdmin || hasDriverReferralsRead;
+
+    if (subTab === "COUPONS") {
+      if (!canReadCoupons && canReadPromos) {
+        setMainTab("DRIVER");
+      } else if (canReadCoupons) {
+        setMainTab("CUSTOMER");
+      }
+    } else {
+      if (!canReadUserReferrals && canReadDriverReferrals) {
+        setMainTab("DRIVER");
+      } else if (canReadUserReferrals) {
+        setMainTab("CUSTOMER");
+      }
+    }
+  }, [subTab, isSuperAdmin, hasCouponsRead, hasPromosRead, hasUserReferralsRead, hasDriverReferralsRead]);
+
+  // Conditional data fetching
+  useEffect(() => {
+    if (isSuperAdmin || hasCouponsRead) {
+      dispatch(fetchCoupons());
+    }
+    if (isSuperAdmin || hasPromosRead) {
+      dispatch(fetchPromos());
+    }
+    if (isSuperAdmin || hasUserReferralsRead || hasDriverReferralsRead) {
+      dispatch(fetchReferralConfigs());
+    }
+  }, [dispatch, isSuperAdmin, hasCouponsRead, hasPromosRead, hasUserReferralsRead, hasDriverReferralsRead]);
+
+  // Dynamically resolve module and actions based on selection
+  const currentModule = subTab === "COUPONS"
+    ? (mainTab === "CUSTOMER" ? "coupons" : "promos")
+    : (mainTab === "CUSTOMER" ? "user_referrals" : "driver_referrals");
+
+  const canCreate = useHasPermission(currentModule, "create");
+  const canUpdate = useHasPermission(currentModule, "update");
+  const canDelete = useHasPermission(currentModule, "delete");
+
+  const hasCreateAccess = isSuperAdmin || canCreate;
+  const hasUpdateAccess = isSuperAdmin || canUpdate;
+  const hasDeleteAccess = isSuperAdmin || canDelete;
+
+  const segmentedOptions = [
+    (isSuperAdmin || hasCouponsRead || hasPromosRead) && {
+      label: (
+        <div className={`px-5 py-0.5 flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${subTab === "COUPONS" ? "text-blue-600" : "text-black"}`}>
+          <TagOutlined /> Coupons
+        </div>
+      ),
+      value: "COUPONS",
+    },
+    (isSuperAdmin || hasUserReferralsRead || hasDriverReferralsRead) && {
+      label: (
+        <div className={`px-5 py-0.5 flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${subTab === "REFERRALS" ? "text-amber-600" : "text-black"}`}>
+          <GiftOutlined /> Referrals
+        </div>
+      ),
+      value: "REFERRALS",
+    },
+  ].filter(Boolean) as any[];
+
+  const customerTabAllowed = subTab === "COUPONS"
+    ? (isSuperAdmin || hasCouponsRead)
+    : (isSuperAdmin || hasUserReferralsRead);
+
+  const driverTabAllowed = subTab === "COUPONS"
+    ? (isSuperAdmin || hasPromosRead)
+    : (isSuperAdmin || hasDriverReferralsRead);
+
+  const tabItems = [
+    customerTabAllowed && { key: "CUSTOMER", label: <span className="px-4 font-black uppercase tracking-widest text-[11px]">Customers Only</span> },
+    driverTabAllowed && { key: "DRIVER", label: <span className="px-4 font-black uppercase tracking-widest text-[11px]">Drivers Only</span> },
+  ].filter(Boolean) as any[];
 
   useEffect(() => {
     if (subTab === "LOGS") {
@@ -229,7 +326,7 @@ const CouponsPage: React.FC = () => {
       iconBgColor="bg-indigo-600"
       description="Manage promotions and referral rewards for both customers and drivers"
       extraContent={
-        isSuperAdmin && subTab !== "LOGS" && (
+        hasCreateAccess && (
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -248,59 +345,37 @@ const CouponsPage: React.FC = () => {
         {/* ─── Control Header ─────────────────────────────────────────── */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-4">
           <div className="flex items-center gap-6">
-            <Tabs
-              activeKey={mainTab}
-              onChange={(key) => setMainTab(key as any)}
-              className="premium-tabs border-none"
-              items={[
-                { key: "CUSTOMER", label: <span className="px-4 font-black uppercase tracking-widest text-[11px]">Customers Only</span> },
-                { key: "DRIVER", label: <span className="px-4 font-black uppercase tracking-widest text-[11px]">Drivers Only</span> },
-              ]}
-            />
+            {tabItems.length > 1 ? (
+              <Tabs
+                activeKey={mainTab}
+                onChange={(key) => setMainTab(key as any)}
+                className="premium-tabs border-none"
+                items={tabItems}
+              />
+            ) : (
+              <div className="h-10" /> // Spacer if only one tab is allowed
+            )}
 
             <div className="h-8 w-[1px] bg-gray-200 hidden md:block" />
 
             <div className="p-1 bg-gray-100 rounded-xl w-fit">
-              <Segmented
-                value={subTab}
-                onChange={(value) => setSubTab(value as any)}
-                className="premium-segmented-alt"
-                options={[
-                  {
-                    label: (
-                      <div className={`px-5 py-0.5 flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${subTab === "COUPONS" ? "text-blue-600" : "text-black"}`}>
-                        <TagOutlined /> Coupons
-                      </div>
-                    ),
-                    value: "COUPONS",
-                  },
-                  {
-                    label: (
-                      <div className={`px-5 py-0.5 flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${subTab === "REFERRALS" ? "text-amber-600" : "text-black"}`}>
-                        <GiftOutlined /> Referrals
-                      </div>
-                    ),
-                    value: "REFERRALS",
-                  },
-                  {
-                    label: (
-                      <div className={`px-5 py-0.5 flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${subTab === "LOGS" ? "text-indigo-600" : "text-black"}`}>
-                        <HistoryOutlined /> Logs
-                      </div>
-                    ),
-                    value: "LOGS",
-                  },
-                ]}
-              />
+              {segmentedOptions.length > 0 && (
+                <Segmented
+                  value={subTab}
+                  onChange={(value) => setSubTab(value as any)}
+                  className="premium-segmented-alt"
+                  options={segmentedOptions}
+                />
+              )}
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <div className="text-right hidden sm:block">
-            <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black leading-none mb-1">Active Ledger</p>
-            <p className="text-[11px] text-gray-500 font-bold">
-              {subTab === 'COUPONS' ? 'Historical Promo Records' : subTab === 'REFERRALS' ? 'Loyalty Incentive Rules' : 'Real-time referral activity'}
-            </p>
+              <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black leading-none mb-1">Active Ledger</p>
+              <p className="text-[11px] text-gray-500 font-bold">
+                {subTab === 'COUPONS' ? 'Historical Promo Records' : subTab === 'REFERRALS' ? 'Loyalty Incentive Rules' : 'Real-time referral activity'}
+              </p>
             </div>
           </div>
         </div>
@@ -317,7 +392,8 @@ const CouponsPage: React.FC = () => {
                 if (mainTab === "CUSTOMER") dispatch(fetchCoupons());
                 else dispatch(fetchPromos());
               }}
-              isSuperAdmin={isSuperAdmin}
+              canUpdate={hasUpdateAccess}
+              canDelete={hasDeleteAccess}
             />
           ) : subTab === "REFERRALS" ? (
             <ReferralTable
@@ -326,7 +402,8 @@ const CouponsPage: React.FC = () => {
               onEdit={handleReferralEdit}
               onDelete={handleReferralDelete}
               onToggleStatus={handleReferralToggle}
-              isSuperAdmin={isSuperAdmin}
+              canUpdate={hasUpdateAccess}
+              canDelete={hasDeleteAccess}
             />
           ) : (
             <ReferralLogsTable

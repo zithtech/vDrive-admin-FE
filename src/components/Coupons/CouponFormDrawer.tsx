@@ -22,6 +22,7 @@ import {
 import type { CouponPayload } from "../../store/slices/couponSlice";
 import type { PromoPayload } from "../../store/slices/promoSlice";
 import dayjs from "dayjs";
+import { useHasPermission } from "../../hooks/usePermission";
 
 const { Title, Text } = Typography;
 
@@ -44,6 +45,10 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
 }) => {
   const [form] = Form.useForm();
   const [discountType, setDiscountType] = useState<string>("PERCENTAGE");
+
+  const module = defaultTarget === "DRIVER" ? "promos" : "coupons";
+  const action = initialValues ? "update" : "create";
+  const isAllowed = useHasPermission(module, action);
 
   useEffect(() => {
     if (visible) {
@@ -131,16 +136,18 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
             onClick={onClose}
             className="rounded-full h-11 px-8 font-bold text-gray-400 hover:text-gray-600 border-gray-200 transition-all"
           >
-            Cancel
+            {isAllowed ? "Cancel" : "Close"}
           </Button>
-          <Button
-            type="primary"
-            onClick={() => form.submit()}
-            loading={loading}
-            className="rounded-full h-11 px-10 font-bold !bg-gradient-to-r !from-blue-600 !to-indigo-600 border-none flex items-center gap-2"
-          >
-            {initialValues ? "Update Promotion" : "Publish Promotion"}
-          </Button>
+          {isAllowed && (
+            <Button
+              type="primary"
+              onClick={() => form.submit()}
+              loading={loading}
+              className="rounded-full h-11 px-10 font-bold !bg-gradient-to-r !from-blue-600 !to-indigo-600 border-none flex items-center gap-2"
+            >
+              {initialValues ? "Update Promotion" : "Publish Promotion"}
+            </Button>
+          )}
         </div>
       }
     >
@@ -157,7 +164,7 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
             </div>
             <div>
               <Title level={3} className="!m-0 !mb-1 font-extrabold text-gray-800 tracking-tight">
-                {initialValues ? "Edit Promotion" : "Create Promotion"}
+                {initialValues ? (isAllowed ? "Edit Promotion" : "View Promotion") : "Create Promotion"}
               </Title>
               <Text className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">
                 Campaign Management & Rewards
@@ -180,6 +187,7 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
         onValuesChange={handleValuesChange}
         className="pt-6 pb-12 space-y-3"
         requiredMark={false}
+        disabled={!isAllowed}
       >
         <div className="bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm space-y-4 mx-4 mt-4">
           <div className="flex items-center gap-3 mb-2">

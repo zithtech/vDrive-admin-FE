@@ -17,6 +17,8 @@ interface NotificationTableProps {
   onEdit: (record: any) => void;
   onDelete: (id: string) => void;
   onOpenNotifyModal: (record: any) => void;
+  canUpdate?: boolean;
+  canDelete?: boolean;
 }
 
 const NotificationTable: React.FC<NotificationTableProps> = ({
@@ -25,6 +27,8 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
   onEdit,
   onDelete,
   onOpenNotifyModal,
+  canUpdate = false,
+  canDelete = false,
 }) => {
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -137,33 +141,39 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
         </Button>
       ),
     },
-    {
-      title: "ACTIONS",
-      key: "actions",
-      fixed: "right" as const,
-      width: 100,
-      render: (record: any) => (
-        <Space size="middle">
-          <Tooltip title="Edit Notification">
-            <Button
-              type="text"
-              icon={<EditOutlined className="text-indigo-500" />}
-              onClick={() => onEdit(record)}
-              className="hover:bg-indigo-50 rounded-lg transition-all"
-            />
-          </Tooltip>
-          <Tooltip title="Delete">
-            <Button
-              type="text"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => onDelete(record.id)}
-              className="hover:bg-rose-50 rounded-lg transition-all"
-            />
-          </Tooltip>
-        </Space>
-      ),
-    },
+    ...(canUpdate || canDelete ? [
+      {
+        title: "ACTIONS",
+        key: "actions",
+        fixed: "right" as const,
+        width: 100,
+        render: (record: any) => (
+          <Space size="middle">
+            {canUpdate && (
+              <Tooltip title="Edit Notification">
+                <Button
+                  type="text"
+                  icon={<EditOutlined className="text-indigo-500" />}
+                  onClick={() => onEdit(record)}
+                  className="hover:bg-indigo-50 rounded-lg transition-all"
+                />
+              </Tooltip>
+            )}
+            {canDelete && (
+              <Tooltip title="Delete">
+                <Button
+                  type="text"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => onDelete(record.id)}
+                  className="hover:bg-rose-50 rounded-lg transition-all"
+                />
+              </Tooltip>
+            )}
+          </Space>
+        ),
+      }
+    ] : []),
   ];
 
   return (

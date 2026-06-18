@@ -30,6 +30,7 @@ import {
   fetchDocumentHistory,
   verifyDriverAccount,
 } from "../../store/slices/driverSlice";
+import { useHasPermission } from "../../hooks/usePermission";
 import axiosIns from "../../api/axios";
 import { calculatePerformanceMetrics, type PerformanceMetrics } from "../../utilities/performanceUtils";
 const { Text, Title } = Typography;
@@ -77,6 +78,13 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
   onClose,
   open,
 }) => {
+  const canUpdateDriver = useHasPermission("drivers", "update");
+  // const actionLabels: Record<string, string> = {
+  //   trip_started: "Trip Started",
+  //   trip_completed: "Trip Completed",
+  //   trip_cancelled: "Trip Cancelled",
+  // };
+
   const dispatch = useAppDispatch();
   const [form] = Form.useForm();
   const [activeKey, setActiveKey] = useState("1");
@@ -102,7 +110,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
   const [perfPeriod, setPerfPeriod] = useState<Period>('Week');
   const [dynamicMetrics, setDynamicMetrics] = useState<PerformanceMetrics | null>(null);
   const [isPerfLoading, setIsPerfLoading] = useState(false);
-  
+
   // Activity History State
   const [rideHistory, setRideHistory] = useState<any[]>([]);
   const [historyPeriod, setHistoryPeriod] = useState<Period>('Week');
@@ -139,9 +147,9 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     } else if (p === 'Month') {
       from.setDate(to.getDate() - 30);
     }
-    return { 
-      from: from.toISOString().split('T')[0], 
-      to: to.toISOString().split('T')[0] 
+    return {
+      from: from.toISOString().split('T')[0],
+      to: to.toISOString().split('T')[0]
     };
   }, []);
 
@@ -153,15 +161,15 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
       try {
         const driverId = driver.driverId || driver.driver_id || driver.id || "";
         const dates = getDatesForPeriod(perfPeriod);
-        
+
         // Fetch ride activity
         const activityRes = await axiosIns.get(`/api/drivers/activity/${driverId}`, {
           params: { from: dates.from, to: dates.to }
         });
-        
+
         const rides = Array.isArray(activityRes.data?.data) ? activityRes.data.data : [];
         const metrics = calculatePerformanceMetrics(rides);
-        
+
         // Fetch today overview for more accurate online time if period is 'Today'
         if (perfPeriod === 'Today') {
           try {
@@ -173,7 +181,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             console.error("Failed to fetch today overview", e);
           }
         }
-        
+
         setDynamicMetrics(metrics);
       } catch (err) {
         console.error("Failed to fetch performance data", err);
@@ -194,17 +202,17 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
       try {
         const driverId = driver.driverId || driver.driver_id || driver.id || "";
         const dates = getDatesForPeriod(historyPeriod);
-        
-        const params: any = { 
-          from: dates.from, 
-          to: dates.to 
+
+        const params: any = {
+          from: dates.from,
+          to: dates.to
         };
         if (historyStatus !== 'all') params.status = historyStatus;
 
         const res = await axiosIns.get(`/api/drivers/activity/${driverId}`, { params });
         const rides = Array.isArray(res.data?.data) ? res.data.data : [];
         setRideHistory(rides);
-        
+
         // Calculate metrics for the selected period
         setHistoryMetrics(calculatePerformanceMetrics(rides));
       } catch (err) {
@@ -245,7 +253,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             <UserOutlined style={{ fontSize: 64, color: "#cbd5e1", marginBottom: 24 }} />
             <Title level={3} className="text-gray-400">Driver Not Found</Title>
             <Text type="secondary" className="text-lg">
-              We couldn't find the details for this driver. <br/> Please try refreshing the list.
+              We couldn't find the details for this driver. <br /> Please try refreshing the list.
             </Text>
             <Button type="primary" size="large" onClick={onClose} className="mt-8 px-8 h-12 rounded-xl text-lg font-medium">
               Close
@@ -257,7 +265,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
   }
   const handleStatusUpdate = (status: DriverStatus) => {
     if (!driver) return;
-    
+
     if (status === "blocked" || status === "suspended" || status === "rejected") {
       setStatusAction(status);
       setStatusReason("");
@@ -270,9 +278,9 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
           setLoadingAction(status);
           try {
             await dispatch(
-              updateDriverStatus({ 
-                driver_id: driver.driverId || driver.driver_id || driver.id || "", 
-                status 
+              updateDriverStatus({
+                driver_id: driver.driverId || driver.driver_id || driver.id || "",
+                status
               }),
             ).unwrap();
             message.success(`Driver ${status} successfully`);
@@ -288,7 +296,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
 
   const handleStatusSubmit = async () => {
     if (!driver || !statusAction) return;
-    
+
     if ((statusAction === "rejected" || statusAction === "blocked" || statusAction === "suspended") && !statusReason?.trim()) {
       message.error("Please provide a reason for this action");
       return;
@@ -297,10 +305,10 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     setLoadingAction(statusAction);
     try {
       await dispatch(
-        updateDriverStatus({ 
-          driver_id: driver.driverId || driver.driver_id || driver.id || "", 
+        updateDriverStatus({
+          driver_id: driver.driverId || driver.driver_id || driver.id || "",
           status: statusAction,
-          status_reason: statusReason 
+          status_reason: statusReason
         }),
       ).unwrap();
 
@@ -439,33 +447,35 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
       <div className="content-card p-6">
         <div className="flex justify-between items-start mb-6">
           <Title level={4} className="m-0 flex items-center gap-2 text-gray-800">
-             <UserOutlined className="text-blue-500" /> Driver Information
+            <UserOutlined className="text-blue-500" /> Driver Information
           </Title>
-          <Button 
-            type="text" 
-            icon={<EditOutlined />} 
-            onClick={() => {
-              let firstName = driver?.first_name || '';
-              let lastName = driver?.last_name || '';
-              
-              if (!firstName && !lastName && driver?.full_name) {
-                const names = driver.full_name.split(' ');
-                firstName = names[0];
-                lastName = names.slice(1).join(' ');
-              }
+          {canUpdateDriver && (
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => {
+                let firstName = driver?.first_name || '';
+                let lastName = driver?.last_name || '';
 
-              form.setFieldsValue({
-                ...driver,
-                first_name: firstName,
-                last_name: lastName,
-                date_of_birth: (driver?.dob || driver?.date_of_birth) ? dayjs(driver.dob || driver.date_of_birth) : null,
-              });
-              setIsEditModalOpen(true);
-            }}
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg font-medium px-4 h-9"
-          >
-            Edit Profile
-          </Button>
+                if (!firstName && !lastName && driver?.full_name) {
+                  const names = driver.full_name.split(' ');
+                  firstName = names[0];
+                  lastName = names.slice(1).join(' ');
+                }
+
+                form.setFieldsValue({
+                  ...driver,
+                  first_name: firstName,
+                  last_name: lastName,
+                  date_of_birth: (driver?.dob || driver?.date_of_birth) ? dayjs(driver.dob || driver.date_of_birth) : null,
+                });
+                setIsEditModalOpen(true);
+              }}
+              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg font-medium px-4 h-9"
+            >
+              Edit Profile
+            </Button>
+          )}
         </div>
 
         <div className="info-grid">
@@ -476,8 +486,8 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             <div className="info-content">
               <span className="info-label">Full Name</span>
               <span className="info-value font-bold text-lg">
-                {driver?.first_name || driver?.last_name 
-                  ? `${driver.first_name || ''} ${driver.last_name || ''}`.trim() 
+                {driver?.first_name || driver?.last_name
+                  ? `${driver.first_name || ''} ${driver.last_name || ''}`.trim()
                   : driver?.full_name || "N/A"}
               </span>
               {driver?.vdrive_id && (
@@ -613,9 +623,9 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     <div className="grid grid-cols-1 gap-6">
       {driver?.documents && driver.documents.some((d: any) => d.license_status !== 'verified') && (
         <div className="flex justify-end mb-2">
-          <Button 
-            type="primary" 
-            icon={<CheckCircleOutlined />} 
+          <Button
+            type="primary"
+            icon={<CheckCircleOutlined />}
             onClick={handleBulkVerify}
             loading={loadingAction === 'bulk-verify'}
             className="bg-green-600 hover:bg-green-700 border-none shadow-md rounded-xl px-6 h-10 font-bold"
@@ -644,10 +654,10 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
               <Tag color={getStatusColor(doc?.license_status)} className="status-badge m-0">
                 {capitalize(doc?.license_status)}
               </Tag>
-              <Button 
-                type="link" 
-                size="small" 
-                icon={<HistoryOutlined />} 
+              <Button
+                type="link"
+                size="small"
+                icon={<HistoryOutlined />}
                 onClick={() => handleShowHistory(doc.document_id || doc.id, doc.document_type)}
                 className="text-[10px] h-auto p-0 flex items-center gap-1 opacity-70 hover:opacity-100"
               >
@@ -669,7 +679,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                             alt={`${doc?.document_type} Front`}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 rounded-lg"
                           />
-                          <div 
+                          <div
                             className="absolute inset-0 bg-blue-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer rounded-xl"
                             onClick={() => {
                               setPreviewDoc({ url: getMediaUrl(doc.document_url.front), type: `${doc?.document_type} (Front)` });
@@ -688,7 +698,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                             alt={`${doc?.document_type} Back`}
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 rounded-lg"
                           />
-                          <div 
+                          <div
                             className="absolute inset-0 bg-blue-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer rounded-xl"
                             onClick={() => {
                               setPreviewDoc({ url: getMediaUrl(doc.document_url.back), type: `${doc?.document_type} (Back)` });
@@ -708,7 +718,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                         alt={doc?.document_type}
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 rounded-lg"
                       />
-                      <div 
+                      <div
                         className="absolute inset-0 bg-blue-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer rounded-2xl"
                         onClick={() => {
                           setPreviewDoc({
@@ -743,10 +753,10 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                   icon={<DownloadOutlined />}
                   onClick={() => {
                     if (typeof doc?.document_url === 'object' && doc.document_url !== null) {
-                       if (doc.document_url.front) window.open(getMediaUrl(doc.document_url.front), "_blank");
-                       if (doc.document_url.back) window.open(getMediaUrl(doc.document_url.back), "_blank");
+                      if (doc.document_url.front) window.open(getMediaUrl(doc.document_url.front), "_blank");
+                      if (doc.document_url.back) window.open(getMediaUrl(doc.document_url.back), "_blank");
                     } else {
-                       window.open(getMediaUrl(typeof doc?.document_url === 'string' ? doc.document_url : doc?.document_url?.url), "_blank");
+                      window.open(getMediaUrl(typeof doc?.document_url === 'string' ? doc.document_url : doc?.document_url?.url), "_blank");
                     }
                   }}
                   className="rounded-lg h-9"
@@ -758,7 +768,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
           </div>
 
           <div className="flex justify-end items-center pt-4 border-t border-gray-100 gap-3">
-            {doc?.license_status !== "verified" && (
+            {doc?.license_status !== "verified" && canUpdateDriver && (
               <>
                 <Button
                   danger
@@ -794,10 +804,10 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
       <div className="content-card p-6">
         <div className="flex justify-between items-center mb-6">
           <Title level={4} className="m-0 flex items-center gap-2 text-gray-800">
-             <BarChartOutlined className="text-blue-500" /> Performance Analytics
+            <BarChartOutlined className="text-blue-500" /> Performance Analytics
           </Title>
-          <Radio.Group 
-            value={perfPeriod} 
+          <Radio.Group
+            value={perfPeriod}
             onChange={(e) => setPerfPeriod(e.target.value)}
             buttonStyle="solid"
             size="small"
@@ -808,7 +818,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             <Radio.Button value="Month">Month</Radio.Button>
           </Radio.Group>
         </div>
-        
+
         {isPerfLoading ? (
           <div className="flex justify-center items-center py-12">
             <Spin size="large" />
@@ -816,76 +826,76 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
         ) : (
           <>
             <div className="flex flex-col items-center justify-center mb-8">
-               <div className="perf-score-container">
-                 <Progress 
-                   type="dashboard" 
-                   percent={dynamicMetrics?.completionRate || 0} 
-                   strokeColor={{ "0%": "#2563EB", "100%": "#3B82F6" }}
-                   width={160}
-                   strokeWidth={10}
-                   gapDegree={60}
-                   format={(percent) => (
-                     <div className="flex flex-col items-center">
-                       <span className="text-3xl font-extrabold text-gray-800">{percent}%</span>
-                       <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Score</span>
-                     </div>
-                   )}
-                 />
-               </div>
-               <Text type="secondary" className="mt-4 text-center text-sm px-8 max-w-xs mx-auto">
-                 Overall performance based on accepted and completed trips for the selected period.
-               </Text>
+              <div className="perf-score-container">
+                <Progress
+                  type="dashboard"
+                  percent={dynamicMetrics?.completionRate || 0}
+                  strokeColor={{ "0%": "#2563EB", "100%": "#3B82F6" }}
+                  width={160}
+                  strokeWidth={10}
+                  gapDegree={60}
+                  format={(percent) => (
+                    <div className="flex flex-col items-center">
+                      <span className="text-3xl font-extrabold text-gray-800">{percent}%</span>
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Score</span>
+                    </div>
+                  )}
+                />
+              </div>
+              <Text type="secondary" className="mt-4 text-center text-sm px-8 max-w-xs mx-auto">
+                Overall performance based on accepted and completed trips for the selected period.
+              </Text>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
-               <div className="stat-box perf-metric-card bg-emerald-50 border-emerald-100 flex items-center gap-3 p-4">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                    <WalletOutlined className="text-emerald-600 text-lg" />
+              <div className="stat-box perf-metric-card bg-emerald-50 border-emerald-100 flex items-center gap-3 p-4">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <WalletOutlined className="text-emerald-600 text-lg" />
+                </div>
+                <div>
+                  <Text type="secondary" className="info-label text-[10px] text-emerald-600">Earnings</Text>
+                  <div className="text-xl font-bold text-emerald-800 mt-0.5 perf-stat-value">
+                    ₹{(dynamicMetrics?.totalEarnings || 0).toLocaleString('en-IN')}
                   </div>
-                  <div>
-                    <Text type="secondary" className="info-label text-[10px] text-emerald-600">Earnings</Text>
-                    <div className="text-xl font-bold text-emerald-800 mt-0.5 perf-stat-value">
-                      ₹{(dynamicMetrics?.totalEarnings || 0).toLocaleString('en-IN')}
-                    </div>
-                  </div>
-               </div>
+                </div>
+              </div>
 
-               <div className="stat-box perf-metric-card bg-blue-50 border-blue-100 flex items-center gap-3 p-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                    <ClockCircleOutlined className="text-blue-600 text-lg" />
+              <div className="stat-box perf-metric-card bg-blue-50 border-blue-100 flex items-center gap-3 p-4">
+                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <ClockCircleOutlined className="text-blue-600 text-lg" />
+                </div>
+                <div>
+                  <Text type="secondary" className="info-label text-[10px] text-blue-600">Online Time</Text>
+                  <div className="text-xl font-bold text-blue-800 mt-0.5 perf-stat-value">
+                    {((dynamicMetrics?.onlineMinutes || 0) / 60).toFixed(1)}h
                   </div>
-                  <div>
-                    <Text type="secondary" className="info-label text-[10px] text-blue-600">Online Time</Text>
-                    <div className="text-xl font-bold text-blue-800 mt-0.5 perf-stat-value">
-                      {((dynamicMetrics?.onlineMinutes || 0) / 60).toFixed(1)}h
-                    </div>
-                  </div>
-               </div>
+                </div>
+              </div>
 
-               <div className="stat-box perf-metric-card bg-amber-50 border-amber-100 flex items-center gap-3 p-4">
-                  <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-                    <UserOutlined className="text-amber-600 text-lg" />
+              <div className="stat-box perf-metric-card bg-amber-50 border-amber-100 flex items-center gap-3 p-4">
+                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+                  <UserOutlined className="text-amber-600 text-lg" />
+                </div>
+                <div>
+                  <Text type="secondary" className="info-label text-[10px] text-amber-600">Rating</Text>
+                  <div className="text-xl font-bold text-amber-800 mt-0.5 flex items-center gap-1 perf-stat-value">
+                    {Number(dynamicMetrics?.rating || driver?.rating || 0).toFixed(1)}
+                    <Rate disabled allowHalf value={Number(dynamicMetrics?.rating || driver?.rating || 0)} style={{ fontSize: 12, marginLeft: 4 }} />
                   </div>
-                  <div>
-                    <Text type="secondary" className="info-label text-[10px] text-amber-600">Rating</Text>
-                    <div className="text-xl font-bold text-amber-800 mt-0.5 flex items-center gap-1 perf-stat-value">
-                      {Number(dynamicMetrics?.rating || driver?.rating || 0).toFixed(1)}
-                      <Rate disabled allowHalf value={Number(dynamicMetrics?.rating || driver?.rating || 0)} style={{ fontSize: 12, marginLeft: 4 }} />
-                    </div>
-                  </div>
-               </div>
+                </div>
+              </div>
 
-               <div className="stat-box perf-metric-card bg-purple-50 border-purple-100 flex items-center gap-3 p-4">
-                  <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                    <CheckCircleOutlined className="text-purple-600 text-lg" />
+              <div className="stat-box perf-metric-card bg-purple-50 border-purple-100 flex items-center gap-3 p-4">
+                <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                  <CheckCircleOutlined className="text-purple-600 text-lg" />
+                </div>
+                <div>
+                  <Text type="secondary" className="info-label text-[10px] text-purple-600">Acceptance</Text>
+                  <div className="text-xl font-bold text-purple-800 mt-0.5 perf-stat-value">
+                    {dynamicMetrics?.acceptanceRate || 0}%
                   </div>
-                  <div>
-                    <Text type="secondary" className="info-label text-[10px] text-purple-600">Acceptance</Text>
-                    <div className="text-xl font-bold text-purple-800 mt-0.5 perf-stat-value">
-                      {dynamicMetrics?.acceptanceRate || 0}%
-                    </div>
-                  </div>
-               </div>
+                </div>
+              </div>
             </div>
 
             <div className="perf-summary-bar mb-6">
@@ -904,17 +914,17 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             </div>
 
             <div className="content-card p-4 bg-gray-50 flex items-center gap-3 shadow-none border-dashed mt-auto">
-               <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm">
-                  <ClockCircleOutlined className="text-gray-400" />
-               </div>
-               <div>
-                  <Text type="secondary" className="text-[10px] font-bold block uppercase tracking-tight">Last Active</Text>
-                  <Text className="text-sm font-medium text-gray-600">
-                    {driver?.performance?.last_active
-                      ? dayjs(driver?.performance?.last_active)?.format("MMM D, YYYY • hh:mm A")
-                      : "N/A"}
-                  </Text>
-               </div>
+              <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm">
+                <ClockCircleOutlined className="text-gray-400" />
+              </div>
+              <div>
+                <Text type="secondary" className="text-[10px] font-bold block uppercase tracking-tight">Last Active</Text>
+                <Text className="text-sm font-medium text-gray-600">
+                  {driver?.performance?.last_active
+                    ? dayjs(driver?.performance?.last_active)?.format("MMM D, YYYY • hh:mm A")
+                    : "N/A"}
+                </Text>
+              </div>
             </div>
           </>
         )}
@@ -926,9 +936,9 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     <div className="space-y-6">
       <div className="content-card p-6">
         <Title level={4} className="mb-6 flex items-center gap-2 text-gray-800">
-           <WalletOutlined className="text-emerald-500" /> Payment Summary
+          <WalletOutlined className="text-emerald-500" /> Payment Summary
         </Title>
-        
+
         <div className="grid grid-cols-1 gap-4">
           <div className="stat-box bg-emerald-50/30 border-emerald-100">
             <Text type="secondary" className="info-label text-[10px] text-emerald-600">Total Earnings</Text>
@@ -956,7 +966,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
       <div className="content-card p-6">
         <div className="flex justify-between items-center mb-6">
           <Title level={4} className="m-0 flex items-center gap-2 text-gray-800">
-             <SyncOutlined className="text-indigo-500" /> Active Recharge Plan
+            <SyncOutlined className="text-indigo-500" /> Active Recharge Plan
           </Title>
           {driver?.active_subscription?.status === "active" ? (
             <Tag color="#4ade80" className="status-badge border-none text-green-900">Active</Tag>
@@ -977,7 +987,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                 <div className="font-bold capitalize text-lg text-indigo-600 mt-1">{driver.active_subscription.billing_cycle}</div>
               </div>
             </div>
-            
+
             <div className="info-grid bg-gray-50 p-4 rounded-2xl border border-gray-100">
               <div className="info-item">
                 <div className="info-icon-wrapper bg-white">
@@ -1000,23 +1010,23 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             </div>
 
             <div className="stat-box bg-indigo-50 border-indigo-100 flex items-center gap-4">
-               <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-xl font-black text-indigo-600 shadow-sm">
-                  {dayjs(driver.active_subscription.expiry_date).diff(dayjs(), "day")}
-               </div>
-               <div>
-                 <Text type="secondary" className="text-[10px] font-bold block">DAYS REMAINING</Text>
-                 <Text className="text-sm font-medium text-indigo-900">
-                   Plan expires on {dayjs(driver.active_subscription.expiry_date).format("MMMM D")}
-                 </Text>
-               </div>
+              <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-xl font-black text-indigo-600 shadow-sm">
+                {dayjs(driver.active_subscription.expiry_date).diff(dayjs(), "day")}
+              </div>
+              <div>
+                <Text type="secondary" className="text-[10px] font-bold block">DAYS REMAINING</Text>
+                <Text className="text-sm font-medium text-indigo-900">
+                  Plan expires on {dayjs(driver.active_subscription.expiry_date).format("MMMM D")}
+                </Text>
+              </div>
             </div>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-             <div className="w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center mb-4">
-               <StopOutlined style={{ fontSize: 32, color: "#cbd5e1" }} />
-             </div>
-             <p className="text-gray-400 font-medium">No active recharge plan found for this driver.</p>
+            <div className="w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center mb-4">
+              <StopOutlined style={{ fontSize: 32, color: "#cbd5e1" }} />
+            </div>
+            <p className="text-gray-400 font-medium">No active recharge plan found for this driver.</p>
           </div>
         )}
       </div>
@@ -1027,12 +1037,12 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
       <div className="content-card p-6">
         <div className="flex justify-between items-center mb-6">
           <Title level={4} className="m-0 flex items-center gap-2 text-gray-800">
-             <LineChartOutlined className="text-blue-500" /> Ride Activity
+            <LineChartOutlined className="text-blue-500" /> Ride Activity
           </Title>
           <div className="flex gap-2">
-            <Select 
-              size="small" 
-              value={historyStatus} 
+            <Select
+              size="small"
+              value={historyStatus}
               onChange={setHistoryStatus}
               className="w-32"
               options={[
@@ -1041,8 +1051,8 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                 { label: 'Cancelled', value: 'Cancelled' },
               ]}
             />
-            <Radio.Group 
-              value={historyPeriod} 
+            <Radio.Group
+              value={historyPeriod}
               onChange={(e) => setHistoryPeriod(e.target.value)}
               buttonStyle="solid"
               size="small"
@@ -1095,12 +1105,12 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
 
                     <div className="relative pl-6 py-1 space-y-3">
                       <div className="absolute left-1.5 top-2.5 bottom-2.5 w-[1.5px] bg-gray-100 dashed-line"></div>
-                      
+
                       <div className="relative">
                         <div className="absolute -left-[22px] top-1.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white shadow-sm"></div>
                         <Text className="text-sm text-gray-700 line-clamp-1">{trip.pickup}</Text>
                       </div>
-                      
+
                       <div className="relative">
                         <div className="absolute -left-[22px] top-1.5 w-3 h-3 rounded-full bg-red-500 border-2 border-white shadow-sm"></div>
                         <Text className="text-sm text-gray-700 line-clamp-1">{trip.drop}</Text>
@@ -1122,7 +1132,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                         ₹{trip.amount?.toLocaleString()}
                       </Text>
                     </div>
-                    
+
                     {trip.customer?.rating && (
                       <div className="mt-2 flex items-center gap-2">
                         <Rate disabled allowHalf value={trip.customer.rating} style={{ fontSize: 10 }} />
@@ -1209,8 +1219,9 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
   ];
 
   const renderStatusActions = () => {
+    if (!canUpdateDriver) return null;
     const isAwaitingVerification = driver?.onboarding_status === 'DOCS_SUBMITTED' || driver?.onboarding_status === 'DOCS_REJECTED';
-    
+
     if (driver?.status === "pending" || driver?.status === "pending_verification" || isAwaitingVerification) {
       return (
         <Space wrap size="middle">
@@ -1284,430 +1295,429 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
   return (
     <>
       <Drawer
-      title={null}
-      placement="right"
-      width={720}
-      onClose={onClose}
-      open={open}
-      closable={false}
-      destroyOnClose={true}
-      className="driver-details-drawer"
-    >
-      <div className="driver-details-header">
-        <div className="flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-6">
-            <div className="driver-avatar-wrapper overflow-hidden rounded-full border-4 border-white/20 shadow-xl group cursor-pointer">
-              <Image
-                width={100}
-                height={100}
-                src={getMediaUrl(driver?.profilePicUrl || driver?.profile_pic_url)}
-                className="object-cover"
-                preview={{
-                  mask: <div className="text-[10px] font-bold">PREVIEW</div>
-                }}
-                fallback="https://ui-avatars.com/api/?name=${encodeURIComponent(driver?.full_name || 'Driver')}&background=6366f1&color=fff"
-              />
-            </div>
-            <div className="text-white">
-              <div className="text-3xl font-extrabold tracking-tight">
-                {driver?.first_name || driver?.last_name 
-                  ? `${driver.first_name || ''} ${driver.last_name || ''}`.trim() 
-                  : driver?.full_name || "N/A"}
-              </div>
-              <p className="m-0 text-blue-100/80 text-sm font-medium mt-1 flex items-center gap-2">
-                <SafetyCertificateOutlined className="text-blue-300" />
-                DRIVER ID: {driver?.driverId || driver?.driver_id || driver?.id || "N/A"}
-              </p>
-              <div className="mt-3 flex gap-2">
-                {driver?.availability?.online ? (
-                  <Tag color="#4ade80" className="m-0 border-none px-3 font-bold rounded-full text-green-900 shadow-sm">
-                    <SyncOutlined spin className="mr-1" /> ONLINE
-                  </Tag>
-                ) : (
-                  <Tag color="#94a3b8" className="m-0 border-none px-3 font-bold rounded-full text-white shadow-sm">
-                    OFFLINE
-                  </Tag>
-                )}
-                <Tag color="#6366f1" className="m-0 border-none px-3 font-bold rounded-full text-white shadow-sm uppercase">
-                  {driver?.role || "Normal"}
-                </Tag>
-              </div>
-            </div>
-          </div>
-          <Button 
-            type="primary" 
-            shape="circle" 
-            icon={<CloseOutlined />} 
-            onClick={onClose}
-            className="bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md"
-          />
-        </div>
-      </div>
-      <div className="action-buttons-container">
-        {renderStatusActions()}
-      </div>
-
-      <div className="py-6 h-full overflow-y-auto custom-scrollbar" style={{ background: "#f8fafc" }}>
-        
-        {(driver?.status === "blocked" || driver?.status === "suspended") && (
-          <div className="mx-6 mb-6">
-            <div className={`p-4 rounded-xl border flex items-start gap-4 ${driver.status === "blocked" ? "bg-red-50 border-red-200" : "bg-orange-50 border-orange-200"}`}>
-              <div className={`text-2xl mt-1 ${driver.status === "blocked" ? "text-red-500" : "text-orange-500"}`}>
-                {driver.status === "blocked" ? <StopOutlined /> : <ClockCircleOutlined />}
-              </div>
-              <div>
-                <h3 className={`font-bold m-0 text-lg ${driver.status === "blocked" ? "text-red-700" : "text-orange-700"}`}>
-                  Account {driver.status === "blocked" ? "Blocked" : "Suspended"}
-                </h3>
-                <p className={`mt-1 mb-0 text-sm ${driver.status === "blocked" ? "text-red-600" : "text-orange-600"}`}>
-                  <strong>Reason: </strong> {(driver as any).status_reason || "No specific reason provided."}
-                </p>
-                {(driver as any).status_updated_at && (
-                  <p className={`mt-1 mb-0 text-xs ${driver.status === "blocked" ? "text-red-400" : "text-orange-400"}`}>
-                    Applied on: {dayjs((driver as any).status_updated_at).format("MMM D, YYYY • hh:mm A")}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div className="custom-navigation mb-8">
-          {segments.map(({ key }) => (
-            <div
-              key={key}
-              className={`nav-item ${activeKey === key ? "active" : ""}`}
-              onClick={() => setActiveKey(key)}
-            >
-              <div className="nav-icon">
-                {key === "1" && <UserOutlined />}
-                {key === "3" && <FileTextOutlined />}
-                {key === "4" && <BarChartOutlined />}
-                {key === "5" && <WalletOutlined />}
-                {key === "6" && <SyncOutlined />}
-                {key === "7" && <LineChartOutlined />}
-              </div>
-              <span className="nav-label">
-                {key === "1" && "BASIC"}
-                {key === "3" && "DOCS"}
-                {key === "4" && "STATS"}
-                {key === "5" && "WALLET"}
-                {key === "6" && "PLAN"}
-                {key === "7" && "ACTIVITY"}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        <div className="px-6 pb-24">
-          <div key={activeKey} className="animate-in fade-in slide-in-from-bottom-4 duration-300">
-            {segments.find((tab) => tab.key === activeKey)?.content}
-          </div>
-        </div>
-      </div>
-
-      {/* Edit Profile Modal - Redesigned to match screenshot */}
-      <Modal
-        open={isEditModalOpen}
-        onCancel={() => setIsEditModalOpen(false)}
-        footer={null}
-        width={1200}
-        centered
+        title={null}
+        placement="right"
+        width={720}
+        onClose={onClose}
+        open={open}
         closable={false}
-        className="screenshot-style-modal"
-        bodyStyle={{ padding: 0, overflow: 'hidden' }}
+        destroyOnClose={true}
+        className="driver-details-drawer"
       >
-        <div className="flex h-[560px]">
-          {/* Left Sidebar - Purple */}
-          <div className="w-[280px] bg-[#9c6cf2] px-8 py-8 flex flex-col justify-between text-white relative overflow-hidden flex-shrink-0">
-            <div className="relative z-10">
-              <span className="text-[9px] font-bold tracking-[0.2em] opacity-70 uppercase">Account</span>
-              <h2 className="text-xl font-bold mt-1 mb-2 leading-tight">Edit your profile</h2>
-              <p className="text-[11px] opacity-80 leading-relaxed font-medium">
-                Keep your details fresh — it helps us deliver a more tailored experience.
-              </p>
-
-              <div className="flex flex-col items-center mt-10">
-                <div className="relative">
-                  <Avatar 
-                    size={100} 
-                    src={getMediaUrl(driver?.profilePicUrl || driver?.profile_pic_url)}
-                    className="bg-[#b492f5] border-[3px] border-[#b492f5]/30 text-2xl font-bold shadow-2xl"
-                  >
-                    {driver?.first_name?.charAt(0)}{driver?.last_name?.charAt(0)}
-                  </Avatar>
-                  <div className="absolute bottom-1 right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:scale-105 transition-transform">
-                    <EditOutlined className="text-[#9c6cf2] text-sm" />
-                  </div>
+        <div className="driver-details-header">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center gap-6">
+              <div className="driver-avatar-wrapper overflow-hidden rounded-full border-4 border-white/20 shadow-xl group cursor-pointer">
+                <Image
+                  width={100}
+                  height={100}
+                  src={getMediaUrl(driver?.profilePicUrl || driver?.profile_pic_url)}
+                  className="object-cover"
+                  preview={{
+                    mask: <div className="text-[10px] font-bold">PREVIEW</div>
+                  }}
+                  fallback="https://ui-avatars.com/api/?name=${encodeURIComponent(driver?.full_name || 'Driver')}&background=6366f1&color=fff"
+                />
+              </div>
+              <div className="text-white">
+                <div className="text-3xl font-extrabold tracking-tight">
+                  {driver?.first_name || driver?.last_name
+                    ? `${driver.first_name || ''} ${driver.last_name || ''}`.trim()
+                    : driver?.full_name || "N/A"}
                 </div>
-                <div className="mt-4 text-center">
-                  <h3 className="text-base font-bold m-0">{driver?.first_name} {driver?.last_name}</h3>
-                  <span className="text-[10px] opacity-70 font-medium capitalize">{driver?.role || 'Normal'} member</span>
+                <p className="m-0 text-blue-100/80 text-sm font-medium mt-1 flex items-center gap-2">
+                  <SafetyCertificateOutlined className="text-blue-300" />
+                  DRIVER ID: {driver?.driverId || driver?.driver_id || driver?.id || "N/A"}
+                </p>
+                <div className="mt-3 flex gap-2">
+                  {driver?.availability?.online ? (
+                    <Tag color="#4ade80" className="m-0 border-none px-3 font-bold rounded-full text-green-900 shadow-sm">
+                      <SyncOutlined spin className="mr-1" /> ONLINE
+                    </Tag>
+                  ) : (
+                    <Tag color="#94a3b8" className="m-0 border-none px-3 font-bold rounded-full text-white shadow-sm">
+                      OFFLINE
+                    </Tag>
+                  )}
+                  <Tag color="#6366f1" className="m-0 border-none px-3 font-bold rounded-full text-white shadow-sm uppercase">
+                    {driver?.role || "Normal"}
+                  </Tag>
                 </div>
               </div>
             </div>
-
-            {/* Background decorative circle */}
-            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
-
-            <div className="relative z-10 flex items-center gap-2 text-[9px] opacity-70 font-bold tracking-tight">
-              <SafetyCertificateOutlined className="text-white" />
-              Your information is encrypted & private.
-            </div>
+            <Button
+              type="primary"
+              shape="circle"
+              icon={<CloseOutlined />}
+              onClick={onClose}
+              className="bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md"
+            />
           </div>
+        </div>
+        <div className="action-buttons-container">
+          {renderStatusActions()}
+        </div>
 
-          {/* Right Content Area */}
-          <div className="flex-1 bg-white flex flex-col">
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-              <div>
-                <h2 className="text-lg font-bold text-[#1e293b] m-0">Personal information</h2>
-                <p className="text-xs text-slate-400 mt-0.5 font-medium">Update your details below</p>
+        <div className="py-6 h-full overflow-y-auto custom-scrollbar" style={{ background: "#f8fafc" }}>
+
+          {(driver?.status === "blocked" || driver?.status === "suspended") && (
+            <div className="mx-6 mb-6">
+              <div className={`p-4 rounded-xl border flex items-start gap-4 ${driver.status === "blocked" ? "bg-red-50 border-red-200" : "bg-orange-50 border-orange-200"}`}>
+                <div className={`text-2xl mt-1 ${driver.status === "blocked" ? "text-red-500" : "text-orange-500"}`}>
+                  {driver.status === "blocked" ? <StopOutlined /> : <ClockCircleOutlined />}
+                </div>
+                <div>
+                  <h3 className={`font-bold m-0 text-lg ${driver.status === "blocked" ? "text-red-700" : "text-orange-700"}`}>
+                    Account {driver.status === "blocked" ? "Blocked" : "Suspended"}
+                  </h3>
+                  <p className={`mt-1 mb-0 text-sm ${driver.status === "blocked" ? "text-red-600" : "text-orange-600"}`}>
+                    <strong>Reason: </strong> {(driver as any).status_reason || "No specific reason provided."}
+                  </p>
+                  {(driver as any).status_updated_at && (
+                    <p className={`mt-1 mb-0 text-xs ${driver.status === "blocked" ? "text-red-400" : "text-orange-400"}`}>
+                      Applied on: {dayjs((driver as any).status_updated_at).format("MMM D, YYYY • hh:mm A")}
+                    </p>
+                  )}
+                </div>
               </div>
-              <Button 
-                type="text" 
-                icon={<CloseOutlined />} 
-                onClick={() => setIsEditModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg"
-              />
             </div>
+          )}
 
-            <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleUpdateProfile}
-                initialValues={driver || {}}
-                className="screenshot-form"
+          <div className="custom-navigation mb-8">
+            {segments.map(({ key }) => (
+              <div
+                key={key}
+                className={`nav-item ${activeKey === key ? "active" : ""}`}
+                onClick={() => setActiveKey(key)}
               >
-                <div className="mb-5">
-                  <span className="text-[9px] font-black text-slate-400 tracking-[0.12em] uppercase block mb-4">Basic Details</span>
-                  <div className="grid grid-cols-4 gap-3">
-                    <Form.Item name="first_name" label="First Name" className="col-span-2">
-                      <Input prefix={<UserOutlined />} placeholder="First Name" />
-                    </Form.Item>
-                    <Form.Item name="last_name" label="Last Name" className="col-span-2">
-                      <Input prefix={<UserOutlined />} placeholder="Last Name" />
-                    </Form.Item>
-                    <Form.Item name="email" label="Email Address" className="col-span-2">
-                      <Input prefix={<MailOutlined />} placeholder="you@example.com" />
-                    </Form.Item>
-                    <Form.Item name="phone_number" label="Phone Number" className="col-span-1">
-                      <Input prefix={<PhoneOutlined />} placeholder="+91 98765 43210" />
-                    </Form.Item>
-                    <Form.Item name="date_of_birth" label="Date of Birth" className="col-span-1">
-                      <DatePicker className="w-full" placeholder="dd/mm/yyyy" />
-                    </Form.Item>
-                    <Form.Item name="gender" label="Gender" className="col-span-2">
-                      <Select placeholder="Select gender">
-                        <Select.Option value="male">Male</Select.Option>
-                        <Select.Option value="female">Female</Select.Option>
-                        <Select.Option value="other">Other</Select.Option>
-                      </Select>
-                    </Form.Item>
-                    <Form.Item name="role" label="Membership" className="col-span-2">
-                      <Select placeholder="Select role">
-                        <Select.Option value="normal">Normal</Select.Option>
-                        <Select.Option value="premium">Premium</Select.Option>
-                        <Select.Option value="elite">Elite</Select.Option>
-                      </Select>
-                    </Form.Item>
-                  </div>
+                <div className="nav-icon">
+                  {key === "1" && <UserOutlined />}
+                  {key === "3" && <FileTextOutlined />}
+                  {key === "4" && <BarChartOutlined />}
+                  {key === "5" && <WalletOutlined />}
+                  {key === "6" && <SyncOutlined />}
+                  {key === "7" && <LineChartOutlined />}
                 </div>
+                <span className="nav-label">
+                  {key === "1" && "BASIC"}
+                  {key === "3" && "DOCS"}
+                  {key === "4" && "STATS"}
+                  {key === "5" && "WALLET"}
+                  {key === "6" && "PLAN"}
+                  {key === "7" && "ACTIVITY"}
+                </span>
+              </div>
+            ))}
+          </div>
 
-                <div className="mb-2">
-                  <span className="text-[9px] font-black text-slate-400 tracking-[0.12em] uppercase block mb-4">Address</span>
-                  <div className="grid grid-cols-4 gap-3">
-                    <Form.Item name={["address", "street"]} label="Street" className="col-span-4">
-                      <Input prefix={<EnvironmentOutlined />} placeholder="221B Baker Street" />
-                    </Form.Item>
-                    <Form.Item name={["address", "city"]} label="City" className="col-span-1">
-                      <Input prefix={<EnvironmentOutlined />} placeholder="Mumbai" />
-                    </Form.Item>
-                    <Form.Item name={["address", "state"]} label="State" className="col-span-1">
-                      <Input prefix={<EnvironmentOutlined />} placeholder="Maharashtra" />
-                    </Form.Item>
-                    <Form.Item name={["address", "pincode"]} label="PIN Code" className="col-span-1">
-                      <Input prefix={<span className="text-slate-400 font-bold ml-1 mr-1">#</span>} placeholder="400001" />
-                    </Form.Item>
-                    <Form.Item name={["address", "country"]} label="Country" className="col-span-1">
-                      <Input prefix={<EnvironmentOutlined />} placeholder="India" />
-                    </Form.Item>
+          <div className="px-6 pb-24">
+            <div key={activeKey} className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+              {segments.find((tab) => tab.key === activeKey)?.content}
+            </div>
+          </div>
+        </div>
+
+        {/* Edit Profile Modal - Redesigned to match screenshot */}
+        <Modal
+          open={isEditModalOpen}
+          onCancel={() => setIsEditModalOpen(false)}
+          footer={null}
+          width={1200}
+          centered
+          closable={false}
+          className="screenshot-style-modal"
+          bodyStyle={{ padding: 0, overflow: 'hidden' }}
+        >
+          <div className="flex h-[560px]">
+            {/* Left Sidebar - Purple */}
+            <div className="w-[280px] bg-[#9c6cf2] px-8 py-8 flex flex-col justify-between text-white relative overflow-hidden flex-shrink-0">
+              <div className="relative z-10">
+                <span className="text-[9px] font-bold tracking-[0.2em] opacity-70 uppercase">Account</span>
+                <h2 className="text-xl font-bold mt-1 mb-2 leading-tight">Edit your profile</h2>
+                <p className="text-[11px] opacity-80 leading-relaxed font-medium">
+                  Keep your details fresh — it helps us deliver a more tailored experience.
+                </p>
+
+                <div className="flex flex-col items-center mt-10">
+                  <div className="relative">
+                    <Avatar
+                      size={100}
+                      src={getMediaUrl(driver?.profilePicUrl || driver?.profile_pic_url)}
+                      className="bg-[#b492f5] border-[3px] border-[#b492f5]/30 text-2xl font-bold shadow-2xl"
+                    >
+                      {driver?.first_name?.charAt(0)}{driver?.last_name?.charAt(0)}
+                    </Avatar>
+                    <div className="absolute bottom-1 right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:scale-105 transition-transform">
+                      <EditOutlined className="text-[#9c6cf2] text-sm" />
+                    </div>
+                  </div>
+                  <div className="mt-4 text-center">
+                    <h3 className="text-base font-bold m-0">{driver?.first_name} {driver?.last_name}</h3>
+                    <span className="text-[10px] opacity-70 font-medium capitalize">{driver?.role || 'Normal'} member</span>
                   </div>
                 </div>
-              </Form>
+              </div>
+
+              {/* Background decorative circle */}
+              <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+
+              <div className="relative z-10 flex items-center gap-2 text-[9px] opacity-70 font-bold tracking-tight">
+                <SafetyCertificateOutlined className="text-white" />
+                Your information is encrypted & private.
+              </div>
             </div>
 
-            <div className="px-6 py-3 border-t border-gray-100 flex justify-between items-center bg-gray-50/30">
-              <span className="text-[11px] text-slate-400 font-medium">Changes will be saved to your account.</span>
-              <div className="flex gap-2">
-                <Button 
+            {/* Right Content Area */}
+            <div className="flex-1 bg-white flex flex-col">
+              <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <div>
+                  <h2 className="text-lg font-bold text-[#1e293b] m-0">Personal information</h2>
+                  <p className="text-xs text-slate-400 mt-0.5 font-medium">Update your details below</p>
+                </div>
+                <Button
+                  type="text"
+                  icon={<CloseOutlined />}
                   onClick={() => setIsEditModalOpen(false)}
-                  className="rounded-lg h-9 px-6 font-semibold text-xs border-gray-200 text-slate-600 hover:text-slate-800"
+                  className="text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg"
+                />
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
+                <Form
+                  form={form}
+                  layout="vertical"
+                  onFinish={handleUpdateProfile}
+                  initialValues={driver || {}}
+                  className="screenshot-form"
                 >
-                  Cancel
-                </Button>
-                <Button 
-                  type="primary" 
-                  onClick={() => form.submit()}
-                  loading={loadingAction === "update-profile"}
-                  className="bg-[#9c6cf2] hover:bg-[#8a5bd9] border-none rounded-lg h-9 px-6 font-semibold text-xs flex items-center gap-1.5"
-                >
-                  <DownloadOutlined />
-                  Save changes
-                </Button>
+                  <div className="mb-5">
+                    <span className="text-[9px] font-black text-slate-400 tracking-[0.12em] uppercase block mb-4">Basic Details</span>
+                    <div className="grid grid-cols-4 gap-3">
+                      <Form.Item name="first_name" label="First Name" className="col-span-2">
+                        <Input prefix={<UserOutlined />} placeholder="First Name" />
+                      </Form.Item>
+                      <Form.Item name="last_name" label="Last Name" className="col-span-2">
+                        <Input prefix={<UserOutlined />} placeholder="Last Name" />
+                      </Form.Item>
+                      <Form.Item name="email" label="Email Address" className="col-span-2">
+                        <Input prefix={<MailOutlined />} placeholder="you@example.com" />
+                      </Form.Item>
+                      <Form.Item name="phone_number" label="Phone Number" className="col-span-1">
+                        <Input prefix={<PhoneOutlined />} placeholder="+91 98765 43210" />
+                      </Form.Item>
+                      <Form.Item name="date_of_birth" label="Date of Birth" className="col-span-1">
+                        <DatePicker className="w-full" placeholder="dd/mm/yyyy" />
+                      </Form.Item>
+                      <Form.Item name="gender" label="Gender" className="col-span-2">
+                        <Select placeholder="Select gender">
+                          <Select.Option value="male">Male</Select.Option>
+                          <Select.Option value="female">Female</Select.Option>
+                          <Select.Option value="other">Other</Select.Option>
+                        </Select>
+                      </Form.Item>
+                      <Form.Item name="role" label="Membership" className="col-span-2">
+                        <Select placeholder="Select role">
+                          <Select.Option value="normal">Normal</Select.Option>
+                          <Select.Option value="premium">Premium</Select.Option>
+                          <Select.Option value="elite">Elite</Select.Option>
+                        </Select>
+                      </Form.Item>
+                    </div>
+                  </div>
+
+                  <div className="mb-2">
+                    <span className="text-[9px] font-black text-slate-400 tracking-[0.12em] uppercase block mb-4">Address</span>
+                    <div className="grid grid-cols-4 gap-3">
+                      <Form.Item name={["address", "street"]} label="Street" className="col-span-4">
+                        <Input prefix={<EnvironmentOutlined />} placeholder="221B Baker Street" />
+                      </Form.Item>
+                      <Form.Item name={["address", "city"]} label="City" className="col-span-1">
+                        <Input prefix={<EnvironmentOutlined />} placeholder="Mumbai" />
+                      </Form.Item>
+                      <Form.Item name={["address", "state"]} label="State" className="col-span-1">
+                        <Input prefix={<EnvironmentOutlined />} placeholder="Maharashtra" />
+                      </Form.Item>
+                      <Form.Item name={["address", "pincode"]} label="PIN Code" className="col-span-1">
+                        <Input prefix={<span className="text-slate-400 font-bold ml-1 mr-1">#</span>} placeholder="400001" />
+                      </Form.Item>
+                      <Form.Item name={["address", "country"]} label="Country" className="col-span-1">
+                        <Input prefix={<EnvironmentOutlined />} placeholder="India" />
+                      </Form.Item>
+                    </div>
+                  </div>
+                </Form>
+              </div>
+
+              <div className="px-6 py-3 border-t border-gray-100 flex justify-between items-center bg-gray-50/30">
+                <span className="text-[11px] text-slate-400 font-medium">Changes will be saved to your account.</span>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setIsEditModalOpen(false)}
+                    className="rounded-lg h-9 px-6 font-semibold text-xs border-gray-200 text-slate-600 hover:text-slate-800"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="primary"
+                    onClick={() => form.submit()}
+                    loading={loadingAction === "update-profile"}
+                    className="bg-[#9c6cf2] hover:bg-[#8a5bd9] border-none rounded-lg h-9 px-6 font-semibold text-xs flex items-center gap-1.5"
+                  >
+                    <DownloadOutlined />
+                    Save changes
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </Modal>
+        </Modal>
 
-      {/* Document Preview Modal */}
-      <Modal
-        title={`${capitalize(previewDoc?.type || "")} Preview`}
-        open={isPreviewModalOpen}
-        footer={null}
-        onCancel={() => setIsPreviewModalOpen(false)}
-        width={800}
-        centered
-        className="premium-modal"
-      >
-        <div className="flex justify-center bg-gray-50 p-6 rounded-2xl overflow-hidden min-h-[400px]">
-          {previewDoc?.url?.endsWith(".pdf") ? (
-            <iframe
-              src={previewDoc.url}
-              className="w-full h-[600px] rounded-lg border-none"
-              title="Document PDF"
-            />
-          ) : (
-            <img
-              src={previewDoc?.url}
-              alt="Preview"
-              className="max-w-full max-h-[70vh] object-contain shadow-2xl rounded-lg"
-            />
-          )}
-        </div>
-      </Modal>
-
-      <Modal
-        title={`Reject ${capitalize(rejectModalDoc?.type || "")} Document`}
-        open={!!rejectModalDoc}
-        onCancel={() => {
-          setRejectModalDoc(null);
-          setRejectionReason("");
-          setSelectedTemplate(null);
-        }}
-        onOk={handleDocumentReject}
-        confirmLoading={loadingAction === `reject-${rejectModalDoc?.id}`}
-        okText="Confirm Reject"
-        okButtonProps={{ danger: true, size: "large", className: "rounded-xl" }}
-        cancelButtonProps={{ size: "large", className: "rounded-xl" }}
-        className="premium-modal"
-      >
-        <div className="mb-6">
-          <Text type="secondary" className="text-sm">
-            Please provide a clear reason for rejecting the **{rejectModalDoc?.type}** document.
-            This information will be sent directly to the driver to help them correct the issue.
-          </Text>
-        </div>
-        <Form layout="vertical">
-          <Form.Item label="Select Template" className="mb-4">
-            <Select
-              placeholder="Select a common reason to populate"
-              onChange={(value) => {
-                setSelectedTemplate(value);
-                if (value) setRejectionReason(value);
-              }}
-              value={selectedTemplate}
-              className="premium-select rounded-xl"
-              size="large"
-              allowClear
-            >
-              {REJECTION_TEMPLATES.map((tpl) => (
-                <Select.Option key={tpl.label} value={tpl.value}>
-                  {tpl.label}
-                </Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          
-          <Form.Item 
-            label="Detailed Reason (Sent to Driver)" 
-            required 
-            help="You can edit the template text above to be more specific."
-            className="mb-0"
-          >
-            <Input.TextArea
-              placeholder="Provide more specific details or select a template above..."
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              rows={5}
-              className="rounded-xl premium-textarea"
-            />
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      {/* Document History Modal */}
-      <Modal
-        title={
-          <div className="flex items-center gap-2">
-            <HistoryOutlined className="text-indigo-600" />
-            <span>Document History: {capitalize(historyModalDoc?.type || "")}</span>
+        {/* Document Preview Modal */}
+        <Modal
+          title={`${capitalize(previewDoc?.type || "")} Preview`}
+          open={isPreviewModalOpen}
+          footer={null}
+          onCancel={() => setIsPreviewModalOpen(false)}
+          width={800}
+          centered
+          className="premium-modal"
+        >
+          <div className="flex justify-center bg-gray-50 p-6 rounded-2xl overflow-hidden min-h-[400px]">
+            {previewDoc?.url?.endsWith(".pdf") ? (
+              <iframe
+                src={previewDoc.url}
+                className="w-full h-[600px] rounded-lg border-none"
+                title="Document PDF"
+              />
+            ) : (
+              <img
+                src={previewDoc?.url}
+                alt="Preview"
+                className="max-w-full max-h-[70vh] object-contain shadow-2xl rounded-lg"
+              />
+            )}
           </div>
-        }
-        open={!!historyModalDoc}
-        onCancel={() => {
-          setHistoryModalDoc(null);
-          setDocumentHistory([]);
-        }}
-        footer={null}
-        width={500}
-        className="premium-modal"
-      >
-        <div className="py-4">
-          {loadingAction?.startsWith('history-') ? (
-            <div className="flex flex-col items-center py-10 gap-4">
-               <Spin size="large" />
-               <Text type="secondary">Fetching audit trail...</Text>
+        </Modal>
+
+        <Modal
+          title={`Reject ${capitalize(rejectModalDoc?.type || "")} Document`}
+          open={!!rejectModalDoc}
+          onCancel={() => {
+            setRejectModalDoc(null);
+            setRejectionReason("");
+            setSelectedTemplate(null);
+          }}
+          onOk={handleDocumentReject}
+          confirmLoading={loadingAction === `reject-${rejectModalDoc?.id}`}
+          okText="Confirm Reject"
+          okButtonProps={{ danger: true, size: "large", className: "rounded-xl" }}
+          cancelButtonProps={{ size: "large", className: "rounded-xl" }}
+          className="premium-modal"
+        >
+          <div className="mb-6">
+            <Text type="secondary" className="text-sm">
+              Please provide a clear reason for rejecting the **{rejectModalDoc?.type}** document.
+              This information will be sent directly to the driver to help them correct the issue.
+            </Text>
+          </div>
+          <Form layout="vertical">
+            <Form.Item label="Select Template" className="mb-4">
+              <Select
+                placeholder="Select a common reason to populate"
+                onChange={(value) => {
+                  setSelectedTemplate(value);
+                  if (value) setRejectionReason(value);
+                }}
+                value={selectedTemplate}
+                className="premium-select rounded-xl"
+                size="large"
+                allowClear
+              >
+                {REJECTION_TEMPLATES.map((tpl) => (
+                  <Select.Option key={tpl.label} value={tpl.value}>
+                    {tpl.label}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="Detailed Reason (Sent to Driver)"
+              required
+              help="You can edit the template text above to be more specific."
+              className="mb-0"
+            >
+              <Input.TextArea
+                placeholder="Provide more specific details or select a template above..."
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                rows={5}
+                className="rounded-xl premium-textarea"
+              />
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        {/* Document History Modal */}
+        <Modal
+          title={
+            <div className="flex items-center gap-2">
+              <HistoryOutlined className="text-indigo-600" />
+              <span>Document History: {capitalize(historyModalDoc?.type || "")}</span>
             </div>
-          ) : documentHistory.length > 0 ? (
-            <div className="space-y-4">
-              {documentHistory.map((item, index) => (
-                <div key={item.id || index} className="p-4 rounded-xl bg-gray-50 border border-gray-100 flex gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                      item.status === 'verified' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}>
-                      {item.status === 'verified' ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
-                    </div>
-                    {index !== documentHistory.length - 1 && <div className="w-[1px] h-full bg-gray-200 my-1" />}
-                  </div>
-                  <div className="flex-grow">
-                    <div className="flex justify-between items-center mb-1">
-                      <Tag color={getStatusColor(item.status)} className="text-[10px] m-0 border-none px-2 rounded-lg uppercase font-bold">
-                        {item.status}
-                      </Tag>
-                      <Text type="secondary" className="text-[10px]">
-                        {dayjs(item.created_at).format("MMM D, YYYY • hh:mm A")}
-                      </Text>
-                    </div>
-                    {item.reason && (
-                      <div className="bg-white p-2 rounded-lg border border-gray-100 mt-2">
-                        <Text className="text-xs text-gray-600 italic">"{item.reason}"</Text>
+          }
+          open={!!historyModalDoc}
+          onCancel={() => {
+            setHistoryModalDoc(null);
+            setDocumentHistory([]);
+          }}
+          footer={null}
+          width={500}
+          className="premium-modal"
+        >
+          <div className="py-4">
+            {loadingAction?.startsWith('history-') ? (
+              <div className="flex flex-col items-center py-10 gap-4">
+                <Spin size="large" />
+                <Text type="secondary">Fetching audit trail...</Text>
+              </div>
+            ) : documentHistory.length > 0 ? (
+              <div className="space-y-4">
+                {documentHistory.map((item, index) => (
+                  <div key={item.id || index} className="p-4 rounded-xl bg-gray-50 border border-gray-100 flex gap-4">
+                    <div className="flex flex-col items-center">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${item.status === 'verified' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        }`}>
+                        {item.status === 'verified' ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
                       </div>
-                    )}
+                      {index !== documentHistory.length - 1 && <div className="w-[1px] h-full bg-gray-200 my-1" />}
+                    </div>
+                    <div className="flex-grow">
+                      <div className="flex justify-between items-center mb-1">
+                        <Tag color={getStatusColor(item.status)} className="text-[10px] m-0 border-none px-2 rounded-lg uppercase font-bold">
+                          {item.status}
+                        </Tag>
+                        <Text type="secondary" className="text-[10px]">
+                          {dayjs(item.created_at).format("MMM D, YYYY • hh:mm A")}
+                        </Text>
+                      </div>
+                      {item.reason && (
+                        <div className="bg-white p-2 rounded-lg border border-gray-100 mt-2">
+                          <Text className="text-xs text-gray-600 italic">"{item.reason}"</Text>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-10 opacity-50 flex flex-col items-center gap-2">
-              <HistoryOutlined style={{ fontSize: 32 }} />
-              <Text>No prior history found for this document.</Text>
-            </div>
-          )}
-        </div>
-      </Modal>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-10 opacity-50 flex flex-col items-center gap-2">
+                <HistoryOutlined style={{ fontSize: 32 }} />
+                <Text>No prior history found for this document.</Text>
+              </div>
+            )}
+          </div>
+        </Modal>
       </Drawer>
 
       <Modal
@@ -1722,8 +1732,8 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
         onCancel={() => setStatusModalOpen(false)}
         okText={statusAction === "blocked" ? "Block Driver" : statusAction === "suspended" ? "Suspend Driver" : "Reject Profile"}
         confirmLoading={loadingAction === statusAction}
-        okButtonProps={{ 
-          danger: statusAction === "blocked" || statusAction === "rejected", 
+        okButtonProps={{
+          danger: statusAction === "blocked" || statusAction === "rejected",
           className: statusAction === "suspended" ? "bg-orange-500 hover:bg-orange-600 border-none" : "rounded-xl",
           style: { borderRadius: '12px' }
         }}
@@ -1733,7 +1743,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
         <div className="py-4">
           <p className="mb-4 text-slate-600 text-sm">
             You are about to {statusAction === "blocked" ? "permanently block" : statusAction === "suspended" ? "temporarily suspend" : "reject"}{" "}
-            <span className="font-bold text-slate-800">{driver?.full_name}</span>. 
+            <span className="font-bold text-slate-800">{driver?.full_name}</span>.
             The driver will be notified immediately.
           </p>
           <div className="flex flex-col gap-2">
@@ -1749,7 +1759,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             />
             <div className="flex flex-wrap gap-1.5 mt-3">
               {(statusAction === "blocked" ? BLOCK_REASONS : SUSPEND_REASONS).map((reason, idx) => (
-                <Tag 
+                <Tag
                   key={idx}
                   className="cursor-pointer hover:border-blue-400 hover:text-blue-600 transition-all m-0 px-3 py-1 text-[10px] rounded-full bg-slate-50 border-slate-100 text-slate-500 font-bold uppercase tracking-tight"
                   onClick={() => setStatusReason(reason)}
