@@ -10,7 +10,6 @@ import {
   Percent,
   IndianRupee,
   Clock,
-  ArrowRight
 } from 'lucide-react';
 import axios from '../api/axios';
 import {
@@ -22,7 +21,6 @@ import {
   Switch,
   Form,
   InputNumber,
-  Empty
 } from 'antd';
 import { messageApi, modalApi, notificationApi } from '../utilities/antdStaticHolder';
 import dayjs from 'dayjs';
@@ -56,7 +54,7 @@ interface Promo {
 const PromotionsPage: React.FC = () => {
   const canCreatePromo = useHasPermission("promos", "create");
   const canUpdatePromo = useHasPermission("promos", "update");
-  const canDeletePromo = useHasPermission("promos", "delete");
+
 
   const [promos, setPromos] = useState<Promo[]>([]);
   const [loading, setLoading] = useState(true);
