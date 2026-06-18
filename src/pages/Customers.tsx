@@ -130,15 +130,15 @@ const Customers = () => {
                 </div>
             }
         >
-            <div className="w-full h-full flex flex-col gap-6 bg-white min-h-screen">
+            <div className="w-full h-full flex flex-col gap-6 bg-white dark:bg-[#0f172a] min-h-screen">
                 <CustomerStats customers={customers} loading={loading} />
 
                 {/* Inline Filter Bar */}
-                <div className="bg-white p-2 px-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between gap-4">
+                <div className="bg-white dark:bg-slate-800 p-2 px-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm flex items-center justify-between gap-4">
                     <div className="flex items-center gap-4 flex-grow">
                         <div className="flex items-center gap-2">
-                            <FilterOutlined className="text-slate-400" />
-                            <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Filters</span>
+                            <FilterOutlined className="text-slate-400 dark:text-slate-500" />
+                            <span className="text-[11px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">Filters</span>
                         </div>
                         <Divider type="vertical" className="h-6 border-slate-100" />
 
@@ -179,7 +179,7 @@ const Customers = () => {
                     )}
                 </div>
 
-                <div className="flex-grow overflow-hidden bg-white">
+                <div className="flex-grow overflow-hidden bg-white dark:bg-[#0f172a]">
                     <CustomerTable data={filteredData} isSuperAdmin={isSuperAdmin} />
                 </div>
             </div>

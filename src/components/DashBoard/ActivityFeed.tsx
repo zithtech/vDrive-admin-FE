@@ -127,24 +127,24 @@ const ActivityFeed: React.FC = () => {
 
   const navigate = useNavigate();
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 dark:border-slate-700">
         <div className="flex items-center gap-2">
           <Badge dot status="processing">
             <ThunderboltOutlined className="text-blue-500 text-lg" />
           </Badge>
-          <span className="font-bold text-gray-800 text-base">Live Operational Feed</span>
+          <span className="font-bold text-gray-800 dark:text-gray-100 text-base">Live Operational Feed</span>
         </div>
         <div className="flex items-center gap-2">
-          <Tag color="blue" className="text-[10px] m-0 rounded-full border-0 font-bold bg-blue-50 text-blue-500">
+          <Tag color="blue" className="text-[10px] m-0 rounded-full border-0 font-bold bg-blue-50 text-blue-500 dark:bg-blue-900/30 dark:text-blue-400">
             {events.length} ACTIVE
           </Tag>
         </div>
       </div>
 
       {/* Table Header Style */}
-      <div className="grid grid-cols-12 px-5 py-2 bg-gray-50/30 border-b border-gray-100 uppercase tracking-tighter text-[9px] font-bold text-gray-400">
+      <div className="grid grid-cols-12 px-5 py-2 bg-gray-50/30 dark:bg-slate-900/50 border-b border-gray-100 dark:border-slate-700 uppercase tracking-tighter text-[9px] font-bold text-gray-400 dark:text-gray-500">
         <div className="col-span-3">Entity Type</div>
         <div className="col-span-6">Activity Details</div>
         <div className="col-span-3 text-right">Time</div>
@@ -153,18 +153,18 @@ const ActivityFeed: React.FC = () => {
       {/* Content */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-white"
+        className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-white dark:bg-slate-800"
       >
         {events.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full p-8 text-center opacity-40">
             <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={
-              <Typography.Text className="text-gray-400 text-xs">
+              <Typography.Text className="text-gray-400 dark:text-gray-500 text-xs">
                 Waiting for live events...
               </Typography.Text>
             } />
           </div>
         ) : (
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-gray-50 dark:divide-slate-700/50">
             {events.map((item) => {
               const config = eventConfigs[item.eventType] || eventConfigs.DEFAULT;
               const isUrgent = item.eventType === "SOS_ALERT" || item.eventType === "SOS_TRIGGERED";
@@ -185,7 +185,7 @@ const ActivityFeed: React.FC = () => {
                 <div
                   key={item.id}
                   onClick={handleRowClick}
-                  className={`grid grid-cols-12 px-4 py-3 hover:bg-gray-50/80 transition-all cursor-pointer group ${isUrgent ? 'bg-red-50/40' : ''}`}
+                  className={`grid grid-cols-12 px-4 py-3 hover:bg-gray-50/80 dark:hover:bg-slate-700/50 transition-all cursor-pointer group ${isUrgent ? 'bg-red-50/40 dark:bg-red-900/20' : ''}`}
                 >
                   {/* Column 1: Type */}
                   <div className="col-span-3 flex items-center gap-2">
@@ -210,7 +210,7 @@ const ActivityFeed: React.FC = () => {
                   {/* Column 2: Message */}
                   <div className="col-span-6 flex flex-col justify-center">
                     <Typography.Text
-                      className={`text-[11px] font-medium block leading-snug truncate ${isUrgent ? 'text-red-700 font-bold' : 'text-gray-700'}`}
+                      className={`text-[11px] font-medium block leading-snug truncate ${isUrgent ? 'text-red-700 dark:text-red-400 font-bold' : 'text-gray-700 dark:text-gray-300'}`}
                     >
                       {item.message}
                     </Typography.Text>
@@ -225,11 +225,11 @@ const ActivityFeed: React.FC = () => {
                   {/* Column 3: Time */}
                   <div className="col-span-3 flex flex-col items-end justify-center">
                     <Tooltip title={dayjs(item.timestamp).format('YYYY-MM-DD HH:mm:ss')}>
-                      <span className="text-[10px] text-gray-500 font-bold whitespace-nowrap">
+                      <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold whitespace-nowrap">
                         {dayjs(item.timestamp).format('HH:mm:ss')}
                       </span>
                     </Tooltip>
-                    <span className="text-[8px] text-gray-400 font-medium">
+                    <span className="text-[8px] text-gray-400 dark:text-gray-500 font-medium">
                       {dayjs(item.timestamp).fromNow()}
                     </span>
                   </div>
@@ -241,13 +241,13 @@ const ActivityFeed: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <div className="px-5 py-2 border-t border-gray-100 bg-gray-50/30">
+      <div className="px-5 py-2 border-t border-gray-100 dark:border-slate-700 bg-gray-50/30 dark:bg-slate-900/50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-[10px] text-gray-400 font-medium italic uppercase tracking-tighter">Live vDrive Stream</span>
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium italic uppercase tracking-tighter">Live vDrive Stream</span>
           </div>
-          <Typography.Text className="text-[9px] text-gray-300 font-medium">
+          <Typography.Text className="text-[9px] text-gray-300 dark:text-gray-600 font-medium">
             AUTO-RELOAD ACTIVE
           </Typography.Text>
         </div>

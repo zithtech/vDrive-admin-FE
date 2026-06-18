@@ -23,14 +23,14 @@ const MetricCard: React.FC<Metric> = ({
   pillColor
 }) => {
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl p-5 flex flex-col hover:shadow-sm transition-all duration-300">
+    <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-5 flex flex-col hover:shadow-sm transition-all duration-300">
       <div className="flex justify-between items-start mb-1">
-        <h3 className="text-[#8c8c8c] text-[13px] font-medium tracking-tight whitespace-nowrap">{title}</h3>
-        <div className="text-gray-300 text-lg opacity-60 font-light">{icon}</div>
+        <h3 className="text-[#8c8c8c] dark:text-gray-400 text-[13px] font-medium tracking-tight whitespace-nowrap">{title}</h3>
+        <div className="text-gray-300 dark:text-gray-500 text-lg opacity-60 font-light">{icon}</div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <p className={`font-bold text-[#262626] leading-none tracking-tighter ${value.length > 12 ? 'text-[16px]' : 'text-[22px]'}`}>
+        <p className={`font-bold text-[#262626] dark:text-white leading-none tracking-tighter ${value.length > 12 ? 'text-[16px]' : 'text-[22px]'}`}>
           {value}
         </p>
         {subtitle && (
@@ -70,7 +70,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ stats }) => {
         ? "..."
         : `${stats.activeUsers.toLocaleString()} / ${stats.totalUsers.toLocaleString()}`,
       subtitle: "Verified Customers",
-      pillColor: "bg-blue-50 text-blue-500",
+      pillColor: "bg-blue-50 text-blue-500 dark:bg-blue-900/30 dark:text-blue-400",
       icon: <TeamOutlined />,
     },
     {
@@ -79,7 +79,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ stats }) => {
         ? "..."
         : `${stats.activeDrivers} / ${stats.totalDrivers}`,
       subtitle: "Verified",
-      pillColor: "bg-green-50 text-green-500",
+      pillColor: "bg-green-50 text-green-500 dark:bg-green-900/30 dark:text-green-400",
       icon: <CarOutlined />,
     },
     {
@@ -88,7 +88,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ stats }) => {
         ? "..."
         : `${stats.todaySubscriptions.toLocaleString()} / ${stats.totalSubscriptions.toLocaleString()}`,
       subtitle: "Active Plans",
-      pillColor: "bg-purple-50 text-purple-500",
+      pillColor: "bg-purple-50 text-purple-500 dark:bg-purple-900/30 dark:text-purple-400",
       icon: <ThunderboltOutlined />,
     },
     {
@@ -97,14 +97,14 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ stats }) => {
         ? "..."
         : `₹${stats.todayRevenue.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / ₹${stats.totalEarnings.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
       subtitle: "",
-      pillColor: "bg-green-50 text-green-500",
+      pillColor: "bg-green-50 text-green-500 dark:bg-green-900/30 dark:text-green-400",
       icon: <DollarOutlined />,
     },
     {
       title: "Platform System Status",
       value: "All Good",
       subtitle: "Stable",
-      pillColor: "bg-emerald-50 text-emerald-500",
+      pillColor: "bg-emerald-50 text-emerald-500 dark:bg-emerald-900/30 dark:text-emerald-400",
       icon: <FiActivity />,
     },
   ];

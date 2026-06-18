@@ -52,12 +52,12 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
       width: 250,
       render: (record: any) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500 shadow-sm">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 dark:text-indigo-400 shadow-sm">
             <BellOutlined />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-slate-800 tracking-tight">{record.title}</span>
-            <span className="text-[11px] text-slate-400 line-clamp-1">{record.body}</span>
+            <span className="font-bold text-slate-800 dark:text-slate-200 tracking-tight">{record.title}</span>
+            <span className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">{record.body}</span>
           </div>
         </div>
       ),
@@ -90,7 +90,7 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
             {record.coupon_code || record.promo_code}
           </Tag>
         ) : (
-          <span className="text-gray-300 text-[10px] font-bold uppercase tracking-widest">— None —</span>
+          <span className="text-gray-300 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest">— None —</span>
         )
       ),
     },
@@ -102,12 +102,12 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
         <div className="flex flex-col gap-1">
           {getStatusBadge(record.notify_status)}
           {record.notify_sent_at && (
-            <span className="text-[9px] text-gray-400 italic">
+            <span className="text-[9px] text-gray-400 dark:text-slate-500 italic">
               Sent: {dayjs(record.notify_sent_at).format("MMM DD, HH:mm")}
             </span>
           )}
           {record.notify_count > 0 && (
-            <span className="text-[9px] text-blue-500 font-bold">
+            <span className="text-[9px] text-blue-500 dark:text-blue-400 font-bold">
               Total Sent: {record.notify_count}
             </span>
           )}
@@ -121,8 +121,8 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
       width: 140,
       render: (date: string) => (
         <div className="flex flex-col">
-          <span className="text-slate-600 font-bold text-xs">{dayjs(date).format("DD MMM YYYY")}</span>
-          <span className="text-[10px] text-slate-400 font-medium">{dayjs(date).format("hh:mm A")}</span>
+          <span className="text-slate-600 dark:text-slate-300 font-bold text-xs">{dayjs(date).format("DD MMM YYYY")}</span>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{dayjs(date).format("hh:mm A")}</span>
         </div>
       ),
     },
@@ -153,9 +153,9 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
               <Tooltip title="Edit Notification">
                 <Button
                   type="text"
-                  icon={<EditOutlined className="text-indigo-500" />}
+                  icon={<EditOutlined className="text-indigo-500 dark:text-indigo-400" />}
                   onClick={() => onEdit(record)}
-                  className="hover:bg-indigo-50 rounded-lg transition-all"
+                  className="hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all"
                 />
               </Tooltip>
             )}
@@ -166,7 +166,7 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
                   danger
                   icon={<DeleteOutlined />}
                   onClick={() => onDelete(record.id)}
-                  className="hover:bg-rose-50 rounded-lg transition-all"
+                  className="hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all"
                 />
               </Tooltip>
             )}

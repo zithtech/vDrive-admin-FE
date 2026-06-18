@@ -63,14 +63,14 @@ const QuickActions: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl shadow-sm flex flex-col w-full h-full overflow-hidden transition-all duration-300 hover:shadow-md">
+    <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-700 rounded-2xl shadow-sm flex flex-col w-full h-full overflow-hidden transition-all duration-300 hover:shadow-md">
       {/* Header */}
-      <div className="flex items-center px-4 py-2 border-b border-gray-100 bg-gray-50/30">
+      <div className="flex items-center px-4 py-2 border-b border-gray-100 dark:border-slate-700 bg-gray-50/30 dark:bg-slate-900/50">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-lg bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
             <Zap size={12} className="text-white fill-white" />
           </div>
-          <span className="font-bold text-gray-800 text-[11px] uppercase tracking-widest">Admin Quick Actions</span>
+          <span className="font-bold text-gray-800 dark:text-gray-100 text-[11px] uppercase tracking-widest">Admin Quick Actions</span>
         </div>
       </div>
 
@@ -81,19 +81,19 @@ const QuickActions: React.FC = () => {
             <div
               key={item.key}
               onClick={() => navigate(item.path)}
-              className={`group relative overflow-hidden bg-gradient-to-br ${item.color} border ${item.border} rounded-xl p-2 px-3 flex items-center cursor-pointer hover:bg-white hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 min-w-0 shadow-sm hover:shadow-lg`}
+              className={`group relative overflow-hidden bg-gradient-to-br ${item.color} border ${item.border} dark:border-opacity-20 rounded-xl p-2 px-3 flex items-center cursor-pointer hover:bg-white dark:hover:bg-slate-700 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 min-w-0 shadow-sm hover:shadow-lg`}
             >
               {/* Icon Container */}
-              <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm group-hover:shadow-md transition-all duration-300 mr-3">
+              <div className="w-9 h-9 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center shrink-0 shadow-sm group-hover:shadow-md transition-all duration-300 mr-3">
                 {item.icon}
               </div>
 
               {/* Text Content */}
               <div className="flex flex-col flex-1 min-w-0">
-                <Typography.Text className="text-[11px] font-extrabold text-gray-800 truncate leading-tight group-hover:text-blue-600 transition-colors">
+                <Typography.Text className="text-[11px] font-extrabold text-gray-800 dark:text-gray-100 truncate leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                   {item.title}
                 </Typography.Text>
-                <Typography.Text className="text-[9px] text-gray-400 font-bold uppercase tracking-tight truncate">
+                <Typography.Text className="text-[9px] text-gray-400 dark:text-gray-500 font-bold uppercase tracking-tight truncate">
                   {item.description}
                 </Typography.Text>
               </div>
@@ -104,7 +104,7 @@ const QuickActions: React.FC = () => {
               </div>
 
               {/* Decorative Background Element */}
-              <div className="absolute -right-2 -bottom-2 w-12 h-12 bg-white/50 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all duration-500"></div>
+              <div className="absolute -right-2 -bottom-2 w-12 h-12 bg-white/50 dark:bg-slate-800/50 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-all duration-500"></div>
             </div>
           ))}
         </div>

@@ -56,7 +56,7 @@ const CouponTable: React.FC<CouponTableProps> = ({
       key: "code",
       render: (text: string) => (
         <div className="flex items-center gap-2">
-          <div className="bg-blue-50 px-3 py-1 rounded-lg border border-blue-100 shadow-sm">
+          <div className="bg-blue-50 dark:bg-blue-500/10 px-3 py-1 rounded-lg border border-blue-100 dark:border-blue-500/30 shadow-sm">
             <span className="font-extrabold text-sm font-mono text-blue-700 tracking-widest">
               {text}
             </span>
@@ -98,12 +98,12 @@ const CouponTable: React.FC<CouponTableProps> = ({
         const isExpired = dayjs().isAfter(dayjs(untilDate));
         return (
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2 text-xs font-bold text-gray-700">
+            <div className="flex items-center gap-2 text-xs font-bold text-gray-700 dark:text-slate-200">
               <span className="text-gray-300">FROM</span> {dayjs(fromDate).format("MMM DD, YYYY")}
             </div>
-            <div className={`flex items-center gap-2 text-xs font-bold ${isExpired ? 'text-rose-500' : 'text-gray-700'}`}>
-              <span className="text-gray-300 uppercase">THRU</span> {dayjs(untilDate).format("MMM DD, YYYY")}
-              {isExpired && <span className="text-[10px] bg-rose-50 px-1 rounded">EXPIRED</span>}
+            <div className={`flex items-center gap-2 text-xs font-bold ${isExpired ? 'text-rose-500 dark:text-rose-400' : 'text-gray-700 dark:text-slate-200'}`}>
+              <span className="text-gray-300 dark:text-slate-500 uppercase">THRU</span> {dayjs(untilDate).format("MMM DD, YYYY")}
+              {isExpired && <span className="text-[10px] bg-rose-50 dark:bg-rose-500/10 px-1 rounded">EXPIRED</span>}
             </div>
           </div>
         )
@@ -202,9 +202,9 @@ const CouponTable: React.FC<CouponTableProps> = ({
               <Tooltip title="Edit Promotion">
                 <Button
                   type="text"
-                  icon={<EditOutlined className="text-gray-500" />}
+                  icon={<EditOutlined className="text-gray-500 dark:text-slate-400" />}
                   onClick={() => onEdit(record)}
-                  className="hover:bg-gray-100 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
+                  className="hover:bg-gray-100 dark:hover:bg-slate-700/50 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
                 />
               </Tooltip>
             )}
@@ -215,7 +215,7 @@ const CouponTable: React.FC<CouponTableProps> = ({
                   danger
                   icon={<DeleteOutlined />}
                   onClick={() => onDelete(record.id)}
-                  className="hover:bg-red-50 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
+                  className="hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
                 />
               </Tooltip>
             )}
@@ -233,7 +233,7 @@ const CouponTable: React.FC<CouponTableProps> = ({
         rowKey="id"
         loading={loading}
         pagination={{ pageSize: 10 }}
-        className="premium-table shadow-sm rounded-xl overflow-hidden border border-gray-100"
+        className="premium-table shadow-sm rounded-xl overflow-hidden border border-gray-100 dark:border-slate-700"
       />
 
       {selectedCoupon && (

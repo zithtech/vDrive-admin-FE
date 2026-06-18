@@ -106,10 +106,11 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
       onClose={onClose}
       open={visible}
       closable={false}
+      rootClassName="dark-drawer"
       styles={{
         header: { display: 'none' },
-        body: { padding: 0, background: "#f8fafc" },
-        footer: { borderTop: "1px solid #f1f5f9", padding: "16px 24px", background: "#fff" },
+        body: { padding: 0 },
+        footer: { padding: "16px 24px" },
       }}
       footer={
         <div className="flex justify-end gap-3 px-2">
@@ -134,21 +135,21 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
       }
     >
       {/* ─── Immersive Header ─────────────────────────────────────────── */}
-      <div className="relative overflow-hidden pt-7 pb-4 px-8 bg-white border-b border-gray-100">
+      <div className="relative overflow-hidden pt-7 pb-4 px-8 bg-white dark:bg-slate-800 border-b border-gray-100 dark:border-slate-700">
         <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-600/5 rounded-full -translate-y-16 translate-x-16" />
 
         <div className="flex justify-between items-start relative z-10">
           <div className="flex items-center gap-5">
             <div className="relative">
-              <div className="relative w-16 h-16 bg-indigo-50 border-2 border-white flex items-center justify-center rounded-3xl text-indigo-600 text-2xl shadow-sm">
+              <div className="relative w-16 h-16 bg-indigo-50 dark:bg-indigo-500/10 border-2 border-white dark:border-slate-800 flex items-center justify-center rounded-3xl text-indigo-600 dark:text-indigo-400 text-2xl shadow-sm">
                 <BellOutlined />
               </div>
             </div>
             <div>
-              <Title level={3} className="!m-0 !mb-1 font-extrabold text-gray-800 tracking-tight">
+              <Title level={3} className="!m-0 !mb-1 font-extrabold text-gray-800 dark:text-slate-100 tracking-tight">
                 {initialValues ? (isAllowed ? "Edit Notification" : "View Notification") : "Compose Notification"}
               </Title>
-              <Text className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">
+              <Text className="text-gray-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest">
                 Push Campaigns & Outreach
               </Text>
             </div>
@@ -157,7 +158,7 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
             type="text"
             icon={<CloseOutlined className="text-gray-400" />}
             onClick={onClose}
-            className="hover:bg-gray-100 rounded-full h-10 w-10 flex items-center justify-center"
+            className="hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full h-10 w-10 flex items-center justify-center"
           />
         </div>
       </div>
@@ -175,12 +176,12 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
         <Form.Item name="promo_code" noStyle><input type="hidden" /></Form.Item>
 
         {/* Content Section */}
-        <div className="bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm space-y-2 mx-4 mt-4">
+        <div className="bg-white dark:bg-slate-800/50 p-5 rounded-[2rem] border border-gray-100 dark:border-slate-700 shadow-sm space-y-2 mx-4 mt-4">
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500">
+            <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 dark:text-indigo-400">
               <BellOutlined className="text-sm" />
             </div>
-            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-tight">Message Content</span>
+            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">Message Content</span>
           </div>
 
           <Form.Item
@@ -211,12 +212,12 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
         </div>
 
         {/* Audience Section */}
-        <div className="bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm space-y-2 mx-4">
+        <div className="bg-white dark:bg-slate-800/50 p-5 rounded-[2rem] border border-gray-100 dark:border-slate-700 shadow-sm space-y-2 mx-4">
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
+            <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-500 dark:text-amber-400">
               <UserOutlined className="text-sm" />
             </div>
-            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-tight">Target Audience</span>
+            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">Target Audience</span>
           </div>
 
           <Form.Item
@@ -265,12 +266,12 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
         </div>
 
         {/* Optional Attachments */}
-        <div className="bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm space-y-2 mx-4 mb-8">
+        <div className="bg-white dark:bg-slate-800/50 p-5 rounded-[2rem] border border-gray-100 dark:border-slate-700 shadow-sm space-y-2 mx-4 mb-8">
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-8 h-8 rounded-xl bg-green-50 flex items-center justify-center text-green-500">
+            <div className="w-8 h-8 rounded-xl bg-green-50 dark:bg-green-500/10 flex items-center justify-center text-green-500 dark:text-green-400">
               <TagOutlined className="text-sm" />
             </div>
-            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-tight">Optional Attachments</span>
+            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">Optional Attachments</span>
           </div>
 
           <Form.Item
@@ -296,7 +297,7 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                       <div className="flex justify-between items-center">
                         <span>{c.code}</span>
                         {isExpired && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 text-red-500 font-bold uppercase">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 font-bold uppercase">
                             {statusText}
                           </span>
                         )}
@@ -312,7 +313,7 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                       <div className="flex justify-between items-center">
                         <span>{p.code}</span>
                         {isExpired && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 text-red-500 font-bold uppercase">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 font-bold uppercase">
                             {statusText}
                           </span>
                         )}
@@ -323,7 +324,7 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
               }
             </Select>
           </Form.Item>
-          <Text className="text-[10px] text-gray-400 italic">
+          <Text className="text-[10px] text-gray-400 dark:text-slate-500 italic">
             * Users will be redirected to this offer when they click the notification.
           </Text>
         </div>

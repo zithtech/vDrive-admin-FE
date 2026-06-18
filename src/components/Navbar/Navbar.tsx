@@ -8,7 +8,7 @@ import {
   TeamOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
-import logo from "/logo1.png";
+import logo from "/90.png";
 
 const Navbar: React.FC = () => {
   const location = useLocation();
@@ -93,8 +93,7 @@ const Navbar: React.FC = () => {
             <img
               src={logo}
               alt="AdminApp Logo"
-              className="h-8 mr-3"
-              width={50}
+              className="h-10 w-auto mr-3 dark:invert dark:brightness-200 transition-all duration-300"
             />
           </Link>
         </div>
@@ -114,10 +113,9 @@ const Navbar: React.FC = () => {
                     <img
                       src={logo}
                       alt="AdminApp Logo"
-                      className="h-8 mr-3"
-                      width={30}
+                      className="h-8 w-auto mr-3 dark:invert dark:brightness-200 transition-all duration-300"
                     />
-                    <span>vDrive Admin</span>
+                    <span>VDrive Admin</span>
                   </div>
                 }
                 placement="left"

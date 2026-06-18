@@ -29,10 +29,10 @@ const ReferralTable: React.FC<ReferralTableProps> = ({
       key: "user_type",
       render: (text: string) => (
         <div className="flex items-center gap-2">
-          <div className={`w-8 h-8 rounded-lg ${text === 'CUSTOMER' ? 'bg-orange-50 text-orange-500' : 'bg-blue-50 text-blue-500'} flex items-center justify-center`}>
+          <div className={`w-8 h-8 rounded-lg ${text === 'CUSTOMER' ? 'bg-orange-50 dark:bg-orange-500/10 text-orange-500 dark:text-orange-400' : 'bg-blue-50 dark:bg-blue-500/10 text-blue-500 dark:text-blue-400'} flex items-center justify-center`}>
             {text === 'CUSTOMER' ? <UserOutlined /> : <CarOutlined />}
           </div>
-          <span className="font-bold text-gray-700 text-xs tracking-wide">{text}</span>
+          <span className="font-bold text-gray-700 dark:text-slate-200 text-xs tracking-wide">{text}</span>
         </div>
       ),
     },
@@ -85,9 +85,9 @@ const ReferralTable: React.FC<ReferralTableProps> = ({
               <Tooltip title="Configure Rule">
                 <Button
                   type="text"
-                  icon={<EditOutlined className="text-blue-500" />}
+                  icon={<EditOutlined className="text-blue-500 dark:text-blue-400" />}
                   onClick={() => onEdit(record)}
-                  className="hover:bg-blue-50 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
+                  className="hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
                 />
               </Tooltip>
             )}
@@ -98,7 +98,7 @@ const ReferralTable: React.FC<ReferralTableProps> = ({
                   danger
                   icon={<DeleteOutlined />}
                   onClick={() => onDelete(record.id)}
-                  className="hover:bg-red-50 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
+                  className="hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
                 />
               </Tooltip>
             )}
@@ -115,6 +115,7 @@ const ReferralTable: React.FC<ReferralTableProps> = ({
       rowKey="id"
       loading={loading}
       pagination={{ pageSize: 10 }}
+      className="premium-table shadow-sm rounded-xl overflow-hidden border border-gray-100 dark:border-slate-700"
     />
   );
 };

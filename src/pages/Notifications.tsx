@@ -138,7 +138,7 @@ const NotificationsPage: React.FC = () => {
         )
       }
     >
-      <div className="w-full h-full flex flex-col p-6 bg-white overflow-y-auto custom-scrollbar gap-6">
+      <div className="w-full h-full flex flex-col p-6 bg-white dark:bg-slate-900 overflow-y-auto custom-scrollbar gap-6">
         {/* ─── Control Header ─────────────────────────────────────────── */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-4">
           <div className="flex items-center gap-6">
@@ -152,9 +152,9 @@ const NotificationsPage: React.FC = () => {
               ]}
             />
 
-            <div className="h-8 w-[1px] bg-gray-200 hidden md:block" />
+            <div className="h-8 w-[1px] bg-gray-200 dark:bg-slate-700 hidden md:block" />
 
-            <div className="p-1 bg-gray-100 rounded-xl w-fit">
+            <div className="p-1 bg-gray-100 dark:bg-slate-700/50 rounded-xl w-fit">
               <Segmented
                 value={subTab}
                 onChange={(value) => setSubTab(value as any)}
@@ -162,7 +162,7 @@ const NotificationsPage: React.FC = () => {
                 options={[
                   {
                     label: (
-                      <div className={`px-5 py-0.5 flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${subTab === "NOTIFICATIONS" ? "text-indigo-600" : "text-black"}`}>
+                      <div className={`px-5 py-0.5 flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${subTab === "NOTIFICATIONS" ? "text-indigo-600 dark:text-indigo-400" : "text-black dark:text-slate-200"}`}>
                         <BellOutlined /> Notifications
                       </div>
                     ),
@@ -175,8 +175,8 @@ const NotificationsPage: React.FC = () => {
 
           <div className="flex items-center gap-2">
             <div className="text-right hidden sm:block">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black leading-none mb-1">Active Ledger</p>
-              <p className="text-[11px] text-gray-500 font-bold">Broadcast History</p>
+              <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-widest font-black leading-none mb-1">Active Ledger</p>
+              <p className="text-[11px] text-gray-500 dark:text-slate-400 font-bold">Broadcast History</p>
             </div>
           </div>
         </div>
@@ -211,6 +211,32 @@ const NotificationsPage: React.FC = () => {
           targetType={mainTab}
         />
       )}
+
+      <style>{`
+        .dark .premium-table-alt .ant-table-thead > tr > th {
+          background: #1e293b;
+          color: #94a3b8;
+          border-bottom: 2px solid #334155;
+        }
+        .dark .premium-table-alt .ant-table-tbody > tr > td {
+          border-bottom: 1px solid #334155;
+        }
+        .dark .premium-table-alt .ant-table-wrapper .ant-table-pagination.ant-pagination {
+          color: #cbd5e1;
+        }
+        .dark .premium-table-alt .ant-table-cell-row-hover {
+          background: transparent !important;
+        }
+        .dark .ant-segmented {
+          background-color: transparent !important;
+        }
+        .dark .ant-segmented-item-selected {
+          background-color: #1e293b !important;
+        }
+        .dark .ant-segmented-item {
+          color: #94a3b8;
+        }
+      `}</style>
     </TitleBar>
   );
 };

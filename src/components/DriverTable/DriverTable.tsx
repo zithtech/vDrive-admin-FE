@@ -1,5 +1,6 @@
 // components/DriverTable/DriverTable.tsx
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Table,
   Tag,
@@ -32,6 +33,11 @@ import {
   StopOutlined,
   ClockCircleOutlined,
   StarFilled,
+  IdcardOutlined,
+  CreditCardOutlined,
+  SolutionOutlined,
+  FileTextOutlined,
+  UserOutlined
 } from "@ant-design/icons";
 import type { FilterDropdownProps } from "antd/es/table/interface";
 import type { InputRef, TableColumnType } from "antd";
@@ -42,12 +48,12 @@ import { useHasPermission } from "../../hooks/usePermission";
 
 interface DriverTableProps {
   data: Driver[];
+  onViewDetails?: (driver: Driver) => void;
 }
 
 type DataIndex = keyof Driver;
 
-const DriverTable = ({ data }: DriverTableProps) => {
-  const canUpdateDriver = useHasPermission("drivers", "update");
+const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const tableHeight = useGetHeight(contentRef);
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
@@ -57,10 +63,26 @@ const DriverTable = ({ data }: DriverTableProps) => {
   const searchInput = useRef<InputRef>(null);
 
   const dispatch = useAppDispatch();
+  const canUpdateDriver = useHasPermission("drivers", "update");
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [statusAction, setStatusAction] = useState<"blocked" | "suspended" | null>(null);
   const [statusReason, setStatusReason] = useState("");
   const [selectedDriverForStatus, setSelectedDriverForStatus] = useState<Driver | null>(null);
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.openDriverDrawer && data.length > 0) {
+      const targetDriverId = location.state.openDriverDrawer;
+      const foundDriver = data.find(d => String(d.driverId || d.driver_id || d.id || "") === String(targetDriverId));
+      
+      if (foundDriver) {
+        setSelectedDriverId(targetDriverId);
+        setDrawerOpen(true);
+        // Clear state to avoid reopening on refresh
+        window.history.replaceState({}, document.title);
+      }
+    }
+  }, [location.state, data]);
 
   const selectedDriver = selectedDriverId
     ? data.find(
@@ -71,6 +93,10 @@ const DriverTable = ({ data }: DriverTableProps) => {
     : null;
 
   const openDrawer = (driver: Driver) => {
+    if (onViewDetails) {
+      onViewDetails(driver);
+      return;
+    }
     const id = String(driver.driverId || driver.driver_id || driver.id || "");
     if (id) {
       setSelectedDriverId(id);
@@ -287,6 +313,8 @@ const DriverTable = ({ data }: DriverTableProps) => {
       key: "driver",
       width: 220,
       fixed: "left" as const,
+      onCell: () => ({ className: "!bg-white dark:!bg-slate-800" } as any),
+      onHeaderCell: () => ({ className: "!bg-[#f8fafc] dark:!bg-[#0f172a]" } as any),
       sorter: (a: Driver, b: Driver) => a.full_name.localeCompare(b.full_name),
       ...getColumnSearchProps("full_name", "driver_id", ["vdrive_id", "id"]),
       render: (_, record) => (
@@ -305,7 +333,7 @@ const DriverTable = ({ data }: DriverTableProps) => {
             {record.full_name?.charAt(0)}
           </Avatar>
           <div className="flex flex-col justify-center gap-0.5 min-w-0">
-            <Text className="font-extrabold text-slate-800 tracking-tight text-[13px] leading-none truncate">{record.full_name}</Text>
+            <Text className="font-extrabold text-slate-800 dark:text-slate-100 tracking-tight text-[13px] leading-none truncate">{record.full_name}</Text>
             <div className="flex items-center gap-1.5 group/copy">
               <Text style={{ color: '#6b7280' }} className="text-[10px] font-black uppercase tracking-tight font-mono leading-none truncate">
                 {record.vdrive_id || record.driverId || record.driver_id || record.id || "VDD-NEW"}
@@ -336,35 +364,78 @@ const DriverTable = ({ data }: DriverTableProps) => {
       width: 200,
       render: (_, record) => (
         <div className="flex flex-col gap-0.5">
-          <Text className="text-xs font-semibold text-slate-700 leading-tight">{record.phone_number}</Text>
-          <Text className="text-[11px] font-medium text-slate-400 leading-tight truncate" style={{ maxWidth: 180 }}>{record.email}</Text>
+          <Text className="text-xs font-semibold text-slate-700 dark:text-slate-200 leading-tight">{record.phone_number}</Text>
+          <Text className="text-[11px] font-medium text-slate-400 dark:text-slate-500 leading-tight truncate" style={{ maxWidth: 180 }}>{record.email}</Text>
         </div>
       ),
     },
     {
+      title: "Docs",
+      key: "documents",
+      width: 130,
+      align: "center" as const,
+      render: (_, record) => {
+        const getStatusIcon = (type: string, title: string) => {
+          let status = 'missing';
+          // Check for both spelling variations of Aadhaar
+          const searchType = type === 'aadhar_card' ? ['aadhar_card', 'aadhaar_card'] : [type];
+          const doc = record.documents?.find((d: any) => searchType.includes(d.document_type?.toLowerCase()));
+          if (doc) {
+            status = doc.license_status || (doc as any).status || 'pending';
+          }
+
+          let cls = 'text-slate-400 bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-500';
+
+          if (status === 'verified') cls = 'text-emerald-500 bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-400';
+          else if (status === 'pending') cls = 'text-amber-500 bg-amber-50 border-amber-200 dark:bg-amber-900/30 dark:border-amber-800 dark:text-amber-400';
+          else if (status === 'rejected') cls = 'text-rose-500 bg-rose-50 border-rose-200 dark:bg-rose-900/30 dark:border-rose-800 dark:text-rose-400';
+
+          let Icon: any = FileTextOutlined;
+          if (type === 'aadhar_card') Icon = IdcardOutlined;
+          if (type === 'pan_card') Icon = CreditCardOutlined;
+          if (type === 'driving_license') Icon = SolutionOutlined;
+          if (type === 'profile_selfie') Icon = UserOutlined;
+
+          return (
+            <Tooltip title={`${title}: ${status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}`}>
+              <div 
+                className={`w-6 h-6 rounded-full flex items-center justify-center border transition-transform hover:scale-110 cursor-help ${status === 'missing' ? 'opacity-50 grayscale' : 'shadow-sm'} ${cls}`}
+              >
+                <Icon style={{ fontSize: '11px' }} />
+              </div>
+            </Tooltip>
+          );
+        };
+
+        return (
+          <div className="flex items-center justify-center gap-1.5">
+            {getStatusIcon('profile_selfie', 'Profile')}
+            {getStatusIcon('aadhar_card', 'Aadhar')}
+            {getStatusIcon('pan_card', 'PAN')}
+            {getStatusIcon('driving_license', 'License')}
+          </div>
+        );
+      }
+    },
+    {
       title: "Status",
       dataIndex: "status",
-      width: 120,
+      width: 180,
       key: "status",
       align: "center" as const,
       sorter: (a: Driver, b: Driver) => a.status.localeCompare(b.status),
       render: (status: string) => {
-        let config = { color: "#10b981", bg: "#ecfdf5", border: "#a7f3d0" }; // active
-        if (status === "inactive") config = { color: "#f59e0b", bg: "#fffbeb", border: "#fde68a" };
-        if (status === "suspended") config = { color: "#f97316", bg: "#fff7ed", border: "#fed7aa" };
-        if (status === "pending" || status === "pending_verification") config = { color: "#6366f1", bg: "#eef2ff", border: "#c7d2fe" };
-        if (status === "blocked") config = { color: "#ef4444", bg: "#fef2f2", border: "#fecaca" };
+        let cls = "text-emerald-600 bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-400";
+        if (status === "inactive") cls = "text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/30 dark:border-amber-800 dark:text-amber-400";
+        if (status === "suspended") cls = "text-orange-600 bg-orange-50 border-orange-200 dark:bg-orange-900/30 dark:border-orange-800 dark:text-orange-400";
+        if (status === "pending" || status === "pending_verification") cls = "text-indigo-600 bg-indigo-50 border-indigo-200 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-400";
+        if (status === "blocked") cls = "text-rose-600 bg-rose-50 border-rose-200 dark:bg-rose-900/30 dark:border-rose-800 dark:text-rose-400";
 
         return (
           <Tag
-            className="m-0 rounded-full px-3 py-0.5 font-bold text-[11px] border shadow-sm uppercase tracking-wider"
-            style={{
-              color: config.color,
-              backgroundColor: config.bg,
-              borderColor: config.border
-            }}
+            className={`m-0 rounded-full px-3 py-0.5 font-bold text-[10px] border shadow-sm uppercase tracking-wider truncate max-w-[150px] ${cls}`}
           >
-            {status}
+            {status.replace('_', ' ')}
           </Tag>
         );
       },
@@ -378,8 +449,7 @@ const DriverTable = ({ data }: DriverTableProps) => {
         if (!plan) {
           return (
             <Tag
-              className="m-0 rounded-full px-3 py-0.5 font-bold text-[11px] border shadow-sm uppercase tracking-wider"
-              style={{ color: "#94a3b8", backgroundColor: "#f8fafc", borderColor: "#e2e8f0" }}
+              className="m-0 rounded-full px-3 py-0.5 font-bold text-[11px] border shadow-sm uppercase tracking-wider text-slate-500 bg-slate-50 border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400"
             >
               No Plan
             </Tag>
@@ -387,16 +457,12 @@ const DriverTable = ({ data }: DriverTableProps) => {
         }
 
         const isExpired = dayjs(plan.expiry_date).isBefore(dayjs());
+        const cls = isExpired ? "text-rose-600 bg-rose-50 border-rose-200 dark:bg-rose-900/30 dark:border-rose-800 dark:text-rose-400" : "text-emerald-600 bg-emerald-50 border-emerald-200 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-400";
 
         return (
           <div className="flex flex-col gap-0.5">
             <Tag
-              className="m-0 rounded-full px-3 py-0.5 font-bold text-[11px] border shadow-sm uppercase tracking-wider w-fit"
-              style={{
-                color: isExpired ? "#ef4444" : "#10b981",
-                backgroundColor: isExpired ? "#fef2f2" : "#ecfdf5",
-                borderColor: isExpired ? "#fecaca" : "#a7f3d0"
-              }}
+              className={`m-0 rounded-full px-3 py-0.5 font-bold text-[11px] border shadow-sm uppercase tracking-wider w-fit ${cls}`}
             >
               {plan.plan_name}
             </Tag>
@@ -423,7 +489,7 @@ const DriverTable = ({ data }: DriverTableProps) => {
           <Tooltip title={`${numericRating.toFixed(1)} / 5.0 Rating`}>
             <div className={`
               inline-flex items-center gap-1 px-2.5 py-1 rounded-full border transition-all duration-300
-              ${isHigh ? 'bg-amber-50 border-amber-100' : isGood ? 'bg-orange-50 border-orange-100' : 'bg-slate-50 border-slate-100'}
+              ${isHigh ? 'bg-amber-50 border-amber-100 dark:bg-amber-900/30 dark:border-amber-800' : isGood ? 'bg-orange-50 border-orange-100 dark:bg-orange-900/30 dark:border-orange-800' : 'bg-slate-50 border-slate-100 dark:bg-slate-800 dark:border-slate-700'}
             `}>
               <StarFilled style={{ color: "#EAB308", fontSize: 12 }} />
               <span className={`text-[12px] font-black tracking-tight ${isHigh ? 'text-amber-700' : isGood ? 'text-orange-700' : 'text-slate-600'}`}>
@@ -442,7 +508,7 @@ const DriverTable = ({ data }: DriverTableProps) => {
       align: "center" as const,
       sorter: (a: Driver, b: Driver) => (a.total_trips || 0) - (b.total_trips || 0),
       render: (trips: number) => (
-        <Text className="text-[13px] font-black text-slate-800 tracking-tight">
+        <Text className="text-[13px] font-black text-slate-800 dark:text-slate-100 tracking-tight">
           {(trips || 0).toLocaleString()}
         </Text>
       ),
@@ -472,7 +538,7 @@ const DriverTable = ({ data }: DriverTableProps) => {
       },
       render: (text: string) => (
         <div className="flex flex-col gap-0.5">
-          <Text className="text-[11px] font-black text-slate-800 uppercase tracking-tight leading-tight">
+          <Text className="text-[11px] font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight leading-tight">
             {text ? format(new Date(text), "MMM dd, yyyy") : "-"}
           </Text>
           <Text className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest leading-tight">
@@ -486,6 +552,8 @@ const DriverTable = ({ data }: DriverTableProps) => {
       key: "action",
       width: 90,
       fixed: "right" as const,
+      onCell: () => ({ className: "!bg-white dark:!bg-slate-800" } as any),
+      onHeaderCell: () => ({ className: "!bg-[#f8fafc] dark:!bg-[#0f172a]" } as any),
       render: (_, record) => {
         const menuItems = [
           {
@@ -547,11 +615,11 @@ const DriverTable = ({ data }: DriverTableProps) => {
           .premium-table-flat .ant-table-thead > tr > th {
             background: #f8fafc !important;
             border-bottom: 1px solid #e2e8f0 !important;
+            color: #64748b !important;
             font-weight: 800 !important;
             text-transform: uppercase !important;
             letter-spacing: 0.05em !important;
             font-size: 10px !important;
-            color: #64748b !important;
             padding: 10px 16px !important;
           }
           .premium-table-flat .ant-table-row {
@@ -586,9 +654,29 @@ const DriverTable = ({ data }: DriverTableProps) => {
           .premium-table-flat .ant-table-cell-fix-right-first::after {
             box-shadow: inset -10px 0 8px -8px rgba(0,0,0,0.04) !important;
           }
+          
+          /* BULLETPROOF DARK MODE OVERRIDES */
+          html.dark .premium-table-flat .ant-table-thead > tr > th {
+            background: #0f172a !important;
+            border-bottom: 1px solid #334155 !important;
+            color: #94a3b8 !important;
+          }
+          html.dark .premium-table-flat .ant-table-cell-fix-left,
+          html.dark .premium-table-flat .ant-table-cell-fix-right {
+            background: #1e293b !important;
+          }
+          html.dark .premium-table-flat .ant-table-row:hover > td,
+          html.dark .premium-table-flat .ant-table-row:hover > .ant-table-cell-fix-left,
+          html.dark .premium-table-flat .ant-table-row:hover > .ant-table-cell-fix-right {
+            background: #334155 !important;
+          }
+          html.dark .premium-table-flat .ant-table-thead > tr > .ant-table-cell-fix-left,
+          html.dark .premium-table-flat .ant-table-thead > tr > .ant-table-cell-fix-right {
+            background: #0f172a !important;
+          }
         `}
       </style>
-      <div ref={contentRef} className="h-full w-full bg-white">
+      <div ref={contentRef} className="h-full w-full bg-white dark:bg-slate-800">
         <Table
           key={tableHeight}
           columns={columns}

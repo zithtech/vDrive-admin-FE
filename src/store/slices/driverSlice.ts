@@ -23,6 +23,7 @@ export interface Driver {
   first_name?: string;
   last_name?: string;
   phone_number: string;
+  alternate_contact?: string;
   email: string;
   profile_pic_url: string;
   profilePicUrl?: string; // Backend fallback
@@ -78,6 +79,8 @@ export interface Driver {
     document_number: string;
     license_status: string;
     expiry_date: string;
+    extracted_data?: ExtractedData;
+    rejection_reason?: string;
   }[];
   performance: {
     average_rating: number;
@@ -111,10 +114,28 @@ export interface Driver {
   };
 }
 
+export interface ExtractedData {
+  extracted_number?: string;
+  extracted_expiry?: string;
+  ocr_status?: string;
+}
+
+export interface DriverDocument {
+  document_id: string;
+  document_type: string;
+  document_number: string;
+  document_url: string;
+  license_status: string;
+  expiry_date?: string;
+  extracted_data?: ExtractedData;
+  rejection_reason?: string;
+}
+
 interface DriverState {
   drivers: Driver[];
   loading: boolean;
   error: string | null;
+  selectedDriver?: Driver;
 }
 
 const initialState: DriverState = {
@@ -292,6 +313,37 @@ export const verifyDriverAccount = createAsyncThunk(
   },
 );
 
+export const deleteDriver = createAsyncThunk(
+  'drivers/deleteDriver',
+  async (driverId: string, { rejectWithValue }) => {
+    try {
+      await axiosIns.delete(`/admin/drivers/${driverId}`);
+      return driverId;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to delete driver'
+      );
+    }
+  }
+);
+
+export const runDocumentOCR = createAsyncThunk(
+  'drivers/runOCR',
+  async ({ document_id, image_url, document_type }: { document_id: string; image_url: string; document_type: string }, { rejectWithValue }) => {
+    try {
+      const response = await axiosIns.post(`/api/drivers/documents/${document_id}/ocr`, {
+        image_url,
+        document_type
+      });
+      return { document_id, extracted_data: response.data.data };
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to run OCR'
+      );
+    }
+  }
+);
+
 const driverSlice = createSlice({
   name: "drivers",
   initialState,
@@ -367,6 +419,25 @@ const driverSlice = createSlice({
         });
         if (index !== -1) {
           state.drivers[index] = { ...state.drivers[index], ...updatedDriver };
+        }
+      })
+      .addCase(runDocumentOCR.fulfilled, (state, action) => {
+        // Update the driver's document with the extracted OCR data
+        const { document_id, extracted_data } = action.payload;
+        
+        if (state.selectedDriver && state.selectedDriver.documents) {
+          const doc = state.selectedDriver.documents.find(d => d.document_id === document_id);
+          if (doc) {
+            doc.extracted_data = extracted_data;
+          }
+        }
+        
+        const driver = state.drivers.find(d => d.documents?.some(doc => doc.document_id === document_id));
+        if (driver && driver.documents) {
+          const doc = driver.documents.find(d => d.document_id === document_id);
+          if (doc) {
+            doc.extracted_data = extracted_data;
+          }
         }
       });
   },

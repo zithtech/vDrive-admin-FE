@@ -342,172 +342,171 @@ const SupportTickets: React.FC = () => {
 
   return (
     <Layout className="h-full bg-slate-50">
-      <Sider width={380} theme="light" className="border-r border-slate-200 shadow-sm overflow-hidden">
+      <Sider width={380} theme="light" className="border-r border-slate-200 shadow-sm overflow-hidden flex flex-col">
         <div className="flex flex-col h-full bg-white">
           <div className="p-4 border-b border-slate-100 bg-white shrink-0">
-            <Title level={4} className="!mb-4 flex items-center gap-2">
-              <CustomerServiceOutlined className="text-indigo-600" />
-              Support Center
-            </Title>
-            <Space direction="vertical" className="w-full" size="middle">
-              <Segmented
-                block
-                value={userTypeFilter}
-                onChange={(v) => {
-                  setUserTypeFilter(v as any);
-                  setSelectedTicket(null);
-                  setSearchText('');
-                }}
-                options={[
-                  {
-                    label: (
-                      <div className="flex items-center justify-center gap-2 py-1 px-2">
-                        <UserOutlined className={userTypeFilter === 'drivers' ? 'text-indigo-600' : 'text-slate-500'} />
-                        <span className={`font-semibold tracking-wide ${userTypeFilter === 'drivers' ? 'text-indigo-700' : 'text-slate-600'}`}>Drivers</span>
-                        {driverActiveCount > 0 && (
-                          <span className={`text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm ${userTypeFilter === 'drivers' ? 'bg-indigo-500 text-white shadow-indigo-200' : 'bg-slate-200 text-slate-500'}`}>
-                            {driverActiveCount}
-                          </span>
-                        )}
-                      </div>
-                    ),
-                    value: 'drivers'
-                  },
-                  {
-                    label: (
-                      <div className="flex items-center justify-center gap-2 py-1 px-2">
-                        <UserOutlined className={userTypeFilter === 'customers' ? 'text-indigo-600' : 'text-slate-500'} />
-                        <span className={`font-semibold tracking-wide ${userTypeFilter === 'customers' ? 'text-indigo-700' : 'text-slate-600'}`}>Customers</span>
-                        {customerActiveCount > 0 && (
-                          <span className={`text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm ${userTypeFilter === 'customers' ? 'bg-indigo-500 text-white shadow-indigo-200' : 'bg-slate-200 text-slate-500'}`}>
-                            {customerActiveCount}
-                          </span>
-                        )}
-                      </div>
-                    ),
-                    value: 'customers'
-                  },
-                ]}
-                className="bg-slate-100 p-1 rounded-lg"
-              />
-              <Segmented
-                block
-                value={statusFilter}
-                onChange={(v) => setStatusFilter(v as any)}
-                options={[
-                  {
-                    label: (
-                      <div className="flex items-center justify-center gap-2 py-0.5 px-1">
-                        <ClockCircleOutlined className={statusFilter === 'active' ? 'text-indigo-600' : 'text-slate-500'} />
-                        <span className={`font-medium ${statusFilter === 'active' ? 'text-indigo-700' : 'text-slate-600'}`}>Active</span>
-                        <span className={`text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm transition-colors ${statusFilter === 'active' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-500'}`}>
-                          {currentActiveCount}
+          <Title level={4} className="!mb-4 flex items-center gap-2">
+            <CustomerServiceOutlined className="text-indigo-600" />
+            Support Center
+          </Title>
+          <Space direction="vertical" className="w-full" size="middle">
+            <Segmented
+              block
+              value={userTypeFilter}
+              onChange={(v) => {
+                setUserTypeFilter(v as any);
+                setSelectedTicket(null);
+                setSearchText('');
+              }}
+              options={[
+                {
+                  label: (
+                    <div className="flex items-center justify-center gap-2 py-1 px-2">
+                      <UserOutlined className={userTypeFilter === 'drivers' ? 'text-indigo-600' : 'text-slate-500'} />
+                      <span className={`font-semibold tracking-wide ${userTypeFilter === 'drivers' ? 'text-indigo-700' : 'text-slate-600'}`}>Drivers</span>
+                      {driverActiveCount > 0 && (
+                        <span className={`text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm ${userTypeFilter === 'drivers' ? 'bg-indigo-500 text-white shadow-indigo-200' : 'bg-slate-200 text-slate-500'}`}>
+                          {driverActiveCount}
                         </span>
-                      </div>
-                    ),
-                    value: 'active'
-                  },
-                  {
-                    label: (
-                      <div className="flex items-center justify-center gap-2 py-0.5 px-1">
-                        <HistoryOutlined className={statusFilter === 'resolved' ? 'text-indigo-600' : 'text-slate-500'} />
-                        <span className={`font-medium ${statusFilter === 'resolved' ? 'text-indigo-700' : 'text-slate-600'}`}>History</span>
-                        <span className={`text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm transition-colors ${statusFilter === 'resolved' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-500'}`}>
-                          {currentHistoryCount}
+                      )}
+                    </div>
+                  ),
+                  value: 'drivers'
+                },
+                {
+                  label: (
+                    <div className="flex items-center justify-center gap-2 py-1 px-2">
+                      <UserOutlined className={userTypeFilter === 'customers' ? 'text-indigo-600' : 'text-slate-500'} />
+                      <span className={`font-semibold tracking-wide ${userTypeFilter === 'customers' ? 'text-indigo-700' : 'text-slate-600'}`}>Customers</span>
+                      {customerActiveCount > 0 && (
+                        <span className={`text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm ${userTypeFilter === 'customers' ? 'bg-indigo-500 text-white shadow-indigo-200' : 'bg-slate-200 text-slate-500'}`}>
+                          {customerActiveCount}
                         </span>
-                      </div>
-                    ),
-                    value: 'resolved'
-                  },
-                ]}
-                className="bg-slate-100 p-1 rounded-lg"
-              />
-              <Input
-                placeholder="Search by ID or subject..."
-                prefix={<SearchOutlined className="text-slate-400" />}
-                className="rounded-lg bg-slate-50 border-none"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                allowClear
-              />
-            </Space>
-          </div>
+                      )}
+                    </div>
+                  ),
+                  value: 'customers'
+                },
+              ]}
+              className="bg-slate-100 p-1 rounded-lg"
+            />
+            <Segmented
+              block
+              value={statusFilter}
+              onChange={(v) => setStatusFilter(v as any)}
+              options={[
+                {
+                  label: (
+                    <div className="flex items-center justify-center gap-2 py-0.5 px-1">
+                      <ClockCircleOutlined className={statusFilter === 'active' ? 'text-indigo-600' : 'text-slate-500'} />
+                      <span className={`font-medium ${statusFilter === 'active' ? 'text-indigo-700' : 'text-slate-600'}`}>Active</span>
+                      <span className={`text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm transition-colors ${statusFilter === 'active' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-500'}`}>
+                        {currentActiveCount}
+                      </span>
+                    </div>
+                  ),
+                  value: 'active'
+                },
+                {
+                  label: (
+                    <div className="flex items-center justify-center gap-2 py-0.5 px-1">
+                      <HistoryOutlined className={statusFilter === 'resolved' ? 'text-indigo-600' : 'text-slate-500'} />
+                      <span className={`font-medium ${statusFilter === 'resolved' ? 'text-indigo-700' : 'text-slate-600'}`}>History</span>
+                      <span className={`text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm transition-colors ${statusFilter === 'resolved' ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-200 text-slate-500'}`}>
+                        {currentHistoryCount}
+                      </span>
+                    </div>
+                  ),
+                  value: 'resolved'
+                },
+              ]}
+              className="bg-slate-100 p-1 rounded-lg"
+            />
+            <Input
+              placeholder="Search by ID or subject..."
+              prefix={<SearchOutlined className="text-slate-400" />}
+              className="rounded-lg bg-slate-50 border-none"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              allowClear
+            />
+          </Space>
+        </div>
 
           <div className="flex-1 overflow-y-auto bg-white min-h-0">
-            <List
-              loading={loading}
-              dataSource={filteredTickets}
-              renderItem={(item) => {
-                const isUnread = item.status === 'open' && !viewedTickets.has(item.id);
-                return (
-                  <List.Item
-                    onClick={() => {
-                      setSelectedTicket(item);
-                      setViewedTickets((prev) => new Set(prev).add(item.id));
-                    }}
-                    className={`!p-0 cursor-pointer transition-all duration-300 ease-in-out border-b border-slate-100/60 group overflow-hidden relative ${selectedTicket?.id === item.id
-                      ? 'bg-gradient-to-r from-indigo-50/80 to-white shadow-[inset_4px_0_0_0_#4f46e5]'
-                      : isUnread
-                        ? 'bg-gradient-to-r from-blue-50/60 to-white hover:from-blue-100/50 hover:to-slate-50 shadow-[inset_4px_0_0_0_#60a5fa]'
-                        : 'hover:bg-slate-50/80 shadow-[inset_4px_0_0_0_transparent] hover:shadow-[inset_4px_0_0_0_#cbd5e1]'
-                      }`}
-                  >
-                    <div className="w-full p-4 pl-5">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center gap-2 overflow-hidden mr-2">
-                          <Avatar
-                            size={24}
-                            className={`flex-shrink-0 ${selectedTicket?.id === item.id ? 'bg-indigo-600 text-white' : isUnread ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-500'}`}
-                            icon={<UserOutlined />}
-                          />
-                          <Text strong className={`truncate block ${isUnread ? 'text-slate-900 font-bold' : 'text-slate-700'}`} title={item.subject}>
-                            {item.subject}
-                          </Text>
-                        </div>
-                        <Text className="text-[10px] text-slate-400 whitespace-nowrap mt-0.5">
-                          {dayjs(item.created_at).format('MMM DD')}
-                        </Text>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-1.5 mb-2 pl-8">
-                        <Text className="text-[10px] text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded">
-                          #{item.id.split('-')[0].toUpperCase()}
-                        </Text>
-                        <Tag color={item.priority === 'high' ? 'red' : item.priority === 'medium' ? 'orange' : 'blue'} className="text-[9px] border-none rounded-full px-2 m-0 leading-tight">
-                          {item.priority.toUpperCase()}
-                        </Tag>
-                        {item.category && item.category !== 'general' && (
-                          <Tag color={CATEGORY_COLORS[item.category] || 'default'} className="text-[9px] border-none rounded-full px-2 m-0 leading-tight">
-                            {item.category.replace('_', ' ').toUpperCase()}
-                          </Tag>
-                        )}
-                        {item.status === 'resolved' && <Tag color="success" className="text-[9px] border-none rounded-full px-2 m-0 leading-tight">RESOLVED</Tag>}
-                      </div>
-
-                      <div className="flex items-center justify-between pl-8">
-                        <Text type="secondary" className={`text-xs truncate block max-w-[200px] ${isUnread ? 'font-medium text-slate-600' : ''}`}>
-                          {userTypeFilter === 'customers' ? (item.user_name || 'Anonymous Customer') : (item.driver_name || 'Anonymous Driver')}
-                        </Text>
-                        <div className="flex items-center gap-2">
-                          {isUnread && (
-                            <Tag color="blue" className="border-none rounded-full text-[9px] px-2 py-0.5 m-0 font-bold bg-blue-100 text-blue-600 animate-pulse shadow-sm">
-                              NEW
-                            </Tag>
-                          )}
-                          {item.status === 'open' && <Badge status="processing" />}
-                        </div>
-                      </div>
+          <List
+            loading={loading}
+            dataSource={filteredTickets}
+            renderItem={(item) => {
+              const isUnread = item.status === 'open' && !viewedTickets.has(item.id);
+              return (
+              <List.Item
+                onClick={() => {
+                  setSelectedTicket(item);
+                  setViewedTickets((prev) => new Set(prev).add(item.id));
+                }}
+                className={`!p-0 cursor-pointer transition-all duration-300 ease-in-out border-b border-slate-100/60 group overflow-hidden relative ${
+                  selectedTicket?.id === item.id
+                    ? 'bg-gradient-to-r from-indigo-50/80 to-white shadow-[inset_4px_0_0_0_#4f46e5]'
+                    : isUnread
+                      ? 'bg-gradient-to-r from-blue-50/60 to-white hover:from-blue-100/50 hover:to-slate-50 shadow-[inset_4px_0_0_0_#60a5fa]'
+                      : 'hover:bg-slate-50/80 shadow-[inset_4px_0_0_0_transparent] hover:shadow-[inset_4px_0_0_0_#cbd5e1]'
+                }`}
+              >
+                <div className="w-full p-4 pl-5">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="flex items-center gap-2 overflow-hidden mr-2">
+                      <Avatar
+                        size={24}
+                        className={`flex-shrink-0 ${selectedTicket?.id === item.id ? 'bg-indigo-600 text-white' : isUnread ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-500'}`}
+                        icon={<UserOutlined />}
+                      />
+                      <Text strong className={`truncate block ${isUnread ? 'text-slate-900 font-bold' : 'text-slate-700'}`} title={item.subject}>
+                        {item.subject}
+                      </Text>
                     </div>
-                  </List.Item>
-                )
-              }}
-              locale={{ emptyText: <div className="p-8 text-center text-slate-400">No {statusFilter} tickets found</div> }}
-            />
-          </div>
+                    <Text className="text-[10px] text-slate-400 whitespace-nowrap mt-0.5">
+                      {dayjs(item.created_at).format('MMM DD')}
+                    </Text>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5 mb-2 pl-8">
+                    <Text className="text-[10px] text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded">
+                      #{item.id.split('-')[0].toUpperCase()}
+                    </Text>
+                    <Tag color={item.priority === 'high' ? 'red' : item.priority === 'medium' ? 'orange' : 'blue'} className="text-[9px] border-none rounded-full px-2 m-0 leading-tight">
+                      {item.priority.toUpperCase()}
+                    </Tag>
+                    {item.category && item.category !== 'general' && (
+                      <Tag color={CATEGORY_COLORS[item.category] || 'default'} className="text-[9px] border-none rounded-full px-2 m-0 leading-tight">
+                        {item.category.replace('_', ' ').toUpperCase()}
+                      </Tag>
+                    )}
+                    {item.status === 'resolved' && <Tag color="success" className="text-[9px] border-none rounded-full px-2 m-0 leading-tight">RESOLVED</Tag>}
+                  </div>
+                  <div className="flex items-center justify-between pl-8">
+                    <Text type="secondary" className={`text-xs truncate block max-w-[200px] ${isUnread ? 'font-medium text-slate-600' : ''}`}>
+                      {userTypeFilter === 'customers' ? (item.user_name || 'Anonymous Customer') : (item.driver_name || 'Anonymous Driver')}
+                    </Text>
+                    <div className="flex items-center gap-2">
+                      {isUnread && (
+                        <Tag color="blue" className="border-none rounded-full text-[9px] px-2 py-0.5 m-0 font-bold bg-blue-100 text-blue-600 animate-pulse shadow-sm">
+                          NEW
+                        </Tag>
+                      )}
+                      {item.status === 'open' && <Badge status="processing" />}
+                    </div>
+                  </div>
+                </div>
+              </List.Item>
+              );
+            }}
+            locale={{ emptyText: <div className="p-8 text-center text-slate-400">No {statusFilter} tickets found</div> }}
+          />
+        </div>
         </div>
       </Sider>
 
-      <Content className="bg-white flex flex-col">
+      <Content className="bg-white dark:bg-slate-900 flex flex-col">
         {selectedTicket ? (
           <>
             <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white shadow-sm z-10">
@@ -553,7 +552,7 @@ const SupportTickets: React.FC = () => {
               </Space>
             </div>
 
-            <div className="flex-grow overflow-y-auto p-6 bg-slate-50/30">
+            <div className="flex-grow overflow-y-auto p-6 bg-slate-50/30 dark:bg-slate-900/50">
               {messagesLoading ? (
                 <div className="flex h-full items-center justify-center"><Spin /></div>
               ) : (
@@ -566,7 +565,7 @@ const SupportTickets: React.FC = () => {
                     if (isSystem) {
                       return (
                         <div key={msg.id} className="text-center my-2">
-                          <Tag className="rounded-full border-none bg-slate-100 text-slate-500 text-[10px] uppercase font-bold tracking-wider">
+                          <Tag className="rounded-full border-none bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold tracking-wider">
                             {msg.message}
                           </Tag>
                         </div>
@@ -586,8 +585,8 @@ const SupportTickets: React.FC = () => {
                           </div>
                           <div className={`
                             px-4 py-2 rounded-2xl shadow-sm text-sm
-                            ${isMe ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-white text-slate-800 border border-slate-100 rounded-tl-none'}
-                            ${isBot ? 'border-dashed border-indigo-200 bg-indigo-50/30' : ''}
+                            ${isMe ? 'bg-indigo-600 dark:bg-indigo-500 text-white rounded-tr-none' : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-tl-none'}
+                            ${isBot ? 'border-dashed border-indigo-200 dark:border-indigo-500/30 bg-indigo-50/30 dark:bg-indigo-500/10' : ''}
                           `}>
                             {msg.message}
                           </div>
@@ -603,11 +602,11 @@ const SupportTickets: React.FC = () => {
               )}
             </div>
 
-            <div className="p-4 border-t border-slate-100 bg-white flex flex-col gap-3">
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800 flex flex-col gap-3">
               <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
                 {(userTypeFilter === 'drivers' ? DRIVER_QUICK_REPLIES : CUSTOMER_QUICK_REPLIES).map((reply, idx) => (
-                  <Tag
-                    key={idx}
+                  <Tag 
+                    key={idx} 
                     className="cursor-pointer px-3 py-1.5 rounded-full border border-indigo-100 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors whitespace-nowrap text-xs font-medium m-0"
                     onClick={() => setReplyText(reply.text)}
                   >
@@ -622,8 +621,8 @@ const SupportTickets: React.FC = () => {
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   onPressEnter={handleSendMessage}
-                  className="rounded-l-xl"
-                  prefix={<MessageOutlined className="text-slate-300" />}
+                  className="rounded-l-xl dark:bg-slate-900 dark:text-slate-200 dark:border-slate-700"
+                  prefix={<MessageOutlined className="text-slate-300 dark:text-slate-500" />}
                 />
                 <Button
                   type="primary"

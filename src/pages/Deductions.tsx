@@ -46,12 +46,12 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color }) => {
   return (
-    <div className="flex flex-col justify-center rounded-2xl  border border-neutral-300 gap-2 px-4 py-5  bg-white hover:shadow-md transition-all">
+    <div className="flex flex-col justify-center rounded-2xl border border-neutral-300 dark:border-slate-700 gap-2 px-4 py-5 bg-white dark:bg-slate-800 hover:shadow-md transition-all">
       <div className="flex items-center gap-3  text-sm font-medium">
-        <span className="text-gray-500">{title}</span>
+        <span className="text-gray-500 dark:text-slate-400">{title}</span>
         <span>{icon}</span>
       </div>
-      <div className={`text-2xl font-bold text-gray-900 ${color}`}>{value}</div>
+      <div className={`text-2xl font-bold text-gray-900 dark:text-slate-100 ${color}`}>{value}</div>
     </div>
   );
 };
@@ -174,7 +174,7 @@ const Deductions = () => {
       value: "$58,211.50",
       icon: (
         <span className="text-green-500">
-          <ArrowDownOutlined className="text-gray-400 text-base" />{" "}
+          <ArrowDownOutlined className="text-gray-400 dark:text-slate-500 text-base" />{" "}
         </span>
       ),
     },
@@ -203,6 +203,23 @@ const Deductions = () => {
       </div>
 
       <DeductionTable data={DATA} />
+
+      <style>{`
+        .dark .premium-table .ant-table-thead > tr > th {
+          background: #1e293b;
+          color: #94a3b8;
+          border-bottom: 2px solid #334155;
+        }
+        .dark .premium-table .ant-table-tbody > tr > td {
+          border-bottom: 1px solid #334155;
+        }
+        .dark .premium-table .ant-table-wrapper .ant-table-pagination.ant-pagination {
+          color: #cbd5e1;
+        }
+        .dark .premium-table .ant-table-cell-row-hover {
+          background: transparent !important;
+        }
+      `}</style>
     </TitleBar>
   );
 };

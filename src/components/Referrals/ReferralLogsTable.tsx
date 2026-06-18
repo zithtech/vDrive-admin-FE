@@ -22,7 +22,7 @@ const ReferralLogsTable: React.FC<ReferralLogsTableProps> = ({ data, loading, ty
       key: "referred_at",
       render: (text: string) => (
         <div className="flex flex-col">
-          <span className="text-xs font-bold text-gray-700">{dayjs(text).format("DD MMM YYYY")}</span>
+          <span className="text-xs font-bold text-gray-700 dark:text-slate-200">{dayjs(text).format("DD MMM YYYY")}</span>
           <span className="text-[10px] text-gray-400 font-medium">{dayjs(text).format("hh:mm A")}</span>
         </div>
       ),
@@ -32,11 +32,11 @@ const ReferralLogsTable: React.FC<ReferralLogsTableProps> = ({ data, loading, ty
       key: "referrer",
       render: (_: any, record: ReferralLog) => (
         <div className="flex items-center gap-3">
-          <div className={`w-8 h-8 rounded-full ${isDriver ? 'bg-indigo-50 text-indigo-500' : 'bg-purple-50 text-purple-500'} flex items-center justify-center`}>
+          <div className={`w-8 h-8 rounded-full ${isDriver ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400' : 'bg-purple-50 dark:bg-purple-500/10 text-purple-500 dark:text-purple-400'} flex items-center justify-center`}>
             <UserOutlined />
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-black text-slate-800 leading-none mb-1">{record.referrer_name}</span>
+            <span className="text-xs font-black text-slate-800 dark:text-slate-200 leading-none mb-1">{record.referrer_name}</span>
             <Text className="text-[10px] text-gray-400 flex items-center gap-1 font-mono">{record.referrer_phone}</Text>
           </div>
         </div>
@@ -47,7 +47,7 @@ const ReferralLogsTable: React.FC<ReferralLogsTableProps> = ({ data, loading, ty
       dataIndex: "referral_code",
       key: "referral_code",
       render: (text: string) => (
-        <Tag className="bg-slate-100 text-slate-600 border-slate-200 font-mono font-bold text-[10px] uppercase px-2 py-0.5 rounded">
+        <Tag className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 font-mono font-bold text-[10px] uppercase px-2 py-0.5 rounded">
           {text}
         </Tag>
       ),
@@ -57,11 +57,11 @@ const ReferralLogsTable: React.FC<ReferralLogsTableProps> = ({ data, loading, ty
       key: "referee",
       render: (_: any, record: ReferralLog) => (
         <div className="flex items-center gap-3">
-          <div className={`w-8 h-8 rounded-full ${isDriver ? 'bg-blue-50 text-blue-500' : 'bg-pink-50 text-pink-500'} flex items-center justify-center`}>
+          <div className={`w-8 h-8 rounded-full ${isDriver ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-500 dark:text-blue-400' : 'bg-pink-50 dark:bg-pink-500/10 text-pink-500 dark:text-pink-400'} flex items-center justify-center`}>
             <UserOutlined />
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-black text-slate-800 leading-none mb-1">{record.referee_name || "Unknown"}</span>
+            <span className="text-xs font-black text-slate-800 dark:text-slate-200 leading-none mb-1">{record.referee_name || "Unknown"}</span>
             <Text className="text-[10px] text-gray-400 flex items-center gap-1 font-mono">{record.referee_phone || "N/A"}</Text>
           </div>
         </div>
@@ -90,7 +90,7 @@ const ReferralLogsTable: React.FC<ReferralLogsTableProps> = ({ data, loading, ty
         }
 
         return (
-          <Tag className={`bg-${color}-50 text-${color}-600 border-${color}-100 flex items-center gap-1.5 w-fit px-2.5 py-0.5 rounded-full font-black text-[10px] uppercase tracking-widest`}>
+          <Tag className={`bg-${color}-50 dark:bg-${color}-500/10 text-${color}-600 dark:text-${color}-400 border-${color}-100 dark:border-${color}-500/30 flex items-center gap-1.5 w-fit px-2.5 py-0.5 rounded-full font-black text-[10px] uppercase tracking-widest`}>
             {icon} {label}
           </Tag>
         );
@@ -116,7 +116,7 @@ const ReferralLogsTable: React.FC<ReferralLogsTableProps> = ({ data, loading, ty
   ];
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden">
       <Table
         columns={columns}
         dataSource={data}

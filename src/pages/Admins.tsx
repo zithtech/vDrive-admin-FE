@@ -307,7 +307,7 @@ export default function AdminPage() {
           <Button
             icon={<IoMdRefresh className={`text-lg ${loading ? 'animate-spin' : ''}`} />}
             onClick={() => dispatch(fetchAdminUsers())}
-            className="rounded-full h-11 w-11 flex items-center justify-center border-gray-100 text-gray-400 hover:text-indigo-600 transition-all bg-white"
+            className="rounded-full h-11 w-11 flex items-center justify-center border border-gray-100 dark:border-slate-700 text-gray-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all bg-white dark:bg-slate-800"
           />
           {canCreateAdmin && (
             <Button
@@ -345,16 +345,17 @@ export default function AdminPage() {
             </Tabs.TabPane>
           )}
         </Tabs>        <Drawer
+          rootClassName="dark-drawer"
           title={
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+              <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                 <SafetyCertificateOutlined className="text-xl" />
               </div>
               <div>
-                <div className="text-lg font-black text-slate-800 leading-none mb-1">
+                <div className="text-lg font-black text-slate-800 dark:text-slate-200 leading-none mb-1">
                   {modalMode === "create" ? "Add New Administrator" : "Refine Admin Profile"}
                 </div>
-                <div className="text-xs text-slate-400 font-medium">
+                <div className="text-xs text-slate-400 dark:text-slate-500 font-medium">
                   {modalMode === "create" ? "Grant system-wide access permissions" : "Update user credentials and authority level"}
                 </div>
               </div>
@@ -379,7 +380,7 @@ export default function AdminPage() {
           className="premium-drawer"
         >
           <Form form={form} layout="vertical" validateTrigger="onSubmit" className="mt-4">
-            <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-100 mb-6">
+            <div className="bg-slate-50/50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6">
               <div className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 mb-4 flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
                 Identity & Access
@@ -394,7 +395,7 @@ export default function AdminPage() {
                   { max: 100, message: "Name must not exceed 100 characters" },
                 ]}
               >
-                <Input placeholder="Enter full name" className="premium-input-xl" />
+                <Input placeholder="Enter full name" className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100" />
               </Form.Item>
 
               <Form.Item
@@ -405,7 +406,7 @@ export default function AdminPage() {
                   { type: "email", message: "Enter a valid email address" },
                 ]}
               >
-                <Input placeholder="Enter email address" className="premium-input-xl" />
+                <Input placeholder="Enter email address" className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100" />
               </Form.Item>
 
               <Form.Item
@@ -428,7 +429,7 @@ export default function AdminPage() {
               </Form.Item>
             </div>
 
-            <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
+            <div className="bg-slate-50/50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-700">
               <div className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 mb-4 flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                 Contact & Security
@@ -444,7 +445,7 @@ export default function AdminPage() {
                   },
                 ]}
               >
-                <Input placeholder="+91 00000 00000" className="premium-input-xl" />
+                <Input placeholder="+91 00000 00000" className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100" />
               </Form.Item>
 
               {modalMode === "create" && (
@@ -461,7 +462,7 @@ export default function AdminPage() {
                     ]}
                     hasFeedback
                   >
-                    <Input.Password placeholder="Create secure password" title="At least one uppercase, number, and special character" className="premium-input-xl" />
+                    <Input.Password placeholder="Create secure password" title="At least one uppercase, number, and special character" className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100" />
                   </Form.Item>
 
                   <Form.Item
@@ -481,7 +482,7 @@ export default function AdminPage() {
                       }),
                     ]}
                   >
-                    <Input.Password placeholder="Confirm access key" className="premium-input-xl" />
+                    <Input.Password placeholder="Confirm access key" className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100" />
                   </Form.Item>
                 </>
               )}

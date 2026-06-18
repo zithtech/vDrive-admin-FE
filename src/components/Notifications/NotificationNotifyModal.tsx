@@ -110,8 +110,9 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
       }
       open={visible}
       onCancel={onCancel}
+      wrapClassName="dark-modal"
       footer={[
-        <Button key="cancel" onClick={onCancel} className="rounded-xl border-none text-slate-400 font-bold hover:text-slate-600 h-12 px-6">
+        <Button key="cancel" onClick={onCancel} className="rounded-xl border-none text-slate-400 font-bold hover:text-slate-600 dark:hover:text-slate-200 h-12 px-6">
           {isAllowed ? "Cancel" : "Close"}
         </Button>,
         isAllowed && (
@@ -140,22 +141,22 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
             </div>
           </div>
         )}
-        <div className="bg-indigo-50 p-6 rounded-[2rem] border border-indigo-100 mb-6 relative overflow-hidden shadow-sm">
+        <div className="bg-indigo-50 dark:bg-indigo-500/10 p-6 rounded-[2rem] border border-indigo-100 dark:border-indigo-500/30 mb-6 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-200/20 rounded-full translate-x-10 -translate-y-10" />
 
-          <Text className="text-indigo-400 text-[10px] uppercase tracking-tight font-black mb-2 block">
+          <Text className="text-indigo-400 dark:text-indigo-300 text-[10px] uppercase tracking-tight font-black mb-2 block">
             Notification Preview
           </Text>
-          <Title level={4} className="!m-0 !text-indigo-900 font-bold">
+          <Title level={4} className="!m-0 !text-indigo-900 dark:!text-indigo-100 font-bold">
             {notificationData?.title}
           </Title>
-          <Text className="text-[12px] text-indigo-500/70 line-clamp-1 mt-1 block">
+          <Text className="text-[12px] text-indigo-500/70 dark:text-indigo-300/70 line-clamp-1 mt-1 block">
             {notificationData?.body}
           </Text>
         </div>
 
         <div className="mb-6">
-          <Text className="text-slate-400 font-black text-[10px] uppercase tracking-widest mb-3 block px-1">Target Audience</Text>
+          <Text className="text-slate-400 dark:text-slate-500 font-black text-[10px] uppercase tracking-widest mb-3 block px-1">Target Audience</Text>
           <Select
             className="w-full premium-select-large h-14"
             value={target}
@@ -165,45 +166,45 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
           >
             <Option value="ALL">
               <div className="flex items-center gap-3 py-1">
-                <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500 dark:text-blue-400">
                   <TeamOutlined />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-slate-700">All {targetType === 'CUSTOMER' ? 'Customers' : 'Drivers'}</div>
-                  <div className="text-[9px] text-slate-400 uppercase font-bold tracking-tight">Broadcast to entire user base</div>
+                  <div className="text-xs font-bold text-slate-700 dark:text-slate-200">All {targetType === 'CUSTOMER' ? 'Customers' : 'Drivers'}</div>
+                  <div className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-tight">Broadcast to entire user base</div>
                 </div>
               </div>
             </Option>
             <Option value="TOP_RIDE">
               <div className="flex items-center gap-3 py-1">
-                <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-500 dark:text-emerald-400">
                   <RiseOutlined />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-slate-700">Top Performers</div>
-                  <div className="text-[9px] text-slate-400 uppercase font-bold tracking-tight">Users with highest ride counts</div>
+                  <div className="text-xs font-bold text-slate-700 dark:text-slate-200">Top Performers</div>
+                  <div className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-tight">Users with highest ride counts</div>
                 </div>
               </div>
             </Option>
             <Option value="LOW_RIDE">
               <div className="flex items-center gap-3 py-1">
-                <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
+                <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-500 dark:text-amber-400">
                   <FallOutlined />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-slate-700">Low Activity Users</div>
-                  <div className="text-[9px] text-slate-400 uppercase font-bold tracking-tight">Users with minimal rides</div>
+                  <div className="text-xs font-bold text-slate-700 dark:text-slate-200">Low Activity Users</div>
+                  <div className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-tight">Users with minimal rides</div>
                 </div>
               </div>
             </Option>
             <Option value="SPECIFIC">
               <div className="flex items-center gap-3 py-1">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500">
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 dark:text-indigo-400">
                   <UserOutlined />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-slate-700">Specific {targetType === 'CUSTOMER' ? 'Customer' : 'Driver'}</div>
-                  <div className="text-[9px] text-slate-400 uppercase font-bold tracking-tight">Direct individual targeting</div>
+                  <div className="text-xs font-bold text-slate-700 dark:text-slate-200">Specific {targetType === 'CUSTOMER' ? 'Customer' : 'Driver'}</div>
+                  <div className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-bold tracking-tight">Direct individual targeting</div>
                 </div>
               </div>
             </Option>
@@ -212,7 +213,7 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
 
         {target === "SPECIFIC" && (
           <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-500">
-            <Text className="text-slate-400 font-black text-[10px] uppercase tracking-widest mb-3 block px-1">Select Identity</Text>
+            <Text className="text-slate-400 dark:text-slate-500 font-black text-[10px] uppercase tracking-widest mb-3 block px-1">Select Identity</Text>
             <Select
               mode="multiple"
               showSearch
@@ -236,12 +237,12 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
               {currentAudience.map((user: any) => (
                 <Option key={user.id} value={user.id}>
                   <div className="flex items-center gap-3 py-1">
-                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100">
+                    <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 border border-slate-100 dark:border-slate-700">
                       <UserOutlined />
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-slate-700">{user.full_name || user.name}</div>
-                      <div className="text-[9px] text-slate-400 font-bold">{user.phone_number}</div>
+                      <div className="text-xs font-bold text-slate-700 dark:text-slate-200">{user.full_name || user.name}</div>
+                      <div className="text-[9px] text-slate-400 dark:text-slate-500 font-bold">{user.phone_number}</div>
                     </div>
                   </div>
                 </Option>
@@ -252,9 +253,9 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
 
         <Divider className="my-6" />
 
-        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-          <Text className="text-[11px] text-slate-500 italic block">
-            <span className="font-bold text-slate-700">Pro-tip for achieving this:</span> The backend utilizes a scheduled cron job (running every 5 minutes) to process these requests. It queries the database based on your selected segments (e.g., <Text code>total_rides &gt; 50</Text> for Top Riders) and dispatches notifications in batches to ensure maximum deliverability without overloading the system.
+        <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
+          <Text className="text-[11px] text-slate-500 dark:text-slate-400 italic block">
+            <span className="font-bold text-slate-700 dark:text-slate-300">Pro-tip for achieving this:</span> The backend utilizes a scheduled cron job (running every 5 minutes) to process these requests. It queries the database based on your selected segments (e.g., <Text code className="dark:bg-slate-800 dark:text-slate-300">total_rides &gt; 50</Text> for Top Riders) and dispatches notifications in batches to ensure maximum deliverability without overloading the system.
           </Text>
         </div>
       </div>
