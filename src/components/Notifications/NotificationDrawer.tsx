@@ -1,13 +1,6 @@
 import React, { useEffect } from "react";
 import dayjs from "dayjs";
-import {
-  Drawer,
-  Form,
-  Input,
-  Select,
-  Button,
-  Typography,
-} from "antd";
+import { Drawer, Form, Input, Select, Button, Typography } from "antd";
 import {
   BellOutlined,
   UserOutlined,
@@ -46,14 +39,15 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
   const canCreate = useHasPermission("notifications", "create");
   const canUpdate = useHasPermission("notifications", "update");
   const { role } = useAppSelector((state) => state.auth);
-  const isSuperAdmin = role === 'super_admin';
+  const isSuperAdmin = role === "super_admin";
   const isAllowed = isSuperAdmin || (initialValues ? canUpdate : canCreate);
 
   useEffect(() => {
     if (visible) {
       if (initialValues) {
         // Find ID if only code is present
-        let attachedOfferId = initialValues.attached_offer || initialValues.coupon_id || initialValues.promo_id;
+        let attachedOfferId =
+          initialValues.attached_offer || initialValues.coupon_id || initialValues.promo_id;
 
         if (!attachedOfferId) {
           if (initialValues.coupon_code) {
@@ -66,7 +60,7 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
         form.setFieldsValue({
           ...initialValues,
           attached_offer: attachedOfferId,
-          specific_user_id: initialValues.specific_user_id || null
+          specific_user_id: initialValues.specific_user_id || null,
         });
       } else {
         form.resetFields();
@@ -108,7 +102,7 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
       closable={false}
       rootClassName="dark-drawer"
       styles={{
-        header: { display: 'none' },
+        header: { display: "none" },
         body: { padding: 0 },
         footer: { padding: "16px 24px" },
       }}
@@ -146,8 +140,15 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
               </div>
             </div>
             <div>
-              <Title level={3} className="!m-0 !mb-1 font-extrabold text-gray-800 dark:text-slate-100 tracking-tight">
-                {initialValues ? (isAllowed ? "Edit Notification" : "View Notification") : "Compose Notification"}
+              <Title
+                level={3}
+                className="!m-0 !mb-1 font-extrabold text-gray-800 dark:text-slate-100 tracking-tight"
+              >
+                {initialValues
+                  ? isAllowed
+                    ? "Edit Notification"
+                    : "View Notification"
+                  : "Compose Notification"}
               </Title>
               <Text className="text-gray-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest">
                 Push Campaigns & Outreach
@@ -172,8 +173,12 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
         disabled={!isAllowed}
       >
         {/* Hidden Fields for codes */}
-        <Form.Item name="coupon_code" noStyle><input type="hidden" /></Form.Item>
-        <Form.Item name="promo_code" noStyle><input type="hidden" /></Form.Item>
+        <Form.Item name="coupon_code" noStyle>
+          <input type="hidden" />
+        </Form.Item>
+        <Form.Item name="promo_code" noStyle>
+          <input type="hidden" />
+        </Form.Item>
 
         {/* Content Section */}
         <div className="bg-white dark:bg-slate-800/50 p-5 rounded-[2rem] border border-gray-100 dark:border-slate-700 shadow-sm space-y-2 mx-4 mt-4">
@@ -181,12 +186,18 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
             <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 dark:text-indigo-400">
               <BellOutlined className="text-sm" />
             </div>
-            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">Message Content</span>
+            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">
+              Message Content
+            </span>
           </div>
 
           <Form.Item
             name="title"
-            label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Notification Title</span>}
+            label={
+              <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                Notification Title
+              </span>
+            }
             rules={[{ required: true, message: "Title is required" }]}
             className="!mb-3"
           >
@@ -199,7 +210,11 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
 
           <Form.Item
             name="body"
-            label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Message Body</span>}
+            label={
+              <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                Message Body
+              </span>
+            }
             rules={[{ required: true, message: "Message body is required" }]}
             className="!mb-3"
           >
@@ -217,32 +232,50 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
             <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-500 dark:text-amber-400">
               <UserOutlined className="text-sm" />
             </div>
-            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">Target Audience</span>
+            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">
+              Target Audience
+            </span>
           </div>
 
           <Form.Item
             name="target_audience"
-            label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Who should receive this?</span>}
+            label={
+              <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                Who should receive this?
+              </span>
+            }
             rules={[{ required: true }]}
             className="!mb-3"
           >
             <Select size="large" className="premium-select rounded-2xl w-full">
-              <Select.Option value="ALL">For All {defaultTarget === 'CUSTOMER' ? 'Customers' : 'Drivers'}</Select.Option>
-              <Select.Option value="TOP_RIDE">For Top {defaultTarget === 'CUSTOMER' ? 'Riders' : 'Drivers'}</Select.Option>
-              <Select.Option value="LOW_RIDE">For Low {defaultTarget === 'CUSTOMER' ? 'Riders' : 'Drivers'}</Select.Option>
+              <Select.Option value="ALL">
+                For All {defaultTarget === "CUSTOMER" ? "Customers" : "Drivers"}
+              </Select.Option>
+              <Select.Option value="TOP_RIDE">
+                For Top {defaultTarget === "CUSTOMER" ? "Riders" : "Drivers"}
+              </Select.Option>
+              <Select.Option value="LOW_RIDE">
+                For Low {defaultTarget === "CUSTOMER" ? "Riders" : "Drivers"}
+              </Select.Option>
               <Select.Option value="SPECIFIC">For Specific Users</Select.Option>
             </Select>
           </Form.Item>
 
           <Form.Item
             noStyle
-            shouldUpdate={(prevValues, currentValues) => prevValues.target_audience !== currentValues.target_audience}
+            shouldUpdate={(prevValues, currentValues) =>
+              prevValues.target_audience !== currentValues.target_audience
+            }
           >
             {({ getFieldValue }) =>
               getFieldValue("target_audience") === "SPECIFIC" && (
                 <Form.Item
                   name="specific_user_id"
-                  label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Select Users</span>}
+                  label={
+                    <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                      Select Users
+                    </span>
+                  }
                   rules={[{ required: true, message: "Please select at least one user" }]}
                   className="!mb-3"
                 >
@@ -271,18 +304,24 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
             <div className="w-8 h-8 rounded-xl bg-green-50 dark:bg-green-500/10 flex items-center justify-center text-green-500 dark:text-green-400">
               <TagOutlined className="text-sm" />
             </div>
-            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">Optional Attachments</span>
+            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">
+              Optional Attachments
+            </span>
           </div>
 
           <Form.Item
             name="attached_offer"
-            label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Attach {defaultTarget === 'CUSTOMER' ? 'Coupon' : 'Promo'}</span>}
+            label={
+              <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                Attach {defaultTarget === "CUSTOMER" ? "Coupon" : "Promo"}
+              </span>
+            }
             className="!mb-3"
           >
             <Select
               size="large"
               className="premium-select rounded-2xl w-full"
-              placeholder={`Select a ${defaultTarget === 'CUSTOMER' ? 'Coupon' : 'Promo'} to attach`}
+              placeholder={`Select a ${defaultTarget === "CUSTOMER" ? "Coupon" : "Promo"} to attach`}
               allowClear
               onChange={handleOfferChange}
               showSearch
@@ -290,38 +329,39 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
             >
               {defaultTarget === "CUSTOMER"
                 ? coupons.map((c: any) => {
-                  const isExpired = !c.is_active || (c.valid_until && dayjs(c.valid_until).isBefore(dayjs()));
-                  const statusText = !c.is_active ? "Disabled" : "Expired";
-                  return (
-                    <Select.Option key={c.id} value={c.id} disabled={isExpired}>
-                      <div className="flex justify-between items-center">
-                        <span>{c.code}</span>
-                        {isExpired && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 font-bold uppercase">
-                            {statusText}
-                          </span>
-                        )}
-                      </div>
-                    </Select.Option>
-                  );
-                })
+                    const isExpired =
+                      !c.is_active || (c.valid_until && dayjs(c.valid_until).isBefore(dayjs()));
+                    const statusText = !c.is_active ? "Disabled" : "Expired";
+                    return (
+                      <Select.Option key={c.id} value={c.id} disabled={isExpired}>
+                        <div className="flex justify-between items-center">
+                          <span>{c.code}</span>
+                          {isExpired && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 font-bold uppercase">
+                              {statusText}
+                            </span>
+                          )}
+                        </div>
+                      </Select.Option>
+                    );
+                  })
                 : promos.map((p: any) => {
-                  const isExpired = !p.is_active || (p.expiry_date && dayjs(p.expiry_date).isBefore(dayjs()));
-                  const statusText = !p.is_active ? "Disabled" : "Expired";
-                  return (
-                    <Select.Option key={p.id} value={p.id} disabled={isExpired}>
-                      <div className="flex justify-between items-center">
-                        <span>{p.code}</span>
-                        {isExpired && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 font-bold uppercase">
-                            {statusText}
-                          </span>
-                        )}
-                      </div>
-                    </Select.Option>
-                  );
-                })
-              }
+                    const isExpired =
+                      !p.is_active || (p.expiry_date && dayjs(p.expiry_date).isBefore(dayjs()));
+                    const statusText = !p.is_active ? "Disabled" : "Expired";
+                    return (
+                      <Select.Option key={p.id} value={p.id} disabled={isExpired}>
+                        <div className="flex justify-between items-center">
+                          <span>{p.code}</span>
+                          {isExpired && (
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 font-bold uppercase">
+                              {statusText}
+                            </span>
+                          )}
+                        </div>
+                      </Select.Option>
+                    );
+                  })}
             </Select>
           </Form.Item>
           <Text className="text-[10px] text-gray-400 dark:text-slate-500 italic">

@@ -2,7 +2,6 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosIns from "../../api/axios";
 import { logger } from "../../utils/logger";
 
-
 export type DriverStatus =
   | "active"
   | "inactive"
@@ -186,13 +185,17 @@ export const fetchDrivers = createAsyncThunk(
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Something went wrong");
     }
-  }
+  },
 );
 
 export const updateDriverStatus = createAsyncThunk(
   "drivers/updateDriverStatus",
   async (
-    { driver_id, status, status_reason }: { driver_id: string; status: DriverStatus; status_reason?: string },
+    {
+      driver_id,
+      status,
+      status_reason,
+    }: { driver_id: string; status: DriverStatus; status_reason?: string },
     { rejectWithValue },
   ) => {
     try {
@@ -202,9 +205,7 @@ export const updateDriverStatus = createAsyncThunk(
       });
       return response.data?.data || response.data;
     } catch (err: any) {
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to update status",
-      );
+      return rejectWithValue(err.response?.data?.message || "Failed to update status");
     }
   },
 );
@@ -219,9 +220,7 @@ export const updateDriverProfile = createAsyncThunk(
       const response = await axiosIns.patch(`/api/drivers/${driver_id}`, data);
       return response.data?.data || response.data;
     } catch (err: any) {
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to update profile",
-      );
+      return rejectWithValue(err.response?.data?.message || "Failed to update profile");
     }
   },
 );
@@ -242,15 +241,13 @@ export const updateDocumentStatus = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await axiosIns.patch(
-        `/api/drivers/documents/verify/${document_id}`,
-        { status, reason },
-      );
+      const response = await axiosIns.patch(`/api/drivers/documents/verify/${document_id}`, {
+        status,
+        reason,
+      });
       return response.data?.data || response.data;
     } catch (err: any) {
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to update document status",
-      );
+      return rejectWithValue(err.response?.data?.message || "Failed to update document status");
     }
   },
 );
@@ -262,9 +259,7 @@ export const bulkVerifyDocuments = createAsyncThunk(
       const response = await axiosIns.patch(`/api/drivers/documents/bulk-verify/${driver_id}`);
       return response.data?.data || response.data;
     } catch (err: any) {
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to bulk verify documents",
-      );
+      return rejectWithValue(err.response?.data?.message || "Failed to bulk verify documents");
     }
   },
 );
@@ -276,9 +271,7 @@ export const fetchDocumentHistory = createAsyncThunk(
       const response = await axiosIns.get(`/api/drivers/documents/history/${document_id}`);
       return response.data?.data || response.data;
     } catch (err: any) {
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to fetch document history",
-      );
+      return rejectWithValue(err.response?.data?.message || "Failed to fetch document history");
     }
   },
 );
@@ -287,14 +280,10 @@ export const resetDriverPassword = createAsyncThunk(
   "drivers/resetDriverPassword",
   async (driver_id: string, { rejectWithValue }) => {
     try {
-      const response = await axiosIns.post(
-        `/api/drivers/${driver_id}/reset-password`,
-      );
+      const response = await axiosIns.post(`/api/drivers/${driver_id}/reset-password`);
       return response.data?.data || response.data;
     } catch (err: any) {
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to reset password",
-      );
+      return rejectWithValue(err.response?.data?.message || "Failed to reset password");
     }
   },
 );
@@ -306,42 +295,43 @@ export const verifyDriverAccount = createAsyncThunk(
       const response = await axiosIns.post(`/api/drivers/admin-verify/${driver_id}`);
       return response.data?.data || response.data;
     } catch (err: any) {
-      return rejectWithValue(
-        err.response?.data?.message || "Failed to verify driver account",
-      );
+      return rejectWithValue(err.response?.data?.message || "Failed to verify driver account");
     }
   },
 );
 
 export const deleteDriver = createAsyncThunk(
-  'drivers/deleteDriver',
+  "drivers/deleteDriver",
   async (driverId: string, { rejectWithValue }) => {
     try {
       await axiosIns.delete(`/admin/drivers/${driverId}`);
       return driverId;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Failed to delete driver'
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to delete driver");
     }
-  }
+  },
 );
 
 export const runDocumentOCR = createAsyncThunk(
-  'drivers/runOCR',
-  async ({ document_id, image_url, document_type }: { document_id: string; image_url: string; document_type: string }, { rejectWithValue }) => {
+  "drivers/runOCR",
+  async (
+    {
+      document_id,
+      image_url,
+      document_type,
+    }: { document_id: string; image_url: string; document_type: string },
+    { rejectWithValue },
+  ) => {
     try {
       const response = await axiosIns.post(`/api/drivers/documents/${document_id}/ocr`, {
         image_url,
-        document_type
+        document_type,
       });
       return { document_id, extracted_data: response.data.data };
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || 'Failed to run OCR'
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to run OCR");
     }
-  }
+  },
 );
 
 const driverSlice = createSlice({
@@ -424,17 +414,19 @@ const driverSlice = createSlice({
       .addCase(runDocumentOCR.fulfilled, (state, action) => {
         // Update the driver's document with the extracted OCR data
         const { document_id, extracted_data } = action.payload;
-        
+
         if (state.selectedDriver && state.selectedDriver.documents) {
-          const doc = state.selectedDriver.documents.find(d => d.document_id === document_id);
+          const doc = state.selectedDriver.documents.find((d) => d.document_id === document_id);
           if (doc) {
             doc.extracted_data = extracted_data;
           }
         }
-        
-        const driver = state.drivers.find(d => d.documents?.some(doc => doc.document_id === document_id));
+
+        const driver = state.drivers.find((d) =>
+          d.documents?.some((doc) => doc.document_id === document_id),
+        );
         if (driver && driver.documents) {
-          const doc = driver.documents.find(d => d.document_id === document_id);
+          const doc = driver.documents.find((d) => d.document_id === document_id);
           if (doc) {
             doc.extracted_data = extracted_data;
           }

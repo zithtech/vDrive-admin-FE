@@ -4,7 +4,6 @@ import { SocketContext } from "./SocketContext";
 import { useAppSelector } from "../store/hooks";
 import { logger } from "../utils/logger";
 
-
 interface SocketProviderProps {
   children: ReactNode;
 }
@@ -15,9 +14,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [socketId, setSocketId] = useState<string | null>(null);
   const socketRef = useRef<Socket | null>(null);
-  const { accessToken, isAuthenticated } = useAppSelector(
-    (state) => state.auth,
-  );
+  const { accessToken, isAuthenticated } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     // Only connect if authenticated and token exists
@@ -32,8 +29,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
       return;
     }
 
-    const socketUrl =
-      import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
+    const socketUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:3000";
 
     if (!socketRef.current) {
       socketRef.current = io(socketUrl, {
@@ -55,7 +51,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
           setSocketId(id);
           axiosIns.defaults.headers.common["x-socket-id"] = id;
           // Join the admin room for global notifications
-          socketRef.current?.emit('joinAdminRoom');
+          socketRef.current?.emit("joinAdminRoom");
         }
       });
 
@@ -90,9 +86,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   }, [isAuthenticated, accessToken]);
 
   return (
-    <SocketContext.Provider
-      value={{ socket: socketRef.current, isConnected, socketId }}
-    >
+    <SocketContext.Provider value={{ socket: socketRef.current, isConnected, socketId }}>
       {children}
     </SocketContext.Provider>
   );

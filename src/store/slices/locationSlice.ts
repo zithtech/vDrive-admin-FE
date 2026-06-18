@@ -70,22 +70,15 @@ const initialState: LocationState = {
 };
 
 // Cancel token for managing concurrent requests
-let cancelTokenSource: ReturnType<typeof axios.CancelToken.source> | null =
-  null;
-let stateCancelTokenSource: ReturnType<typeof axios.CancelToken.source> | null =
-  null;
-let cityCancelTokenSource: ReturnType<typeof axios.CancelToken.source> | null =
-  null;
-let areaCancelTokenSource: ReturnType<typeof axios.CancelToken.source> | null =
-  null;
+let cancelTokenSource: ReturnType<typeof axios.CancelToken.source> | null = null;
+let stateCancelTokenSource: ReturnType<typeof axios.CancelToken.source> | null = null;
+let cityCancelTokenSource: ReturnType<typeof axios.CancelToken.source> | null = null;
+let areaCancelTokenSource: ReturnType<typeof axios.CancelToken.source> | null = null;
 
 // Async thunk to fetch countries with cancel token support
 export const fetchCountries = createAsyncThunk(
   "location/fetchCountries",
-  async (
-    { limit = 20, search = "" }: { limit?: number; search?: string },
-    { rejectWithValue },
-  ) => {
+  async ({ limit = 20, search = "" }: { limit?: number; search?: string }, { rejectWithValue }) => {
     try {
       // Cancel previous request if it exists
       if (cancelTokenSource) {
@@ -101,12 +94,9 @@ export const fetchCountries = createAsyncThunk(
         params.append("search", search);
       }
 
-      const response = await axiosIns.get(
-        `/api/locations/countries?${params.toString()}`,
-        {
-          cancelToken: cancelTokenSource.token,
-        },
-      );
+      const response = await axiosIns.get(`/api/locations/countries?${params.toString()}`, {
+        cancelToken: cancelTokenSource.token,
+      });
 
       return response.data.data;
     } catch (error) {
@@ -249,9 +239,7 @@ export const createArea = createAsyncThunk(
       const response = await axiosIns.post("/api/locations/areas", data);
       return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to create area",
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to create area");
     }
   },
 );
@@ -280,9 +268,7 @@ export const fetchCountryById = createAsyncThunk(
       const response = await axiosIns.get(`/api/locations/country/${id}`);
       return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch country",
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch country");
     }
   },
 );
@@ -294,9 +280,7 @@ export const fetchStateById = createAsyncThunk(
       const response = await axiosIns.get(`/api/locations/state/${id}`);
       return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch state",
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch state");
     }
   },
 );
@@ -305,15 +289,11 @@ export const fetchDistrictById = createAsyncThunk(
   "location/fetchDistrictById",
   async (districtId: string, { rejectWithValue }) => {
     try {
-      const response = await axiosIns.get(
-        `/api/locations/district/${districtId}`,
-      );
+      const response = await axiosIns.get(`/api/locations/district/${districtId}`);
       return response.data.data;
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        return rejectWithValue(
-          error.response?.data?.message || "Failed to fetch district",
-        );
+        return rejectWithValue(error.response?.data?.message || "Failed to fetch district");
       }
       return rejectWithValue("Failed to fetch district");
     }
@@ -327,9 +307,7 @@ export const fetchAreaById = createAsyncThunk(
       const response = await axiosIns.get(`/api/locations/area/${id}`);
       return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch area",
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch area");
     }
   },
 );
@@ -385,8 +363,7 @@ const locationSlice = createSlice({
         // Don't set error state for cancelled requests
         if (action.payload !== "cancelled") {
           state.isLoadingCountries = false;
-          state.countryError =
-            action.error.message || "Failed to fetch countries";
+          state.countryError = action.error.message || "Failed to fetch countries";
         } else {
           state.isLoadingCountries = false;
         }
@@ -464,18 +441,13 @@ const locationSlice = createSlice({
       .addCase(fetchLocationByZipcode.rejected, () => {
         // Error handling
       })
-      .addCase(
-        fetchDistrictById.fulfilled,
-        (state, action: PayloadAction<District>) => {
-          // Add the district to the districts array if not already present
-          const exists = state.districts.find(
-            (d) => d.id === action.payload.id,
-          );
-          if (!exists) {
-            state.districts.push(action.payload);
-          }
-        },
-      );
+      .addCase(fetchDistrictById.fulfilled, (state, action: PayloadAction<District>) => {
+        // Add the district to the districts array if not already present
+        const exists = state.districts.find((d) => d.id === action.payload.id);
+        if (!exists) {
+          state.districts.push(action.payload);
+        }
+      });
   },
 });
 

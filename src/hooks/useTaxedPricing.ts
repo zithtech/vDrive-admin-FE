@@ -5,18 +5,18 @@ import type { Tax } from "../store/slices/taxSlice";
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface AppliedTax {
-    taxCode: string;
-    taxName: string;
-    taxPercentage: number;
-    taxAmount: number;
+  taxCode: string;
+  taxName: string;
+  taxPercentage: number;
+  taxAmount: number;
 }
 
 export interface TaxBreakdown {
-    basePrice: number;
-    appliedTaxes: AppliedTax[];   // each tax line item
-    totalTaxAmount: number;        // sum of all tax amounts
-    totalPrice: number;            // basePrice + totalTaxAmount
-    hasTax: boolean;
+  basePrice: number;
+  appliedTaxes: AppliedTax[]; // each tax line item
+  totalTaxAmount: number; // sum of all tax amounts
+  totalPrice: number; // basePrice + totalTaxAmount
+  hasTax: boolean;
 }
 
 // ── Tax group rules ───────────────────────────────────────────────────────────
@@ -34,57 +34,53 @@ export interface TaxBreakdown {
 // const GST_GROUP = ["GST", "CGST", "SGST", "IGST", "UTGST"];
 const ADDONS = ["VAT", "SURCHARGE"]; // stack freely on top of GST
 // const DEDUCTION = ["TDS"];              // driver-side, not applied to rider fare here
-const COLLECTION = ["TCS"];             // platform-side collection tax
+const COLLECTION = ["TCS"]; // platform-side collection tax
 
 /**
  * From a list of active taxes, resolve which ones actually apply to a ride fare.
  * Enforces Indian GST mutual-exclusivity rules.
  */
 function resolveApplicableTaxes(activeTaxes: Tax[]): Tax[] {
-    const result: Tax[] = [];
+  const result: Tax[] = [];
 
-    // ── Step 1: Resolve the GST group (mutually exclusive) ─────────────────────
-    //
-    // Priority order when multiple GST taxes are active simultaneously:
-    //   1. CGST + SGST pair  (intra-state — most common for ride-hailing)
-    //   2. CGST + UTGST pair (union territory rides)
-    //   3. IGST alone        (inter-state)
-    //   4. GST alone         (composite / fallback)
+  // ── Step 1: Resolve the GST group (mutually exclusive) ─────────────────────
+  //
+  // Priority order when multiple GST taxes are active simultaneously:
+  //   1. CGST + SGST pair  (intra-state — most common for ride-hailing)
+  //   2. CGST + UTGST pair (union territory rides)
+  //   3. IGST alone        (inter-state)
+  //   4. GST alone         (composite / fallback)
 
-    const cgst = activeTaxes.find(t => t.indian_tax === "CGST");
-    const sgst = activeTaxes.find(t => t.indian_tax === "SGST");
-    const utgst = activeTaxes.find(t => t.indian_tax === "UTGST");
-    const igst = activeTaxes.find(t => t.indian_tax === "IGST");
-    const gst = activeTaxes.find(t => t.indian_tax === "GST");
+  const cgst = activeTaxes.find((t) => t.indian_tax === "CGST");
+  const sgst = activeTaxes.find((t) => t.indian_tax === "SGST");
+  const utgst = activeTaxes.find((t) => t.indian_tax === "UTGST");
+  const igst = activeTaxes.find((t) => t.indian_tax === "IGST");
+  const gst = activeTaxes.find((t) => t.indian_tax === "GST");
 
-    if (cgst && sgst) {
-        result.push(cgst, sgst);          // intra-state pair
-    } else if (cgst && utgst) {
-        result.push(cgst, utgst);         // union territory pair
-    } else if (igst) {
-        result.push(igst);                // inter-state single
-    } else if (gst) {
-        result.push(gst);                 // composite/fallback single
-    } else if (cgst) {
-        result.push(cgst);                // CGST alone (misconfigured but handle gracefully)
-    } else if (sgst) {
-        result.push(sgst);
-    }
+  if (cgst && sgst) {
+    result.push(cgst, sgst); // intra-state pair
+  } else if (cgst && utgst) {
+    result.push(cgst, utgst); // union territory pair
+  } else if (igst) {
+    result.push(igst); // inter-state single
+  } else if (gst) {
+    result.push(gst); // composite/fallback single
+  } else if (cgst) {
+    result.push(cgst); // CGST alone (misconfigured but handle gracefully)
+  } else if (sgst) {
+    result.push(sgst);
+  }
 
-    // ── Step 2: Stack add-ons on top ────────────────────────────────────────────
-    activeTaxes
-        .filter(t => ADDONS.includes(t.indian_tax))
-        .forEach(t => result.push(t));
+  // ── Step 2: Stack add-ons on top ────────────────────────────────────────────
+  activeTaxes.filter((t) => ADDONS.includes(t.indian_tax)).forEach((t) => result.push(t));
 
-    // ── Step 3: TCS on fare (platform collection — include in rider price) ──────
-    activeTaxes
-        .filter(t => COLLECTION.includes(t.indian_tax))
-        .forEach(t => result.push(t));
+  // ── Step 3: TCS on fare (platform collection — include in rider price) ──────
+  activeTaxes.filter((t) => COLLECTION.includes(t.indian_tax)).forEach((t) => result.push(t));
 
-    // TDS is intentionally excluded from rider fare calculation.
-    // It is deducted from driver payout separately — use useDriverPayoutTax() for that.
+  // TDS is intentionally excluded from rider fare calculation.
+  // It is deducted from driver payout separately — use useDriverPayoutTax() for that.
 
-    return result;
+  return result;
 }
 
 // ── Main hook ─────────────────────────────────────────────────────────────────
@@ -99,44 +95,44 @@ function resolveApplicableTaxes(activeTaxes: Tax[]): Tax[] {
  *   breakdown.appliedTaxes   // [{ taxCode: "GST_10", taxAmount: 40, ... }]
  */
 export function useTaxBreakdown(basePrice: number): TaxBreakdown {
-    const taxes = useAppSelector((state) => state.tax.taxes);
+  const taxes = useAppSelector((state) => state.tax.taxes);
 
-    return useMemo(() => {
-        const activeTaxes = taxes.filter(t => t.is_active);
-        const applicable = resolveApplicableTaxes(activeTaxes);
+  return useMemo(() => {
+    const activeTaxes = taxes.filter((t) => t.is_active);
+    const applicable = resolveApplicableTaxes(activeTaxes);
 
-        if (applicable.length === 0) {
-            return {
-                basePrice,
-                appliedTaxes: [],
-                totalTaxAmount: 0,
-                totalPrice: basePrice,
-                hasTax: false,
-            };
-        }
+    if (applicable.length === 0) {
+      return {
+        basePrice,
+        appliedTaxes: [],
+        totalTaxAmount: 0,
+        totalPrice: basePrice,
+        hasTax: false,
+      };
+    }
 
-        const appliedTaxes: AppliedTax[] = applicable.map(t => {
-            const taxAmount = parseFloat(((basePrice * t.percentage) / 100).toFixed(2));
-            return {
-                taxCode: t.tax_code,
-                taxName: t.tax_name,
-                taxPercentage: t.percentage,
-                taxAmount,
-            };
-        });
+    const appliedTaxes: AppliedTax[] = applicable.map((t) => {
+      const taxAmount = parseFloat(((basePrice * t.percentage) / 100).toFixed(2));
+      return {
+        taxCode: t.tax_code,
+        taxName: t.tax_name,
+        taxPercentage: t.percentage,
+        taxAmount,
+      };
+    });
 
-        const totalTaxAmount = parseFloat(
-            appliedTaxes.reduce((sum, t) => sum + t.taxAmount, 0).toFixed(2)
-        );
+    const totalTaxAmount = parseFloat(
+      appliedTaxes.reduce((sum, t) => sum + t.taxAmount, 0).toFixed(2),
+    );
 
-        return {
-            basePrice,
-            appliedTaxes,
-            totalTaxAmount,
-            totalPrice: parseFloat((basePrice + totalTaxAmount).toFixed(2)),
-            hasTax: true,
-        };
-    }, [taxes, basePrice]);
+    return {
+      basePrice,
+      appliedTaxes,
+      totalTaxAmount,
+      totalPrice: parseFloat((basePrice + totalTaxAmount).toFixed(2)),
+      hasTax: true,
+    };
+  }, [taxes, basePrice]);
 }
 
 /**
@@ -146,24 +142,24 @@ export function useTaxBreakdown(basePrice: number): TaxBreakdown {
  * driverEarning = rideAmount - TDS amount
  */
 export function useDriverPayoutTax(grossPayout: number): {
-    tdsAmount: number;
-    netPayout: number;
-    tdsTax: Tax | null;
+  tdsAmount: number;
+  netPayout: number;
+  tdsTax: Tax | null;
 } {
-    const taxes = useAppSelector((state) => state.tax.taxes);
+  const taxes = useAppSelector((state) => state.tax.taxes);
 
-    return useMemo(() => {
-        const tdsTax = taxes.find(t => t.is_active && t.indian_tax === "TDS") || null;
-        if (!tdsTax) {
-            return { tdsAmount: 0, netPayout: grossPayout, tdsTax: null };
-        }
-        const tdsAmount = parseFloat(((grossPayout * tdsTax.percentage) / 100).toFixed(2));
-        return {
-            tdsAmount,
-            netPayout: parseFloat((grossPayout - tdsAmount).toFixed(2)),
-            tdsTax,
-        };
-    }, [taxes, grossPayout]);
+  return useMemo(() => {
+    const tdsTax = taxes.find((t) => t.is_active && t.indian_tax === "TDS") || null;
+    if (!tdsTax) {
+      return { tdsAmount: 0, netPayout: grossPayout, tdsTax: null };
+    }
+    const tdsAmount = parseFloat(((grossPayout * tdsTax.percentage) / 100).toFixed(2));
+    return {
+      tdsAmount,
+      netPayout: parseFloat((grossPayout - tdsAmount).toFixed(2)),
+      tdsTax,
+    };
+  }, [taxes, grossPayout]);
 }
 
 /**
@@ -171,29 +167,27 @@ export function useDriverPayoutTax(grossPayout: number): {
  * (e.g. in onFinish before dispatching to backend).
  */
 export function computeTaxBreakdown(basePrice: number, allTaxes: Tax[]): TaxBreakdown {
-    const activeTaxes = allTaxes.filter(t => t.is_active);
-    const applicable = resolveApplicableTaxes(activeTaxes);
+  const activeTaxes = allTaxes.filter((t) => t.is_active);
+  const applicable = resolveApplicableTaxes(activeTaxes);
 
-    if (applicable.length === 0) {
-        return { basePrice, appliedTaxes: [], totalTaxAmount: 0, totalPrice: basePrice, hasTax: false };
-    }
+  if (applicable.length === 0) {
+    return { basePrice, appliedTaxes: [], totalTaxAmount: 0, totalPrice: basePrice, hasTax: false };
+  }
 
-    const appliedTaxes: AppliedTax[] = applicable.map(t => ({
-        taxCode: t.tax_code,
-        taxName: t.tax_name,
-        taxPercentage: t.percentage,
-        taxAmount: parseFloat(((basePrice * t.percentage) / 100).toFixed(2)),
-    }));
+  const appliedTaxes: AppliedTax[] = applicable.map((t) => ({
+    taxCode: t.tax_code,
+    taxName: t.tax_name,
+    taxPercentage: t.percentage,
+    taxAmount: parseFloat(((basePrice * t.percentage) / 100).toFixed(2)),
+  }));
 
-    const totalTaxAmount = parseFloat(
-        appliedTaxes.reduce((s, t) => s + t.taxAmount, 0).toFixed(2)
-    );
+  const totalTaxAmount = parseFloat(appliedTaxes.reduce((s, t) => s + t.taxAmount, 0).toFixed(2));
 
-    return {
-        basePrice,
-        appliedTaxes,
-        totalTaxAmount,
-        totalPrice: parseFloat((basePrice + totalTaxAmount).toFixed(2)),
-        hasTax: true,
-    };
+  return {
+    basePrice,
+    appliedTaxes,
+    totalTaxAmount,
+    totalPrice: parseFloat((basePrice + totalTaxAmount).toFixed(2)),
+    hasTax: true,
+  };
 }

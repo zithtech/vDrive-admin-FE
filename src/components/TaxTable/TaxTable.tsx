@@ -31,16 +31,21 @@ const TaxTable = ({
   canUpdate = false,
   canDelete = false,
 }: TaxTableProps) => {
-
   const columns: TableColumnsType<Tax> = [
     {
-      title: <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Tax Identity</span>,
+      title: (
+        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
+          Tax Identity
+        </span>
+      ),
       dataIndex: "tax_name",
       width: 240,
       sorter: (a, b) => a.tax_name.localeCompare(b.tax_name),
       render: (name: string, record: Tax) => (
         <div className="flex flex-col gap-1.5 py-1">
-          <span className="text-sm font-black text-gray-800 tracking-tight leading-none">{name}</span>
+          <span className="text-sm font-black text-gray-800 tracking-tight leading-none">
+            {name}
+          </span>
           <div className="flex items-center gap-2">
             <span className="text-[9px] font-mono font-bold text-indigo-400 bg-indigo-50/50 px-2 py-0.5 rounded border border-indigo-100/50 uppercase tracking-tighter">
               {record.tax_code}
@@ -50,17 +55,27 @@ const TaxTable = ({
       ),
     },
     {
-      title: <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Category</span>,
+      title: (
+        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
+          Category
+        </span>
+      ),
       dataIndex: "tax_type",
       width: 160,
       render: (type: string) => (
-        <div className={`inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-white shadow-lg bg-gradient-to-br ${TAX_TYPE_GRADIENTS[type] || "from-slate-400 to-slate-500 shadow-slate-100"}`}>
+        <div
+          className={`inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-white shadow-lg bg-gradient-to-br ${TAX_TYPE_GRADIENTS[type] || "from-slate-400 to-slate-500 shadow-slate-100"}`}
+        >
           {type?.replace(/_/g, " ")}
         </div>
       ),
     },
     {
-      title: <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Levy (%)</span>,
+      title: (
+        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
+          Levy (%)
+        </span>
+      ),
       dataIndex: "percentage",
       width: 120,
       sorter: (a, b) => a.percentage - b.percentage,
@@ -71,7 +86,11 @@ const TaxTable = ({
       ),
     },
     {
-      title: <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Default</span>,
+      title: (
+        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
+          Default
+        </span>
+      ),
       dataIndex: "is_default",
       width: 100,
       render: (isDefault: boolean) =>
@@ -85,7 +104,11 @@ const TaxTable = ({
         ),
     },
     {
-      title: <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Status</span>,
+      title: (
+        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
+          Status
+        </span>
+      ),
       dataIndex: "is_active",
       width: 130,
       render: (isActive: boolean, record: Tax) => (
@@ -97,7 +120,9 @@ const TaxTable = ({
             onChange={(checked) => onToggleStatus(record.id, checked)}
             className={`${isActive ? "!bg-emerald-500" : "!bg-gray-200"} ${!canUpdate ? "opacity-50" : ""}`}
           />
-          <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? "text-emerald-600" : "text-gray-400"}`}>
+          <span
+            className={`text-[10px] font-black uppercase tracking-widest ${isActive ? "text-emerald-600" : "text-gray-400"}`}
+          >
             {isActive ? "Active" : "Inactive"}
           </span>
         </div>
@@ -118,7 +143,7 @@ const TaxTable = ({
               className="hover:bg-indigo-50 rounded-full h-9 w-9 flex items-center justify-center p-0"
             />
           </Tooltip>
-          
+
           {canUpdate && (
             <Tooltip title="Modify Rule">
               <Button
@@ -162,7 +187,7 @@ const TaxTable = ({
         rowKey="id"
         pagination={false}
         loading={loading}
-        scroll={{ y: 'calc(100vh - 400px)', x: "max-content" }}
+        scroll={{ y: "calc(100vh - 400px)", x: "max-content" }}
         sticky
         className="premium-table-container tax-ledger-table"
       />

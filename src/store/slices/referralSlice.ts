@@ -3,11 +3,11 @@ import axiosIns from "../../api/axios";
 
 export interface ReferralConfig {
   id: string;
-  user_type: 'CUSTOMER' | 'DRIVER';
+  user_type: "CUSTOMER" | "DRIVER";
   referrer_reward: number;
-  referrer_reward_type: 'PERCENTAGE' | 'FIXED';
+  referrer_reward_type: "PERCENTAGE" | "FIXED";
   referee_reward: number;
-  referee_reward_type: 'PERCENTAGE' | 'FIXED';
+  referee_reward_type: "PERCENTAGE" | "FIXED";
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -17,7 +17,7 @@ export interface ReferralLog {
   id: string;
   referrer_id: string;
   referee_id: string;
-  status: 'PENDING' | 'COMPLETED' | 'EXPIRED';
+  status: "PENDING" | "COMPLETED" | "EXPIRED";
   reward_amount: string | number;
   referred_at: string;
   completed_at: string | null;
@@ -51,11 +51,9 @@ export const fetchReferralConfigs = createAsyncThunk(
       const response = await axiosIns.get("/api/referrals");
       return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch referral configs"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch referral configs");
     }
-  }
+  },
 );
 
 export const addReferralConfig = createAsyncThunk(
@@ -66,29 +64,25 @@ export const addReferralConfig = createAsyncThunk(
       dispatch(fetchReferralConfigs());
       return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to add referral config"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to add referral config");
     }
-  }
+  },
 );
 
 export const updateReferralConfig = createAsyncThunk(
   "referral/updateConfig",
   async (
     { id, data }: { id: string; data: Partial<ReferralConfigPayload> },
-    { rejectWithValue, dispatch }
+    { rejectWithValue, dispatch },
   ) => {
     try {
       const response = await axiosIns.patch(`/api/referrals/${id}`, data);
       dispatch(fetchReferralConfigs());
       return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to update referral config"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to update referral config");
     }
-  }
+  },
 );
 
 export const deleteReferralConfig = createAsyncThunk(
@@ -99,11 +93,9 @@ export const deleteReferralConfig = createAsyncThunk(
       dispatch(fetchReferralConfigs());
       return id;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to delete referral config"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to delete referral config");
     }
-  }
+  },
 );
 
 export const fetchReferralLogs = createAsyncThunk(
@@ -113,11 +105,9 @@ export const fetchReferralLogs = createAsyncThunk(
       const response = await axiosIns.get(`/api/referrals/logs?user_type=${userType}`);
       return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch referral logs"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch referral logs");
     }
-  }
+  },
 );
 
 const referralSlice = createSlice({

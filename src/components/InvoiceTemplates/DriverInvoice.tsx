@@ -31,9 +31,7 @@ const DriverInvoice: React.FC<Props> = ({ isOpen, onClose, trip }) => {
 
         {/* Header */}
         <h1 className="text-2xl font-bold text-center mb-1">Driver Payout</h1>
-        <p className="text-gray-500 text-center text-sm mb-6">
-          Ride Earnings Summary
-        </p>
+        <p className="text-gray-500 text-center text-sm mb-6">Ride Earnings Summary</p>
 
         {/* Customer Info */}
         <div className="mb-5">
@@ -56,15 +54,11 @@ const DriverInvoice: React.FC<Props> = ({ isOpen, onClose, trip }) => {
               <p>{trip.pickup_address}</p>
             </div>
             <div className="flex items-center gap-3">
-              <IoLocationOutline
-                size={20}
-                className="text-red-500 rotate-180"
-              />
+              <IoLocationOutline size={20} className="text-red-500 rotate-180" />
               <p>{trip.drop_address}</p>
             </div>
             <div className="flex items-center gap-2 text-gray-600">
-              <IoTimerOutline /> {trip.distance_km} •{" "}
-              {trip.trip_duration_minutes}
+              <IoTimerOutline /> {trip.distance_km} • {trip.trip_duration_minutes}
             </div>
           </div>
         </div>

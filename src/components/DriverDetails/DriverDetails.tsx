@@ -20,7 +20,7 @@ import {
   Image,
   Dropdown,
 } from "antd";
-import type { MenuProps } from 'antd';
+import type { MenuProps } from "antd";
 import dayjs from "dayjs";
 import type { Driver, DriverStatus } from "../../store/slices/driverSlice";
 import { useAppDispatch } from "../../store/hooks";
@@ -34,7 +34,10 @@ import {
 } from "../../store/slices/driverSlice";
 import { useHasPermission } from "../../hooks/usePermission";
 import axiosIns from "../../api/axios";
-import { calculatePerformanceMetrics, type PerformanceMetrics } from "../../utilities/performanceUtils";
+import {
+  calculatePerformanceMetrics,
+  type PerformanceMetrics,
+} from "../../utilities/performanceUtils";
 const { Text, Title } = Typography;
 import {
   UserOutlined,
@@ -65,7 +68,7 @@ import "./DriverDetails.css";
 
 export const getMediaUrl = (path: any) => {
   if (!path) return "";
-  
+
   if (typeof path === "string" && path.startsWith("{")) {
     try {
       path = JSON.parse(path);
@@ -77,17 +80,18 @@ export const getMediaUrl = (path: any) => {
   if (typeof path === "object" && path !== null) {
     path = path.url || path.front || path.back || "";
   }
-  
+
   if (typeof path !== "string" || !path) return "";
-  
-  const baseUrl = import.meta.env.VITE_MEDIA_URL || "http://localhost:1234";
+
+  const baseUrl = import.meta.env.VITE_MEDIA_URL || "http://localhost:5006";
 
   if (path.includes("s3.eu-north-1.amazonaws.com")) {
     return `${baseUrl}/api/media/proxy?url=${encodeURIComponent(path)}`;
   }
-  
-  if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) return path;
-  
+
+  if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:"))
+    return path;
+
   return `${baseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
 };
 
@@ -97,11 +101,7 @@ interface DriverDetailsProps {
   open: boolean;
 }
 
-const DriverDetails: React.FC<DriverDetailsProps> = ({
-  driver,
-  onClose,
-  open,
-}) => {
+const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) => {
   const canUpdateDriver = useHasPermission("drivers", "update");
   // const actionLabels: Record<string, string> = {
   //   trip_started: "Trip Started",
@@ -126,19 +126,22 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
   const [rejectionReason, setRejectionReason] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
-  const [historyModalDoc, setHistoryModalDoc] = useState<{ id: string; type: string } | null>(null);
+  const [historyModalDoc, setHistoryModalDoc] = useState<{
+    id: string;
+    type: string;
+  } | null>(null);
   const [documentHistory, setDocumentHistory] = useState<any[]>([]);
 
   // Dynamic Performance State
-  type Period = 'Today' | 'Week' | 'Month';
-  const [perfPeriod, setPerfPeriod] = useState<Period>('Week');
+  type Period = "Today" | "Week" | "Month";
+  const [perfPeriod, setPerfPeriod] = useState<Period>("Week");
   const [dynamicMetrics, setDynamicMetrics] = useState<PerformanceMetrics | null>(null);
   const [isPerfLoading, setIsPerfLoading] = useState(false);
 
   // Activity History State
   const [rideHistory, setRideHistory] = useState<any[]>([]);
-  const [historyPeriod, setHistoryPeriod] = useState<Period>('Week');
-  const [historyStatus, setHistoryStatus] = useState<string>('all');
+  const [historyPeriod, setHistoryPeriod] = useState<Period>("Week");
+  const [historyStatus, setHistoryStatus] = useState<string>("all");
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [historyMetrics, setHistoryMetrics] = useState<PerformanceMetrics | null>(null);
 
@@ -151,29 +154,29 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     "Serious safety violation or physical altercation.",
     "Fraudulent activity or trip manipulation detected.",
     "Sharing account with unauthorized persons.",
-    "Repeat offenses after multiple suspensions."
+    "Repeat offenses after multiple suspensions.",
   ];
 
   const SUSPEND_REASONS = [
     "Pending investigation of a recent customer complaint.",
     "Low completion rate consistently below threshold.",
     "Vehicle maintenance or document audit required.",
-    "Inappropriate behavior reported by passenger."
+    "Inappropriate behavior reported by passenger.",
   ];
 
   const getDatesForPeriod = useCallback((p: Period) => {
     const to = new Date();
     const from = new Date();
-    if (p === 'Today') {
+    if (p === "Today") {
       from.setHours(0, 0, 0, 0);
-    } else if (p === 'Week') {
+    } else if (p === "Week") {
       from.setDate(to.getDate() - 7);
-    } else if (p === 'Month') {
+    } else if (p === "Month") {
       from.setDate(to.getDate() - 30);
     }
     return {
-      from: from.toISOString().split('T')[0],
-      to: to.toISOString().split('T')[0]
+      from: from.toISOString().split("T")[0],
+      to: to.toISOString().split("T")[0],
     };
   }, []);
 
@@ -188,14 +191,14 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
 
         // Fetch ride activity
         const activityRes = await axiosIns.get(`/api/drivers/activity/${driverId}`, {
-          params: { from: dates.from, to: dates.to }
+          params: { from: dates.from, to: dates.to },
         });
 
         const rides = Array.isArray(activityRes.data?.data) ? activityRes.data.data : [];
         const metrics = calculatePerformanceMetrics(rides);
 
         // Fetch today overview for more accurate online time if period is 'Today'
-        if (perfPeriod === 'Today') {
+        if (perfPeriod === "Today") {
           try {
             const overviewRes = await axiosIns.get(`/api/drivers/today-overview/${driverId}`);
             if (overviewRes.data?.data?.onlineMinutes !== undefined) {
@@ -229,11 +232,13 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
 
         const params: any = {
           from: dates.from,
-          to: dates.to
+          to: dates.to,
         };
-        if (historyStatus !== 'all') params.status = historyStatus;
+        if (historyStatus !== "all") params.status = historyStatus;
 
-        const res = await axiosIns.get(`/api/drivers/activity/${driverId}`, { params });
+        const res = await axiosIns.get(`/api/drivers/activity/${driverId}`, {
+          params,
+        });
         const rides = Array.isArray(res.data?.data) ? res.data.data : [];
         setRideHistory(rides);
 
@@ -250,13 +255,40 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
   }, [driver, activeKey, historyPeriod, historyStatus, getDatesForPeriod]);
 
   const REJECTION_TEMPLATES = [
-    { label: "Image is blurry or unreadable", value: "The uploaded image is blurry, too dark, or unreadable. Please upload a clear, well-lit photo." },
-    { label: "Expired Document", value: "The document provided has expired. Please upload a valid and current document." },
-    { label: "Wrong Side Uploaded", value: "You have uploaded the wrong side of the document. Please ensure you upload the front/back as requested." },
-    { label: "Name/Details Mismatch", value: "The name or details on the document do not match your profile information. Please verify your profile details." },
-    { label: "Document Cut Off", value: "Part of the document is not visible in the photo. Please ensure all four corners are visible." },
-    { label: "Invalid Document Type", value: "The document uploaded is not the correct type (e.g., uploaded Pan Card instead of License). Please upload the correct document." },
-    { label: "Watermark/Overlays", value: "The document has watermarks or overlays that block critical information. Please upload a clean photo." },
+    {
+      label: "Image is blurry or unreadable",
+      value:
+        "The uploaded image is blurry, too dark, or unreadable. Please upload a clear, well-lit photo.",
+    },
+    {
+      label: "Expired Document",
+      value: "The document provided has expired. Please upload a valid and current document.",
+    },
+    {
+      label: "Wrong Side Uploaded",
+      value:
+        "You have uploaded the wrong side of the document. Please ensure you upload the front/back as requested.",
+    },
+    {
+      label: "Name/Details Mismatch",
+      value:
+        "The name or details on the document do not match your profile information. Please verify your profile details.",
+    },
+    {
+      label: "Document Cut Off",
+      value:
+        "Part of the document is not visible in the photo. Please ensure all four corners are visible.",
+    },
+    {
+      label: "Invalid Document Type",
+      value:
+        "The document uploaded is not the correct type (e.g., uploaded Pan Card instead of License). Please upload the correct document.",
+    },
+    {
+      label: "Watermark/Overlays",
+      value:
+        "The document has watermarks or overlays that block critical information. Please upload a clean photo.",
+    },
     { label: "Other (Custom)", value: "" },
   ];
 
@@ -275,11 +307,18 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
         <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-gray-50 dark:bg-slate-900">
           <div className="bg-white dark:bg-slate-800 p-12 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700">
             <UserOutlined style={{ fontSize: 64, color: "#cbd5e1", marginBottom: 24 }} />
-            <Title level={3} className="text-gray-400 dark:text-slate-500">Driver Not Found</Title>
+            <Title level={3} className="text-gray-400 dark:text-slate-500">
+              Driver Not Found
+            </Title>
             <Text type="secondary" className="text-lg">
               We couldn't find the details for this driver. <br /> Please try refreshing the list.
             </Text>
-            <Button type="primary" size="large" onClick={onClose} className="mt-8 px-8 h-12 rounded-xl text-lg font-medium">
+            <Button
+              type="primary"
+              size="large"
+              onClick={onClose}
+              className="mt-8 px-8 h-12 rounded-xl text-lg font-medium"
+            >
               Close
             </Button>
           </div>
@@ -304,7 +343,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             await dispatch(
               updateDriverStatus({
                 driver_id: driver.driverId || driver.driver_id || driver.id || "",
-                status
+                status,
               }),
             ).unwrap();
             message.success(`Driver ${status} successfully`);
@@ -321,7 +360,10 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
   const handleStatusSubmit = async () => {
     if (!driver || !statusAction) return;
 
-    if ((statusAction === "rejected" || statusAction === "blocked" || statusAction === "suspended") && !statusReason?.trim()) {
+    if (
+      (statusAction === "rejected" || statusAction === "blocked" || statusAction === "suspended") &&
+      !statusReason?.trim()
+    ) {
       message.error("Please provide a reason for this action");
       return;
     }
@@ -332,7 +374,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
         updateDriverStatus({
           driver_id: driver.driverId || driver.driver_id || driver.id || "",
           status: statusAction,
-          status_reason: statusReason
+          status_reason: statusReason,
         }),
       ).unwrap();
 
@@ -354,7 +396,9 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
       onOk: async () => {
         setLoadingAction("approve-account");
         try {
-          await dispatch(verifyDriverAccount(driver.driverId || driver.driver_id || driver.id || "")).unwrap();
+          await dispatch(
+            verifyDriverAccount(driver.driverId || driver.driver_id || driver.id || ""),
+          ).unwrap();
           message.success("Driver account approved and activated");
         } catch (err: any) {
           message.error(err || "Failed to approve account");
@@ -370,7 +414,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     setLoadingAction("update-profile");
     try {
       // Auto-compute full_name from first_name + last_name
-      const fullName = `${values.first_name || ''} ${values.last_name || ''}`.trim();
+      const fullName = `${values.first_name || ""} ${values.last_name || ""}`.trim();
 
       await dispatch(
         updateDriverProfile({
@@ -391,11 +435,6 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
       setLoadingAction(null);
     }
   };
-
-
-
-
-
 
   const handleDocumentApprove = (documentId: string) => {
     if (!driver) return;
@@ -423,7 +462,6 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     });
   };
 
-
   const handleDocumentReject = async () => {
     if (!rejectModalDoc || !driver) return;
     setLoadingAction(`reject-${rejectModalDoc.id}`);
@@ -447,7 +485,6 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     }
   };
 
-
   const getStatusColor = (status: any) => {
     if (typeof status !== "string") return "default";
     switch (status.toLowerCase()) {
@@ -470,28 +507,34 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     <div className="space-y-6">
       <div className="content-card p-6">
         <div className="flex justify-between items-start mb-6">
-          <Title level={4} className="m-0 flex items-center gap-2 text-gray-800 dark:text-slate-100">
-             <UserOutlined className="text-blue-500" /> Driver Information
+          <Title
+            level={4}
+            className="m-0 flex items-center gap-2 text-gray-800 dark:text-slate-100"
+          >
+            <UserOutlined className="text-blue-500" /> Driver Information
           </Title>
           {canUpdateDriver && (
             <Button
               type="text"
               icon={<EditOutlined />}
               onClick={() => {
-                let firstName = driver?.first_name || '';
-                let lastName = driver?.last_name || '';
+                let firstName = driver?.first_name || "";
+                let lastName = driver?.last_name || "";
 
                 if (!firstName && !lastName && driver?.full_name) {
-                  const names = driver.full_name.split(' ');
+                  const names = driver.full_name.split(" ");
                   firstName = names[0];
-                  lastName = names.slice(1).join(' ');
+                  lastName = names.slice(1).join(" ");
                 }
 
                 form.setFieldsValue({
                   ...driver,
                   first_name: firstName,
                   last_name: lastName,
-                  date_of_birth: (driver?.dob || driver?.date_of_birth) ? dayjs(driver.dob || driver.date_of_birth) : null,
+                  date_of_birth:
+                    driver?.dob || driver?.date_of_birth
+                      ? dayjs(driver.dob || driver.date_of_birth)
+                      : null,
                 });
                 setIsEditModalOpen(true);
               }}
@@ -511,7 +554,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
               <span className="info-label">Full Name</span>
               <span className="info-value font-bold text-lg">
                 {driver?.first_name || driver?.last_name
-                  ? `${driver.first_name || ''} ${driver.last_name || ''}`.trim()
+                  ? `${driver.first_name || ""} ${driver.last_name || ""}`.trim()
                   : driver?.full_name || "N/A"}
               </span>
               {driver?.vdrive_id && (
@@ -548,7 +591,9 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             <div className="info-content">
               <span className="info-label">Phone Number</span>
               <span className="info-value">{driver?.phone_number || "N/A"}</span>
-              <Text type="secondary" className="text-[10px]">Primary Contact</Text>
+              <Text type="secondary" className="text-[10px]">
+                Primary Contact
+              </Text>
             </div>
           </div>
 
@@ -559,7 +604,9 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             <div className="info-content">
               <span className="info-label">Alt Phone Number</span>
               <span className="info-value">{driver?.alternate_contact || "N/A"}</span>
-              <Text type="secondary" className="text-[10px]">Alternative Contact</Text>
+              <Text type="secondary" className="text-[10px]">
+                Alternative Contact
+              </Text>
             </div>
           </div>
 
@@ -580,7 +627,9 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             <div className="info-content">
               <span className="info-label">Date of Birth</span>
               <span className="info-value">
-                {(driver?.dob || driver?.date_of_birth) ? dayjs(driver.dob || driver.date_of_birth).format("MMM D, YYYY") : "N/A"}
+                {driver?.dob || driver?.date_of_birth
+                  ? dayjs(driver.dob || driver.date_of_birth).format("MMM D, YYYY")
+                  : "N/A"}
               </span>
             </div>
           </div>
@@ -617,20 +666,21 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     </div>
   );
 
-
-
-
   const handleBulkVerify = () => {
     if (!driver) return;
     Modal.confirm({
       title: "Bulk Approve Documents",
       content: "Are you sure you want to approve all pending documents for this driver?",
       okText: "Approve All",
-      okButtonProps: { className: "bg-green-600 hover:bg-green-700 border-none shadow-sm rounded-xl px-6" },
+      okButtonProps: {
+        className: "bg-green-600 hover:bg-green-700 border-none shadow-sm rounded-xl px-6",
+      },
       onOk: async () => {
         setLoadingAction("bulk-verify");
         try {
-          await dispatch(bulkVerifyDocuments(driver.driverId || driver.driver_id || driver.id || "")).unwrap();
+          await dispatch(
+            bulkVerifyDocuments(driver.driverId || driver.driver_id || driver.id || ""),
+          ).unwrap();
           message.success("All documents verified successfully");
         } catch (err: any) {
           message.error(err || "Failed to bulk verify documents");
@@ -656,20 +706,20 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
 
   const documents = (
     <div className="grid grid-cols-1 gap-4">
-      {driver?.documents && driver.documents.some((d: any) => d.license_status !== 'verified') && (
+      {driver?.documents && driver.documents.some((d: any) => d.license_status !== "verified") && (
         <div className="flex justify-end mb-2">
           <Button
             type="primary"
             icon={<CheckCircleOutlined />}
             onClick={handleBulkVerify}
-            loading={loadingAction === 'bulk-verify'}
+            loading={loadingAction === "bulk-verify"}
             className="bg-green-600 hover:bg-green-700 border-none shadow-md rounded-xl px-6 h-10 font-bold"
           >
             Verify All Documents
           </Button>
         </div>
       )}
-      {(driver?.documents)?.map((doc: any) => (
+      {driver?.documents?.map((doc: any) => (
         <div key={doc?.document_id} className="content-card p-2 document-preview-card">
           <div className="flex justify-between items-start mb-4">
             <div className="flex items-center gap-3">
@@ -678,13 +728,14 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
               </div>
               <div>
                 <Title level={5} className="m-0 text-gray-800 dark:text-slate-100">
-                  {capitalize(doc?.document_type?.replace(/_/g, ' '))} Document
+                  {capitalize(doc?.document_type?.replace(/_/g, " "))} Document
                 </Title>
-                {!doc?.document_type?.toLowerCase().includes('selfie') && !doc?.document_type?.toLowerCase().includes('police') && (
-                  <Text type="secondary" className="text-[10px] font-mono tracking-wider">
-                    #{doc?.extracted_data?.extracted_number || doc?.document_number || 'N/A'}
-                  </Text>
-                )}
+                {!doc?.document_type?.toLowerCase().includes("selfie") &&
+                  !doc?.document_type?.toLowerCase().includes("police") && (
+                    <Text type="secondary" className="text-[10px] font-mono tracking-wider">
+                      #{doc?.extracted_data?.extracted_number || doc?.document_number || "N/A"}
+                    </Text>
+                  )}
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -707,15 +758,20 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             <div className="flex items-center gap-3">
               {doc?.document_url ? (
                 <>
-                  {(typeof doc.document_url === 'object' && doc.document_url !== null && (doc.document_url.front || doc.document_url.back)) ? (
+                  {typeof doc.document_url === "object" &&
+                  doc.document_url !== null &&
+                  (doc.document_url.front || doc.document_url.back) ? (
                     <>
                       {doc.document_url.front && (
-                        <Button 
-                          type="primary" 
+                        <Button
+                          type="primary"
                           ghost
                           icon={<EyeOutlined />}
                           onClick={() => {
-                            setPreviewDoc({ url: getMediaUrl(doc.document_url.front), type: `${doc?.document_type} (Front)` });
+                            setPreviewDoc({
+                              url: getMediaUrl(doc.document_url.front),
+                              type: `${doc?.document_type} (Front)`,
+                            });
                             setIsPreviewModalOpen(true);
                           }}
                           className="font-semibold rounded-lg dark:!text-blue-400 dark:!border-blue-500 dark:hover:!text-blue-300 dark:hover:!border-blue-400"
@@ -724,12 +780,15 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                         </Button>
                       )}
                       {doc.document_url.back && (
-                        <Button 
-                          type="primary" 
+                        <Button
+                          type="primary"
                           ghost
                           icon={<EyeOutlined />}
                           onClick={() => {
-                            setPreviewDoc({ url: getMediaUrl(doc.document_url.back), type: `${doc?.document_type} (Back)` });
+                            setPreviewDoc({
+                              url: getMediaUrl(doc.document_url.back),
+                              type: `${doc?.document_type} (Back)`,
+                            });
                             setIsPreviewModalOpen(true);
                           }}
                           className="font-semibold rounded-lg dark:!text-blue-400 dark:!border-blue-500 dark:hover:!text-blue-300 dark:hover:!border-blue-400"
@@ -739,13 +798,17 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                       )}
                     </>
                   ) : (
-                    <Button 
-                      type="primary" 
+                    <Button
+                      type="primary"
                       ghost
                       icon={<EyeOutlined />}
                       onClick={() => {
                         setPreviewDoc({
-                          url: getMediaUrl(typeof doc.document_url === 'string' ? doc.document_url : doc.document_url?.url),
+                          url: getMediaUrl(
+                            typeof doc.document_url === "string"
+                              ? doc.document_url
+                              : doc.document_url?.url,
+                          ),
                           type: doc?.document_type,
                         });
                         setIsPreviewModalOpen(true);
@@ -757,19 +820,30 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                   )}
                 </>
               ) : (
-                <Text type="secondary" className="text-[12px] italic">No document file</Text>
+                <Text type="secondary" className="text-[12px] italic">
+                  No document file
+                </Text>
               )}
-              
+
               {doc?.document_url && (
                 <Button
                   type="default"
                   icon={<DownloadOutlined />}
                   onClick={() => {
-                    if (typeof doc?.document_url === 'object' && doc.document_url !== null) {
-                      if (doc.document_url.front) window.open(getMediaUrl(doc.document_url.front), "_blank");
-                      if (doc.document_url.back) window.open(getMediaUrl(doc.document_url.back), "_blank");
+                    if (typeof doc?.document_url === "object" && doc.document_url !== null) {
+                      if (doc.document_url.front)
+                        window.open(getMediaUrl(doc.document_url.front), "_blank");
+                      if (doc.document_url.back)
+                        window.open(getMediaUrl(doc.document_url.back), "_blank");
                     } else {
-                      window.open(getMediaUrl(typeof doc?.document_url === 'string' ? doc.document_url : doc?.document_url?.url), "_blank");
+                      window.open(
+                        getMediaUrl(
+                          typeof doc?.document_url === "string"
+                            ? doc.document_url
+                            : doc?.document_url?.url,
+                        ),
+                        "_blank",
+                      );
                     }
                   }}
                   className="rounded-lg font-semibold dark:!bg-slate-700 dark:!text-slate-200 dark:!border-slate-600 dark:hover:!bg-slate-600 dark:hover:!text-white dark:hover:!border-slate-500"
@@ -779,15 +853,23 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
               )}
             </div>
             <div>
-              {(doc?.document_type?.toLowerCase().includes('license') || doc?.document_type?.toLowerCase().includes('dl')) && (
+              {(doc?.document_type?.toLowerCase().includes("license") ||
+                doc?.document_type?.toLowerCase().includes("dl")) && (
                 <div className="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 whitespace-nowrap shrink-0">
                   <CalendarOutlined className="text-red-400" />
                   <div className="flex items-center gap-2">
-                    <Text type="secondary" className="text-[10px] uppercase font-bold tracking-tighter whitespace-nowrap">Expiry:</Text>
+                    <Text
+                      type="secondary"
+                      className="text-[10px] uppercase font-bold tracking-tighter whitespace-nowrap"
+                    >
+                      Expiry:
+                    </Text>
                     <Text strong className="text-[12px] whitespace-nowrap">
-                      {doc?.extracted_data?.extracted_expiry 
-                        ? doc.extracted_data.extracted_expiry 
-                        : (doc?.expiry_date ? dayjs(doc.expiry_date).format("MMM D, YYYY") : "N/A")}
+                      {doc?.extracted_data?.extracted_expiry
+                        ? doc.extracted_data.extracted_expiry
+                        : doc?.expiry_date
+                          ? dayjs(doc.expiry_date).format("MMM D, YYYY")
+                          : "N/A"}
                     </Text>
                   </div>
                 </div>
@@ -804,7 +886,10 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                   icon={<CloseCircleOutlined />}
                   loading={loadingAction === `reject-${doc.document_id || doc.id}`}
                   onClick={() =>
-                    setRejectModalDoc({ id: doc.document_id || doc.id, type: doc.document_type || doc.type })
+                    setRejectModalDoc({
+                      id: doc.document_id || doc.id,
+                      type: doc.document_type || doc.type,
+                    })
                   }
                   className="rounded-xl px-6"
                 >
@@ -831,8 +916,11 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     <div className="space-y-6">
       <div className="content-card p-6">
         <div className="flex justify-between items-center mb-6">
-          <Title level={4} className="m-0 flex items-center gap-2 text-gray-800 dark:text-slate-100">
-             <BarChartOutlined className="text-blue-500" /> Performance Analytics
+          <Title
+            level={4}
+            className="m-0 flex items-center gap-2 text-gray-800 dark:text-slate-100"
+          >
+            <BarChartOutlined className="text-blue-500" /> Performance Analytics
           </Title>
           <Radio.Group
             value={perfPeriod}
@@ -854,105 +942,157 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
         ) : (
           <>
             <div className="flex flex-col items-center justify-center mb-8">
-               <div className="perf-score-container">
-                 <Progress 
-                   type="dashboard" 
-                   percent={dynamicMetrics?.completionRate || 0} 
-                   strokeColor={{ "0%": "#2563EB", "100%": "#3B82F6" }}
-                   width={160}
-                   strokeWidth={10}
-                   gapDegree={60}
-                   format={(percent) => (
-                     <div className="flex flex-col items-center">
-                       <span className="text-3xl font-extrabold text-gray-800 dark:text-slate-100">{percent}%</span>
-                       <span className="text-[10px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-1">Score</span>
-                     </div>
-                   )}
-                 />
-               </div>
-               <Text type="secondary" className="mt-4 text-center text-sm px-8 max-w-xs mx-auto">
-                 Overall performance based on accepted and completed trips for the selected period.
-               </Text>
+              <div className="perf-score-container">
+                <Progress
+                  type="dashboard"
+                  percent={dynamicMetrics?.completionRate || 0}
+                  strokeColor={{ "0%": "#2563EB", "100%": "#3B82F6" }}
+                  width={160}
+                  strokeWidth={10}
+                  gapDegree={60}
+                  format={(percent) => (
+                    <div className="flex flex-col items-center">
+                      <span className="text-3xl font-extrabold text-gray-800 dark:text-slate-100">
+                        {percent}%
+                      </span>
+                      <span className="text-[10px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-1">
+                        Score
+                      </span>
+                    </div>
+                  )}
+                />
+              </div>
+              <Text type="secondary" className="mt-4 text-center text-sm px-8 max-w-xs mx-auto">
+                Overall performance based on accepted and completed trips for the selected period.
+              </Text>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
-               <div className="stat-box perf-metric-card bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800/30 flex items-center gap-3 p-4">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
-                    <WalletOutlined className="text-emerald-600 dark:text-emerald-400 text-lg" />
+              <div className="stat-box perf-metric-card bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800/30 flex items-center gap-3 p-4">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+                  <WalletOutlined className="text-emerald-600 dark:text-emerald-400 text-lg" />
+                </div>
+                <div>
+                  <Text
+                    type="secondary"
+                    className="info-label text-[10px] text-emerald-600 dark:text-emerald-400"
+                  >
+                    Earnings
+                  </Text>
+                  <div className="text-xl font-bold text-emerald-800 dark:text-emerald-100 mt-0.5 perf-stat-value">
+                    ₹{(dynamicMetrics?.totalEarnings || 0).toLocaleString("en-IN")}
                   </div>
-                  <div>
-                    <Text type="secondary" className="info-label text-[10px] text-emerald-600 dark:text-emerald-400">Earnings</Text>
-                    <div className="text-xl font-bold text-emerald-800 dark:text-emerald-100 mt-0.5 perf-stat-value">
-                      ₹{(dynamicMetrics?.totalEarnings || 0).toLocaleString('en-IN')}
-                    </div>
-                  </div>
-               </div>
+                </div>
+              </div>
 
-               <div className="stat-box perf-metric-card bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/30 flex items-center gap-3 p-4">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
-                    <ClockCircleOutlined className="text-blue-600 dark:text-blue-400 text-lg" />
+              <div className="stat-box perf-metric-card bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/30 flex items-center gap-3 p-4">
+                <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                  <ClockCircleOutlined className="text-blue-600 dark:text-blue-400 text-lg" />
+                </div>
+                <div>
+                  <Text
+                    type="secondary"
+                    className="info-label text-[10px] text-blue-600 dark:text-blue-400"
+                  >
+                    Online Time
+                  </Text>
+                  <div className="text-xl font-bold text-blue-800 dark:text-blue-100 mt-0.5 perf-stat-value">
+                    {((dynamicMetrics?.onlineMinutes || 0) / 60).toFixed(1)}h
                   </div>
-                  <div>
-                    <Text type="secondary" className="info-label text-[10px] text-blue-600 dark:text-blue-400">Online Time</Text>
-                    <div className="text-xl font-bold text-blue-800 dark:text-blue-100 mt-0.5 perf-stat-value">
-                      {((dynamicMetrics?.onlineMinutes || 0) / 60).toFixed(1)}h
-                    </div>
-                  </div>
-               </div>
+                </div>
+              </div>
 
-               <div className="stat-box perf-metric-card bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800/30 flex items-center gap-3 p-4">
-                  <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
-                    <UserOutlined className="text-amber-600 dark:text-amber-400 text-lg" />
+              <div className="stat-box perf-metric-card bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800/30 flex items-center gap-3 p-4">
+                <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
+                  <UserOutlined className="text-amber-600 dark:text-amber-400 text-lg" />
+                </div>
+                <div>
+                  <Text
+                    type="secondary"
+                    className="info-label text-[10px] text-amber-600 dark:text-amber-400"
+                  >
+                    Rating
+                  </Text>
+                  <div className="text-xl font-bold text-amber-800 dark:text-amber-100 mt-0.5 flex items-center gap-1 perf-stat-value">
+                    {Number(dynamicMetrics?.rating || driver?.rating || 0).toFixed(1)}
+                    <Rate
+                      disabled
+                      allowHalf
+                      value={Number(dynamicMetrics?.rating || driver?.rating || 0)}
+                      style={{ fontSize: 12, marginLeft: 4 }}
+                    />
                   </div>
-                  <div>
-                    <Text type="secondary" className="info-label text-[10px] text-amber-600 dark:text-amber-400">Rating</Text>
-                    <div className="text-xl font-bold text-amber-800 dark:text-amber-100 mt-0.5 flex items-center gap-1 perf-stat-value">
-                      {Number(dynamicMetrics?.rating || driver?.rating || 0).toFixed(1)}
-                      <Rate disabled allowHalf value={Number(dynamicMetrics?.rating || driver?.rating || 0)} style={{ fontSize: 12, marginLeft: 4 }} />
-                    </div>
-                  </div>
-               </div>
+                </div>
+              </div>
 
-               <div className="stat-box perf-metric-card bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-800/30 flex items-center gap-3 p-4">
-                  <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
-                    <CheckCircleOutlined className="text-purple-600 dark:text-purple-400 text-lg" />
+              <div className="stat-box perf-metric-card bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-800/30 flex items-center gap-3 p-4">
+                <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
+                  <CheckCircleOutlined className="text-purple-600 dark:text-purple-400 text-lg" />
+                </div>
+                <div>
+                  <Text
+                    type="secondary"
+                    className="info-label text-[10px] text-purple-600 dark:text-purple-400"
+                  >
+                    Acceptance
+                  </Text>
+                  <div className="text-xl font-bold text-purple-800 dark:text-purple-100 mt-0.5 perf-stat-value">
+                    {dynamicMetrics?.acceptanceRate || 0}%
                   </div>
-                  <div>
-                    <Text type="secondary" className="info-label text-[10px] text-purple-600 dark:text-purple-400">Acceptance</Text>
-                    <div className="text-xl font-bold text-purple-800 dark:text-purple-100 mt-0.5 perf-stat-value">
-                      {dynamicMetrics?.acceptanceRate || 0}%
-                    </div>
-                  </div>
-               </div>
+                </div>
+              </div>
             </div>
 
             <div className="perf-summary-bar mb-6">
               <div className="perf-summary-item">
-                <Text type="secondary" className="text-[10px] uppercase font-bold block mb-1">Total</Text>
-                <Text className="text-lg font-bold text-gray-700 dark:text-slate-200 perf-stat-value">{dynamicMetrics?.totalTrips || 0}</Text>
+                <Text type="secondary" className="text-[10px] uppercase font-bold block mb-1">
+                  Total
+                </Text>
+                <Text className="text-lg font-bold text-gray-700 dark:text-slate-200 perf-stat-value">
+                  {dynamicMetrics?.totalTrips || 0}
+                </Text>
               </div>
               <div className="perf-summary-item">
-                <Text type="secondary" className="text-[10px] uppercase font-bold text-green-600 dark:text-green-400 block mb-1">Completed</Text>
-                <Text className="text-lg font-bold text-green-600 dark:text-green-400 perf-stat-value">{dynamicMetrics?.completedTrips || 0}</Text>
+                <Text
+                  type="secondary"
+                  className="text-[10px] uppercase font-bold text-green-600 dark:text-green-400 block mb-1"
+                >
+                  Completed
+                </Text>
+                <Text className="text-lg font-bold text-green-600 dark:text-green-400 perf-stat-value">
+                  {dynamicMetrics?.completedTrips || 0}
+                </Text>
               </div>
               <div className="perf-summary-item">
-                <Text type="secondary" className="text-[10px] uppercase font-bold text-red-500 dark:text-red-400 block mb-1">Cancelled</Text>
-                <Text className="text-lg font-bold text-red-500 dark:text-red-400 perf-stat-value">{dynamicMetrics?.cancelledTrips || 0}</Text>
+                <Text
+                  type="secondary"
+                  className="text-[10px] uppercase font-bold text-red-500 dark:text-red-400 block mb-1"
+                >
+                  Cancelled
+                </Text>
+                <Text className="text-lg font-bold text-red-500 dark:text-red-400 perf-stat-value">
+                  {dynamicMetrics?.cancelledTrips || 0}
+                </Text>
               </div>
             </div>
 
             <div className="content-card p-4 bg-gray-50 dark:bg-slate-800 flex items-center gap-3 shadow-none border-dashed dark:border-slate-700 mt-auto">
-               <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm">
-                  <ClockCircleOutlined className="text-gray-400 dark:text-slate-500" />
-               </div>
-               <div>
-                  <Text type="secondary" className="text-[10px] font-bold block uppercase tracking-tight">Last Active</Text>
-                  <Text className="text-sm font-medium text-gray-600 dark:text-slate-300">
-                    {driver?.performance?.last_active
-                      ? dayjs(driver?.performance?.last_active)?.format("MMM D, YYYY • hh:mm A")
-                      : "N/A"}
-                  </Text>
-               </div>
+              <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm">
+                <ClockCircleOutlined className="text-gray-400 dark:text-slate-500" />
+              </div>
+              <div>
+                <Text
+                  type="secondary"
+                  className="text-[10px] font-bold block uppercase tracking-tight"
+                >
+                  Last Active
+                </Text>
+                <Text className="text-sm font-medium text-gray-600 dark:text-slate-300">
+                  {driver?.performance?.last_active
+                    ? dayjs(driver?.performance?.last_active)?.format("MMM D, YYYY • hh:mm A")
+                    : "N/A"}
+                </Text>
+              </div>
             </div>
           </>
         )}
@@ -964,12 +1104,17 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     <div className="space-y-6">
       <div className="content-card p-6">
         <Title level={4} className="mb-6 flex items-center gap-2 text-gray-800 dark:text-slate-100">
-           <WalletOutlined className="text-emerald-500" /> Payment Summary
+          <WalletOutlined className="text-emerald-500" /> Payment Summary
         </Title>
 
         <div className="grid grid-cols-1 gap-4">
           <div className="stat-box bg-emerald-50/30 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800/30">
-            <Text type="secondary" className="info-label text-[10px] text-emerald-600 dark:text-emerald-400">Total Earnings</Text>
+            <Text
+              type="secondary"
+              className="info-label text-[10px] text-emerald-600 dark:text-emerald-400"
+            >
+              Total Earnings
+            </Text>
             <div className="text-3xl font-extrabold text-emerald-700 dark:text-emerald-300 mt-1">
               ₹{driver?.payments?.total_earnings?.toLocaleString() || 0}
             </div>
@@ -977,12 +1122,17 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
 
           <div className="stat-box bg-blue-50/30 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/30 flex justify-between items-center">
             <div>
-              <Text type="secondary" className="info-label text-[10px] text-blue-600 dark:text-blue-400">Active Subscription</Text>
+              <Text
+                type="secondary"
+                className="info-label text-[10px] text-blue-600 dark:text-blue-400"
+              >
+                Active Subscription
+              </Text>
               <div className="text-xl font-bold text-blue-800 dark:text-blue-300 mt-1">
                 {driver?.active_subscription?.plan_name || "No Active Plan"}
               </div>
             </div>
-            < RocketOutlined className="text-blue-200 dark:text-blue-800 text-3xl" />
+            <RocketOutlined className="text-blue-200 dark:text-blue-800 text-3xl" />
           </div>
         </div>
       </div>
@@ -993,13 +1143,20 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     <div className="space-y-6">
       <div className="content-card p-6">
         <div className="flex justify-between items-center mb-6">
-          <Title level={4} className="m-0 flex items-center gap-2 text-gray-800 dark:text-slate-100">
-             <SyncOutlined className="text-indigo-500" /> Active Recharge Plan
+          <Title
+            level={4}
+            className="m-0 flex items-center gap-2 text-gray-800 dark:text-slate-100"
+          >
+            <SyncOutlined className="text-indigo-500" /> Active Recharge Plan
           </Title>
           {driver?.active_subscription?.status === "active" ? (
-            <Tag color="#4ade80" className="status-badge border-none text-green-900">Active</Tag>
+            <Tag color="#4ade80" className="status-badge border-none text-green-900">
+              Active
+            </Tag>
           ) : (
-            <Tag color="#f87171" className="status-badge border-none text-white">Inactive</Tag>
+            <Tag color="#f87171" className="status-badge border-none text-white">
+              Inactive
+            </Tag>
           )}
         </div>
 
@@ -1007,15 +1164,23 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-6">
               <div className="stat-box">
-                <Text type="secondary" className="info-label text-[10px]">Plan Name</Text>
-                <div className="font-bold text-lg text-gray-800 dark:text-slate-100 mt-1">{driver.active_subscription.plan_name}</div>
+                <Text type="secondary" className="info-label text-[10px]">
+                  Plan Name
+                </Text>
+                <div className="font-bold text-lg text-gray-800 dark:text-slate-100 mt-1">
+                  {driver.active_subscription.plan_name}
+                </div>
               </div>
               <div className="stat-box text-right">
-                <Text type="secondary" className="info-label text-[10px]">Billing Cycle</Text>
-                <div className="font-bold capitalize text-lg text-indigo-600 dark:text-indigo-400 mt-1">{driver.active_subscription.billing_cycle}</div>
+                <Text type="secondary" className="info-label text-[10px]">
+                  Billing Cycle
+                </Text>
+                <div className="font-bold capitalize text-lg text-indigo-600 dark:text-indigo-400 mt-1">
+                  {driver.active_subscription.billing_cycle}
+                </div>
               </div>
             </div>
-            
+
             <div className="info-grid bg-gray-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-gray-100 dark:border-slate-700">
               <div className="info-item">
                 <div className="info-icon-wrapper bg-white dark:bg-slate-800">
@@ -1023,7 +1188,9 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                 </div>
                 <div className="info-content">
                   <span className="info-label">Start Date</span>
-                  <span className="info-value font-bold">{dayjs(driver.active_subscription.start_date).format("MMM D, YYYY")}</span>
+                  <span className="info-value font-bold">
+                    {dayjs(driver.active_subscription.start_date).format("MMM D, YYYY")}
+                  </span>
                 </div>
               </div>
               <div className="info-item">
@@ -1032,29 +1199,35 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                 </div>
                 <div className="info-content">
                   <span className="info-label">Expiry Date</span>
-                  <span className="info-value font-bold">{dayjs(driver.active_subscription.expiry_date).format("MMM D, YYYY")}</span>
+                  <span className="info-value font-bold">
+                    {dayjs(driver.active_subscription.expiry_date).format("MMM D, YYYY")}
+                  </span>
                 </div>
               </div>
             </div>
 
             <div className="stat-box bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800/30 flex items-center gap-4">
-               <div className="w-12 h-12 rounded-xl bg-white dark:bg-indigo-900/40 flex items-center justify-center text-xl font-black text-indigo-600 dark:text-indigo-400 shadow-sm">
-                  {dayjs(driver.active_subscription.expiry_date).diff(dayjs(), "day")}
-               </div>
-               <div>
-                 <Text type="secondary" className="text-[10px] font-bold block dark:text-slate-400">DAYS REMAINING</Text>
-                 <Text className="text-sm font-medium text-indigo-900 dark:text-indigo-200">
-                   Plan expires on {dayjs(driver.active_subscription.expiry_date).format("MMMM D")}
-                 </Text>
-               </div>
+              <div className="w-12 h-12 rounded-xl bg-white dark:bg-indigo-900/40 flex items-center justify-center text-xl font-black text-indigo-600 dark:text-indigo-400 shadow-sm">
+                {dayjs(driver.active_subscription.expiry_date).diff(dayjs(), "day")}
+              </div>
+              <div>
+                <Text type="secondary" className="text-[10px] font-bold block dark:text-slate-400">
+                  DAYS REMAINING
+                </Text>
+                <Text className="text-sm font-medium text-indigo-900 dark:text-indigo-200">
+                  Plan expires on {dayjs(driver.active_subscription.expiry_date).format("MMMM D")}
+                </Text>
+              </div>
             </div>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-             <div className="w-20 h-20 rounded-full bg-gray-50 dark:bg-slate-800 flex items-center justify-center mb-4">
-               <StopOutlined style={{ fontSize: 32, color: "#cbd5e1" }} />
-             </div>
-             <p className="text-gray-400 dark:text-slate-500 font-medium">No active recharge plan found for this driver.</p>
+            <div className="w-20 h-20 rounded-full bg-gray-50 dark:bg-slate-800 flex items-center justify-center mb-4">
+              <StopOutlined style={{ fontSize: 32, color: "#cbd5e1" }} />
+            </div>
+            <p className="text-gray-400 dark:text-slate-500 font-medium">
+              No active recharge plan found for this driver.
+            </p>
           </div>
         )}
       </div>
@@ -1064,8 +1237,11 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     <div className="space-y-6">
       <div className="content-card p-6">
         <div className="flex justify-between items-center mb-6">
-          <Title level={4} className="m-0 flex items-center gap-2 text-gray-800 dark:text-slate-100">
-             <LineChartOutlined className="text-blue-500" /> Ride Activity
+          <Title
+            level={4}
+            className="m-0 flex items-center gap-2 text-gray-800 dark:text-slate-100"
+          >
+            <LineChartOutlined className="text-blue-500" /> Ride Activity
           </Title>
           <div className="flex gap-2">
             <Select
@@ -1074,9 +1250,9 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
               onChange={setHistoryStatus}
               className="w-32"
               options={[
-                { label: 'All Status', value: 'all' },
-                { label: 'Completed', value: 'Completed' },
-                { label: 'Cancelled', value: 'Cancelled' },
+                { label: "All Status", value: "all" },
+                { label: "Completed", value: "Completed" },
+                { label: "Cancelled", value: "Cancelled" },
               ]}
             />
             <Radio.Group
@@ -1102,46 +1278,77 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             {/* Activity Summary Header */}
             <div className="grid grid-cols-3 gap-3 mb-2">
               <div className="bg-gray-50 dark:bg-slate-800/50 p-3 rounded-xl border border-gray-100 dark:border-slate-700">
-                <Text type="secondary" className="text-[10px] uppercase font-bold block">Total Trips</Text>
-                <Text className="text-lg font-bold text-gray-800 dark:text-slate-100">{historyMetrics?.totalTrips || 0}</Text>
+                <Text type="secondary" className="text-[10px] uppercase font-bold block">
+                  Total Trips
+                </Text>
+                <Text className="text-lg font-bold text-gray-800 dark:text-slate-100">
+                  {historyMetrics?.totalTrips || 0}
+                </Text>
               </div>
               <div className="bg-emerald-50/50 dark:bg-emerald-900/20 p-3 rounded-xl border border-emerald-100 dark:border-emerald-800/30">
-                <Text type="secondary" className="text-[10px] uppercase font-bold block text-emerald-600 dark:text-emerald-400">Earnings</Text>
-                <Text className="text-lg font-bold text-emerald-700 dark:text-emerald-300">₹{(historyMetrics?.totalEarnings || 0).toLocaleString()}</Text>
+                <Text
+                  type="secondary"
+                  className="text-[10px] uppercase font-bold block text-emerald-600 dark:text-emerald-400"
+                >
+                  Earnings
+                </Text>
+                <Text className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
+                  ₹{(historyMetrics?.totalEarnings || 0).toLocaleString()}
+                </Text>
               </div>
               <div className="bg-blue-50/50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800/30">
-                <Text type="secondary" className="text-[10px] uppercase font-bold block text-blue-600 dark:text-blue-400">Success Rate</Text>
-                <Text className="text-lg font-bold text-blue-700 dark:text-blue-300">{historyMetrics?.completionRate || 0}%</Text>
+                <Text
+                  type="secondary"
+                  className="text-[10px] uppercase font-bold block text-blue-600 dark:text-blue-400"
+                >
+                  Success Rate
+                </Text>
+                <Text className="text-lg font-bold text-blue-700 dark:text-blue-300">
+                  {historyMetrics?.completionRate || 0}%
+                </Text>
               </div>
             </div>
 
             <div className="space-y-4">
               {rideHistory.length > 0 ? (
                 rideHistory.map((trip: any) => (
-                  <div key={trip.id} className="trip-card bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
+                  <div
+                    key={trip.id}
+                    className="trip-card bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                  >
                     <div className="flex justify-between items-start mb-3">
                       <div>
                         <Text type="secondary" className="text-[10px] font-mono block">
-                          #{trip.trip_code || trip.id?.toString().slice(-6).toUpperCase()} • {trip.date}
+                          #{trip.trip_code || trip.id?.toString().slice(-6).toUpperCase()} •{" "}
+                          {trip.date}
                         </Text>
-                        <Text strong className="text-gray-800 dark:text-slate-200">{trip.time}</Text>
+                        <Text strong className="text-gray-800 dark:text-slate-200">
+                          {trip.time}
+                        </Text>
                       </div>
-                      <Tag color={trip.status === 'Completed' ? 'success' : 'error'} className="m-0 px-3 rounded-full font-bold text-[10px]">
+                      <Tag
+                        color={trip.status === "Completed" ? "success" : "error"}
+                        className="m-0 px-3 rounded-full font-bold text-[10px]"
+                      >
                         {trip.status.toUpperCase()}
                       </Tag>
                     </div>
 
                     <div className="relative pl-6 py-1 space-y-3">
                       <div className="absolute left-1.5 top-2.5 bottom-2.5 w-[1.5px] bg-gray-100 dark:bg-slate-700 dashed-line"></div>
-                      
+
                       <div className="relative">
                         <div className="absolute -left-[22px] top-1.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-800 shadow-sm"></div>
-                        <Text className="text-sm text-gray-700 dark:text-slate-300 line-clamp-1">{trip.pickup}</Text>
+                        <Text className="text-sm text-gray-700 dark:text-slate-300 line-clamp-1">
+                          {trip.pickup}
+                        </Text>
                       </div>
 
                       <div className="relative">
                         <div className="absolute -left-[22px] top-1.5 w-3 h-3 rounded-full bg-red-500 border-2 border-white dark:border-slate-800 shadow-sm"></div>
-                        <Text className="text-sm text-gray-700 dark:text-slate-300 line-clamp-1">{trip.drop}</Text>
+                        <Text className="text-sm text-gray-700 dark:text-slate-300 line-clamp-1">
+                          {trip.drop}
+                        </Text>
                       </div>
                     </div>
 
@@ -1149,23 +1356,37 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1">
                           <RocketOutlined className="text-gray-400 dark:text-slate-500 text-xs" />
-                          <Text type="secondary" className="text-xs">{trip.distance}</Text>
+                          <Text type="secondary" className="text-xs">
+                            {trip.distance}
+                          </Text>
                         </div>
                         <div className="flex items-center gap-1">
                           <UserOutlined className="text-gray-400 dark:text-slate-500 text-xs" />
-                          <Text type="secondary" className="text-xs">{trip.customer?.name}</Text>
+                          <Text type="secondary" className="text-xs">
+                            {trip.customer?.name}
+                          </Text>
                         </div>
                       </div>
-                      <Text className={`text-lg font-black ${trip.status === 'Cancelled' ? 'text-gray-400 dark:text-slate-500 line-through' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                      <Text
+                        className={`text-lg font-black ${trip.status === "Cancelled" ? "text-gray-400 dark:text-slate-500 line-through" : "text-emerald-600 dark:text-emerald-400"}`}
+                      >
                         ₹{trip.amount?.toLocaleString()}
                       </Text>
                     </div>
 
                     {trip.customer?.rating && (
                       <div className="mt-2 flex items-center gap-2">
-                        <Rate disabled allowHalf value={trip.customer.rating} style={{ fontSize: 10 }} />
+                        <Rate
+                          disabled
+                          allowHalf
+                          value={trip.customer.rating}
+                          style={{ fontSize: 10 }}
+                        />
                         {trip.customer.feedback && (
-                          <Text type="secondary" className="text-[10px] italic overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px]">
+                          <Text
+                            type="secondary"
+                            className="text-[10px] italic overflow-hidden text-ellipsis whitespace-nowrap max-w-[200px]"
+                          >
                             "{trip.customer.feedback}"
                           </Text>
                         )}
@@ -1178,7 +1399,9 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                   <div className="w-16 h-16 rounded-full bg-gray-50 dark:bg-slate-800 flex items-center justify-center mb-4">
                     <HistoryOutlined style={{ fontSize: 32, color: "#cbd5e1" }} />
                   </div>
-                  <Text type="secondary" className="font-medium">No ride activity found for this period.</Text>
+                  <Text type="secondary" className="font-medium">
+                    No ride activity found for this period.
+                  </Text>
                 </div>
               )}
             </div>
@@ -1197,7 +1420,6 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
       key: "1",
       content: basicInfo,
     },
-
 
     {
       label: (
@@ -1246,25 +1468,31 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     },
   ];
 
-  const getStatusMenuItems = (): MenuProps['items'] => {
-    const isAwaitingVerification = driver?.onboarding_status === 'DOCS_SUBMITTED' || driver?.onboarding_status === 'DOCS_REJECTED';
+  const getStatusMenuItems = (): MenuProps["items"] => {
+    const isAwaitingVerification =
+      driver?.onboarding_status === "DOCS_SUBMITTED" ||
+      driver?.onboarding_status === "DOCS_REJECTED";
 
-    if (driver?.status === "pending" || driver?.status === "pending_verification" || isAwaitingVerification) {
+    if (
+      driver?.status === "pending" ||
+      driver?.status === "pending_verification" ||
+      isAwaitingVerification
+    ) {
       return [
         {
-          key: 'approve',
-          label: 'Approve Driver',
+          key: "approve",
+          label: "Approve Driver",
           icon: <CheckCircleOutlined />,
           onClick: handleApproveAccount,
-          className: "text-green-600 font-medium"
+          className: "text-green-600 font-medium",
         },
         {
-          key: 'reject',
-          label: 'Reject Profile',
+          key: "reject",
+          label: "Reject Profile",
           icon: <CloseCircleOutlined />,
-          onClick: () => handleStatusUpdate('rejected'),
-          danger: true
-        }
+          onClick: () => handleStatusUpdate("rejected"),
+          danger: true,
+        },
       ];
     }
 
@@ -1273,134 +1501,173 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
       case "suspended":
         return [
           {
-            key: 'activate',
-            label: 'Activate Driver',
+            key: "activate",
+            label: "Activate Driver",
             icon: <CheckCircleOutlined />,
             onClick: () => handleStatusUpdate("active"),
-            className: "text-green-600 font-medium"
-          }
+            className: "text-green-600 font-medium",
+          },
         ];
       default:
         return [
           {
-            key: 'suspend',
-            label: 'Suspend',
+            key: "suspend",
+            label: "Suspend",
             icon: <SyncOutlined />,
             onClick: () => handleStatusUpdate("suspended"),
-            danger: true
+            danger: true,
           },
           {
-            key: 'block',
-            label: 'Block',
+            key: "block",
+            label: "Block",
             icon: <StopOutlined />,
             onClick: () => handleStatusUpdate("blocked"),
-            danger: true
-          }
+            danger: true,
+          },
         ];
     }
   };
   return (
     <>
       <Drawer
-      title={null}
-      placement="right"
-      width={720}
-      onClose={onClose}
-      open={open}
-      closable={false}
-      destroyOnClose={true}
-      className="driver-details-drawer"
-      styles={{ body: { padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' } }}
-    >
-      <div className="flex-shrink-0">
-      <div className="driver-details-header">
-        <div className="flex items-center justify-between relative z-10">
-          <div className="flex items-center gap-6">
-            <div className="driver-avatar-wrapper overflow-hidden rounded-full border-4 border-white/20 shadow-xl group cursor-pointer">
-              <Image
-                width={100}
-                height={100}
-                src={getMediaUrl(driver?.profilePicUrl || driver?.profile_pic_url)}
-                className="object-cover rounded-full"
-                rootClassName="rounded-full"
-                style={{ objectFit: 'cover', borderRadius: '50%', aspectRatio: '1/1' }}
-                preview={{
-                  mask: <div className="text-[10px] font-bold rounded-full flex items-center justify-center h-full w-full">PREVIEW</div>
-                }}
-                fallback="https://ui-avatars.com/api/?name=${encodeURIComponent(driver?.full_name || 'Driver')}&background=6366f1&color=fff"
-              />
-            </div>
-            <div className="text-white">
-              <div className="text-3xl font-extrabold tracking-tight">
-                {driver?.first_name || driver?.last_name 
-                  ? `${driver.first_name || ''} ${driver.last_name || ''}`.trim() 
-                  : driver?.full_name || "N/A"}
+        title={null}
+        placement="right"
+        width={720}
+        onClose={onClose}
+        open={open}
+        closable={false}
+        destroyOnClose={true}
+        className="driver-details-drawer"
+        styles={{
+          body: {
+            padding: 0,
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          },
+        }}
+      >
+        <div className="flex-shrink-0">
+          <div className="driver-details-header">
+            <div className="flex items-center justify-between relative z-10">
+              <div className="flex items-center gap-6">
+                <div className="driver-avatar-wrapper overflow-hidden rounded-full border-4 border-white/20 shadow-xl group cursor-pointer">
+                  <Image
+                    width={100}
+                    height={100}
+                    src={getMediaUrl(driver?.profilePicUrl || driver?.profile_pic_url)}
+                    className="object-cover rounded-full"
+                    rootClassName="rounded-full"
+                    style={{
+                      objectFit: "cover",
+                      borderRadius: "50%",
+                      aspectRatio: "1/1",
+                    }}
+                    preview={{
+                      mask: (
+                        <div className="text-[10px] font-bold rounded-full flex items-center justify-center h-full w-full">
+                          PREVIEW
+                        </div>
+                      ),
+                    }}
+                    fallback="https://ui-avatars.com/api/?name=${encodeURIComponent(driver?.full_name || 'Driver')}&background=6366f1&color=fff"
+                  />
+                </div>
+                <div className="text-white">
+                  <div className="text-3xl font-extrabold tracking-tight">
+                    {driver?.first_name || driver?.last_name
+                      ? `${driver.first_name || ""} ${driver.last_name || ""}`.trim()
+                      : driver?.full_name || "N/A"}
+                  </div>
+                  <p className="m-0 text-blue-100/80 text-sm font-medium mt-1 flex items-center gap-2">
+                    <SafetyCertificateOutlined className="text-blue-300" />
+                    DRIVER ID: {driver?.driverId || driver?.driver_id || driver?.id || "N/A"}
+                  </p>
+                  <div className="mt-3 flex gap-2">
+                    {driver?.availability?.online ? (
+                      <Tag
+                        color="#4ade80"
+                        className="m-0 border-none px-3 font-bold rounded-full text-green-900 shadow-sm"
+                      >
+                        <SyncOutlined spin className="mr-1" /> ONLINE
+                      </Tag>
+                    ) : (
+                      <Tag
+                        color="#94a3b8"
+                        className="m-0 border-none px-3 font-bold rounded-full text-white shadow-sm"
+                      >
+                        OFFLINE
+                      </Tag>
+                    )}
+                    <Tag
+                      color="#6366f1"
+                      className="m-0 border-none px-3 font-bold rounded-full text-white shadow-sm uppercase"
+                    >
+                      {driver?.role || "Normal"}
+                    </Tag>
+                  </div>
+                </div>
               </div>
-              <p className="m-0 text-blue-100/80 text-sm font-medium mt-1 flex items-center gap-2">
-                <SafetyCertificateOutlined className="text-blue-300" />
-                DRIVER ID: {driver?.driverId || driver?.driver_id || driver?.id || "N/A"}
-              </p>
-              <div className="mt-3 flex gap-2">
-                {driver?.availability?.online ? (
-                  <Tag color="#4ade80" className="m-0 border-none px-3 font-bold rounded-full text-green-900 shadow-sm">
-                    <SyncOutlined spin className="mr-1" /> ONLINE
-                  </Tag>
-                ) : (
-                  <Tag color="#94a3b8" className="m-0 border-none px-3 font-bold rounded-full text-white shadow-sm">
-                    OFFLINE
-                  </Tag>
-                )}
-                <Tag color="#6366f1" className="m-0 border-none px-3 font-bold rounded-full text-white shadow-sm uppercase">
-                  {driver?.role || "Normal"}
-                </Tag>
+              <div className="flex gap-2">
+                <Dropdown
+                  menu={{ items: getStatusMenuItems() }}
+                  trigger={["click"]}
+                  placement="bottomRight"
+                >
+                  <Button
+                    type="primary"
+                    shape="circle"
+                    icon={<SettingOutlined />}
+                    className="bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md"
+                  />
+                </Dropdown>
+                <Button
+                  type="primary"
+                  shape="circle"
+                  icon={<CloseOutlined />}
+                  onClick={onClose}
+                  className="bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md"
+                />
               </div>
             </div>
-          </div>
-          <div className="flex gap-2">
-            <Dropdown menu={{ items: getStatusMenuItems() }} trigger={['click']} placement="bottomRight">
-              <Button 
-                type="primary" 
-                shape="circle" 
-                icon={<SettingOutlined />} 
-                className="bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md"
-              />
-            </Dropdown>
-            <Button 
-              type="primary" 
-              shape="circle" 
-              icon={<CloseOutlined />} 
-              onClick={onClose}
-              className="bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md"
-            />
           </div>
         </div>
-      </div>
-      </div>
 
-      <div className="flex-1 py-6 overflow-y-auto custom-scrollbar bg-slate-50 dark:bg-[#0f172a]">
-        
-        {(driver?.status === "blocked" || driver?.status === "suspended") && (
-          <div className="mx-6 mb-6">
-            <div className={`p-4 rounded-xl border flex items-start gap-4 ${driver.status === "blocked" ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/30" : "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800/30"}`}>
-              <div className={`text-2xl mt-1 ${driver.status === "blocked" ? "text-red-500" : "text-orange-500"}`}>
-                {driver.status === "blocked" ? <StopOutlined /> : <ClockCircleOutlined />}
-              </div>
-              <div>
-                <h3 className={`font-bold m-0 text-lg ${driver.status === "blocked" ? "text-red-700 dark:text-red-400" : "text-orange-700 dark:text-orange-400"}`}>
-                  Account {driver.status === "blocked" ? "Blocked" : "Suspended"}
-                </h3>
-                <p className={`mt-1 mb-0 text-sm ${driver.status === "blocked" ? "text-red-600 dark:text-red-300" : "text-orange-600 dark:text-orange-300"}`}>
-                  <strong>Reason: </strong> {(driver as any).status_reason || "No specific reason provided."}
-                </p>
-                {(driver as any).status_updated_at && (
-                  <p className={`mt-1 mb-0 text-xs ${driver.status === "blocked" ? "text-red-400 dark:text-red-500" : "text-orange-400 dark:text-orange-500"}`}>
-                    Applied on: {dayjs((driver as any).status_updated_at).format("MMM D, YYYY • hh:mm A")}
+        <div className="flex-1 py-6 overflow-y-auto custom-scrollbar bg-slate-50 dark:bg-[#0f172a]">
+          {(driver?.status === "blocked" || driver?.status === "suspended") && (
+            <div className="mx-6 mb-6">
+              <div
+                className={`p-4 rounded-xl border flex items-start gap-4 ${driver.status === "blocked" ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800/30" : "bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800/30"}`}
+              >
+                <div
+                  className={`text-2xl mt-1 ${driver.status === "blocked" ? "text-red-500" : "text-orange-500"}`}
+                >
+                  {driver.status === "blocked" ? <StopOutlined /> : <ClockCircleOutlined />}
+                </div>
+                <div>
+                  <h3
+                    className={`font-bold m-0 text-lg ${driver.status === "blocked" ? "text-red-700 dark:text-red-400" : "text-orange-700 dark:text-orange-400"}`}
+                  >
+                    Account {driver.status === "blocked" ? "Blocked" : "Suspended"}
+                  </h3>
+                  <p
+                    className={`mt-1 mb-0 text-sm ${driver.status === "blocked" ? "text-red-600 dark:text-red-300" : "text-orange-600 dark:text-orange-300"}`}
+                  >
+                    <strong>Reason: </strong>{" "}
+                    {(driver as any).status_reason || "No specific reason provided."}
                   </p>
-                )}
+                  {(driver as any).status_updated_at && (
+                    <p
+                      className={`mt-1 mb-0 text-xs ${driver.status === "blocked" ? "text-red-400 dark:text-red-500" : "text-orange-400 dark:text-orange-500"}`}
+                    >
+                      Applied on:{" "}
+                      {dayjs((driver as any).status_updated_at).format("MMM D, YYYY • hh:mm A")}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
           <div className="custom-navigation mb-8">
             {segments.map(({ key }) => (
@@ -1445,13 +1712,15 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
           centered
           closable={false}
           className="screenshot-style-modal"
-          bodyStyle={{ padding: 0, overflow: 'hidden' }}
+          bodyStyle={{ padding: 0, overflow: "hidden" }}
         >
           <div className="flex h-[560px]">
             {/* Left Sidebar - Purple */}
             <div className="w-[280px] bg-[#9c6cf2] px-8 py-8 flex flex-col justify-between text-white relative overflow-hidden flex-shrink-0">
               <div className="relative z-10">
-                <span className="text-[9px] font-bold tracking-[0.2em] opacity-70 uppercase">Account</span>
+                <span className="text-[9px] font-bold tracking-[0.2em] opacity-70 uppercase">
+                  Account
+                </span>
                 <h2 className="text-xl font-bold mt-1 mb-2 leading-tight">Edit your profile</h2>
                 <p className="text-[11px] opacity-80 leading-relaxed font-medium">
                   Keep your details fresh — it helps us deliver a more tailored experience.
@@ -1464,15 +1733,20 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                       src={getMediaUrl(driver?.profilePicUrl || driver?.profile_pic_url)}
                       className="bg-[#b492f5] border-[3px] border-[#b492f5]/30 text-2xl font-bold shadow-2xl"
                     >
-                      {driver?.first_name?.charAt(0)}{driver?.last_name?.charAt(0)}
+                      {driver?.first_name?.charAt(0)}
+                      {driver?.last_name?.charAt(0)}
                     </Avatar>
                     <div className="absolute bottom-1 right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg cursor-pointer hover:scale-105 transition-transform">
                       <EditOutlined className="text-[#9c6cf2] text-sm" />
                     </div>
                   </div>
                   <div className="mt-4 text-center">
-                    <h3 className="text-base font-bold m-0">{driver?.first_name} {driver?.last_name}</h3>
-                    <span className="text-[10px] opacity-70 font-medium capitalize">{driver?.role || 'Normal'} member</span>
+                    <h3 className="text-base font-bold m-0">
+                      {driver?.first_name} {driver?.last_name}
+                    </h3>
+                    <span className="text-[10px] opacity-70 font-medium capitalize">
+                      {driver?.role || "Normal"} member
+                    </span>
                   </div>
                 </div>
               </div>
@@ -1486,69 +1760,77 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
               </div>
             </div>
 
-          {/* Right Content Area */}
-          <div className="flex-1 bg-white dark:bg-slate-800 flex flex-col">
-            <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center">
-              <div>
-                <h2 className="text-lg font-bold text-[#1e293b] dark:text-slate-100 m-0">Personal information</h2>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium">Update your details below</p>
-              </div>
-              <Button 
-                type="text" 
-                icon={<CloseOutlined />} 
-                onClick={() => setIsEditModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg"
-              />
-            </div>
-
-            <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleUpdateProfile}
-                initialValues={driver || {}}
-                className="screenshot-form"
-              >
-                <div className="mb-5">
-                  <span className="text-[9px] font-black text-slate-400 tracking-[0.12em] uppercase block mb-4">Basic Details</span>
-                  <div className="grid grid-cols-4 gap-3">
-                    <Form.Item name="first_name" label="First Name" className="col-span-2">
-                      <Input prefix={<UserOutlined />} placeholder="First Name" />
-                    </Form.Item>
-                    <Form.Item name="last_name" label="Last Name" className="col-span-2">
-                      <Input prefix={<UserOutlined />} placeholder="Last Name" />
-                    </Form.Item>
-                    <Form.Item name="email" label="Email Address" className="col-span-2">
-                      <Input prefix={<MailOutlined />} placeholder="you@example.com" />
-                    </Form.Item>
-                    <Form.Item name="phone_number" label="Phone Number" className="col-span-1">
-                      <Input prefix={<PhoneOutlined />} placeholder="+91 98765 43210" />
-                    </Form.Item>
-                    <Form.Item name="alternate_contact" label="Alt Phone" className="col-span-1">
-                      <Input prefix={<PhoneOutlined />} placeholder="+91 98765 00000" />
-                    </Form.Item>
-                    <Form.Item name="date_of_birth" label="Date of Birth" className="col-span-1">
-                      <DatePicker className="w-full" placeholder="dd/mm/yyyy" />
-                    </Form.Item>
-                    <Form.Item name="gender" label="Gender" className="col-span-1">
-                      <Select placeholder="Select gender">
-                        <Select.Option value="male">Male</Select.Option>
-                        <Select.Option value="female">Female</Select.Option>
-                        <Select.Option value="other">Other</Select.Option>
-                      </Select>
-                    </Form.Item>
-                    <Form.Item name="role" label="Membership" className="col-span-2">
-                      <Select placeholder="Select role">
-                        <Select.Option value="normal">Normal</Select.Option>
-                        <Select.Option value="premium">Premium</Select.Option>
-                        <Select.Option value="elite">Elite</Select.Option>
-                      </Select>
-                    </Form.Item>
-                  </div>
+            {/* Right Content Area */}
+            <div className="flex-1 bg-white dark:bg-slate-800 flex flex-col">
+              <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center">
+                <div>
+                  <h2 className="text-lg font-bold text-[#1e293b] dark:text-slate-100 m-0">
+                    Personal information
+                  </h2>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium">
+                    Update your details below
+                  </p>
                 </div>
+                <Button
+                  type="text"
+                  icon={<CloseOutlined />}
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg"
+                />
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
+                <Form
+                  form={form}
+                  layout="vertical"
+                  onFinish={handleUpdateProfile}
+                  initialValues={driver || {}}
+                  className="screenshot-form"
+                >
+                  <div className="mb-5">
+                    <span className="text-[9px] font-black text-slate-400 tracking-[0.12em] uppercase block mb-4">
+                      Basic Details
+                    </span>
+                    <div className="grid grid-cols-4 gap-3">
+                      <Form.Item name="first_name" label="First Name" className="col-span-2">
+                        <Input prefix={<UserOutlined />} placeholder="First Name" />
+                      </Form.Item>
+                      <Form.Item name="last_name" label="Last Name" className="col-span-2">
+                        <Input prefix={<UserOutlined />} placeholder="Last Name" />
+                      </Form.Item>
+                      <Form.Item name="email" label="Email Address" className="col-span-2">
+                        <Input prefix={<MailOutlined />} placeholder="you@example.com" />
+                      </Form.Item>
+                      <Form.Item name="phone_number" label="Phone Number" className="col-span-1">
+                        <Input prefix={<PhoneOutlined />} placeholder="+91 98765 43210" />
+                      </Form.Item>
+                      <Form.Item name="alternate_contact" label="Alt Phone" className="col-span-1">
+                        <Input prefix={<PhoneOutlined />} placeholder="+91 98765 00000" />
+                      </Form.Item>
+                      <Form.Item name="date_of_birth" label="Date of Birth" className="col-span-1">
+                        <DatePicker className="w-full" placeholder="dd/mm/yyyy" />
+                      </Form.Item>
+                      <Form.Item name="gender" label="Gender" className="col-span-1">
+                        <Select placeholder="Select gender">
+                          <Select.Option value="male">Male</Select.Option>
+                          <Select.Option value="female">Female</Select.Option>
+                          <Select.Option value="other">Other</Select.Option>
+                        </Select>
+                      </Form.Item>
+                      <Form.Item name="role" label="Membership" className="col-span-2">
+                        <Select placeholder="Select role">
+                          <Select.Option value="normal">Normal</Select.Option>
+                          <Select.Option value="premium">Premium</Select.Option>
+                          <Select.Option value="elite">Elite</Select.Option>
+                        </Select>
+                      </Form.Item>
+                    </div>
+                  </div>
 
                   <div className="mb-2">
-                    <span className="text-[9px] font-black text-slate-400 tracking-[0.12em] uppercase block mb-4">Address</span>
+                    <span className="text-[9px] font-black text-slate-400 tracking-[0.12em] uppercase block mb-4">
+                      Address
+                    </span>
                     <div className="grid grid-cols-4 gap-3">
                       <Form.Item name={["address", "street"]} label="Street" className="col-span-4">
                         <Input prefix={<EnvironmentOutlined />} placeholder="221B Baker Street" />
@@ -1559,10 +1841,21 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                       <Form.Item name={["address", "state"]} label="State" className="col-span-1">
                         <Input prefix={<EnvironmentOutlined />} placeholder="Maharashtra" />
                       </Form.Item>
-                      <Form.Item name={["address", "pincode"]} label="PIN Code" className="col-span-1">
-                        <Input prefix={<span className="text-slate-400 font-bold ml-1 mr-1">#</span>} placeholder="400001" />
+                      <Form.Item
+                        name={["address", "pincode"]}
+                        label="PIN Code"
+                        className="col-span-1"
+                      >
+                        <Input
+                          prefix={<span className="text-slate-400 font-bold ml-1 mr-1">#</span>}
+                          placeholder="400001"
+                        />
                       </Form.Item>
-                      <Form.Item name={["address", "country"]} label="Country" className="col-span-1">
+                      <Form.Item
+                        name={["address", "country"]}
+                        label="Country"
+                        className="col-span-1"
+                      >
                         <Input prefix={<EnvironmentOutlined />} placeholder="India" />
                       </Form.Item>
                     </div>
@@ -1570,29 +1863,31 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                 </Form>
               </div>
 
-            <div className="px-6 py-3 border-t border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50/30 dark:bg-slate-800/50">
-              <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Changes will be saved to your account.</span>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => setIsEditModalOpen(false)}
-                  className="rounded-lg h-9 px-6 font-semibold text-xs border-gray-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 dark:bg-slate-800"
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="primary" 
-                  onClick={() => form.submit()}
-                  loading={loadingAction === "update-profile"}
-                  className="bg-[#9c6cf2] hover:bg-[#8a5bd9] border-none rounded-lg h-9 px-6 font-semibold text-xs flex items-center gap-1.5"
-                >
-                  <DownloadOutlined />
-                  Save changes
-                </Button>
+              <div className="px-6 py-3 border-t border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50/30 dark:bg-slate-800/50">
+                <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                  Changes will be saved to your account.
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => setIsEditModalOpen(false)}
+                    className="rounded-lg h-9 px-6 font-semibold text-xs border-gray-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 dark:bg-slate-800"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="primary"
+                    onClick={() => form.submit()}
+                    loading={loadingAction === "update-profile"}
+                    className="bg-[#9c6cf2] hover:bg-[#8a5bd9] border-none rounded-lg h-9 px-6 font-semibold text-xs flex items-center gap-1.5"
+                  >
+                    <DownloadOutlined />
+                    Save changes
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </Modal>
+        </Modal>
 
         {/* Document Preview Modal */}
         <Modal
@@ -1632,14 +1927,19 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
           onOk={handleDocumentReject}
           confirmLoading={loadingAction === `reject-${rejectModalDoc?.id}`}
           okText="Confirm Reject"
-          okButtonProps={{ danger: true, size: "large", className: "rounded-xl" }}
+          okButtonProps={{
+            danger: true,
+            size: "large",
+            className: "rounded-xl",
+          }}
           cancelButtonProps={{ size: "large", className: "rounded-xl" }}
           className="premium-modal"
         >
           <div className="mb-6">
             <Text type="secondary" className="text-sm">
-              Please provide a clear reason for rejecting the **{rejectModalDoc?.type}** document.
-              This information will be sent directly to the driver to help them correct the issue.
+              Please provide a clear reason for rejecting the **
+              {rejectModalDoc?.type}** document. This information will be sent directly to the
+              driver to help them correct the issue.
             </Text>
           </div>
           <Form layout="vertical">
@@ -1698,7 +1998,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
           className="premium-modal"
         >
           <div className="py-4">
-            {loadingAction?.startsWith('history-') ? (
+            {loadingAction?.startsWith("history-") ? (
               <div className="flex flex-col items-center py-10 gap-4">
                 <Spin size="large" />
                 <Text type="secondary">Fetching audit trail...</Text>
@@ -1706,17 +2006,34 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             ) : documentHistory.length > 0 ? (
               <div className="space-y-4">
                 {documentHistory.map((item, index) => (
-                  <div key={item.id || index} className="p-4 rounded-xl bg-gray-50 border border-gray-100 flex gap-4">
+                  <div
+                    key={item.id || index}
+                    className="p-4 rounded-xl bg-gray-50 border border-gray-100 flex gap-4"
+                  >
                     <div className="flex flex-col items-center">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${item.status === 'verified' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                        }`}>
-                        {item.status === 'verified' ? <CheckCircleOutlined /> : <CloseCircleOutlined />}
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                          item.status === "verified"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {item.status === "verified" ? (
+                          <CheckCircleOutlined />
+                        ) : (
+                          <CloseCircleOutlined />
+                        )}
                       </div>
-                      {index !== documentHistory.length - 1 && <div className="w-[1px] h-full bg-gray-200 my-1" />}
+                      {index !== documentHistory.length - 1 && (
+                        <div className="w-[1px] h-full bg-gray-200 my-1" />
+                      )}
                     </div>
                     <div className="flex-grow">
                       <div className="flex justify-between items-center mb-1">
-                        <Tag color={getStatusColor(item.status)} className="text-[10px] m-0 border-none px-2 rounded-lg uppercase font-bold">
+                        <Tag
+                          color={getStatusColor(item.status)}
+                          className="text-[10px] m-0 border-none px-2 rounded-lg uppercase font-bold"
+                        >
                           {item.status}
                         </Tag>
                         <Text type="secondary" className="text-[10px]">
@@ -1745,28 +2062,50 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
       <Modal
         title={
           <span className="flex items-center gap-2">
-            {statusAction === "blocked" ? <StopOutlined className="text-red-500" /> : <SyncOutlined className="text-orange-500" />}
-            {statusAction === "blocked" ? "Block Driver Account" : statusAction === "suspended" ? "Suspend Driver Account" : "Reject Driver Profile"}
+            {statusAction === "blocked" ? (
+              <StopOutlined className="text-red-500" />
+            ) : (
+              <SyncOutlined className="text-orange-500" />
+            )}
+            {statusAction === "blocked"
+              ? "Block Driver Account"
+              : statusAction === "suspended"
+                ? "Suspend Driver Account"
+                : "Reject Driver Profile"}
           </span>
         }
         open={statusModalOpen}
         onOk={handleStatusSubmit}
         onCancel={() => setStatusModalOpen(false)}
-        okText={statusAction === "blocked" ? "Block Driver" : statusAction === "suspended" ? "Suspend Driver" : "Reject Profile"}
+        okText={
+          statusAction === "blocked"
+            ? "Block Driver"
+            : statusAction === "suspended"
+              ? "Suspend Driver"
+              : "Reject Profile"
+        }
         confirmLoading={loadingAction === statusAction}
         okButtonProps={{
           danger: statusAction === "blocked" || statusAction === "rejected",
-          className: statusAction === "suspended" ? "bg-orange-500 hover:bg-orange-600 border-none" : "rounded-xl",
-          style: { borderRadius: '12px' }
+          className:
+            statusAction === "suspended"
+              ? "bg-orange-500 hover:bg-orange-600 border-none"
+              : "rounded-xl",
+          style: { borderRadius: "12px" },
         }}
         cancelButtonProps={{ className: "rounded-xl" }}
         className="premium-modal"
       >
         <div className="py-4">
           <p className="mb-4 text-slate-600 text-sm">
-            You are about to {statusAction === "blocked" ? "permanently block" : statusAction === "suspended" ? "temporarily suspend" : "reject"}{" "}
-            <span className="font-bold text-slate-800">{driver?.full_name}</span>.
-            The driver will be notified immediately.
+            You are about to{" "}
+            {statusAction === "blocked"
+              ? "permanently block"
+              : statusAction === "suspended"
+                ? "temporarily suspend"
+                : "reject"}{" "}
+            <span className="font-bold text-slate-800">{driver?.full_name}</span>. The driver will
+            be notified immediately.
           </p>
           <div className="flex flex-col gap-2">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">

@@ -9,7 +9,7 @@ import {
   DollarOutlined,
   ThunderboltOutlined,
   CheckOutlined,
-  ReloadOutlined
+  ReloadOutlined,
 } from "@ant-design/icons";
 import { useSocket } from "../../hooks/useSocket";
 import { useNavigate } from "react-router-dom";
@@ -26,77 +26,77 @@ interface FeedEvent {
   data?: any;
 }
 
-const eventConfigs: Record<string, { icon: React.ReactNode, color: string, label: string }> = {
+const eventConfigs: Record<string, { icon: React.ReactNode; color: string; label: string }> = {
   NEW_DRIVER: {
     icon: <UserAddOutlined />,
     color: "blue",
-    label: "Onboarding"
+    label: "Onboarding",
   },
   DRIVER_PROFILE_COMPLETED: {
     icon: <ThunderboltOutlined />,
     color: "cyan",
-    label: "Profile"
+    label: "Profile",
   },
   SOS_TRIGGERED: {
     icon: <WarningOutlined />,
     color: "red",
-    label: "SOS ALERT"
+    label: "SOS ALERT",
   },
   SOS_ALERT: {
     icon: <WarningOutlined />,
     color: "red",
-    label: "SOS ALERT"
+    label: "SOS ALERT",
   },
   SOS_LOCATION_UPDATE: {
     icon: <EnvironmentOutlined />,
     color: "orange",
-    label: "SOS Location"
+    label: "SOS Location",
   },
   SOS_RESOLVED: {
     icon: <CheckOutlined />,
     color: "green",
-    label: "SOS Resolved"
+    label: "SOS Resolved",
   },
   TRIP_COMPLETED: {
     icon: <CheckCircleOutlined />,
     color: "green",
-    label: "Trip Finished"
+    label: "Trip Finished",
   },
   HIGH_DEMAND: {
     icon: <ThunderboltOutlined />,
     color: "gold",
-    label: "Market"
+    label: "Market",
   },
   SUBSCRIPTION_ACTIVATED: {
     icon: <DollarOutlined />,
     color: "purple",
-    label: "New Sub"
+    label: "New Sub",
   },
   SUBSCRIPTION_RENEWED: {
     icon: <ReloadOutlined />,
     color: "magenta",
-    label: "Renewal"
+    label: "Renewal",
   },
   TRIP_VERIFICATION_REQUIRED: {
     icon: <WarningOutlined />,
     color: "volcano",
-    label: "Verification"
+    label: "Verification",
   },
   TRIP_VERIFICATION_APPROVED: {
     icon: <CheckCircleOutlined />,
     color: "green",
-    label: "Verification"
+    label: "Verification",
   },
   TRIP_VERIFICATION_REJECTED: {
     icon: <WarningOutlined />,
     color: "red",
-    label: "Verification"
+    label: "Verification",
   },
   DEFAULT: {
     icon: <BellOutlined />,
     color: "gray",
-    label: "System"
-  }
+    label: "System",
+  },
 };
 
 const ActivityFeed: React.FC = () => {
@@ -134,10 +134,15 @@ const ActivityFeed: React.FC = () => {
           <Badge dot status="processing">
             <ThunderboltOutlined className="text-blue-500 text-lg" />
           </Badge>
-          <span className="font-bold text-gray-800 dark:text-gray-100 text-base">Live Operational Feed</span>
+          <span className="font-bold text-gray-800 dark:text-gray-100 text-base">
+            Live Operational Feed
+          </span>
         </div>
         <div className="flex items-center gap-2">
-          <Tag color="blue" className="text-[10px] m-0 rounded-full border-0 font-bold bg-blue-50 text-blue-500 dark:bg-blue-900/30 dark:text-blue-400">
+          <Tag
+            color="blue"
+            className="text-[10px] m-0 rounded-full border-0 font-bold bg-blue-50 text-blue-500 dark:bg-blue-900/30 dark:text-blue-400"
+          >
             {events.length} ACTIVE
           </Tag>
         </div>
@@ -157,11 +162,14 @@ const ActivityFeed: React.FC = () => {
       >
         {events.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full p-8 text-center opacity-40">
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={
-              <Typography.Text className="text-gray-400 dark:text-gray-500 text-xs">
-                Waiting for live events...
-              </Typography.Text>
-            } />
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <Typography.Text className="text-gray-400 dark:text-gray-500 text-xs">
+                  Waiting for live events...
+                </Typography.Text>
+              }
+            />
           </div>
         ) : (
           <div className="divide-y divide-gray-50 dark:divide-slate-700/50">
@@ -185,17 +193,17 @@ const ActivityFeed: React.FC = () => {
                 <div
                   key={item.id}
                   onClick={handleRowClick}
-                  className={`grid grid-cols-12 px-4 py-3 hover:bg-gray-50/80 dark:hover:bg-slate-700/50 transition-all cursor-pointer group ${isUrgent ? 'bg-red-50/40 dark:bg-red-900/20' : ''}`}
+                  className={`grid grid-cols-12 px-4 py-3 hover:bg-gray-50/80 dark:hover:bg-slate-700/50 transition-all cursor-pointer group ${isUrgent ? "bg-red-50/40 dark:bg-red-900/20" : ""}`}
                 >
                   {/* Column 1: Type */}
                   <div className="col-span-3 flex items-center gap-2">
                     <Avatar
                       size="small"
-                      className={`shadow-sm flex-shrink-0 ${isUrgent ? 'animate-pulse' : ''}`}
+                      className={`shadow-sm flex-shrink-0 ${isUrgent ? "animate-pulse" : ""}`}
                       style={{
-                        backgroundColor: isUrgent ? '#ff4d4f' : '#f5f5f5',
-                        color: isUrgent ? '#fff' : config.color,
-                        fontSize: '12px'
+                        backgroundColor: isUrgent ? "#ff4d4f" : "#f5f5f5",
+                        color: isUrgent ? "#fff" : config.color,
+                        fontSize: "12px",
                       }}
                       icon={config.icon}
                     />
@@ -210,7 +218,7 @@ const ActivityFeed: React.FC = () => {
                   {/* Column 2: Message */}
                   <div className="col-span-6 flex flex-col justify-center">
                     <Typography.Text
-                      className={`text-[11px] font-medium block leading-snug truncate ${isUrgent ? 'text-red-700 dark:text-red-400 font-bold' : 'text-gray-700 dark:text-gray-300'}`}
+                      className={`text-[11px] font-medium block leading-snug truncate ${isUrgent ? "text-red-700 dark:text-red-400 font-bold" : "text-gray-700 dark:text-gray-300"}`}
                     >
                       {item.message}
                     </Typography.Text>
@@ -224,9 +232,9 @@ const ActivityFeed: React.FC = () => {
 
                   {/* Column 3: Time */}
                   <div className="col-span-3 flex flex-col items-end justify-center">
-                    <Tooltip title={dayjs(item.timestamp).format('YYYY-MM-DD HH:mm:ss')}>
+                    <Tooltip title={dayjs(item.timestamp).format("YYYY-MM-DD HH:mm:ss")}>
                       <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold whitespace-nowrap">
-                        {dayjs(item.timestamp).format('HH:mm:ss')}
+                        {dayjs(item.timestamp).format("HH:mm:ss")}
                       </span>
                     </Tooltip>
                     <span className="text-[8px] text-gray-400 dark:text-gray-500 font-medium">
@@ -245,7 +253,9 @@ const ActivityFeed: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium italic uppercase tracking-tighter">Live vDrive Stream</span>
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium italic uppercase tracking-tighter">
+              Live vDrive Stream
+            </span>
           </div>
           <Typography.Text className="text-[9px] text-gray-300 dark:text-gray-600 font-medium">
             AUTO-RELOAD ACTIVE

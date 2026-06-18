@@ -72,12 +72,7 @@ const Navbar: React.FC = () => {
         </Link>
       ),
       // icon: <UserOutlined />,
-      icon: (
-        <Avatar
-          className="w-[40px] h-[40px] mx-[10px]"
-          icon={<UserOutlined />}
-        />
-      ),
+      icon: <Avatar className="w-[40px] h-[40px] mx-[10px]" icon={<UserOutlined />} />,
       children: [
         // { key: "3", label: "Profile" },
         { key: "4", label: "Logout", icon: <LogoutOutlined />, danger: true },

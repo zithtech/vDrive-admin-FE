@@ -1,15 +1,5 @@
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
-import {
-  Badge,
-  Button,
-  Card,
-  Input,
-  Segmented,
-  Select,
-  Tag,
-  TimePicker,
-  Tooltip,
-} from "antd";
+import { Badge, Button, Card, Input, Segmented, Select, Tag, TimePicker, Tooltip } from "antd";
 import { useState, useEffect } from "react";
 import { BsClock } from "react-icons/bs";
 import { FaRegStar } from "react-icons/fa";
@@ -76,19 +66,18 @@ const TimeSlotItem = ({
   multiplier: number;
 }) => {
   // Price after hotspot, then all applicable taxes via breakdown
-  const priceAfterHotspot = hotspotEnabled
-    ? slot.price * multiplier + hotspotFare
-    : slot.price;
+  const priceAfterHotspot = hotspotEnabled ? slot.price * multiplier + hotspotFare : slot.price;
 
   const breakdown = useTaxBreakdown(priceAfterHotspot);
   const { hasTax, totalTaxAmount, totalPrice, appliedTaxes } = breakdown;
 
   return (
     <div
-      className={`w-full p-3 sm:p-4 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 items-start sm:items-center justify-start sm:justify-center rounded-md ${hasCollision
-        ? "bg-red-50 border-2 border-red-300"
-        : "bg-[#F8F9FA] border-2 border-transparent"
-        }`}
+      className={`w-full p-3 sm:p-4 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 items-start sm:items-center justify-start sm:justify-center rounded-md ${
+        hasCollision
+          ? "bg-red-50 border-2 border-red-300"
+          : "bg-[#F8F9FA] border-2 border-transparent"
+      }`}
     >
       <div className="flex items-center gap-2 w-full sm:w-auto">
         <span className="font-medium">Slot {index + 1}</span>
@@ -132,9 +121,7 @@ const TimeSlotItem = ({
           <Input
             style={{ width: 110 }}
             value={slot.price}
-            onChange={(e) =>
-              updateTimeSlot(index, { price: Number(e.target.value) })
-            }
+            onChange={(e) => updateTimeSlot(index, { price: Number(e.target.value) })}
             type="number"
             prefix="₹"
           />
@@ -150,10 +137,9 @@ const TimeSlotItem = ({
             </span>
             <Badge
               status="success"
-              count={`${globalPrice > 0
-                ? Math.round(((slot.price - globalPrice) / globalPrice) * 100)
-                : 0
-                }%`}
+              count={`${
+                globalPrice > 0 ? Math.round(((slot.price - globalPrice) / globalPrice) * 100) : 0
+              }%`}
               overflowCount={1000}
               style={{ backgroundColor: "#52c41a" }}
             />
@@ -164,18 +150,30 @@ const TimeSlotItem = ({
             <Tooltip
               title={
                 <div style={{ fontSize: 12 }}>
-                  {appliedTaxes.map(t => (
-                    <div key={t.taxCode}>{t.taxCode} ({t.taxPercentage}%): +₹{t.taxAmount.toFixed(2)}</div>
+                  {appliedTaxes.map((t) => (
+                    <div key={t.taxCode}>
+                      {t.taxCode} ({t.taxPercentage}%): +₹{t.taxAmount.toFixed(2)}
+                    </div>
                   ))}
-                  <div style={{ borderTop: "1px solid rgba(255,255,255,0.3)", marginTop: 4, paddingTop: 4 }}>
+                  <div
+                    style={{
+                      borderTop: "1px solid rgba(255,255,255,0.3)",
+                      marginTop: 4,
+                      paddingTop: 4,
+                    }}
+                  >
                     Total tax: +₹{totalTaxAmount.toFixed(2)}
                   </div>
                 </div>
               }
             >
               <div className="flex items-center gap-1 cursor-help flex-wrap">
-                {appliedTaxes.map(t => (
-                  <Tag key={t.taxCode} color="orange" style={{ fontSize: 11, margin: 0, fontFamily: "monospace" }}>
+                {appliedTaxes.map((t) => (
+                  <Tag
+                    key={t.taxCode}
+                    color="orange"
+                    style={{ fontSize: 11, margin: 0, fontFamily: "monospace" }}
+                  >
                     {t.taxCode}
                   </Tag>
                 ))}
@@ -187,9 +185,7 @@ const TimeSlotItem = ({
           )}
 
           {/* Final price */}
-          <span className="text-green-700 font-bold text-sm">
-            Final: ₹{totalPrice.toFixed(2)}
-          </span>
+          <span className="text-green-700 font-bold text-sm">Final: ₹{totalPrice.toFixed(2)}</span>
         </div>
 
         <Button
@@ -224,7 +220,7 @@ const DriverTimeSlotsAndPricing = ({
 
   const dispatch = useAppDispatch();
   const { hotspots } = useAppSelector((state) => state.hotspot);
-  const activeTaxes = useAppSelector((state) => state.tax.taxes).filter(t => t.is_active);
+  const activeTaxes = useAppSelector((state) => state.tax.taxes).filter((t) => t.is_active);
   const hasTax = activeTaxes.length > 0;
 
   useEffect(() => {
@@ -250,8 +246,7 @@ const DriverTimeSlotsAndPricing = ({
       return (
         ((startTime.isAfter(slotStart) || startTime.isSame(slotStart)) &&
           startTime.isBefore(slotEnd)) ||
-        (endTime.isAfter(slotStart) &&
-          (endTime.isBefore(slotEnd) || endTime.isSame(slotEnd))) ||
+        (endTime.isAfter(slotStart) && (endTime.isBefore(slotEnd) || endTime.isSame(slotEnd))) ||
         ((startTime.isBefore(slotStart) || startTime.isSame(slotStart)) &&
           (endTime.isAfter(slotEnd) || endTime.isSame(slotEnd)))
       );
@@ -290,10 +285,7 @@ const DriverTimeSlotsAndPricing = ({
           ? Math.max(...currentUserTimeSlots.map((t) => t.id)) + 1
           : 1,
       day: "monday" as Day,
-      timeRange: [dayjs("7:00 AM", "h:mm A"), dayjs("9:00 AM", "h:mm A")] as [
-        Dayjs,
-        Dayjs,
-      ],
+      timeRange: [dayjs("7:00 AM", "h:mm A"), dayjs("9:00 AM", "h:mm A")] as [Dayjs, Dayjs],
       price: 500,
     };
     setTimeSlots({
@@ -333,8 +325,12 @@ const DriverTimeSlotsAndPricing = ({
         {/* Active taxes banner */}
         {hasTax && (
           <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-md flex-wrap">
-            {activeTaxes.map(t => (
-              <Tag key={t.tax_code} color="orange" style={{ fontFamily: "monospace", fontWeight: 700, margin: 0 }}>
+            {activeTaxes.map((t) => (
+              <Tag
+                key={t.tax_code}
+                color="orange"
+                style={{ fontFamily: "monospace", fontWeight: 700, margin: 0 }}
+              >
                 {t.tax_code} {t.percentage}%
               </Tag>
             ))}
@@ -393,9 +389,7 @@ const DriverTimeSlotsAndPricing = ({
                 <span>{userTypeDetails[userType].tag}</span>
               </div>
             </Tag>
-            <span className="text-[#535454]">
-              {userTypeDetails[userType].description}
-            </span>
+            <span className="text-[#535454]">{userTypeDetails[userType].description}</span>
           </div>
           <Button icon={<PlusOutlined />} onClick={addTimeSlot}>
             Add Time Slot

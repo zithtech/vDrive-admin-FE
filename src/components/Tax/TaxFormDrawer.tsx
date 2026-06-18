@@ -1,14 +1,5 @@
 import React, { useEffect } from "react";
-import {
-  Drawer,
-  Form,
-  Input,
-  InputNumber,
-  Select,
-  Switch,
-  Button,
-  Typography,
-} from "antd";
+import { Drawer, Form, Input, InputNumber, Select, Switch, Button, Typography } from "antd";
 import {
   // PlusOutlined,
   CheckCircleOutlined,
@@ -90,7 +81,7 @@ const TaxFormDrawer: React.FC<TaxFormDrawerProps> = ({
   const canCreateTax = useHasPermission("taxes", "create");
   const canUpdateTax = useHasPermission("taxes", "update");
   const { role } = useAppSelector((state) => state.auth);
-  const isSuperAdmin = role === 'super_admin';
+  const isSuperAdmin = role === "super_admin";
   const isAllowed = isSuperAdmin || (initialValues ? canUpdateTax : canCreateTax);
 
   const [form] = Form.useForm<TaxPayload>();
@@ -142,7 +133,7 @@ const TaxFormDrawer: React.FC<TaxFormDrawerProps> = ({
       open={visible}
       closable={false}
       styles={{
-        header: { display: 'none' },
+        header: { display: "none" },
         body: { padding: 0, background: "#f8fafc" },
         footer: { borderTop: "1px solid #f1f5f9", padding: "16px 24px", background: "#fff" },
       }}
@@ -181,7 +172,11 @@ const TaxFormDrawer: React.FC<TaxFormDrawerProps> = ({
             </div>
             <div>
               <Title level={3} className="!m-0 !mb-1 font-extrabold text-gray-800 tracking-tight">
-                {initialValues ? (isAllowed ? "Modify Tax Rule" : "View Tax Rule") : "Create Tax Rule"}
+                {initialValues
+                  ? isAllowed
+                    ? "Modify Tax Rule"
+                    : "View Tax Rule"
+                  : "Create Tax Rule"}
               </Title>
               <Text className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">
                 Statutory Configuration & Slab Management
@@ -210,13 +205,19 @@ const TaxFormDrawer: React.FC<TaxFormDrawerProps> = ({
             <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500 font-black text-xs">
               01
             </div>
-            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-tight">Core Configuration</span>
+            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-tight">
+              Core Configuration
+            </span>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <Form.Item
               name="indian_tax"
-              label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Indian Tax Type</span>}
+              label={
+                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                  Indian Tax Type
+                </span>
+              }
               rules={[{ required: true, message: "Required" }]}
               className="m-0"
             >
@@ -234,7 +235,11 @@ const TaxFormDrawer: React.FC<TaxFormDrawerProps> = ({
 
             <Form.Item
               name="percentage"
-              label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Tax Percentage</span>}
+              label={
+                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                  Tax Percentage
+                </span>
+              }
               rules={[
                 { required: true, message: "Required" },
                 { type: "number", min: 0.01, max: 100, message: "0.01 - 100" },
@@ -267,20 +272,32 @@ const TaxFormDrawer: React.FC<TaxFormDrawerProps> = ({
                   <ThunderboltOutlined className="text-white text-lg animate-pulse" />
                 </div>
                 <div>
-                  <span className="text-[8px] font-black text-white/50 uppercase tracking-widest block mb-0.5">Identity</span>
-                  <h4 className="text-white font-black text-sm tracking-tight leading-none">{previewName}</h4>
+                  <span className="text-[8px] font-black text-white/50 uppercase tracking-widest block mb-0.5">
+                    Identity
+                  </span>
+                  <h4 className="text-white font-black text-sm tracking-tight leading-none">
+                    {previewName}
+                  </h4>
                 </div>
               </div>
 
               <div className="flex items-center gap-4">
                 <div className="flex flex-col items-end">
-                  <span className="text-[8px] font-black text-white/50 uppercase tracking-widest mb-1">System Code</span>
-                  <code className="bg-white/10 text-white px-2 py-0.5 rounded-lg text-[10px] font-bold border border-white/10 backdrop-blur-sm">{previewCode}</code>
+                  <span className="text-[8px] font-black text-white/50 uppercase tracking-widest mb-1">
+                    System Code
+                  </span>
+                  <code className="bg-white/10 text-white px-2 py-0.5 rounded-lg text-[10px] font-bold border border-white/10 backdrop-blur-sm">
+                    {previewCode}
+                  </code>
                 </div>
                 {previewType && (
                   <div className="flex flex-col items-end border-l border-white/10 pl-4">
-                    <span className="text-[8px] font-black text-white/50 uppercase tracking-widest mb-1">Class</span>
-                    <span className="text-white font-black text-[10px] uppercase tracking-widest">{previewType.split('_')[0]}</span>
+                    <span className="text-[8px] font-black text-white/50 uppercase tracking-widest mb-1">
+                      Class
+                    </span>
+                    <span className="text-white font-black text-[10px] uppercase tracking-widest">
+                      {previewType.split("_")[0]}
+                    </span>
                   </div>
                 )}
               </div>
@@ -293,13 +310,19 @@ const TaxFormDrawer: React.FC<TaxFormDrawerProps> = ({
             <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500 font-black text-xs">
               02
             </div>
-            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-tight">Ledger Details</span>
+            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-tight">
+              Ledger Details
+            </span>
           </div>
 
           <div className="grid grid-cols-3 gap-4 mb-1">
             <Form.Item
               name="tax_name"
-              label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Formal Name</span>}
+              label={
+                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                  Formal Name
+                </span>
+              }
               rules={[{ required: true }]}
               className="m-0"
             >
@@ -313,7 +336,11 @@ const TaxFormDrawer: React.FC<TaxFormDrawerProps> = ({
 
             <Form.Item
               name="tax_code"
-              label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Unique Code</span>}
+              label={
+                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                  Unique Code
+                </span>
+              }
               rules={[{ required: true }]}
               className="m-0"
             >
@@ -327,16 +354,36 @@ const TaxFormDrawer: React.FC<TaxFormDrawerProps> = ({
 
             <Form.Item
               name="tax_type"
-              label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Tax Slab</span>}
+              label={
+                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                  Tax Slab
+                </span>
+              }
               rules={[{ required: true }]}
               className="m-0"
             >
-              <Select options={TAX_TYPE_OPTIONS} size="large" disabled className="!bg-gray-50 premium-select rounded-2xl" />
+              <Select
+                options={TAX_TYPE_OPTIONS}
+                size="large"
+                disabled
+                className="!bg-gray-50 premium-select rounded-2xl"
+              />
             </Form.Item>
           </div>
 
-          <Form.Item name="description" label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Context & Notes</span>}>
-            <TextArea rows={3} placeholder="Detail the legal context..." className="rounded-2xl !h-25" />
+          <Form.Item
+            name="description"
+            label={
+              <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                Context & Notes
+              </span>
+            }
+          >
+            <TextArea
+              rows={3}
+              placeholder="Detail the legal context..."
+              className="rounded-2xl !h-25"
+            />
           </Form.Item>
 
           <div className="grid grid-cols-2 gap-4 mt-2">

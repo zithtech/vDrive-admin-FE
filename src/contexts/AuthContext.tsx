@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { createContext, useContext, useEffect, useCallback, useMemo } from "react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
   loginAsync,
@@ -27,12 +21,11 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const dispatch = useAppDispatch();
-  const { isAuthenticated, loading, error, role, currentUser } =
-    useAppSelector((state) => state.auth);
+  const { isAuthenticated, loading, error, role, currentUser } = useAppSelector(
+    (state) => state.auth,
+  );
 
   useEffect(() => {
     dispatch(checkAuthStatus());
@@ -58,7 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     async (credentials: Login) => {
       await dispatch(loginAsync(credentials)).unwrap();
     },
-    [dispatch]
+    [dispatch],
   );
 
   const logout = useCallback(async () => {
@@ -75,12 +68,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       login,
       logout,
     }),
-    [isAuthenticated, loading, error, role, currentUser, login, logout]
+    [isAuthenticated, loading, error, role, currentUser, login, logout],
   );
 
-  return (
-    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

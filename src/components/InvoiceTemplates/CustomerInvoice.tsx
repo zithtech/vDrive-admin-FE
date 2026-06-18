@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  IoLocationOutline,
-  IoTimerOutline,
-  IoPersonOutline,
-  IoCarOutline,
-} from "react-icons/io5";
+import { IoLocationOutline, IoTimerOutline, IoPersonOutline, IoCarOutline } from "react-icons/io5";
 import type { TripDetailsType } from "../../store/slices/tripSlice";
 
 // type TripInvoice = {
@@ -47,9 +42,7 @@ const CustomerInvoice: React.FC<Props> = ({ isOpen, onClose, trip }) => {
 
         {/* Header */}
         <h1 className="text-2xl font-bold text-center mb-1">Ride Receipt</h1>
-        <p className="text-gray-500 text-center text-sm mb-6">
-          Thank you for riding with VDrive
-        </p>
+        <p className="text-gray-500 text-center text-sm mb-6">Thank you for riding with VDrive</p>
 
         {/* Route */}
         <div className="bg-gray-50 p-4 rounded-xl mb-5">

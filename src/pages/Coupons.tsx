@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Button, Modal, notification, Tabs, Segmented } from "antd";
 import {
-  PlusOutlined, ExclamationCircleOutlined, TagOutlined, GiftOutlined,
-  // HistoryOutlined 
+  PlusOutlined,
+  ExclamationCircleOutlined,
+  TagOutlined,
+  GiftOutlined,
+  // HistoryOutlined
 } from "@ant-design/icons";
 import TitleBar from "../components/TitleBarCommon/TitleBar";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
@@ -41,7 +44,7 @@ const CouponsPage: React.FC = () => {
   const { promos } = useAppSelector((state) => state.promo);
   const { configs, logs, isLoading: referralsLoading } = useAppSelector((state) => state.referral);
   const { role } = useAppSelector((state) => state.auth);
-  const isSuperAdmin = role === 'super_admin';
+  const isSuperAdmin = role === "super_admin";
 
   const hasCouponsRead = useHasPermission("coupons", "read");
   const hasPromosRead = useHasPermission("promos", "read");
@@ -94,7 +97,14 @@ const CouponsPage: React.FC = () => {
         setMainTab("CUSTOMER");
       }
     }
-  }, [subTab, isSuperAdmin, hasCouponsRead, hasPromosRead, hasUserReferralsRead, hasDriverReferralsRead]);
+  }, [
+    subTab,
+    isSuperAdmin,
+    hasCouponsRead,
+    hasPromosRead,
+    hasUserReferralsRead,
+    hasDriverReferralsRead,
+  ]);
 
   // Conditional data fetching
   useEffect(() => {
@@ -107,12 +117,24 @@ const CouponsPage: React.FC = () => {
     if (isSuperAdmin || hasUserReferralsRead || hasDriverReferralsRead) {
       dispatch(fetchReferralConfigs());
     }
-  }, [dispatch, isSuperAdmin, hasCouponsRead, hasPromosRead, hasUserReferralsRead, hasDriverReferralsRead]);
+  }, [
+    dispatch,
+    isSuperAdmin,
+    hasCouponsRead,
+    hasPromosRead,
+    hasUserReferralsRead,
+    hasDriverReferralsRead,
+  ]);
 
   // Dynamically resolve module and actions based on selection
-  const currentModule = subTab === "COUPONS"
-    ? (mainTab === "CUSTOMER" ? "coupons" : "promos")
-    : (mainTab === "CUSTOMER" ? "user_referrals" : "driver_referrals");
+  const currentModule =
+    subTab === "COUPONS"
+      ? mainTab === "CUSTOMER"
+        ? "coupons"
+        : "promos"
+      : mainTab === "CUSTOMER"
+        ? "user_referrals"
+        : "driver_referrals";
 
   const canCreate = useHasPermission(currentModule, "create");
   const canUpdate = useHasPermission(currentModule, "update");
@@ -125,7 +147,9 @@ const CouponsPage: React.FC = () => {
   const segmentedOptions = [
     (isSuperAdmin || hasCouponsRead || hasPromosRead) && {
       label: (
-        <div className={`px-5 py-0.5 flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${subTab === "COUPONS" ? "text-blue-600" : "text-black"}`}>
+        <div
+          className={`px-5 py-0.5 flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${subTab === "COUPONS" ? "text-blue-600" : "text-black"}`}
+        >
           <TagOutlined /> Coupons
         </div>
       ),
@@ -133,7 +157,9 @@ const CouponsPage: React.FC = () => {
     },
     (isSuperAdmin || hasUserReferralsRead || hasDriverReferralsRead) && {
       label: (
-        <div className={`px-5 py-0.5 flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${subTab === "REFERRALS" ? "text-amber-600" : "text-black"}`}>
+        <div
+          className={`px-5 py-0.5 flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${subTab === "REFERRALS" ? "text-amber-600" : "text-black"}`}
+        >
           <GiftOutlined /> Referrals
         </div>
       ),
@@ -141,17 +167,27 @@ const CouponsPage: React.FC = () => {
     },
   ].filter(Boolean) as any[];
 
-  const customerTabAllowed = subTab === "COUPONS"
-    ? (isSuperAdmin || hasCouponsRead)
-    : (isSuperAdmin || hasUserReferralsRead);
+  const customerTabAllowed =
+    subTab === "COUPONS" ? isSuperAdmin || hasCouponsRead : isSuperAdmin || hasUserReferralsRead;
 
-  const driverTabAllowed = subTab === "COUPONS"
-    ? (isSuperAdmin || hasPromosRead)
-    : (isSuperAdmin || hasDriverReferralsRead);
+  const driverTabAllowed =
+    subTab === "COUPONS" ? isSuperAdmin || hasPromosRead : isSuperAdmin || hasDriverReferralsRead;
 
   const tabItems = [
-    customerTabAllowed && { key: "CUSTOMER", label: <span className="px-4 font-black uppercase tracking-widest text-[11px]">Customers Only</span> },
-    driverTabAllowed && { key: "DRIVER", label: <span className="px-4 font-black uppercase tracking-widest text-[11px]">Drivers Only</span> },
+    customerTabAllowed && {
+      key: "CUSTOMER",
+      label: (
+        <span className="px-4 font-black uppercase tracking-widest text-[11px]">
+          Customers Only
+        </span>
+      ),
+    },
+    driverTabAllowed && {
+      key: "DRIVER",
+      label: (
+        <span className="px-4 font-black uppercase tracking-widest text-[11px]">Drivers Only</span>
+      ),
+    },
   ].filter(Boolean) as any[];
 
   useEffect(() => {
@@ -190,9 +226,10 @@ const CouponsPage: React.FC = () => {
     confirm({
       title: mainTab === "CUSTOMER" ? "Delete Coupon?" : "Delete Promotion?",
       icon: <ExclamationCircleOutlined />,
-      content: mainTab === "CUSTOMER"
-        ? "This action cannot be undone."
-        : `Are you sure you want to delete this promotion? This will remove all history and cannot be undone.`,
+      content:
+        mainTab === "CUSTOMER"
+          ? "This action cannot be undone."
+          : `Are you sure you want to delete this promotion? This will remove all history and cannot be undone.`,
       okText: mainTab === "CUSTOMER" ? "Yes, Delete" : "Delete",
       okType: "danger",
       onOk: async () => {
@@ -250,12 +287,14 @@ const CouponsPage: React.FC = () => {
       }
     } else {
       if (editingCoupon) {
-        dispatch(updatePromo({ id: Number(editingCoupon.id), promoData: values })).then((res: any) => {
-          if (!res.hasOwnProperty("error")) {
-            notification.success({ message: "Promo Updated" });
-            setCouponDrawerVisible(false);
-          }
-        });
+        dispatch(updatePromo({ id: Number(editingCoupon.id), promoData: values })).then(
+          (res: any) => {
+            if (!res.hasOwnProperty("error")) {
+              notification.success({ message: "Promo Updated" });
+              setCouponDrawerVisible(false);
+            }
+          },
+        );
       } else {
         dispatch(addPromo(values)).then((res: any) => {
           if (!res.hasOwnProperty("error")) {
@@ -313,7 +352,7 @@ const CouponsPage: React.FC = () => {
   };
 
   const filteredCoupons = mainTab === "CUSTOMER" ? coupons : (promos as any);
-  const filteredReferrals = configs.filter(r => r.user_type === mainTab);
+  const filteredReferrals = configs.filter((r) => r.user_type === mainTab);
 
   return (
     <TitleBar
@@ -335,7 +374,9 @@ const CouponsPage: React.FC = () => {
             className="rounded-xl h-12 px-6 font-bold border-none !bg-gradient-to-r !from-indigo-600 !to-blue-500 hover:scale-[1.02] transition-transform flex items-center"
           >
             {subTab === "COUPONS"
-              ? (mainTab === "CUSTOMER" ? "Create Coupon" : "Create New Offer")
+              ? mainTab === "CUSTOMER"
+                ? "Create Coupon"
+                : "Create New Offer"
               : "Create Referral Rule"}
           </Button>
         )
@@ -372,10 +413,16 @@ const CouponsPage: React.FC = () => {
 
           <div className="flex items-center gap-2">
             <div className="text-right hidden sm:block">
-            <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black leading-none mb-1">Active Ledger</p>
-            <p className="text-[11px] text-gray-500 font-bold">
-              {subTab === 'COUPONS' ? 'Historical Promo Records' : subTab === 'REFERRALS' ? 'Loyalty Incentive Rules' : 'Real-time referral activity'}
-            </p>
+              <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black leading-none mb-1">
+                Active Ledger
+              </p>
+              <p className="text-[11px] text-gray-500 font-bold">
+                {subTab === "COUPONS"
+                  ? "Historical Promo Records"
+                  : subTab === "REFERRALS"
+                    ? "Loyalty Incentive Rules"
+                    : "Real-time referral activity"}
+              </p>
             </div>
           </div>
         </div>
@@ -406,11 +453,7 @@ const CouponsPage: React.FC = () => {
               canDelete={hasDeleteAccess}
             />
           ) : (
-            <ReferralLogsTable
-              data={logs}
-              loading={referralsLoading}
-              type={mainTab}
-            />
+            <ReferralLogsTable data={logs} loading={referralsLoading} type={mainTab} />
           )}
         </div>
       </div>

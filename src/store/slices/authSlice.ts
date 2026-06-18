@@ -88,11 +88,9 @@ export const loginAsync = createAsyncThunk(
 
       return { accessToken: token };
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || error.message || "Login failed"
-      );
+      return rejectWithValue(error.response?.data?.message || error.message || "Login failed");
     }
-  }
+  },
 );
 
 export const fetchCurrentUser = createAsyncThunk(
@@ -102,33 +100,26 @@ export const fetchCurrentUser = createAsyncThunk(
       const response = await axiosIns.get("/api/auth/me");
       return response.data.data as CurrentUser;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch user profile"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch user profile");
     }
-  }
+  },
 );
 
-export const logoutAsync = createAsyncThunk(
-  "auth/logout",
-  async (_, { rejectWithValue }) => {
-    try {
-      const { data } = await axiosIns.post("/api/auth/signout");
+export const logoutAsync = createAsyncThunk("auth/logout", async (_, { rejectWithValue }) => {
+  try {
+    const { data } = await axiosIns.post("/api/auth/signout");
 
-      if (data?.success) {
-        localStorage.removeItem("accessToken");
-        return;
-      }
-
-      throw new Error("Logout failed");
-    } catch (error: any) {
+    if (data?.success) {
       localStorage.removeItem("accessToken");
-      return rejectWithValue(
-        error.response?.data?.message || error.message || "Logout failed"
-      );
+      return;
     }
+
+    throw new Error("Logout failed");
+  } catch (error: any) {
+    localStorage.removeItem("accessToken");
+    return rejectWithValue(error.response?.data?.message || error.message || "Logout failed");
   }
-);
+});
 
 const authSlice = createSlice({
   name: "auth",
@@ -183,7 +174,8 @@ const authSlice = createSlice({
       .addCase(fetchCurrentUser.fulfilled, (state, action: PayloadAction<CurrentUser>) => {
         const user = { ...action.payload };
         if (!user.permissions) {
-          user.permissions = user.role === 'super_admin' ? DEFAULT_PERMISSIONS : RESTRICTED_ADMIN_PERMISSIONS;
+          user.permissions =
+            user.role === "super_admin" ? DEFAULT_PERMISSIONS : RESTRICTED_ADMIN_PERMISSIONS;
         }
         state.currentUser = user;
         state.role = user.role;
@@ -217,10 +209,6 @@ const authSlice = createSlice({
   },
 });
 
-export const {
-  setAuthenticated,
-  setAccessToken,
-  clearCountryError,
-  checkAuthStatus,
-} = authSlice.actions;
+export const { setAuthenticated, setAccessToken, clearCountryError, checkAuthStatus } =
+  authSlice.actions;
 export default authSlice.reducer;

@@ -1,12 +1,12 @@
-import React from 'react';
-import { useHasPermission } from '../hooks/usePermission';
+import React from "react";
+import { useHasPermission } from "../hooks/usePermission";
 
 interface PermissionGuardProps {
   module: string;
-  action: 'create' | 'read' | 'update' | 'delete';
+  action: "create" | "read" | "update" | "delete";
   children: React.ReactNode;
   fallback?: React.ReactNode;
-  behavior?: 'hide' | 'disable';
+  behavior?: "hide" | "disable";
 }
 
 export const PermissionGuard: React.FC<PermissionGuardProps> = ({
@@ -14,7 +14,7 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   action,
   children,
   fallback = null,
-  behavior = 'hide'
+  behavior = "hide",
 }) => {
   const isAllowed = useHasPermission(module, action);
 
@@ -22,11 +22,11 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
     return <>{children}</>;
   }
 
-  if (behavior === 'disable' && React.isValidElement(children)) {
+  if (behavior === "disable" && React.isValidElement(children)) {
     return React.cloneElement(children as React.ReactElement<any>, {
       disabled: true,
       title: "Action restricted. Insufficient privileges.",
-      className: `${children.props.className || ''} opacity-40 cursor-not-allowed pointer-events-none`
+      className: `${children.props.className || ""} opacity-40 cursor-not-allowed pointer-events-none`,
     });
   }
 

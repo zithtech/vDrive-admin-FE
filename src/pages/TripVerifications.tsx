@@ -14,7 +14,12 @@ import {
   Row,
   Col,
 } from "antd";
-import { CheckOutlined, CloseOutlined, EyeOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
+import {
+  CheckOutlined,
+  CloseOutlined,
+  EyeOutlined,
+  SafetyCertificateOutlined,
+} from "@ant-design/icons";
 import axiosIns from "../api/axios";
 import dayjs from "dayjs";
 
@@ -100,27 +105,30 @@ const TripVerifications: React.FC = () => {
     selfie_status: "approved" | "rejected" | undefined,
     car_status: "approved" | "rejected" | undefined,
     selfie_remarks?: string,
-    car_remarks?: string
+    car_remarks?: string,
   ) => {
     if (!selectedVerification) return;
-    
+
     try {
-      const res = await axiosIns.put(`/api/trip-verification/verify-granular/${selectedVerification.id}`, {
-        selfie_status,
-        car_image_status: car_status,
-        selfie_remarks,
-        car_image_remarks: car_remarks,
-      });
+      const res = await axiosIns.put(
+        `/api/trip-verification/verify-granular/${selectedVerification.id}`,
+        {
+          selfie_status,
+          car_image_status: car_status,
+          selfie_remarks,
+          car_image_remarks: car_remarks,
+        },
+      );
 
       if (res.data?.success) {
         message.success("Verification status updated");
         const updatedVerification = res.data.data;
-        
+
         if (updatedVerification.status === "pending") {
           // Keep modal open and update the local state to reflect the partial approval
           setSelectedVerification({
             ...selectedVerification,
-            ...updatedVerification
+            ...updatedVerification,
           });
           setRejectingImage(null);
           form.resetFields();
@@ -142,10 +150,13 @@ const TripVerifications: React.FC = () => {
     if (!selectedVerification) return;
 
     try {
-      const res = await axiosIns.put(`/api/trip-verification/verify-granular/${selectedVerification.id}`, {
-        selfie_status: "approved",
-        car_image_status: "approved",
-      });
+      const res = await axiosIns.put(
+        `/api/trip-verification/verify-granular/${selectedVerification.id}`,
+        {
+          selfie_status: "approved",
+          car_image_status: "approved",
+        },
+      );
 
       if (res.data?.success) {
         message.success("✅ Both selfie & vehicle approved — trip starting!");
@@ -172,7 +183,9 @@ const TripVerifications: React.FC = () => {
       title: "Date",
       dataIndex: "created_at",
       key: "created_at",
-      render: (text: string) => <span className="dark:text-slate-300">{dayjs(text).format("MMM D, YYYY HH:mm")}</span>,
+      render: (text: string) => (
+        <span className="dark:text-slate-300">{dayjs(text).format("MMM D, YYYY HH:mm")}</span>
+      ),
     },
     {
       title: "Driver",
@@ -188,7 +201,11 @@ const TripVerifications: React.FC = () => {
       title: "Trip ID",
       dataIndex: "trip_id",
       key: "trip_id",
-      render: (id: string) => <Text copyable className="dark:text-slate-300 dark:[&_.anticon]:text-slate-400">{id}</Text>,
+      render: (id: string) => (
+        <Text copyable className="dark:text-slate-300 dark:[&_.anticon]:text-slate-400">
+          {id}
+        </Text>
+      ),
     },
     {
       title: "Attempt",
@@ -203,17 +220,10 @@ const TripVerifications: React.FC = () => {
       key: "action",
       render: (_: any, record: TripVerification) => (
         <Space>
-          <Button
-            type="primary"
-            icon={<EyeOutlined />}
-            onClick={() => openComparisonModal(record)}
-          >
+          <Button type="primary" icon={<EyeOutlined />} onClick={() => openComparisonModal(record)}>
             Review
           </Button>
-          <Button
-            icon={<EyeOutlined />}
-            onClick={() => openHistoryModal(record)}
-          >
+          <Button icon={<EyeOutlined />} onClick={() => openHistoryModal(record)}>
             History
           </Button>
         </Space>
@@ -225,15 +235,22 @@ const TripVerifications: React.FC = () => {
     <div className="p-6 h-full flex flex-col bg-slate-50 dark:bg-[#0b0f19]">
       <div className="mb-6 flex justify-between items-center">
         <div>
-          <Title level={3} className="m-0 dark:text-slate-100">Trip Verifications</Title>
-          <Text type="secondary" className="dark:text-slate-400">Review driver selfies and car images before ride start</Text>
+          <Title level={3} className="m-0 dark:text-slate-100">
+            Trip Verifications
+          </Title>
+          <Text type="secondary" className="dark:text-slate-400">
+            Review driver selfies and car images before ride start
+          </Text>
         </div>
         <Button onClick={fetchPendingVerifications} loading={loading}>
           Refresh
         </Button>
       </div>
 
-      <Card className="flex-1 shadow-sm overflow-hidden dark:bg-slate-800 dark:border-slate-700" bodyStyle={{ padding: 0 }}>
+      <Card
+        className="flex-1 shadow-sm overflow-hidden dark:bg-slate-800 dark:border-slate-700"
+        bodyStyle={{ padding: 0 }}
+      >
         <Table
           className="premium-table"
           columns={columns}
@@ -262,38 +279,50 @@ const TripVerifications: React.FC = () => {
             <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700">
               <Row gutter={16}>
                 <Col span={12} className="dark:text-slate-300">
-                  <Text strong className="dark:text-slate-100">Driver:</Text> {selectedVerification.driver?.name} ({selectedVerification.driver?.phone})
+                  <Text strong className="dark:text-slate-100">
+                    Driver:
+                  </Text>{" "}
+                  {selectedVerification.driver?.name} ({selectedVerification.driver?.phone})
                 </Col>
                 <Col span={12} className="dark:text-slate-300">
-                  <Text strong className="dark:text-slate-100">Trip ID:</Text> {selectedVerification.trip_id}
+                  <Text strong className="dark:text-slate-100">
+                    Trip ID:
+                  </Text>{" "}
+                  {selectedVerification.trip_id}
                 </Col>
               </Row>
             </div>
 
             {/* Approve All Banner — only when both are still pending */}
-            {selectedVerification.selfie_status === "pending" && selectedVerification.car_image_status === "pending" && (
-              <div className="mb-4 p-4 rounded-xl border-2 border-green-200 bg-green-50" style={{ textAlign: 'center' }}>
-                <Button
-                  type="primary"
-                  size="large"
-                  icon={<SafetyCertificateOutlined />}
-                  onClick={handleApproveAll}
-                  style={{
-                    background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-                    border: 'none',
-                    borderRadius: 12,
-                    height: 48,
-                    fontSize: 16,
-                    fontWeight: 600,
-                    paddingInline: 40,
-                    boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
-                  }}
+            {selectedVerification.selfie_status === "pending" &&
+              selectedVerification.car_image_status === "pending" && (
+                <div
+                  className="mb-4 p-4 rounded-xl border-2 border-green-200 bg-green-50"
+                  style={{ textAlign: "center" }}
                 >
-                  Approve Both &amp; Start Trip
-                </Button>
-                <div style={{ marginTop: 8, color: '#6B7280', fontSize: 12 }}>Or review individually below</div>
-              </div>
-            )}
+                  <Button
+                    type="primary"
+                    size="large"
+                    icon={<SafetyCertificateOutlined />}
+                    onClick={handleApproveAll}
+                    style={{
+                      background: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
+                      border: "none",
+                      borderRadius: 12,
+                      height: 48,
+                      fontSize: 16,
+                      fontWeight: 600,
+                      paddingInline: 40,
+                      boxShadow: "0 4px 14px rgba(16, 185, 129, 0.35)",
+                    }}
+                  >
+                    Approve Both &amp; Start Trip
+                  </Button>
+                  <div style={{ marginTop: 8, color: "#6B7280", fontSize: 12 }}>
+                    Or review individually below
+                  </div>
+                </div>
+              )}
 
             <Row gutter={24}>
               {/* Identity Verification (Selfie) */}
@@ -301,7 +330,9 @@ const TripVerifications: React.FC = () => {
                 <Card title="Identity Verification" size="small" className="h-full">
                   <div className="flex gap-4 mb-4">
                     <div className="flex-1 flex flex-col items-center">
-                      <Text type="secondary" className="mb-2 text-xs">Profile Photo</Text>
+                      <Text type="secondary" className="mb-2 text-xs">
+                        Profile Photo
+                      </Text>
                       {selectedVerification.profileSelfie ? (
                         <Image
                           src={selectedVerification.profileSelfie}
@@ -317,7 +348,9 @@ const TripVerifications: React.FC = () => {
                       )}
                     </div>
                     <div className="flex-1 flex flex-col items-center">
-                      <Text type="secondary" className="mb-2 text-xs">Live Trip Selfie</Text>
+                      <Text type="secondary" className="mb-2 text-xs">
+                        Live Trip Selfie
+                      </Text>
                       <Image
                         src={selectedVerification.selfie_url}
                         alt="Live Selfie"
@@ -328,7 +361,8 @@ const TripVerifications: React.FC = () => {
                     </div>
                   </div>
 
-                  {selectedVerification.selfie_status === "pending" && rejectingImage !== "selfie" ? (
+                  {selectedVerification.selfie_status === "pending" &&
+                  rejectingImage !== "selfie" ? (
                     <div className="flex gap-2">
                       <Button
                         type="primary"
@@ -347,23 +381,32 @@ const TripVerifications: React.FC = () => {
                         Reject
                       </Button>
                     </div>
-                  ) : selectedVerification.selfie_status === "pending" && rejectingImage === "selfie" ? (
+                  ) : selectedVerification.selfie_status === "pending" &&
+                    rejectingImage === "selfie" ? (
                     <Form form={form} onFinish={onRejectSubmit} layout="vertical">
                       <Form.Item
                         name="reason"
                         label="Rejection Reason"
                         rules={[{ required: true, message: "Reason is required" }]}
                       >
-                        <TextArea rows={2} placeholder="E.g., Face is blurry, not matching profile" />
+                        <TextArea
+                          rows={2}
+                          placeholder="E.g., Face is blurry, not matching profile"
+                        />
                       </Form.Item>
                       <Space>
-                        <Button danger type="primary" htmlType="submit">Confirm Reject</Button>
+                        <Button danger type="primary" htmlType="submit">
+                          Confirm Reject
+                        </Button>
                         <Button onClick={() => setRejectingImage(null)}>Cancel</Button>
                       </Space>
                     </Form>
                   ) : (
                     <div className="text-center">
-                      <Tag color={selectedVerification.selfie_status === "approved" ? "green" : "red"} className="w-full text-center py-1">
+                      <Tag
+                        color={selectedVerification.selfie_status === "approved" ? "green" : "red"}
+                        className="w-full text-center py-1"
+                      >
                         Selfie {selectedVerification.selfie_status.toUpperCase()}
                       </Tag>
                     </div>
@@ -375,18 +418,23 @@ const TripVerifications: React.FC = () => {
               <Col span={12}>
                 <Card title="Vehicle Verification" size="small" className="h-full">
                   <div className="flex flex-col items-center mb-4 w-full">
-                    <Text type="secondary" className="mb-2 text-xs">Live Car Images (4 Sides)</Text>
-                    {selectedVerification.car_images && selectedVerification.car_images.length > 0 ? (
+                    <Text type="secondary" className="mb-2 text-xs">
+                      Live Car Images (4 Sides)
+                    </Text>
+                    {selectedVerification.car_images &&
+                    selectedVerification.car_images.length > 0 ? (
                       <div className="grid grid-cols-2 gap-2 w-full">
                         {selectedVerification.car_images.map((img: string, idx: number) => (
                           <div key={idx} className="flex flex-col items-center w-full">
-                            <Text type="secondary" className="mb-1 text-[10px] uppercase">View {idx + 1}</Text>
+                            <Text type="secondary" className="mb-1 text-[10px] uppercase">
+                              View {idx + 1}
+                            </Text>
                             <Image
                               src={img}
                               alt={`Car Image ${idx + 1}`}
                               className="rounded-lg object-cover w-full"
                               height={100}
-                              style={{ width: '100%', objectFit: 'cover' }}
+                              style={{ width: "100%", objectFit: "cover" }}
                             />
                           </div>
                         ))}
@@ -402,7 +450,8 @@ const TripVerifications: React.FC = () => {
                     )}
                   </div>
 
-                  {selectedVerification.car_image_status === "pending" && rejectingImage !== "car" ? (
+                  {selectedVerification.car_image_status === "pending" &&
+                  rejectingImage !== "car" ? (
                     <div className="flex gap-2 mt-auto">
                       <Button
                         type="primary"
@@ -421,7 +470,8 @@ const TripVerifications: React.FC = () => {
                         Reject
                       </Button>
                     </div>
-                  ) : selectedVerification.car_image_status === "pending" && rejectingImage === "car" ? (
+                  ) : selectedVerification.car_image_status === "pending" &&
+                    rejectingImage === "car" ? (
                     <Form form={form} onFinish={onRejectSubmit} layout="vertical">
                       <Form.Item
                         name="reason"
@@ -431,13 +481,20 @@ const TripVerifications: React.FC = () => {
                         <TextArea rows={2} placeholder="E.g., License plate not visible" />
                       </Form.Item>
                       <Space>
-                        <Button danger type="primary" htmlType="submit">Confirm Reject</Button>
+                        <Button danger type="primary" htmlType="submit">
+                          Confirm Reject
+                        </Button>
                         <Button onClick={() => setRejectingImage(null)}>Cancel</Button>
                       </Space>
                     </Form>
                   ) : (
                     <div className="text-center mt-auto">
-                      <Tag color={selectedVerification.car_image_status === "approved" ? "green" : "red"} className="w-full text-center py-1">
+                      <Tag
+                        color={
+                          selectedVerification.car_image_status === "approved" ? "green" : "red"
+                        }
+                        className="w-full text-center py-1"
+                      >
                         Car Image {selectedVerification.car_image_status.toUpperCase()}
                       </Tag>
                     </div>
@@ -459,7 +516,7 @@ const TripVerifications: React.FC = () => {
         footer={[
           <Button key="close" onClick={() => setHistoryModalVisible(false)}>
             Close
-          </Button>
+          </Button>,
         ]}
       >
         <Table
@@ -473,19 +530,23 @@ const TripVerifications: React.FC = () => {
               dataIndex: "created_at",
               key: "created_at",
               width: 180,
-              render: (text: string) => text ? dayjs(text).format("MMM D, YYYY HH:mm:ss") : "—",
+              render: (text: string) => (text ? dayjs(text).format("MMM D, YYYY HH:mm:ss") : "—"),
             },
             {
               title: "Event",
               dataIndex: "event_type",
               key: "event_type",
               render: (type: string) => (
-                <Tag color={
-                  type === 'initial_submission' ? 'blue' : 
-                  type === 'reupload' ? 'orange' : 
-                  'purple'
-                }>
-                  {type.replace('_', ' ').toUpperCase()}
+                <Tag
+                  color={
+                    type === "initial_submission"
+                      ? "blue"
+                      : type === "reupload"
+                        ? "orange"
+                        : "purple"
+                  }
+                >
+                  {type.replace("_", " ").toUpperCase()}
                 </Tag>
               ),
             },
@@ -494,15 +555,31 @@ const TripVerifications: React.FC = () => {
               key: "images",
               render: (_: any, record: any) => (
                 <Space>
-                  <Image src={record.selfie_url} width={50} height={50} className="rounded object-cover" />
+                  <Image
+                    src={record.selfie_url}
+                    width={50}
+                    height={50}
+                    className="rounded object-cover"
+                  />
                   {record.car_images && record.car_images.length > 0 ? (
                     <Space size={4}>
                       {record.car_images.map((img: string, i: number) => (
-                        <Image key={i} src={img} width={40} height={40} className="rounded object-cover" />
+                        <Image
+                          key={i}
+                          src={img}
+                          width={40}
+                          height={40}
+                          className="rounded object-cover"
+                        />
                       ))}
                     </Space>
                   ) : record.car_image_url ? (
-                    <Image src={record.car_image_url} width={80} height={50} className="rounded object-cover" />
+                    <Image
+                      src={record.car_image_url}
+                      width={80}
+                      height={50}
+                      className="rounded object-cover"
+                    />
                   ) : null}
                 </Space>
               ),
@@ -513,14 +590,32 @@ const TripVerifications: React.FC = () => {
               render: (_: any, record: any) => (
                 <div>
                   <div className="flex gap-1 mb-1">
-                    <Tag color={record.selfie_status === 'approved' ? 'green' : record.selfie_status === 'rejected' ? 'red' : 'default'}>
+                    <Tag
+                      color={
+                        record.selfie_status === "approved"
+                          ? "green"
+                          : record.selfie_status === "rejected"
+                            ? "red"
+                            : "default"
+                      }
+                    >
                       S: {record.selfie_status}
                     </Tag>
-                    <Tag color={record.car_image_status === 'approved' ? 'green' : record.car_image_status === 'rejected' ? 'red' : 'default'}>
+                    <Tag
+                      color={
+                        record.car_image_status === "approved"
+                          ? "green"
+                          : record.car_image_status === "rejected"
+                            ? "red"
+                            : "default"
+                      }
+                    >
                       C: {record.car_image_status}
                     </Tag>
                   </div>
-                  {record.remarks && <div className="text-xs text-gray-500 italic">"{record.remarks}"</div>}
+                  {record.remarks && (
+                    <div className="text-xs text-gray-500 italic">"{record.remarks}"</div>
+                  )}
                 </div>
               ),
             },
@@ -528,8 +623,15 @@ const TripVerifications: React.FC = () => {
               title: "Reviewer",
               dataIndex: "admin_id",
               key: "admin_id",
-              render: (id: string) => id ? <Text type="secondary" style={{ fontSize: '12px' }}>Admin ID: {id.split('-')[0]}...</Text> : '-',
-            }
+              render: (id: string) =>
+                id ? (
+                  <Text type="secondary" style={{ fontSize: "12px" }}>
+                    Admin ID: {id.split("-")[0]}...
+                  </Text>
+                ) : (
+                  "-"
+                ),
+            },
           ]}
         />
       </Modal>

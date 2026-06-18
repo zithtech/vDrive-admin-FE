@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  TrendingUp,
-  DollarSign,
-  Users,
-  UserCheck,
-  Navigation,
-  Award
-} from "lucide-react";
+import { TrendingUp, DollarSign, Users, UserCheck, Navigation, Award } from "lucide-react";
 
 interface TodayGrowthColumnProps {
   stats: {
@@ -28,13 +21,7 @@ interface TodayGrowthColumnProps {
 }
 
 const TodayGrowthColumn: React.FC<TodayGrowthColumnProps> = ({ stats }) => {
-
-  const GrowthItem = ({
-    title,
-    value,
-    Icon,
-    trend
-  }: any) => {
+  const GrowthItem = ({ title, value, Icon, trend }: any) => {
     const isPositive = trend?.startsWith("+");
     const isNegative = trend && !isPositive && trend !== "0%";
 
@@ -54,9 +41,11 @@ const TodayGrowthColumn: React.FC<TodayGrowthColumnProps> = ({ stats }) => {
         </div>
 
         {/* Trend */}
-        <div className={`ml-auto text-[10px] font-medium ${
-          isPositive ? "text-green-600" : isNegative ? "text-red-500" : "text-gray-400"
-        }`}>
+        <div
+          className={`ml-auto text-[10px] font-medium ${
+            isPositive ? "text-green-600" : isNegative ? "text-red-500" : "text-gray-400"
+          }`}
+        >
           {trend}
         </div>
       </div>

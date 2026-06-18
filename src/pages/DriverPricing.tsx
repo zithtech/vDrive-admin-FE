@@ -15,7 +15,9 @@ import DriverTimeSlotsAndPricing, {
   type UserTimeSlots,
 } from "../components/DriverPricing/DriverTimeSlotsAndPricing";
 import HotspotConfiguration from "../components/DriverPricing/HotspotConfiguration";
-import ExtraKmConfiguration, { type UiCheckpoint } from "../components/DriverPricing/ExtraKmConfiguration";
+import ExtraKmConfiguration, {
+  type UiCheckpoint,
+} from "../components/DriverPricing/ExtraKmConfiguration";
 import PricingPreview from "../components/DriverPricing/PricingPreview";
 import HotspotTypes from "../components/DriverPricing/HotspotTypes";
 import TitleBar from "../components/TitleBarCommon/TitleBar";
@@ -82,7 +84,7 @@ const DriverPricing = () => {
           setExtraKmCheckpoints(
             (data.extra_km_checkpoints ?? [])
               .sort((a: any, b: any) => a.sort_order - b.sort_order)
-              .map((c: any, i: number) => ({ uid: i, multiplier: Number(c.multiplier) }))
+              .map((c: any, i: number) => ({ uid: i, multiplier: Number(c.multiplier) })),
           );
 
           // Store initial names for display (professional approach)
@@ -105,10 +107,7 @@ const DriverPricing = () => {
                 newSlots[driverType].push({
                   id: index + 1, // Simple ID generation
                   day: slot.day,
-                  timeRange: [
-                    dayjs(slot.from_time, "HH:mm:ss"),
-                    dayjs(slot.to_time, "HH:mm:ss"),
-                  ],
+                  timeRange: [dayjs(slot.from_time, "HH:mm:ss"), dayjs(slot.to_time, "HH:mm:ss")],
                   price: slot.price,
                 });
               }
@@ -127,10 +126,7 @@ const DriverPricing = () => {
           {
             id: 1,
             day: "monday",
-            timeRange: [
-              dayjs("9:00 AM", "h:mm A"),
-              dayjs("11:00 AM", "h:mm A"),
-            ],
+            timeRange: [dayjs("9:00 AM", "h:mm A"), dayjs("11:00 AM", "h:mm A")],
             price: 300,
           },
         ],
@@ -213,10 +209,7 @@ const DriverPricing = () => {
     }
 
     // Validate that we have at least one time slot
-    const totalSlots = Object.values(timeSlots).reduce(
-      (sum, slots) => sum + slots.length,
-      0,
-    );
+    const totalSlots = Object.values(timeSlots).reduce((sum, slots) => sum + slots.length, 0);
     if (totalSlots === 0) {
       message.error("Please add at least one time slot");
       return;
@@ -224,21 +217,20 @@ const DriverPricing = () => {
 
     try {
       // Transform time slots from object to array
-      const timeSlotsArray = Object.entries(timeSlots).flatMap(
-        ([driverType, slots]) =>
-          slots.map((slot: any) => {
-            if (!slot.timeRange) {
-              throw new Error(`Time range is required for all slots`);
-            }
+      const timeSlotsArray = Object.entries(timeSlots).flatMap(([driverType, slots]) =>
+        slots.map((slot: any) => {
+          if (!slot.timeRange) {
+            throw new Error(`Time range is required for all slots`);
+          }
 
-            return {
-              driver_types: driverType,
-              day: slot.day.toLowerCase(),
-              from_time: slot.timeRange[0].format("HH:mm:ss"),
-              to_time: slot.timeRange[1].format("HH:mm:ss"),
-              price: slot.price,
-            };
-          }),
+          return {
+            driver_types: driverType,
+            day: slot.day.toLowerCase(),
+            from_time: slot.timeRange[0].format("HH:mm:ss"),
+            to_time: slot.timeRange[1].format("HH:mm:ss"),
+            price: slot.price,
+          };
+        }),
       );
 
       const payload = {
@@ -251,7 +243,10 @@ const DriverPricing = () => {
         extra_km_step: extraKmStep,
         extra_km_price: extraKmPrice,
         extra_km_start_multiplier: extraKmStartMultiplier,
-        extra_km_checkpoints: extraKmCheckpoints.map((c, i) => ({ multiplier: c.multiplier, sort_order: i })),
+        extra_km_checkpoints: extraKmCheckpoints.map((c, i) => ({
+          multiplier: c.multiplier,
+          sort_order: i,
+        })),
         time_slots: timeSlotsArray,
       };
 
@@ -259,9 +254,7 @@ const DriverPricing = () => {
 
       if (id) {
         // Update existing rule
-        await dispatch(
-          updatePricingRuleWithSlots({ id, data: payload }),
-        ).unwrap();
+        await dispatch(updatePricingRuleWithSlots({ id, data: payload })).unwrap();
         message.success("Pricing rule updated successfully!");
       } else {
         // Create new rule
@@ -301,10 +294,7 @@ const DriverPricing = () => {
     }
 
     // Validate that we have at least one time slot
-    const totalSlots = Object.values(timeSlots).reduce(
-      (sum, slots) => sum + slots.length,
-      0,
-    );
+    const totalSlots = Object.values(timeSlots).reduce((sum, slots) => sum + slots.length, 0);
     if (totalSlots === 0) {
       message.error("Please add at least one time slot");
       return;
@@ -312,21 +302,20 @@ const DriverPricing = () => {
 
     try {
       // Transform time slots from object to array
-      const timeSlotsArray = Object.entries(timeSlots).flatMap(
-        ([driverType, slots]) =>
-          slots.map((slot: any) => {
-            if (!slot.timeRange) {
-              throw new Error(`Time range is required for all slots`);
-            }
+      const timeSlotsArray = Object.entries(timeSlots).flatMap(([driverType, slots]) =>
+        slots.map((slot: any) => {
+          if (!slot.timeRange) {
+            throw new Error(`Time range is required for all slots`);
+          }
 
-            return {
-              driver_types: driverType,
-              day: slot.day.toLowerCase(),
-              from_time: slot.timeRange[0].format("HH:mm:ss"),
-              to_time: slot.timeRange[1].format("HH:mm:ss"),
-              price: slot.price,
-            };
-          }),
+          return {
+            driver_types: driverType,
+            day: slot.day.toLowerCase(),
+            from_time: slot.timeRange[0].format("HH:mm:ss"),
+            to_time: slot.timeRange[1].format("HH:mm:ss"),
+            price: slot.price,
+          };
+        }),
       );
 
       // Build the payload
@@ -340,15 +329,16 @@ const DriverPricing = () => {
         extra_km_step: extraKmStep,
         extra_km_price: extraKmPrice,
         extra_km_start_multiplier: extraKmStartMultiplier,
-        extra_km_checkpoints: extraKmCheckpoints.map((c, i) => ({ multiplier: c.multiplier, sort_order: i })),
+        extra_km_checkpoints: extraKmCheckpoints.map((c, i) => ({
+          multiplier: c.multiplier,
+          sort_order: i,
+        })),
         time_slots: timeSlotsArray,
       };
 
       if (id) {
         // Update existing rule
-        await dispatch(
-          updatePricingRuleWithSlots({ id, data: payload }),
-        ).unwrap();
+        await dispatch(updatePricingRuleWithSlots({ id, data: payload })).unwrap();
         message.success("Pricing rule updated successfully!");
 
         // Navigate to add mode (remove the ID from URL)
@@ -380,95 +370,95 @@ const DriverPricing = () => {
       <div className="h-full flex justify-center px-0">
         <div className="w-full flex flex-col h-screen overflow-hidden">
           <div className="flex-1 min-h-0 overflow-hidden">
-          <TitleBar
-            className="w-full flex-1 min-h-0 flex flex-col gap-2"
-            title={id ? "Edit Pricing" : "Add Pricing"}
-            description="Configure pricing for different user types and time slots"
-            extraContent={
-              <div>
-                <Button
-                  icon={<EyeOutlined />}
-                  type="primary"
-                  onClick={() => setIsDrawerOpen(true)}
-                >
-                  Pricing Preview
-                </Button>
+            <TitleBar
+              className="w-full flex-1 min-h-0 flex flex-col gap-2"
+              title={id ? "Edit Pricing" : "Add Pricing"}
+              description="Configure pricing for different user types and time slots"
+              extraContent={
+                <div>
+                  <Button
+                    icon={<EyeOutlined />}
+                    type="primary"
+                    onClick={() => setIsDrawerOpen(true)}
+                  >
+                    Pricing Preview
+                  </Button>
+                </div>
+              }
+            >
+              <div className="w-full shrink-0">
+                <Segmented<string>
+                  options={[
+                    {
+                      label: "Configuration",
+                      className: "w-full",
+                      value: "configuration",
+                    },
+                    {
+                      label: "Hotspot Types",
+                      className: "w-full",
+                      value: "hotspot-types",
+                    },
+                  ]}
+                  size="large"
+                  className="w-full"
+                  value={activeTab}
+                  onChange={setActiveTab}
+                />
               </div>
-            }
-          >
-            <div className="w-full shrink-0">
-              <Segmented<string>
-                options={[
-                  {
-                    label: "Configuration",
-                    className: "w-full",
-                    value: "configuration",
-                  },
-                  {
-                    label: "Hotspot Types",
-                    className: "w-full",
-                    value: "hotspot-types",
-                  },
-                ]}
-                size="large"
-                className="w-full"
-                value={activeTab}
-                onChange={setActiveTab}
-              />
-            </div>
-            {activeTab === "configuration" ? (
-              <div className="flex-1 min-h-0 overflow-hidden">
-                <div className="grid grid-cols-1 lg:grid-cols-[450px_1fr] gap-4 lg:gap-6 mt-2 h-full overflow-hidden">
-                  <div className="flex flex-col gap-4 min-w-0 overflow-y-auto pb-2 h-full">
-                    <LocationConfiguration
-                      country={country}
-                      setCountry={setCountry}
-                      state={state}
-                      setState={setState}
-                      district={district}
-                      setDistrict={setDistrict}
-                      area={area}
-                      setArea={setArea}
-                      pincode={pincode}
-                      setPincode={setPincode}
-                      globalPrice={globalPrice}
-                      setGlobalPrice={setGlobalPrice}
-                    />
-                    <HotspotConfiguration
-                      hotspotEnabled={hotspotEnabled}
-                      setHotspotEnabled={setHotspotEnabled}
-                      hotspotId={hotspotId}
-                      setHotspotId={setHotspotId}
-                      multiplier={multiplier}
-                      setMultiplier={setMultiplier}
-                    />
-                    <ExtraKmConfiguration
-                      extraKmStep={extraKmStep}
-                      setExtraKmStep={setExtraKmStep}
-                      extraKmPrice={extraKmPrice}
-                      setExtraKmPrice={setExtraKmPrice}
-                      extraKmStartMultiplier={extraKmStartMultiplier}
-                      setExtraKmStartMultiplier={setExtraKmStartMultiplier}
-                      extraKmCheckpoints={extraKmCheckpoints}
-                      setExtraKmCheckpoints={setExtraKmCheckpoints}
-                    />
-                  </div>
-                  <div className="flex flex-col h-full overflow-auto">
-                    <DriverTimeSlotsAndPricing
-                      timeSlots={timeSlots}
-                      setTimeSlots={setTimeSlots}
-                      hotspotEnabled={hotspotEnabled}
-                      hotspotId={hotspotId}
-                      multiplier={multiplier}
-                      globalPrice={globalPrice}
-                    />
+              {activeTab === "configuration" ? (
+                <div className="flex-1 min-h-0 overflow-hidden">
+                  <div className="grid grid-cols-1 lg:grid-cols-[450px_1fr] gap-4 lg:gap-6 mt-2 h-full overflow-hidden">
+                    <div className="flex flex-col gap-4 min-w-0 overflow-y-auto pb-2 h-full">
+                      <LocationConfiguration
+                        country={country}
+                        setCountry={setCountry}
+                        state={state}
+                        setState={setState}
+                        district={district}
+                        setDistrict={setDistrict}
+                        area={area}
+                        setArea={setArea}
+                        pincode={pincode}
+                        setPincode={setPincode}
+                        globalPrice={globalPrice}
+                        setGlobalPrice={setGlobalPrice}
+                      />
+                      <HotspotConfiguration
+                        hotspotEnabled={hotspotEnabled}
+                        setHotspotEnabled={setHotspotEnabled}
+                        hotspotId={hotspotId}
+                        setHotspotId={setHotspotId}
+                        multiplier={multiplier}
+                        setMultiplier={setMultiplier}
+                      />
+                      <ExtraKmConfiguration
+                        extraKmStep={extraKmStep}
+                        setExtraKmStep={setExtraKmStep}
+                        extraKmPrice={extraKmPrice}
+                        setExtraKmPrice={setExtraKmPrice}
+                        extraKmStartMultiplier={extraKmStartMultiplier}
+                        setExtraKmStartMultiplier={setExtraKmStartMultiplier}
+                        extraKmCheckpoints={extraKmCheckpoints}
+                        setExtraKmCheckpoints={setExtraKmCheckpoints}
+                      />
+                    </div>
+                    <div className="flex flex-col h-full overflow-auto">
+                      <DriverTimeSlotsAndPricing
+                        timeSlots={timeSlots}
+                        setTimeSlots={setTimeSlots}
+                        hotspotEnabled={hotspotEnabled}
+                        hotspotId={hotspotId}
+                        multiplier={multiplier}
+                        globalPrice={globalPrice}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <HotspotTypes />
-            )}
-          </TitleBar>
+              ) : (
+                <HotspotTypes />
+              )}
+            </TitleBar>
           </div>
 
           <div className="shrink-0">

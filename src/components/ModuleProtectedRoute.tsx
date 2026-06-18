@@ -1,19 +1,16 @@
-import React from 'react';
-import { useModuleAccess } from '../hooks/usePermission';
-import { useAppSelector } from '../store/hooks';
-import { Button, Result } from 'antd';
-import { useNavigate } from 'react-router-dom';
-import FullScreenLoader from './FullScreenLoader';
+import React from "react";
+import { useModuleAccess } from "../hooks/usePermission";
+import { useAppSelector } from "../store/hooks";
+import { Button, Result } from "antd";
+import { useNavigate } from "react-router-dom";
+import FullScreenLoader from "./FullScreenLoader";
 
 interface ModuleProtectedRouteProps {
   module: string | string[];
   children: React.ReactNode;
 }
 
-export const ModuleProtectedRoute: React.FC<ModuleProtectedRouteProps> = ({
-  module,
-  children
-}) => {
+export const ModuleProtectedRoute: React.FC<ModuleProtectedRouteProps> = ({ module, children }) => {
   const navigate = useNavigate();
   const hasAccess = useModuleAccess(module);
   const { loading, isAuthenticated } = useAppSelector((state) => state.auth);
@@ -23,7 +20,7 @@ export const ModuleProtectedRoute: React.FC<ModuleProtectedRouteProps> = ({
   }
 
   if (!isAuthenticated) {
-    navigate('/login');
+    navigate("/login");
     return null;
   }
 
@@ -35,10 +32,10 @@ export const ModuleProtectedRoute: React.FC<ModuleProtectedRouteProps> = ({
           title="403"
           subTitle="Access Restricted. Your account level does not have permissions for this administrative module."
           extra={
-            <Button 
-              type="primary" 
+            <Button
+              type="primary"
               className="bg-indigo-600 border-none rounded-xl h-11 px-6 font-bold hover:scale-105 transition-transform"
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
             >
               Back to Dashboard
             </Button>

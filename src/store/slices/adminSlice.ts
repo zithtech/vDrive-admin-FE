@@ -36,11 +36,9 @@ export const fetchAdminUsers = createAsyncThunk(
       const response = await axiosIns.get("/api/admin-users");
       return response.data.data as AdminUser[];
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch admin users"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch admin users");
     }
-  }
+  },
 );
 
 export const createAdminUser = createAsyncThunk(
@@ -54,17 +52,15 @@ export const createAdminUser = createAsyncThunk(
       role_id?: string;
       contact?: string;
     },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     try {
       const response = await axiosIns.post("/api/admin-users", data);
       return response.data.data as AdminUser;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to create admin user"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to create admin user");
     }
-  }
+  },
 );
 
 export const updateAdminUser = createAsyncThunk(
@@ -83,17 +79,15 @@ export const updateAdminUser = createAsyncThunk(
         role_id?: string;
       };
     },
-    { rejectWithValue }
+    { rejectWithValue },
   ) => {
     try {
       const response = await axiosIns.put(`/api/admin-users/${id}`, data);
       return response.data.data as AdminUser;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to update admin user"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to update admin user");
     }
-  }
+  },
 );
 
 export const deleteAdminUser = createAsyncThunk(
@@ -103,11 +97,9 @@ export const deleteAdminUser = createAsyncThunk(
       await axiosIns.delete(`/api/admin-users/${id}`);
       return id;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to delete admin user"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to delete admin user");
     }
-  }
+  },
 );
 
 const adminSlice = createSlice({
@@ -124,13 +116,10 @@ const adminSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(
-        fetchAdminUsers.fulfilled,
-        (state, action: PayloadAction<AdminUser[]>) => {
-          state.loading = false;
-          state.admins = action.payload;
-        }
-      )
+      .addCase(fetchAdminUsers.fulfilled, (state, action: PayloadAction<AdminUser[]>) => {
+        state.loading = false;
+        state.admins = action.payload;
+      })
       .addCase(fetchAdminUsers.rejected, (state, action) => {
         state.loading = false;
         state.error = (action.payload as string) || "Failed to fetch admin users";
@@ -140,13 +129,10 @@ const adminSlice = createSlice({
         state.submitting = true;
         state.error = null;
       })
-      .addCase(
-        createAdminUser.fulfilled,
-        (state, action: PayloadAction<AdminUser>) => {
-          state.submitting = false;
-          state.admins.unshift(action.payload);
-        }
-      )
+      .addCase(createAdminUser.fulfilled, (state, action: PayloadAction<AdminUser>) => {
+        state.submitting = false;
+        state.admins.unshift(action.payload);
+      })
       .addCase(createAdminUser.rejected, (state, action) => {
         state.submitting = false;
         state.error = (action.payload as string) || "Failed to create admin user";
@@ -156,18 +142,13 @@ const adminSlice = createSlice({
         state.submitting = true;
         state.error = null;
       })
-      .addCase(
-        updateAdminUser.fulfilled,
-        (state, action: PayloadAction<AdminUser>) => {
-          state.submitting = false;
-          const index = state.admins.findIndex(
-            (a) => a.id === action.payload.id
-          );
-          if (index !== -1) {
-            state.admins[index] = action.payload;
-          }
+      .addCase(updateAdminUser.fulfilled, (state, action: PayloadAction<AdminUser>) => {
+        state.submitting = false;
+        const index = state.admins.findIndex((a) => a.id === action.payload.id);
+        if (index !== -1) {
+          state.admins[index] = action.payload;
         }
-      )
+      })
       .addCase(updateAdminUser.rejected, (state, action) => {
         state.submitting = false;
         state.error = (action.payload as string) || "Failed to update admin user";
@@ -177,13 +158,10 @@ const adminSlice = createSlice({
         state.submitting = true;
         state.error = null;
       })
-      .addCase(
-        deleteAdminUser.fulfilled,
-        (state, action: PayloadAction<string>) => {
-          state.submitting = false;
-          state.admins = state.admins.filter((a) => a.id !== action.payload);
-        }
-      )
+      .addCase(deleteAdminUser.fulfilled, (state, action: PayloadAction<string>) => {
+        state.submitting = false;
+        state.admins = state.admins.filter((a) => a.id !== action.payload);
+      })
       .addCase(deleteAdminUser.rejected, (state, action) => {
         state.submitting = false;
         state.error = (action.payload as string) || "Failed to delete admin user";

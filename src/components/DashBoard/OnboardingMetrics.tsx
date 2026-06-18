@@ -26,19 +26,25 @@ const OnboardingMetrics: React.FC<OnboardingMetricsProps> = (_props) => {
 
   const pipelineDrivers = useMemo(() => {
     if (!drivers || !Array.isArray(drivers)) return [];
-    return drivers.filter(d => 
-      d.status === "pending" || 
-      d.status === "pending_verification" || 
-      d.status === "rejected" ||
-      (d.onboarding_status && !["ONBOARDING_COMPLETED", "SUBSCRIPTION_ACTIVE", "ACTIVE"].includes(d.onboarding_status))
+    return drivers.filter(
+      (d) =>
+        d.status === "pending" ||
+        d.status === "pending_verification" ||
+        d.status === "rejected" ||
+        (d.onboarding_status &&
+          !["ONBOARDING_COMPLETED", "SUBSCRIPTION_ACTIVE", "ACTIVE"].includes(d.onboarding_status)),
     );
   }, [drivers]);
 
   const counts = useMemo(() => {
     return {
-      pending: pipelineDrivers.filter(d => d.status !== "rejected" && d.onboarding_status !== "DOCS_REJECTED").length,
-      docRejected: pipelineDrivers.filter(d => d.status !== "rejected" && d.onboarding_status === "DOCS_REJECTED").length,
-      rejected: pipelineDrivers.filter(d => d.status === "rejected").length,
+      pending: pipelineDrivers.filter(
+        (d) => d.status !== "rejected" && d.onboarding_status !== "DOCS_REJECTED",
+      ).length,
+      docRejected: pipelineDrivers.filter(
+        (d) => d.status !== "rejected" && d.onboarding_status === "DOCS_REJECTED",
+      ).length,
+      rejected: pipelineDrivers.filter((d) => d.status === "rejected").length,
     };
   }, [pipelineDrivers]);
 
@@ -57,23 +63,31 @@ const OnboardingMetrics: React.FC<OnboardingMetricsProps> = (_props) => {
     iconColor: string;
     onClick?: () => void;
   }) => (
-    <div 
+    <div
       onClick={onClick}
-      className={`flex items-center p-3 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl transition-all duration-300 group h-[50px] ${onClick ? 'cursor-pointer hover:shadow-md hover:border-indigo-100 dark:hover:border-indigo-900/50' : 'cursor-default hover:shadow-sm'}`}
+      className={`flex items-center p-3 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl transition-all duration-300 group h-[50px] ${onClick ? "cursor-pointer hover:shadow-md hover:border-indigo-100 dark:hover:border-indigo-900/50" : "cursor-default hover:shadow-sm"}`}
     >
       {/* Icon Section */}
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mr-3 ${iconBgColor} shrink-0`}>
-        <Badge dot={typeof value === 'number' && value > 0}>
+      <div
+        className={`w-10 h-10 rounded-xl flex items-center justify-center mr-3 ${iconBgColor} shrink-0`}
+      >
+        <Badge dot={typeof value === "number" && value > 0}>
           <Icon size={18} className={iconColor} />
         </Badge>
       </div>
 
       {/* Info Section */}
       <div className="flex flex-col flex-1 min-w-0">
-        <Text className="text-[10px] text-gray-400 dark:text-gray-500 font-medium mb-0 tracking-tight leading-none truncate w-full" title={title}>
+        <Text
+          className="text-[10px] text-gray-400 dark:text-gray-500 font-medium mb-0 tracking-tight leading-none truncate w-full"
+          title={title}
+        >
           {title}
         </Text>
-        <Title level={4} className="!m-0 text-gray-900 dark:text-white font-bold !text-[17px] leading-tight">
+        <Title
+          level={4}
+          className="!m-0 text-gray-900 dark:text-white font-bold !text-[17px] leading-tight"
+        >
           {value}
         </Title>
       </div>
@@ -86,7 +100,9 @@ const OnboardingMetrics: React.FC<OnboardingMetricsProps> = (_props) => {
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 dark:border-slate-700">
         <div className="flex items-center gap-2">
           <Users size={16} className="text-gray-500 dark:text-gray-400" />
-          <span className="font-bold text-gray-900 dark:text-white text-[14px] tracking-tight">Onboarding</span>
+          <span className="font-bold text-gray-900 dark:text-white text-[14px] tracking-tight">
+            Onboarding
+          </span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -103,7 +119,7 @@ const OnboardingMetrics: React.FC<OnboardingMetricsProps> = (_props) => {
             icon={ShieldCheck}
             iconBgColor="bg-orange-50 dark:bg-orange-900/30"
             iconColor="text-orange-500"
-            onClick={() => navigate('/driver-applications')}
+            onClick={() => navigate("/driver-applications")}
           />
 
           <MetricItem
@@ -112,7 +128,7 @@ const OnboardingMetrics: React.FC<OnboardingMetricsProps> = (_props) => {
             icon={FileWarning}
             iconBgColor="bg-amber-50 dark:bg-amber-900/30"
             iconColor="text-amber-500"
-            onClick={() => navigate('/driver-applications')}
+            onClick={() => navigate("/driver-applications")}
           />
 
           <MetricItem
@@ -121,14 +137,12 @@ const OnboardingMetrics: React.FC<OnboardingMetricsProps> = (_props) => {
             icon={XCircle}
             iconBgColor="bg-rose-50 dark:bg-rose-900/30"
             iconColor="text-rose-500"
-            onClick={() => navigate('/driver-applications')}
+            onClick={() => navigate("/driver-applications")}
           />
         </div>
       </div>
-
     </div>
   );
 };
 
 export default OnboardingMetrics;
-

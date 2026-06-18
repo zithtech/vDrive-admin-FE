@@ -3,7 +3,6 @@ import type { InternalAxiosRequestConfig } from "axios";
 import { messageApi } from "../utilities/antdStaticHolder";
 import { logger } from "../utils/logger";
 
-
 // Create Axios instance
 const axiosIns = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL,
@@ -135,8 +134,7 @@ axiosIns.interceptors.response.use(
     // Global Error Handling for other errors (500, 403, etc.)
     if (error.response && error.response.status !== 401) {
       const errorMessage =
-        (error.response?.data as any)?.message ||
-        "An unexpected error occurred.";
+        (error.response?.data as any)?.message || "An unexpected error occurred.";
       if (messageApi) {
         // Prevent spamming errors if multiple requests fail at once
         messageApi.open({

@@ -31,43 +31,27 @@ const UserTable = ({ data }: UserTableProps) => {
     setSearchedColumn(dataIndex);
   };
 
-  const handleReset = (
-    clearFilters: () => void,
-    confirm: FilterDropdownProps["confirm"],
-  ) => {
+  const handleReset = (clearFilters: () => void, confirm: FilterDropdownProps["confirm"]) => {
     clearFilters();
     setSearchText("");
     confirm();
   };
 
-  const getColumnSearchProps = (
-    dataIndex: DataIndex,
-  ): TableColumnType<User> => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-    }) => (
+  const getColumnSearchProps = (dataIndex: DataIndex): TableColumnType<User> => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
           ref={searchInput}
           placeholder={`Search ${String(dataIndex)}`}
           value={selectedKeys[0]}
-          onChange={(e) =>
-            setSelectedKeys(e.target.value ? [e.target.value] : [])
-          }
-          onPressEnter={() =>
-            handleSearch(selectedKeys as string[], confirm, dataIndex)
-          }
+          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
           style={{ marginBottom: 8, display: "block" }}
         />
         <Space>
           <Button
             type="primary"
-            onClick={() =>
-              handleSearch(selectedKeys as string[], confirm, dataIndex)
-            }
+            onClick={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
             icon={<SearchOutlined />}
             size="small"
             style={{ width: 90 }}
@@ -154,8 +138,7 @@ const UserTable = ({ data }: UserTableProps) => {
         minWidth: 160,
         key: "phoneNumber",
         width: 190,
-        sorter: (a: User, b: User) =>
-          a.phoneNumber.localeCompare(b.phoneNumber),
+        sorter: (a: User, b: User) => a.phoneNumber.localeCompare(b.phoneNumber),
       },
       {
         title: "Role",

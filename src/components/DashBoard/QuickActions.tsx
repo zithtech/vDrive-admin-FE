@@ -1,13 +1,5 @@
 import React from "react";
-import {
-  Users,
-  UserCheck,
-  Navigation,
-  ShieldCheck,
-  Wallet,
-  Zap,
-  ChevronRight
-} from "lucide-react";
+import { Users, UserCheck, Navigation, ShieldCheck, Wallet, Zap, ChevronRight } from "lucide-react";
 import { Typography } from "antd";
 import { useNavigate } from "react-router-dom";
 
@@ -70,7 +62,9 @@ const QuickActions: React.FC = () => {
           <div className="w-6 h-6 rounded-lg bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
             <Zap size={12} className="text-white fill-white" />
           </div>
-          <span className="font-bold text-gray-800 dark:text-gray-100 text-[11px] uppercase tracking-widest">Admin Quick Actions</span>
+          <span className="font-bold text-gray-800 dark:text-gray-100 text-[11px] uppercase tracking-widest">
+            Admin Quick Actions
+          </span>
         </div>
       </div>
 
@@ -114,5 +108,3 @@ const QuickActions: React.FC = () => {
 };
 
 export default QuickActions;
-
-

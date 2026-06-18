@@ -1,20 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Button, Table, Space, Card, Tag, Modal } from "antd";
-import {
-  DownloadOutlined,
-  EyeOutlined,
-  EditOutlined,
-  LoadingOutlined,
-} from "@ant-design/icons";
+import { DownloadOutlined, EyeOutlined, EditOutlined, LoadingOutlined } from "@ant-design/icons";
 import { IoAdd } from "react-icons/io5";
 import TitleBar from "../components/TitleBarCommon/TitleBar";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import {
-  fetchPricingFareRules,
-  setPage,
-  setPageSize,
-} from "../store/slices/pricingFareRulesSlice";
+import { fetchPricingFareRules, setPage, setPageSize } from "../store/slices/pricingFareRulesSlice";
 import type { PricingFareRule } from "../store/slices/pricingFareRulesSlice";
 import type { ColumnsType } from "antd/es/table";
 import PricingPreview from "../components/DriverPricing/PricingPreview";
@@ -35,10 +26,7 @@ const transformSlotsForPreview = (rule: PricingFareRule) => {
         transformed[slot.driver_types].push({
           id: index + 1,
           day: slot.day,
-          timeRange: [
-            dayjs(slot.from_time, "HH:mm:ss"),
-            dayjs(slot.to_time, "HH:mm:ss"),
-          ],
+          timeRange: [dayjs(slot.from_time, "HH:mm:ss"), dayjs(slot.to_time, "HH:mm:ss")],
           price: slot.price,
         });
       }
@@ -236,8 +224,7 @@ const PricingAndFareRules: React.FC = () => {
               pageSize: pageSize,
               total: total,
               showSizeChanger: true,
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} of ${total} items`,
+              showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
               pageSizeOptions: ["10", "20", "50", "100"],
             }}
             onChange={handleTableChange}

@@ -5,15 +5,15 @@ export interface Notification {
   id: string;
   title: string;
   body: string;
-  target_type: 'CUSTOMER' | 'DRIVER';
-  target_audience: 'ALL' | 'TOP_RIDE' | 'LOW_RIDE' | 'SPECIFIC';
+  target_type: "CUSTOMER" | "DRIVER";
+  target_audience: "ALL" | "TOP_RIDE" | "LOW_RIDE" | "SPECIFIC";
   specific_user_id?: string[] | null;
   attached_offer?: string | null;
   coupon_code?: string | null;
   promo_code?: string | null;
   created_at: string;
   updated_at: string;
-  notify_status?: 'NONE' | 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  notify_status?: "NONE" | "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
   notify_sent_at?: string;
   notify_count?: number;
 }
@@ -36,14 +36,14 @@ export const fetchNotifications = createAsyncThunk(
   "notification/fetchNotifications",
   async (target_type: "CUSTOMER" | "DRIVER", { rejectWithValue }) => {
     try {
-      const response = await axiosIns.get(`/api/notification-management?target_type=${target_type}`);
+      const response = await axiosIns.get(
+        `/api/notification-management?target_type=${target_type}`,
+      );
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch notifications"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch notifications");
     }
-  }
+  },
 );
 
 export const createNotification = createAsyncThunk(
@@ -58,22 +58,23 @@ export const createNotification = createAsyncThunk(
       dispatch(fetchNotifications(notificationData.target_type));
       return response.data || { success: true, message: "Notification created" };
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to create notification"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to create notification");
     }
-  }
+  },
 );
 
 export const updateNotification = createAsyncThunk(
   "notification/updateNotification",
   async (
     { id, notificationData }: { id: string; notificationData: Partial<NotificationPayload> },
-    { rejectWithValue, dispatch }
+    { rejectWithValue, dispatch },
   ) => {
     try {
       // API call
-      const response = await axiosIns.patch(`/api/notification-management/update/${id}`, notificationData);
+      const response = await axiosIns.patch(
+        `/api/notification-management/update/${id}`,
+        notificationData,
+      );
 
       // Simulate slight delay for UX
       await new Promise((resolve) => setTimeout(resolve, 600));
@@ -82,16 +83,17 @@ export const updateNotification = createAsyncThunk(
       }
       return response.data || { success: true, message: "Notification updated" };
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to update notification"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to update notification");
     }
-  }
+  },
 );
 
 export const deleteNotification = createAsyncThunk(
   "notification/deleteNotification",
-  async ({ id, target_type }: { id: string, target_type: 'CUSTOMER' | 'DRIVER' }, { rejectWithValue, dispatch }) => {
+  async (
+    { id, target_type }: { id: string; target_type: "CUSTOMER" | "DRIVER" },
+    { rejectWithValue, dispatch },
+  ) => {
     try {
       // API call
       await axiosIns.delete(`/api/notification-management/delete/${id}`);
@@ -101,11 +103,9 @@ export const deleteNotification = createAsyncThunk(
       dispatch(fetchNotifications(target_type));
       return id;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to delete notification"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to delete notification");
     }
-  }
+  },
 );
 
 const notificationSlice = createSlice({

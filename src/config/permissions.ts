@@ -24,99 +24,99 @@
  */
 export const VDrivePermissions = {
   // ─── Dashboard ────────────────────────────────────────────────────
-  DASHBOARD_READ: 'dashboard.read',
-  DASHBOARD_MANAGE: 'dashboard.manage', // widget configuration, custom reports
+  DASHBOARD_READ: "dashboard.read",
+  DASHBOARD_MANAGE: "dashboard.manage", // widget configuration, custom reports
 
   // ─── Customers ────────────────────────────────────────────────────
-  CUSTOMER_CREATE: 'customer.create',
-  CUSTOMER_READ: 'customer.read',
-  CUSTOMER_UPDATE: 'customer.update',
-  CUSTOMER_DELETE: 'customer.delete',
-  CUSTOMER_MANAGE: 'customer.manage', // bulk imports, customer segmentation, custom fields
+  CUSTOMER_CREATE: "customer.create",
+  CUSTOMER_READ: "customer.read",
+  CUSTOMER_UPDATE: "customer.update",
+  CUSTOMER_DELETE: "customer.delete",
+  CUSTOMER_MANAGE: "customer.manage", // bulk imports, customer segmentation, custom fields
 
   // ─── Drivers ───────────────────────────────────────────────────────
-  DRIVER_CREATE: 'driver.create',
-  DRIVER_READ: 'driver.read',
-  DRIVER_UPDATE: 'driver.update',
-  DRIVER_DELETE: 'driver.delete',
-  DRIVER_VERIFY: 'driver.verify', // document verification, approval workflows
-  DRIVER_MANAGE: 'driver.manage', // background checks, commission settings, blacklist
+  DRIVER_CREATE: "driver.create",
+  DRIVER_READ: "driver.read",
+  DRIVER_UPDATE: "driver.update",
+  DRIVER_DELETE: "driver.delete",
+  DRIVER_VERIFY: "driver.verify", // document verification, approval workflows
+  DRIVER_MANAGE: "driver.manage", // background checks, commission settings, blacklist
 
   // ─── Admins / Users ───────────────────────────────────────────────
-  ADMIN_CREATE: 'admin.create',
-  ADMIN_READ: 'admin.read',
-  ADMIN_UPDATE: 'admin.update',
-  ADMIN_DELETE: 'admin.delete',
-  ADMIN_MANAGE: 'admin.manage', // role assignment, permission delegation
+  ADMIN_CREATE: "admin.create",
+  ADMIN_READ: "admin.read",
+  ADMIN_UPDATE: "admin.update",
+  ADMIN_DELETE: "admin.delete",
+  ADMIN_MANAGE: "admin.manage", // role assignment, permission delegation
 
   // ─── Pricing & Fare Rules ─────────────────────────────────────────
-  PRICING_CREATE: 'pricing.create',
-  PRICING_READ: 'pricing.read',
-  PRICING_UPDATE: 'pricing.update',
-  PRICING_DELETE: 'pricing.delete',
-  PRICING_MANAGE: 'pricing.manage', // surge pricing, dynamic rates, algorithm settings
+  PRICING_CREATE: "pricing.create",
+  PRICING_READ: "pricing.read",
+  PRICING_UPDATE: "pricing.update",
+  PRICING_DELETE: "pricing.delete",
+  PRICING_MANAGE: "pricing.manage", // surge pricing, dynamic rates, algorithm settings
 
   // ─── Deductions ───────────────────────────────────────────────────
-  DEDUCTION_CREATE: 'deduction.create',
-  DEDUCTION_READ: 'deduction.read',
-  DEDUCTION_UPDATE: 'deduction.update',
-  DEDUCTION_DELETE: 'deduction.delete',
-  DEDUCTION_MANAGE: 'deduction.manage', // policy settings, bulk deductions, approval workflows
+  DEDUCTION_CREATE: "deduction.create",
+  DEDUCTION_READ: "deduction.read",
+  DEDUCTION_UPDATE: "deduction.update",
+  DEDUCTION_DELETE: "deduction.delete",
+  DEDUCTION_MANAGE: "deduction.manage", // policy settings, bulk deductions, approval workflows
 
   // ─── Recharge / Payments ──────────────────────────────────────────
-  RECHARGE_CREATE: 'recharge.create',
-  RECHARGE_READ: 'recharge.read',
-  RECHARGE_UPDATE: 'recharge.update',
-  RECHARGE_DELETE: 'recharge.delete',
-  RECHARGE_MANAGE: 'recharge.manage', // payment gateway settings, refund policies, wallets
+  RECHARGE_CREATE: "recharge.create",
+  RECHARGE_READ: "recharge.read",
+  RECHARGE_UPDATE: "recharge.update",
+  RECHARGE_DELETE: "recharge.delete",
+  RECHARGE_MANAGE: "recharge.manage", // payment gateway settings, refund policies, wallets
 
   // ─── Taxes ────────────────────────────────────────────────────────
-  TAX_CREATE: 'tax.create',
-  TAX_READ: 'tax.read',
-  TAX_UPDATE: 'tax.update',
-  TAX_DELETE: 'tax.delete',
-  TAX_MANAGE: 'tax.manage', // tax brackets, exemptions, compliance reporting
+  TAX_CREATE: "tax.create",
+  TAX_READ: "tax.read",
+  TAX_UPDATE: "tax.update",
+  TAX_DELETE: "tax.delete",
+  TAX_MANAGE: "tax.manage", // tax brackets, exemptions, compliance reporting
 
   // ─── Coupons / Promotions ─────────────────────────────────────────
-  COUPON_CREATE: 'coupon.create',
-  COUPON_READ: 'coupon.read',
-  COUPON_UPDATE: 'coupon.update',
-  COUPON_DELETE: 'coupon.delete',
-  COUPON_MANAGE: 'coupon.manage', // campaign rules, redemption limits, analytics
+  COUPON_CREATE: "coupon.create",
+  COUPON_READ: "coupon.read",
+  COUPON_UPDATE: "coupon.update",
+  COUPON_DELETE: "coupon.delete",
+  COUPON_MANAGE: "coupon.manage", // campaign rules, redemption limits, analytics
 
   // ─── Notifications ────────────────────────────────────────────────
-  NOTIFICATION_CREATE: 'notification.create',
-  NOTIFICATION_READ: 'notification.read',
-  NOTIFICATION_UPDATE: 'notification.update',
-  NOTIFICATION_DELETE: 'notification.delete',
-  NOTIFICATION_MANAGE: 'notification.manage', // notification templates, channels, scheduling
+  NOTIFICATION_CREATE: "notification.create",
+  NOTIFICATION_READ: "notification.read",
+  NOTIFICATION_UPDATE: "notification.update",
+  NOTIFICATION_DELETE: "notification.delete",
+  NOTIFICATION_MANAGE: "notification.manage", // notification templates, channels, scheduling
 
   // ─── Settings / System ────────────────────────────────────────────
-  SETTINGS_READ: 'settings.read',
-  SETTINGS_UPDATE: 'settings.update',
-  SETTINGS_MANAGE: 'settings.manage', // system configuration, branding, integrations
+  SETTINGS_READ: "settings.read",
+  SETTINGS_UPDATE: "settings.update",
+  SETTINGS_MANAGE: "settings.manage", // system configuration, branding, integrations
 
   // ─── Roles & Permissions (RBAC Management) ────────────────────────
-  ROLE_CREATE: 'role.create',
-  ROLE_READ: 'role.read',
-  ROLE_UPDATE: 'role.update',
-  ROLE_DELETE: 'role.delete',
-  ROLE_ASSIGN: 'role.assign', // assign/remove roles from users
+  ROLE_CREATE: "role.create",
+  ROLE_READ: "role.read",
+  ROLE_UPDATE: "role.update",
+  ROLE_DELETE: "role.delete",
+  ROLE_ASSIGN: "role.assign", // assign/remove roles from users
 
   // ─── Reports & Analytics ─────────────────────────────────────────
-  REPORT_READ: 'report.read',
-  REPORT_MANAGE: 'report.manage', // custom report creation, scheduled exports
+  REPORT_READ: "report.read",
+  REPORT_MANAGE: "report.manage", // custom report creation, scheduled exports
 
   // ─── Audit & Logs ────────────────────────────────────────────────
-  AUDIT_LOG_READ: 'audit_log.read',
-  AUDIT_LOG_MANAGE: 'audit_log.manage', // retention, export, sensitive data redaction
+  AUDIT_LOG_READ: "audit_log.read",
+  AUDIT_LOG_MANAGE: "audit_log.manage", // retention, export, sensitive data redaction
 
   // ─── Support Tickets ─────────────────────────────────────────────
-  SUPPORT_TICKET_CREATE: 'support_ticket.create',
-  SUPPORT_TICKET_READ: 'support_ticket.read',
-  SUPPORT_TICKET_UPDATE: 'support_ticket.update',
-  SUPPORT_TICKET_DELETE: 'support_ticket.delete',
-  SUPPORT_TICKET_MANAGE: 'support_ticket.manage',
+  SUPPORT_TICKET_CREATE: "support_ticket.create",
+  SUPPORT_TICKET_READ: "support_ticket.read",
+  SUPPORT_TICKET_UPDATE: "support_ticket.update",
+  SUPPORT_TICKET_DELETE: "support_ticket.delete",
+  SUPPORT_TICKET_MANAGE: "support_ticket.manage",
 } as const;
 
 export type VDrivePermission = (typeof VDrivePermissions)[keyof typeof VDrivePermissions];
@@ -134,13 +134,13 @@ export type VDrivePermission = (typeof VDrivePermissions)[keyof typeof VDrivePer
  */
 export const VDRIVE_MODULES = {
   dashboard: {
-    label: 'Dashboard',
-    icon: 'home',
+    label: "Dashboard",
+    icon: "home",
     permissions: [VDrivePermissions.DASHBOARD_READ, VDrivePermissions.DASHBOARD_MANAGE],
   },
   customers: {
-    label: 'Customers',
-    icon: 'users',
+    label: "Customers",
+    icon: "users",
     permissions: [
       VDrivePermissions.CUSTOMER_CREATE,
       VDrivePermissions.CUSTOMER_READ,
@@ -150,8 +150,8 @@ export const VDRIVE_MODULES = {
     ],
   },
   drivers: {
-    label: 'Drivers',
-    icon: 'steering-wheel',
+    label: "Drivers",
+    icon: "steering-wheel",
     permissions: [
       VDrivePermissions.DRIVER_CREATE,
       VDrivePermissions.DRIVER_READ,
@@ -162,8 +162,8 @@ export const VDRIVE_MODULES = {
     ],
   },
   admins: {
-    label: 'Admins & Users',
-    icon: 'shield-admin',
+    label: "Admins & Users",
+    icon: "shield-admin",
     permissions: [
       VDrivePermissions.ADMIN_CREATE,
       VDrivePermissions.ADMIN_READ,
@@ -173,8 +173,8 @@ export const VDRIVE_MODULES = {
     ],
   },
   pricing: {
-    label: 'Pricing & Fare Rules',
-    icon: 'currency-dollar',
+    label: "Pricing & Fare Rules",
+    icon: "currency-dollar",
     permissions: [
       VDrivePermissions.PRICING_CREATE,
       VDrivePermissions.PRICING_READ,
@@ -184,8 +184,8 @@ export const VDRIVE_MODULES = {
     ],
   },
   deductions: {
-    label: 'Deductions',
-    icon: 'minus-circle',
+    label: "Deductions",
+    icon: "minus-circle",
     permissions: [
       VDrivePermissions.DEDUCTION_CREATE,
       VDrivePermissions.DEDUCTION_READ,
@@ -195,8 +195,8 @@ export const VDRIVE_MODULES = {
     ],
   },
   recharge: {
-    label: 'Recharge & Payments',
-    icon: 'credit-card',
+    label: "Recharge & Payments",
+    icon: "credit-card",
     permissions: [
       VDrivePermissions.RECHARGE_CREATE,
       VDrivePermissions.RECHARGE_READ,
@@ -206,8 +206,8 @@ export const VDRIVE_MODULES = {
     ],
   },
   taxes: {
-    label: 'Taxes',
-    icon: 'receipt',
+    label: "Taxes",
+    icon: "receipt",
     permissions: [
       VDrivePermissions.TAX_CREATE,
       VDrivePermissions.TAX_READ,
@@ -217,8 +217,8 @@ export const VDRIVE_MODULES = {
     ],
   },
   coupons: {
-    label: 'Coupons & Promotions',
-    icon: 'ticket',
+    label: "Coupons & Promotions",
+    icon: "ticket",
     permissions: [
       VDrivePermissions.COUPON_CREATE,
       VDrivePermissions.COUPON_READ,
@@ -228,8 +228,8 @@ export const VDRIVE_MODULES = {
     ],
   },
   notifications: {
-    label: 'Notifications',
-    icon: 'bell',
+    label: "Notifications",
+    icon: "bell",
     permissions: [
       VDrivePermissions.NOTIFICATION_CREATE,
       VDrivePermissions.NOTIFICATION_READ,
@@ -248,8 +248,8 @@ export const VDRIVE_MODULES = {
   //   ],
   // },
   roles: {
-    label: 'Roles & Permissions',
-    icon: 'shield-check',
+    label: "Roles & Permissions",
+    icon: "shield-check",
     permissions: [
       VDrivePermissions.ROLE_CREATE,
       VDrivePermissions.ROLE_READ,
@@ -259,8 +259,8 @@ export const VDRIVE_MODULES = {
     ],
   },
   support_tickets: {
-    label: 'Support Tickets',
-    icon: 'support',
+    label: "Support Tickets",
+    icon: "support",
     permissions: [
       VDrivePermissions.SUPPORT_TICKET_CREATE,
       VDrivePermissions.SUPPORT_TICKET_READ,
@@ -392,8 +392,8 @@ export const ALL_VDRIVE_PERMISSIONS: VDrivePermission[] = Object.values(VDrivePe
  * Every vDrive tenant is seeded with these three roles.
  */
 export const VDriveSystemRoles = {
-  SUPER_ADMIN: 'super_admin',
-  ADMIN: 'admin',
+  SUPER_ADMIN: "super_admin",
+  ADMIN: "admin",
 } as const;
 
 export type VDriveSystemRole = (typeof VDriveSystemRoles)[keyof typeof VDriveSystemRoles];

@@ -1,13 +1,4 @@
-import {
-  AutoComplete,
-  Button,
-  Card,
-  Divider,
-  Input,
-  InputNumber,
-  Modal,
-  Space,
-} from "antd";
+import { AutoComplete, Button, Card, Divider, Input, InputNumber, Modal, Space } from "antd";
 import { messageApi as message } from "../../utilities/antdStaticHolder";
 import { MdOutlineLocationOn } from "react-icons/md";
 import { PlusOutlined } from "@ant-design/icons";
@@ -91,9 +82,7 @@ const LocationConfiguration = ({
 
   const debouncedStateSearch = useCallback(
     debounce((searchValue: string) => {
-      dispatch(
-        fetchState({ countryId: country, search: searchValue, limit: 20 }),
-      );
+      dispatch(fetchState({ countryId: country, search: searchValue, limit: 20 }));
     }, 500),
     [dispatch, country],
   );
@@ -207,9 +196,7 @@ const LocationConfiguration = ({
     }
   };
 
-  const handleCreateZipcodeChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleCreateZipcodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     // Allow numbers and hyphen only
     if (/^[0-9-]*$/.test(value)) {
@@ -267,16 +254,13 @@ const LocationConfiguration = ({
         const selectedCountry = countries.find((c) => c.id === country);
         if (
           selectedCountry &&
-          (selectedCountry.code === "IN" ||
-            selectedCountry.code.toLowerCase() === "india")
+          (selectedCountry.code === "IN" || selectedCountry.code.toLowerCase() === "india")
         ) {
           searchTerm = "tamil nadu";
         }
       }
 
-      dispatch(
-        fetchState({ countryId: country, search: searchTerm, limit: 100 }),
-      );
+      dispatch(fetchState({ countryId: country, search: searchTerm, limit: 100 }));
       // Sync display value
       const selected = countries.find((c) => c.id === country);
       if (selected) setCountrySearch(`${selected.flag} ${selected.name}`);
@@ -297,10 +281,7 @@ const LocationConfiguration = ({
       let searchTerm = "";
       if (!districtInitialized.current && !district) {
         const selectedState = states.find((s) => s.id === state);
-        if (
-          selectedState &&
-          selectedState.name.toLowerCase() === "tamil nadu"
-        ) {
+        if (selectedState && selectedState.name.toLowerCase() === "tamil nadu") {
           searchTerm = "chennai";
         }
       }
@@ -355,8 +336,7 @@ const LocationConfiguration = ({
       const selected = areas.find((a) => a.id === area);
       if (selected) {
         setAreaSearchValue(selected.name);
-        if (selected.pincode && (!pincode || pincode === ""))
-          setPincode(selected.pincode);
+        if (selected.pincode && (!pincode || pincode === "")) setPincode(selected.pincode);
       } else {
         dispatch(fetchAreaById(area))
           .unwrap()
@@ -384,15 +364,8 @@ const LocationConfiguration = ({
       return;
     }
 
-    if (
-      !countryInitialized.current &&
-      countries.length > 0 &&
-      !country &&
-      !isLoadingCountries
-    ) {
-      const india = countries.find(
-        (c) => c.code === "IN" || c.code.toLowerCase() === "india",
-      );
+    if (!countryInitialized.current && countries.length > 0 && !country && !isLoadingCountries) {
+      const india = countries.find((c) => c.code === "IN" || c.code.toLowerCase() === "india");
       if (india) {
         setCountry(india.id);
         countryInitialized.current = true;
@@ -409,19 +382,12 @@ const LocationConfiguration = ({
       return;
     }
 
-    if (
-      !stateInitialized.current &&
-      states.length > 0 &&
-      !state &&
-      country &&
-      !isLoadingStates
-    ) {
+    if (!stateInitialized.current && states.length > 0 && !state && country && !isLoadingStates) {
       // confirm country is India before forcing TN
       const selectedCountry = countries.find((c) => c.id === country);
       if (
         selectedCountry &&
-        (selectedCountry.code === "IN" ||
-          selectedCountry.code.toLowerCase() === "india")
+        (selectedCountry.code === "IN" || selectedCountry.code.toLowerCase() === "india")
       ) {
         const tn = states.find((s) => s.name.toLowerCase() === "tamil nadu");
         if (tn) {
@@ -448,9 +414,7 @@ const LocationConfiguration = ({
       state &&
       !isLoadingCities
     ) {
-      const chennai = districts.find((c) =>
-        c.name.toLowerCase().includes("chennai"),
-      );
+      const chennai = districts.find((c) => c.name.toLowerCase().includes("chennai"));
       if (chennai) {
         setDistrict(chennai.id);
         districtInitialized.current = true;
@@ -465,12 +429,7 @@ const LocationConfiguration = ({
       debouncedCitySearch.cancel();
       debouncedAreaSearch.cancel();
     };
-  }, [
-    debouncedCountrySearch,
-    debouncedStateSearch,
-    debouncedCitySearch,
-    debouncedAreaSearch,
-  ]);
+  }, [debouncedCountrySearch, debouncedStateSearch, debouncedCitySearch, debouncedAreaSearch]);
 
   return (
     <Card className="w-full" size="small">
@@ -481,9 +440,7 @@ const LocationConfiguration = ({
               <MdOutlineLocationOn className="text-[25px] text-[#0080FF]" />
             </div>
             <div>
-              <span className="text-[20px] font-semibold p-0 m-0">
-                Location Configuration
-              </span>
+              <span className="text-[20px] font-semibold p-0 m-0">Location Configuration</span>
             </div>
           </div>
           <div className=""></div>
@@ -506,9 +463,7 @@ const LocationConfiguration = ({
               }}
               options={countryOptions}
               placeholder="Search and select country"
-              notFoundContent={
-                isLoadingCountries ? "Loading..." : "No countries found"
-              }
+              notFoundContent={isLoadingCountries ? "Loading..." : "No countries found"}
             />
           </div>
           <div className="w-full flex flex-col">
@@ -527,9 +482,7 @@ const LocationConfiguration = ({
               }}
               options={stateOptions}
               placeholder="Search and select state"
-              notFoundContent={
-                isLoadingStates ? "Loading..." : "No states found"
-              }
+              notFoundContent={isLoadingStates ? "Loading..." : "No states found"}
             />
           </div>
         </div>
@@ -550,9 +503,7 @@ const LocationConfiguration = ({
               }}
               options={cityOptions}
               placeholder="Search and select district"
-              notFoundContent={
-                isLoadingCities ? "Loading..." : "No districts found"
-              }
+              notFoundContent={isLoadingCities ? "Loading..." : "No districts found"}
             />
           </div>
           <div className="w-full flex flex-col">
@@ -571,24 +522,22 @@ const LocationConfiguration = ({
               popupRender={(menu) => (
                 <>
                   {menu}
-                  {areaSearchValue &&
-                    !isLoadingAreas &&
-                    areaOptions.length === 0 && (
-                      <>
-                        <Divider style={{ margin: "8px 0" }} />
-                        <Space style={{ padding: "0 8px 4px" }}>
-                          <Button
-                            type="text"
-                            icon={<PlusOutlined />}
-                            onMouseDown={(e) => e.preventDefault()}
-                            onClick={openCreateDialog}
-                            block
-                          >
-                            Create "{areaSearchValue}"
-                          </Button>
-                        </Space>
-                      </>
-                    )}
+                  {areaSearchValue && !isLoadingAreas && areaOptions.length === 0 && (
+                    <>
+                      <Divider style={{ margin: "8px 0" }} />
+                      <Space style={{ padding: "0 8px 4px" }}>
+                        <Button
+                          type="text"
+                          icon={<PlusOutlined />}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={openCreateDialog}
+                          block
+                        >
+                          Create "{areaSearchValue}"
+                        </Button>
+                      </Space>
+                    </>
+                  )}
                 </>
               )}
             />
@@ -640,10 +589,7 @@ const LocationConfiguration = ({
         <Space direction="vertical" className="w-full gap-4">
           <div className="flex flex-col gap-1">
             <span className="font-medium text-sm">Area Name</span>
-            <Input
-              value={createAreaName}
-              onChange={(e) => setCreateAreaName(e.target.value)}
-            />
+            <Input value={createAreaName} onChange={(e) => setCreateAreaName(e.target.value)} />
           </div>
           <div className="flex flex-col gap-1">
             <span className="font-medium text-sm">Pincode</span>
@@ -653,9 +599,7 @@ const LocationConfiguration = ({
               onChange={handleCreateZipcodeChange}
               maxLength={10}
             />
-            <span className="text-xs text-gray-500">
-              Only numbers and hyphens are allowed.
-            </span>
+            <span className="text-xs text-gray-500">Only numbers and hyphens are allowed.</span>
           </div>
         </Space>
       </Modal>

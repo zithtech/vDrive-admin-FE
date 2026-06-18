@@ -90,9 +90,7 @@ const AdminPlatformReport: React.FC<Props> = ({ isOpen, onClose }) => {
 
         <div className="border-t mt-6" />
 
-        <p className="text-center text-gray-500 text-sm mt-4 mb-2">
-          Verified by Finance Lead
-        </p>
+        <p className="text-center text-gray-500 text-sm mt-4 mb-2">Verified by Finance Lead</p>
       </div>
     </div>
   );

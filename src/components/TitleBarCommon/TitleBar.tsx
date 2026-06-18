@@ -25,15 +25,17 @@ const TitleBar: React.FC<TitleBarProps> = ({
         <div className="flex items-center gap-4">
           {icon && (
             <div className={`flex items-center justify-center w-10 h-10 ${iconBgColor} rounded-xl`}>
-              <div className="text-white text-xl flex items-center justify-center">
-                {icon}
-              </div>
+              <div className="text-white text-xl flex items-center justify-center">{icon}</div>
             </div>
           )}
           <div className="flex flex-col gap-0.5">
-            <h1 className="font-black text-xl text-slate-800 dark:text-slate-100 tracking-tight leading-none">{title}</h1>
+            <h1 className="font-black text-xl text-slate-800 dark:text-slate-100 tracking-tight leading-none">
+              {title}
+            </h1>
             {description && (
-              <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">{description}</p>
+              <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
+                {description}
+              </p>
             )}
           </div>
         </div>
@@ -42,9 +44,7 @@ const TitleBar: React.FC<TitleBarProps> = ({
       </div>
       <div
         className={
-          className?.length
-            ? className
-            : "w-full h-full relative overflow-hidden px-4 py-2 "
+          className?.length ? className : "w-full h-full relative overflow-hidden px-4 py-2 "
         }
       >
         {children}

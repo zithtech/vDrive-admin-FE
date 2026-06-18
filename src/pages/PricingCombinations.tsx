@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Layout,
   Typography,
@@ -18,7 +18,7 @@ import {
   message,
   Modal,
   Input,
-} from 'antd';
+} from "antd";
 import {
   SettingOutlined,
   TableOutlined,
@@ -27,15 +27,15 @@ import {
   DeleteOutlined,
   PlusOutlined,
   EditOutlined,
-} from '@ant-design/icons';
+} from "@ant-design/icons";
 
-import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
   fetchPricingCombinations,
   bulkCreatePricingCombinations,
   updatePricingCombination,
   deletePricingCombination,
-} from '../store/slices/pricingCombinationSlice';
+} from "../store/slices/pricingCombinationSlice";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -46,7 +46,7 @@ export interface PricingRow {
   tier: number;
   duration: number;
   distance: number;
-  type: 'Base' | 'Extra KM';
+  type: "Base" | "Extra KM";
   price: number;
   per_km_rate: number;
 }
@@ -55,7 +55,7 @@ const PricingCombinations: React.FC = () => {
   const dispatch = useAppDispatch();
   const { combinations, isLoading } = useAppSelector((state) => state.pricingCombination);
   const [form] = Form.useForm();
-  const [activeTab, setActiveTab] = useState('1');
+  const [activeTab, setActiveTab] = useState("1");
   const [matrix, setMatrix] = useState<PricingRow[]>([]);
 
   useEffect(() => {
@@ -64,10 +64,10 @@ const PricingCombinations: React.FC = () => {
 
   // Sync matrix with combinations from store if needed, or just use combinations directly
   const displayMatrix = useMemo(() => {
-    if (activeTab === '2' && matrix.length > 0) {
+    if (activeTab === "2" && matrix.length > 0) {
       return matrix;
     }
-    return combinations.map(c => ({
+    return combinations.map((c) => ({
       ...c,
       key: c.id,
     })) as PricingRow[];
@@ -79,14 +79,8 @@ const PricingCombinations: React.FC = () => {
   const [editForm] = Form.useForm();
 
   const generateMatrix = (values: any) => {
-    const {
-      baseDuration,
-      baseDistance,
-      basePrice,
-      numTiers,
-      extraKmStep,
-      pricePerExtraKm,
-    } = values;
+    const { baseDuration, baseDistance, basePrice, numTiers, extraKmStep, pricePerExtraKm } =
+      values;
 
     const newMatrix: PricingRow[] = [];
 
@@ -102,7 +96,7 @@ const PricingCombinations: React.FC = () => {
         tier: t,
         duration: tierBaseDuration,
         distance: tierBaseDistance,
-        type: 'Base',
+        type: "Base",
         price: tierBasePrice,
         per_km_rate: tierBaseDistance > 0 ? tierBasePrice / tierBaseDistance : 0,
       });
@@ -113,14 +107,14 @@ const PricingCombinations: React.FC = () => {
         const totalDist = tierBaseDistance + extraDist;
         const extraDuration = (extraDist / baseDistance) * baseDuration;
         const totalDuration = tierBaseDuration + extraDuration;
-        const totalPrice = tierBasePrice + (s * pricePerExtraKm);
+        const totalPrice = tierBasePrice + s * pricePerExtraKm;
 
         newMatrix.push({
           key: `tier-${t}-step-${s}`,
           tier: t,
           duration: parseFloat(totalDuration.toFixed(2)),
           distance: totalDist,
-          type: 'Extra KM',
+          type: "Extra KM",
           price: totalPrice,
           per_km_rate: totalDist > 0 ? totalPrice / totalDist : 0,
         });
@@ -128,17 +122,17 @@ const PricingCombinations: React.FC = () => {
     }
 
     setMatrix(newMatrix);
-    setActiveTab('2');
-    message.success('Pricing matrix generated successfully!');
+    setActiveTab("2");
+    message.success("Pricing matrix generated successfully!");
   };
 
   const handleDelete = async (record: PricingRow) => {
     if (record.id) {
       try {
         await dispatch(deletePricingCombination(record.id)).unwrap();
-        message.success('Row deleted successfully!');
+        message.success("Row deleted successfully!");
       } catch (err: any) {
-        message.error(err || 'Failed to delete row');
+        message.error(err || "Failed to delete row");
       }
     } else {
       setMatrix(matrix.filter((item) => item.key !== record.key));
@@ -163,18 +157,20 @@ const PricingCombinations: React.FC = () => {
       if (editingRow?.id) {
         const newPrice = Number(values.price);
         const currentDistance = Number(editingRow.distance);
-        await dispatch(updatePricingCombination({
-          id: editingRow.id,
-          combinationData: {
-            tier: editingRow.tier,
-            duration: editingRow.duration,
-            distance: editingRow.distance,
-            type: editingRow.type,
-            price: newPrice,
-            per_km_rate: currentDistance > 0 ? newPrice / currentDistance : 0,
-          }
-        })).unwrap();
-        message.success('Row updated successfully!');
+        await dispatch(
+          updatePricingCombination({
+            id: editingRow.id,
+            combinationData: {
+              tier: editingRow.tier,
+              duration: editingRow.duration,
+              distance: editingRow.distance,
+              type: editingRow.type,
+              price: newPrice,
+              per_km_rate: currentDistance > 0 ? newPrice / currentDistance : 0,
+            },
+          }),
+        ).unwrap();
+        message.success("Row updated successfully!");
       } else {
         const updatedMatrix = matrix.map((item) => {
           if (editingRow && item.key === editingRow.key) {
@@ -189,13 +185,13 @@ const PricingCombinations: React.FC = () => {
           return item;
         });
         setMatrix(updatedMatrix);
-        message.success('Local row updated!');
+        message.success("Local row updated!");
       }
       setIsEditModalVisible(false);
       setEditingRow(null);
     } catch (error: any) {
-      console.error('Save failed:', error);
-      message.error(error || 'Failed to save changes');
+      console.error("Save failed:", error);
+      message.error(error || "Failed to save changes");
     }
   };
 
@@ -206,19 +202,28 @@ const PricingCombinations: React.FC = () => {
   };
 
   const exportCSV = () => {
-    const headers = ['Tier', 'Duration (hr)', 'Distance (km)', 'Type', 'Price (₹)', 'Per-KM Rate (₹/km)'];
-    const rows = matrix.map(item => [
+    const headers = [
+      "Tier",
+      "Duration (hr)",
+      "Distance (km)",
+      "Type",
+      "Price (₹)",
+      "Per-KM Rate (₹/km)",
+    ];
+    const rows = matrix.map((item) => [
       item.tier,
       item.duration,
       item.distance,
       item.type,
       Number(item.price || 0),
-      Number(item.per_km_rate || 0).toFixed(2)
+      Number(item.per_km_rate || 0).toFixed(2),
     ]);
 
-    let csvContent = "data:text/csv;charset=utf-8,"
-      + headers.join(",") + "\n"
-      + rows.map(e => e.join(",")).join("\n");
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      headers.join(",") +
+      "\n" +
+      rows.map((e) => e.join(",")).join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -231,14 +236,14 @@ const PricingCombinations: React.FC = () => {
 
   const saveMatrix = async () => {
     if (matrix.length === 0) {
-      message.warning('No matrix generated to save!');
+      message.warning("No matrix generated to save!");
       return;
     }
 
-    message.loading({ content: 'Saving matrix...', key: 'save' });
+    message.loading({ content: "Saving matrix...", key: "save" });
     try {
       // Use the new bulk create thunk
-      const combinationsPayload = matrix.map(row => {
+      const combinationsPayload = matrix.map((row) => {
         const { key, id, ...payload } = row;
         return payload;
       });
@@ -246,70 +251,68 @@ const PricingCombinations: React.FC = () => {
       await dispatch(bulkCreatePricingCombinations(combinationsPayload)).unwrap();
 
       setMatrix([]); // Clear local matrix after saving
-      message.success({ content: 'Pricing matrix saved successfully!', key: 'save', duration: 2 });
+      message.success({ content: "Pricing matrix saved successfully!", key: "save", duration: 2 });
     } catch (err: any) {
-      message.error({ content: err || 'Failed to save matrix', key: 'save' });
+      message.error({ content: err || "Failed to save matrix", key: "save" });
     }
   };
 
   const stats = useMemo(() => {
     const data = displayMatrix;
     if (data.length === 0) return { count: 0, min: 0, max: 0, tiers: 0 };
-    const prices = data.map(m => m.price);
-    const tiers = new Set(data.map(m => m.tier)).size;
+    const prices = data.map((m) => m.price);
+    const tiers = new Set(data.map((m) => m.tier)).size;
     return {
       count: data.length,
       min: Math.min(...prices),
       max: Math.max(...prices),
-      tiers: tiers
+      tiers: tiers,
     };
   }, [displayMatrix]);
 
   const columns = [
     {
-      title: 'Tier',
-      dataIndex: 'tier',
-      key: 'tier',
+      title: "Tier",
+      dataIndex: "tier",
+      key: "tier",
       render: (tier: number) => <Tag color="blue">Tier {tier}</Tag>,
     },
     {
-      title: 'Duration (hr)',
-      dataIndex: 'duration',
-      key: 'duration',
+      title: "Duration (hr)",
+      dataIndex: "duration",
+      key: "duration",
     },
     {
-      title: 'Distance (km)',
-      dataIndex: 'distance',
-      key: 'distance',
+      title: "Distance (km)",
+      dataIndex: "distance",
+      key: "distance",
     },
     {
-      title: 'Type',
-      dataIndex: 'type',
-      key: 'type',
-      render: (type: string) => (
-        <Tag color={type === 'Base' ? 'green' : 'orange'}>{type}</Tag>
-      ),
+      title: "Type",
+      dataIndex: "type",
+      key: "type",
+      render: (type: string) => <Tag color={type === "Base" ? "green" : "orange"}>{type}</Tag>,
     },
     {
-      title: 'Price (₹)',
-      dataIndex: 'price',
-      key: 'price',
+      title: "Price (₹)",
+      dataIndex: "price",
+      key: "price",
       render: (price: any) => <b>₹{Number(price || 0).toLocaleString()}</b>,
     },
     {
-      title: 'Per-KM Rate',
-      dataIndex: 'per_km_rate',
-      key: 'per_km_rate',
+      title: "Per-KM Rate",
+      dataIndex: "per_km_rate",
+      key: "per_km_rate",
       render: (rate: any) => `₹${Number(rate || 0).toFixed(2)}/km`,
     },
     {
-      title: 'Action',
-      key: 'action',
+      title: "Action",
+      key: "action",
       render: (_: any, record: PricingRow) => (
         <Space>
           <Button
             type="text"
-            icon={<EditOutlined style={{ color: '#1890ff' }} />}
+            icon={<EditOutlined style={{ color: "#1890ff" }} />}
             onClick={() => handleEdit(record)}
           />
           <Popconfirm
@@ -326,17 +329,17 @@ const PricingCombinations: React.FC = () => {
   ];
 
   return (
-    <Content style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+    <Content style={{ padding: "24px", maxWidth: "1200px", margin: "0 auto" }}>
       <Title level={2}>Pricing Combinations</Title>
       <Text type="secondary">Generate and manage duration-distance based pricing matrix.</Text>
 
       <Tabs
         activeKey={activeTab}
         onChange={setActiveTab}
-        style={{ marginTop: '24px' }}
+        style={{ marginTop: "24px" }}
         items={[
           {
-            key: '1',
+            key: "1",
             label: (
               <span>
                 <SettingOutlined />
@@ -365,7 +368,7 @@ const PricingCombinations: React.FC = () => {
                         label="Base Duration (hr)"
                         rules={[{ required: true }]}
                       >
-                        <InputNumber min={0.5} step={0.5} style={{ width: '100%' }} />
+                        <InputNumber min={0.5} step={0.5} style={{ width: "100%" }} />
                       </Form.Item>
                     </Col>
                     <Col span={8}>
@@ -374,7 +377,7 @@ const PricingCombinations: React.FC = () => {
                         label="Base Distance (km)"
                         rules={[{ required: true }]}
                       >
-                        <InputNumber min={1} style={{ width: '100%' }} />
+                        <InputNumber min={1} style={{ width: "100%" }} />
                       </Form.Item>
                     </Col>
                     <Col span={8}>
@@ -383,7 +386,7 @@ const PricingCombinations: React.FC = () => {
                         label="Base Price (₹)"
                         rules={[{ required: true }]}
                       >
-                        <InputNumber min={1} style={{ width: '100%' }} />
+                        <InputNumber min={1} style={{ width: "100%" }} />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -397,7 +400,7 @@ const PricingCombinations: React.FC = () => {
                         label="Number of Tiers (Multipliers)"
                         rules={[{ required: true }]}
                       >
-                        <InputNumber min={1} max={20} style={{ width: '100%' }} />
+                        <InputNumber min={1} max={20} style={{ width: "100%" }} />
                       </Form.Item>
                     </Col>
                     <Col span={8}>
@@ -406,7 +409,7 @@ const PricingCombinations: React.FC = () => {
                         label="Extra KM Step (km)"
                         rules={[{ required: true }]}
                       >
-                        <InputNumber min={1} style={{ width: '100%' }} />
+                        <InputNumber min={1} style={{ width: "100%" }} />
                       </Form.Item>
                     </Col>
                     <Col span={8}>
@@ -415,7 +418,7 @@ const PricingCombinations: React.FC = () => {
                         label="Price per Extra KM Step (₹)"
                         rules={[{ required: true }]}
                       >
-                        <InputNumber min={0} style={{ width: '100%' }} />
+                        <InputNumber min={0} style={{ width: "100%" }} />
                       </Form.Item>
                     </Col>
                   </Row>
@@ -430,7 +433,7 @@ const PricingCombinations: React.FC = () => {
             ),
           },
           {
-            key: '2',
+            key: "2",
             label: (
               <span>
                 <TableOutlined />
@@ -438,7 +441,7 @@ const PricingCombinations: React.FC = () => {
               </span>
             ),
             children: (
-              <Space direction="vertical" size="large" style={{ width: '100%' }}>
+              <Space direction="vertical" size="large" style={{ width: "100%" }}>
                 <Row gutter={16}>
                   <Col span={6}>
                     <Card size="small">
@@ -498,37 +501,31 @@ const PricingCombinations: React.FC = () => {
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item name="tier" label="Tier">
-                <InputNumber disabled style={{ width: '100%' }} />
+                <InputNumber disabled style={{ width: "100%" }} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item name="type" label="Type">
-                <Input disabled style={{ width: '100%' }} />
+                <Input disabled style={{ width: "100%" }} />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item
-                name="duration"
-                label="Duration (hr)"
-              >
-                <InputNumber disabled style={{ width: '100%' }} />
+              <Form.Item name="duration" label="Duration (hr)">
+                <InputNumber disabled style={{ width: "100%" }} />
               </Form.Item>
             </Col>
             <Col span={12}>
-              <Form.Item
-                name="distance"
-                label="Distance (km)"
-              >
-                <InputNumber disabled style={{ width: '100%' }} />
+              <Form.Item name="distance" label="Distance (km)">
+                <InputNumber disabled style={{ width: "100%" }} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item
                 name="price"
                 label="Price (₹)"
-                rules={[{ required: true, message: 'Please input price' }]}
+                rules={[{ required: true, message: "Please input price" }]}
               >
-                <InputNumber min={0} style={{ width: '100%' }} />
+                <InputNumber min={0} style={{ width: "100%" }} />
               </Form.Item>
             </Col>
           </Row>

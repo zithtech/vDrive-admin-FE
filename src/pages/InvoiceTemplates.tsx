@@ -42,20 +42,13 @@ const TripInvoiceList: React.FC<{
   sendHandler: (trip: TripInvoiceState) => void;
 }> = ({ data, type, openPreview, sendHandler }) => {
   const statusKey =
-    type === "customer"
-      ? "sentToCustomer"
-      : type === "driver"
-        ? "sentToDriver"
-        : "sentToAdmin";
+    type === "customer" ? "sentToCustomer" : type === "driver" ? "sentToDriver" : "sentToAdmin";
 
   const completedTrips = data.filter((t) => t.trip_status === "COMPLETED");
 
   const pageSize = 10;
   const [page, setPage] = useState(1);
-  const paginated = completedTrips.slice(
-    (page - 1) * pageSize,
-    page * pageSize,
-  );
+  const paginated = completedTrips.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div className="mt-4">
@@ -120,9 +113,7 @@ const TripInvoiceList: React.FC<{
 };
 
 const InvoiceTemplates: React.FC = () => {
-  const tripData = useSelector(
-    (state: RootState) => state.trips.trips,
-  ) as TripInvoiceState[];
+  const tripData = useSelector((state: RootState) => state.trips.trips) as TripInvoiceState[];
 
   const [openModal, setOpenModal] = useState({
     customer: false,
@@ -131,14 +122,9 @@ const InvoiceTemplates: React.FC = () => {
     admin: false,
   });
 
-  const [selectedTrip, setSelectedTrip] = useState<TripInvoiceState | null>(
-    null,
-  );
+  const [selectedTrip, setSelectedTrip] = useState<TripInvoiceState | null>(null);
 
-  const openPreview = (
-    key: keyof typeof openModal,
-    trip?: TripInvoiceState,
-  ) => {
+  const openPreview = (key: keyof typeof openModal, trip?: TripInvoiceState) => {
     setSelectedTrip(trip ?? null);
     setOpenModal({ ...openModal, [key]: true });
   };
@@ -148,8 +134,7 @@ const InvoiceTemplates: React.FC = () => {
     setOpenModal({ ...openModal, [key]: false });
   };
 
-  const mockSend = (t: TripInvoiceState) =>
-    alert(`Sending invoice for ${t.trip_id}`);
+  const mockSend = (t: TripInvoiceState) => alert(`Sending invoice for ${t.trip_id}`);
 
   return (
     <TitleBar
@@ -206,7 +191,9 @@ const InvoiceTemplates: React.FC = () => {
               children: (
                 <section className="p-4 space-y-6">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Daily Summary</h2>
+                    <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+                      Daily Summary
+                    </h2>
 
                     <div className="flex gap-2">
                       <Button type="default" icon={<CloudDownloadOutlined />}>
@@ -257,15 +244,9 @@ const InvoiceTemplates: React.FC = () => {
         trip={selectedTrip ?? undefined}
       />
 
-      <DailyTripReport
-        isOpen={openModal.daily}
-        onClose={() => closePreview("daily")}
-      />
+      <DailyTripReport isOpen={openModal.daily} onClose={() => closePreview("daily")} />
 
-      <AdminPlatformReport
-        isOpen={openModal.admin}
-        onClose={() => closePreview("admin")}
-      />
+      <AdminPlatformReport isOpen={openModal.admin} onClose={() => closePreview("admin")} />
     </TitleBar>
   );
 };

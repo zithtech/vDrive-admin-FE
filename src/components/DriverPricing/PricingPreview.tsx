@@ -67,9 +67,7 @@ const PricingPreview = ({
 
   // For each slot: base → hotspot → taxes
   const getBreakdown = (slot: TimeSlot) => {
-    const priceAfterHotspot = hotspotEnabled
-      ? slot.price * multiplier + hotspotFare
-      : slot.price;
+    const priceAfterHotspot = hotspotEnabled ? slot.price * multiplier + hotspotFare : slot.price;
     return computeTaxBreakdown(priceAfterHotspot, taxes);
   };
 
@@ -131,19 +129,14 @@ const PricingPreview = ({
                   const breakdown = getBreakdown(slot);
 
                   return (
-                    <div
-                      key={slot.id}
-                      className="p-2 bg-[#F8F9FA] rounded-md flex flex-col gap-1"
-                    >
+                    <div key={slot.id} className="p-2 bg-[#F8F9FA] rounded-md flex flex-col gap-1">
                       <span className="capitalize font-medium">{slot.day}</span>
                       <span className="text-[12px] text-gray-600">
                         {slot.timeRange
                           ? `${slot.timeRange[0].format("h:mm A")} - ${slot.timeRange[1].format("h:mm A")}`
                           : "No time set"}
                       </span>
-                      <span className="text-[12px] text-gray-600">
-                        Base: ₹{slot.price}
-                      </span>
+                      <span className="text-[12px] text-gray-600">Base: ₹{slot.price}</span>
                       {hotspotEnabled && selectedHotspot && (
                         <span className="text-[12px] text-blue-600">
                           After hotspot: ₹{priceAfterHotspot.toFixed(2)}
@@ -183,9 +176,15 @@ const PricingPreview = ({
           </div>
           <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col gap-2">
             <div className="flex gap-4 text-sm">
-              <span>Step: <strong>{extraKmStep} km</strong></span>
-              <span>Base price: <strong>₹{Number(extraKmPrice).toFixed(2)}</strong></span>
-              <span>Start multiplier: <strong>×{Number(extraKmStartMultiplier).toFixed(2)}</strong></span>
+              <span>
+                Step: <strong>{extraKmStep} km</strong>
+              </span>
+              <span>
+                Base price: <strong>₹{Number(extraKmPrice).toFixed(2)}</strong>
+              </span>
+              <span>
+                Start multiplier: <strong>×{Number(extraKmStartMultiplier).toFixed(2)}</strong>
+              </span>
             </div>
             <Table
               size="small"
@@ -210,17 +209,13 @@ const PricingPreview = ({
                   title: "Multiplier",
                   dataIndex: "multiplier",
                   key: "multiplier",
-                  render: (v: string) => (
-                    <span className="text-[#0080FF] font-semibold">{v}</span>
-                  ),
+                  render: (v: string) => <span className="text-[#0080FF] font-semibold">{v}</span>,
                 },
                 {
                   title: "₹ / Step",
                   dataIndex: "price",
                   key: "price",
-                  render: (v: string) => (
-                    <span className="text-green-600 font-semibold">{v}</span>
-                  ),
+                  render: (v: string) => <span className="text-green-600 font-semibold">{v}</span>,
                 },
               ]}
             />
