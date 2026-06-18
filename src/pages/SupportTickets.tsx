@@ -503,6 +503,7 @@ const SupportTickets: React.FC = () => {
             locale={{ emptyText: <div className="p-8 text-center text-slate-400">No {statusFilter} tickets found</div> }}
           />
         </div>
+        </div>
       </Sider>
 
       <Content className="bg-white dark:bg-slate-900 flex flex-col">
