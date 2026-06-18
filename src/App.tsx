@@ -493,6 +493,7 @@ const RootLayout: React.FC = () => {
     }
     if (driversAccess) {
       items.push({ label: <Link to="/drivers">Drivers</Link>, key: "/drivers", icon: <PiSteeringWheel /> });
+      items.push({ label: <Link to="/driver-applications">Driver Applications</Link>, key: "/driver-applications", icon: <CheckCircleOutlined /> });
     }
     if (driverOutreachAccess) {
       items.push({ label: <Link to="/driver-reconciliation">Driver Outreach</Link>, key: "/driver-reconciliation", icon: <TableOutlined /> });
