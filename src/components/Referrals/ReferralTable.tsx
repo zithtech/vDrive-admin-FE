@@ -9,7 +9,8 @@ interface ReferralTableProps {
   onEdit: (record: ReferralConfig) => void;
   onDelete: (id: string) => void;
   onToggleStatus: (id: string, is_active: boolean) => void;
-  isSuperAdmin?: boolean;
+  canUpdate?: boolean;
+  canDelete?: boolean;
 }
 
 const ReferralTable: React.FC<ReferralTableProps> = ({
@@ -18,7 +19,8 @@ const ReferralTable: React.FC<ReferralTableProps> = ({
   onEdit,
   onDelete,
   onToggleStatus,
-  isSuperAdmin = false,
+  canUpdate = false,
+  canDelete = false,
 }) => {
   const columns = [
     {
@@ -63,9 +65,9 @@ const ReferralTable: React.FC<ReferralTableProps> = ({
         <div className="flex items-center gap-3">
           <Switch
             checked={record.is_active}
-            disabled={!isSuperAdmin}
+            disabled={!canUpdate}
             onChange={(checked) => onToggleStatus(record.id, checked)}
-            className={`${record.is_active ? 'bg-emerald-500' : 'bg-gray-300'} ${!isSuperAdmin ? 'opacity-50' : ''}`}
+            className={`${record.is_active ? 'bg-emerald-500' : 'bg-gray-300'} ${!canUpdate ? 'opacity-50' : ''}`}
           />
           <span className={`text-[10px] font-bold uppercase tracking-widest ${record.is_active ? 'text-emerald-600' : 'text-gray-400'}`}>
             {record.is_active ? 'Live' : 'Paused'}
@@ -73,29 +75,33 @@ const ReferralTable: React.FC<ReferralTableProps> = ({
         </div>
       ),
     },
-    ...(isSuperAdmin ? [
+    ...(canUpdate || canDelete ? [
       {
         title: <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Actions</span>,
         key: "actions",
         render: (_: any, record: ReferralConfig) => (
           <Space size="small">
-            <Tooltip title="Configure Rule">
-              <Button
-                type="text"
-                icon={<EditOutlined className="text-blue-500 dark:text-blue-400" />}
-                onClick={() => onEdit(record)}
-                className="hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
-              />
-            </Tooltip>
-            <Tooltip title="Archive Rule">
-              <Button
-                type="text"
-                danger
-                icon={<DeleteOutlined />}
-                onClick={() => onDelete(record.id)}
-                className="hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
-              />
-            </Tooltip>
+            {canUpdate && (
+              <Tooltip title="Configure Rule">
+                <Button
+                  type="text"
+                  icon={<EditOutlined className="text-blue-500 dark:text-blue-400" />}
+                  onClick={() => onEdit(record)}
+                  className="hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
+                />
+              </Tooltip>
+            )}
+            {canDelete && (
+              <Tooltip title="Archive Rule">
+                <Button
+                  type="text"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => onDelete(record.id)}
+                  className="hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
+                />
+              </Tooltip>
+            )}
           </Space>
         ),
       }

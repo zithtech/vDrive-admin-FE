@@ -13,9 +13,9 @@ import {
   TableOutlined,
   CheckCircleOutlined,
   BellOutlined,
-  CustomerServiceOutlined,
-  PieChartOutlined,
-  SafetyCertificateOutlined,
+  // CustomerServiceOutlined,
+  // PieChartOutlined,
+  // SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import {
@@ -38,7 +38,7 @@ import {
   Outlet,
 } from "react-router-dom";
 import { PiSteeringWheel } from "react-icons/pi";
-import { RiAdminLine } from "react-icons/ri";
+import { RiAdminLine, RiQuestionLine } from "react-icons/ri";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import { logoutAsync, fetchCurrentUser } from "./store/slices/authSlice";
 import FullScreenLoader from "./components/FullScreenLoader";
@@ -51,10 +51,15 @@ import { notification } from "antd";
 import { useAdminTripAlert } from "./hooks/useAdminTripAlert";
 import { useUserAlert } from "./hooks/useUserAlert";
 import { useTripVerificationAlert } from "./hooks/useTripVerificationAlert";
-import { IoReceiptOutline, IoCarOutline } from "react-icons/io5";
+import {
+  // IoReceiptOutline,
+  IoCarOutline
+} from "react-icons/io5";
 import { MdOutlineAccountBalanceWallet } from "react-icons/md";
 import SosMonitor from "./components/SosMonitor/SosMonitor";
 import { useTheme } from "./contexts/ThemeContext";
+import { useModuleAccess } from "./hooks/usePermission";
+import { ModuleProtectedRoute } from "./components/ModuleProtectedRoute";
 
 // Loading component for route suspense
 const RouteLoadingFallback = () => (
@@ -116,39 +121,7 @@ const Notifications = lazy(() => import("./pages/Notifications"));
 const SupportTickets = lazy(() => import("./pages/SupportTickets"));
 const SupportAnalytics = lazy(() => import("./pages/SupportAnalytics"));
 
-// RBAC: Higher-order component to protect sensitive routes
-const RoleProtectedRoute = ({
-  children,
-  allowedRoles
-}: {
-  children: React.ReactNode;
-  allowedRoles: string[];
-}) => {
-  const { role, loading } = useAppSelector((state) => state.auth);
 
-  if (loading) return <RouteLoadingFallback />;
-
-  if (!role || !allowedRoles.includes(role)) {
-    return (
-      <div className="h-full flex flex-col items-center justify-center p-10 text-center">
-        <div className="text-6xl mb-4">🚫</div>
-        <h2 className="text-2xl font-black text-slate-800 mb-2">Access Restricted</h2>
-        <p className="text-slate-500 max-w-md mx-auto">
-          Your account level does not have the necessary permissions to access this administrative module.
-        </p>
-        <Button
-          type="primary"
-          className="mt-6 rounded-xl font-bold h-10 px-8 bg-indigo-600 border-none"
-          onClick={() => window.location.href = "/"}
-        >
-          Return to Dashboard
-        </Button>
-      </div>
-    );
-  }
-
-  return <>{children}</>;
-};
 
 
 
@@ -183,6 +156,25 @@ const RootLayout: React.FC = () => {
   const { isAuthenticated, loading, currentUser, role } = useAppSelector((state) => state.auth);
   const location = useLocation();
   const { isDarkMode } = useTheme();
+
+  const dashboardAccess = useModuleAccess("dashboard");
+  const customersAccess = useModuleAccess("customers");
+  const pricingAccess = useModuleAccess("pricing");
+  const driversAccess = useModuleAccess("drivers");
+  const driverOutreachAccess = useModuleAccess("drivers_outreach");
+  const adminsAccess = useModuleAccess("admins");
+  const deductionsAccess = useModuleAccess("deductions");
+  const rechargePlanAccess = useModuleAccess("recharge");
+  const taxesAccess = useModuleAccess("taxes");
+  const couponsAccess = useModuleAccess(["coupons", "promos", "user_referrals", "driver_referrals"]);
+  // const promotionsAccess = useModuleAccess("promos");
+  const notificationsAccess = useModuleAccess("notifications");
+  const tripsAccess = useModuleAccess("trips");
+  const tripTransactionAccess = useModuleAccess("trip_transaction");
+  const tripverificationAccess = useModuleAccess("trip_verification");
+  const supportTicketsAccess = useModuleAccess("support_tickets");
+  const supportAnalyticsAccess = useModuleAccess("support_analytics");
+
 
   useEffect(() => {
     if (isAuthenticated && !currentUser) {
@@ -227,9 +219,31 @@ const RootLayout: React.FC = () => {
       });
     });
 
+    socket.on('ADMIN_SUPPORT_TICKET_ALERT', (newTicket: any) => {
+      notificationApi?.info({
+        message: 'New Driver Support Ticket',
+        description: newTicket.subject || 'A driver has created a new support ticket.',
+        placement: 'topRight',
+        duration: 5,
+        onClick: () => navigate(`/support-tickets?ticketId=${newTicket.id}`)
+      });
+    });
+
+    socket.on('ADMIN_SUPPORT_USER_TICKET_ALERT', (newTicket: any) => {
+      notificationApi?.info({
+        message: 'New Customer Support Ticket',
+        description: newTicket.subject || 'A customer has created a new support ticket.',
+        placement: 'topRight',
+        duration: 5,
+        onClick: () => navigate(`/support-tickets?ticketId=${newTicket.id}`)
+      });
+    });
+
     return () => {
       socket.off("driver_event", handleDriverEvent);
       socket.off("newSupportMessageNotification");
+      socket.off("ADMIN_SUPPORT_TICKET_ALERT");
+      socket.off("ADMIN_SUPPORT_USER_TICKET_ALERT");
     };
   }, [socket]);
 
@@ -466,40 +480,84 @@ const RootLayout: React.FC = () => {
   };
 
   const menuItems = React.useMemo(() => {
-    const items: MenuProps["items"] = [
-      { label: <Link to="/">Dashboard</Link>, key: "/", icon: <HomeOutlined /> },
-      // { label: <Link to="/users">Users</Link>, key: "/users", icon: <TeamOutlined /> },
-      { label: <Link to="/customers">Customers</Link>, key: "/customers", icon: <UserOutlined /> },
-      { label: <Link to="/PricingAndFareRules">Pricing And Fare Rules</Link>, key: "/PricingAndFareRules", icon: <DollarOutlined /> },
-      { label: <Link to="/drivers">Drivers</Link>, key: "/drivers", icon: <PiSteeringWheel /> },
-      { label: <Link to="/driver-applications">Awaiting Approval</Link>, key: "/driver-applications", icon: <SafetyCertificateOutlined /> },
-      { label: <Link to="/driver-reconciliation">Driver Outreach</Link>, key: "/driver-reconciliation", icon: <TableOutlined /> },
-    ];
+    const items: MenuProps["items"] = [];
 
-    // RBAC: Only super_admin can manage other admins
-    if (role === 'super_admin') {
+    if (dashboardAccess) {
+      items.push({ label: <Link to="/">Dashboard</Link>, key: "/", icon: <HomeOutlined /> });
+    }
+    if (customersAccess) {
+      items.push({ label: <Link to="/customers">Customers</Link>, key: "/customers", icon: <UserOutlined /> });
+    }
+    if (pricingAccess) {
+      items.push({ label: <Link to="/PricingAndFareRules">Pricing And Fare Rules</Link>, key: "/PricingAndFareRules", icon: <DollarOutlined /> });
+    }
+    if (driversAccess) {
+      items.push({ label: <Link to="/drivers">Drivers</Link>, key: "/drivers", icon: <PiSteeringWheel /> });
+    }
+    if (driverOutreachAccess) {
+      items.push({ label: <Link to="/driver-reconciliation">Driver Outreach</Link>, key: "/driver-reconciliation", icon: <TableOutlined /> });
+    }
+    if (adminsAccess) {
       items.push({ label: <Link to="/admins">Admins</Link>, key: "/admins", icon: <RiAdminLine /> });
     }
 
-    items.push(
-      { label: <Link to="/InvoiceTemplates">InvoiceTemplates</Link>, key: "/InvoiceTemplates", icon: <IoReceiptOutline /> },
-      { label: <Link to="/TripDetails">TripDetails</Link>, key: "/TripDetails", icon: <IoCarOutline /> },
-      { label: <Link to="/trip-verifications">Trip Verifications</Link>, key: "/trip-verifications", icon: <CheckCircleOutlined /> },
-      // { label: <Link to="/InvoiceTemplates">InvoiceTemplates</Link>, key: "/InvoiceTemplates", icon: <IoReceiptOutline /> },
-      { label: <Link to="/TripDetails">Trip Details</Link>, key: "/TripDetails", icon: <IoCarOutline /> },
-      { label: <Link to="/trip-transactions">Trip Transactions</Link>, key: "/trip-transactions", icon: <EnvironmentOutlined /> },
-      { label: <Link to="/Deductions">Deduction Management</Link>, key: "/Deductions", icon: <MdOutlineMoneyOff /> },
-      { label: <Link to="/RechargePlan">Recharge Plan</Link>, key: "/RechargePlan", icon: <MdOutlineAccountBalanceWallet /> },
-      { label: <Link to="/taxes">Tax Management</Link>, key: "/taxes", icon: <DollarOutlined /> },
-      // { label: <Link to="/pricing-combinations">Pricing Combinations</Link>, key: "/pricing-combinations", icon: <TableOutlined /> },
-      { label: <Link to="/coupons">Coupons</Link>, key: "/coupons", icon: <DollarOutlined /> },
-      { label: <Link to="/support-tickets">Support Tickets</Link>, key: "/support-tickets", icon: <CustomerServiceOutlined /> },
-      { label: <Link to="/support-analytics">Support Analytics</Link>, key: "/support-analytics", icon: <PieChartOutlined /> },
-      { label: <Link to="/notifications">Notifications</Link>, key: "/notifications", icon: <BellOutlined /> }
-    );
+    // Core functional tools available to authorized members
+    if (tripsAccess) {
+      items.push({ label: <Link to="/TripDetails">Trip Details</Link>, key: "/TripDetails", icon: <IoCarOutline /> });
+    }
+    if (tripTransactionAccess) {
+      items.push({ label: <Link to="/trip-transactions">Trip Transactions</Link>, key: "/trip-transactions", icon: <EnvironmentOutlined /> });
+    }
+
+    if (tripverificationAccess) {
+      items.push({ label: <Link to="/trip-verifications">Trip Verifications</Link>, key: "/trip-verifications", icon: <CheckCircleOutlined /> });
+    }
+    if (deductionsAccess) {
+      items.push({ label: <Link to="/Deductions">Deduction Management</Link>, key: "/Deductions", icon: <MdOutlineMoneyOff /> });
+    }
+    if (rechargePlanAccess) {
+      items.push({ label: <Link to="/RechargePlan">Recharge Plan</Link>, key: "/RechargePlan", icon: <MdOutlineAccountBalanceWallet /> });
+    }
+    if (taxesAccess) {
+      items.push({ label: <Link to="/taxes">Tax Management</Link>, key: "/taxes", icon: <DollarOutlined /> });
+    }
+    if (couponsAccess) {
+      items.push({ label: <Link to="/coupons">Coupons</Link>, key: "/coupons", icon: <DollarOutlined /> });
+    }
+    // if (promotionsAccess) {
+    //   items.push({ label: <Link to="/promotions">Promotions</Link>, key: "/promotions", icon: <Ticket /> });
+    // }
+    if (notificationsAccess) {
+      items.push({ label: <Link to="/notifications">Notifications</Link>, key: "/notifications", icon: <BellOutlined /> });
+    }
+
+    if (supportTicketsAccess) {
+      items.push({ label: <Link to="/support-tickets">Support Tickets</Link>, key: "/support-tickets", icon: <RiQuestionLine /> });
+    }
+    if (supportAnalyticsAccess) {
+      items.push({ label: <Link to="/support-analytics">Support Analytics</Link>, key: "/support-analytics", icon: <RiQuestionLine /> });
+    }
 
     return items;
-  }, [role]);
+  }, [
+    dashboardAccess,
+    customersAccess,
+    pricingAccess,
+    driversAccess,
+    driverOutreachAccess,
+    adminsAccess,
+    deductionsAccess,
+    rechargePlanAccess,
+    taxesAccess,
+    couponsAccess,
+    // promotionsAccess,
+    notificationsAccess,
+    tripsAccess,
+    tripTransactionAccess,
+    tripverificationAccess,
+    supportTicketsAccess,
+    supportAnalyticsAccess
+  ]);
   return (
     <ConfigProvider
       theme={{
@@ -748,12 +806,14 @@ const router = createBrowserRouter([
     path: "/",
     element: <RootLayout />,
     children: [
-      { index: true, element: <DashBoard /> },
+      { index: true, element: <ModuleProtectedRoute module="dashboard"><DashBoard /></ModuleProtectedRoute> },
       {
         path: "users",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <Users />
+            <ModuleProtectedRoute module="customers">
+              <Users />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -761,7 +821,9 @@ const router = createBrowserRouter([
         path: "customers",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <Customers />
+            <ModuleProtectedRoute module="customers">
+              <Customers />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -769,9 +831,9 @@ const router = createBrowserRouter([
         path: "admins",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <RoleProtectedRoute allowedRoles={['super_admin']}>
+            <ModuleProtectedRoute module="admins">
               <Admins />
-            </RoleProtectedRoute>
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -779,7 +841,9 @@ const router = createBrowserRouter([
         path: "InvoiceTemplates",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <InvoiceTemplates />
+            <ModuleProtectedRoute module="dashboard">
+              <InvoiceTemplates />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -787,7 +851,9 @@ const router = createBrowserRouter([
         path: "TripDetails",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <TripDetails />
+            <ModuleProtectedRoute module="trips">
+              <TripDetails />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -795,7 +861,9 @@ const router = createBrowserRouter([
         path: "trip-verifications",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <TripVerifications />
+            <ModuleProtectedRoute module="trip_verification">
+              <TripVerifications />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -803,7 +871,9 @@ const router = createBrowserRouter([
         path: "trip-transactions",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <TripTransactions />
+            <ModuleProtectedRoute module="trip_transaction">
+              <TripTransactions />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -811,7 +881,9 @@ const router = createBrowserRouter([
         path: "drivers",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <Drivers />
+            <ModuleProtectedRoute module="drivers">
+              <Drivers />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -819,7 +891,9 @@ const router = createBrowserRouter([
         path: "driver-applications",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <DriverApplications />
+            <ModuleProtectedRoute module="drivers">
+              <DriverApplications />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -827,7 +901,9 @@ const router = createBrowserRouter([
         path: "Deductions",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <Deductions />
+            <ModuleProtectedRoute module="deductions">
+              <Deductions />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -835,7 +911,9 @@ const router = createBrowserRouter([
         path: "support-tickets",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <SupportTickets />
+            <ModuleProtectedRoute module="support_tickets">
+              <SupportTickets />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -843,7 +921,9 @@ const router = createBrowserRouter([
         path: "support-analytics",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <SupportAnalytics />
+            <ModuleProtectedRoute module="support_tickets">
+              <SupportAnalytics />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -851,7 +931,9 @@ const router = createBrowserRouter([
         path: "RechargePlan",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <RechargePlan />
+            <ModuleProtectedRoute module="recharge">
+              <RechargePlan />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -859,7 +941,9 @@ const router = createBrowserRouter([
         path: "taxes",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <Tax />
+            <ModuleProtectedRoute module="taxes">
+              <Tax />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -867,7 +951,9 @@ const router = createBrowserRouter([
         path: "pricing-combinations",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <PricingCombinations />
+            <ModuleProtectedRoute module="pricing">
+              <PricingCombinations />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -875,7 +961,9 @@ const router = createBrowserRouter([
         path: "coupons",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <Coupons />
+            <ModuleProtectedRoute module={["coupons", "promos", "user_referrals", "driver_referrals"]}>
+              <Coupons />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -883,7 +971,9 @@ const router = createBrowserRouter([
         path: "driver-reconciliation",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <DriverReconciliation />
+            <ModuleProtectedRoute module="drivers_outreach">
+              <DriverReconciliation />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -891,7 +981,9 @@ const router = createBrowserRouter([
         path: "notifications",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <Notifications />
+            <ModuleProtectedRoute module="notifications">
+              <Notifications />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
       },
@@ -900,7 +992,9 @@ const router = createBrowserRouter([
         path: "PricingAndFareRules",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <PricingAndFareRules />
+            <ModuleProtectedRoute module="pricing">
+              <PricingAndFareRules />
+            </ModuleProtectedRoute>
           </Suspense>
         ),
         children: [
@@ -908,7 +1002,9 @@ const router = createBrowserRouter([
             path: "pricing/:id?",
             element: (
               <Suspense fallback={<RouteLoadingFallback />}>
-                <DriverPricing />
+                <ModuleProtectedRoute module="pricing">
+                  <DriverPricing />
+                </ModuleProtectedRoute>
               </Suspense>
             ),
           },

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Select, Button, Space, Typography, notification, Divider } from "antd";
-import { SendOutlined, UserOutlined, TeamOutlined, RiseOutlined, FallOutlined } from "@ant-design/icons";
+import { SendOutlined, UserOutlined, TeamOutlined, RiseOutlined, FallOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { useHasPermission } from "../../hooks/usePermission";
 import { fetchCustomers } from "../../store/slices/customerSlice";
 import { fetchDrivers } from "../../store/slices/driverSlice";
 import { updateNotification } from "../../store/slices/notificationSlice";
@@ -34,6 +35,13 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
   const currentAudience = targetType === 'CUSTOMER' ? customers : drivers;
   const currentLoading = targetType === 'CUSTOMER' ? customersLoading : driversLoading;
 
+  const canUpdate = useHasPermission("notifications", "update");
+  const hasDriversRead = useHasPermission("drivers", "read");
+  const hasCustomersRead = useHasPermission("customers", "read");
+  const { role } = useAppSelector((state) => state.auth);
+  const isSuperAdmin = role === 'super_admin';
+  const isAllowed = isSuperAdmin || canUpdate;
+
   useEffect(() => {
     if (visible && notificationData) {
       setTarget(notificationData.target_audience || "ALL");
@@ -43,13 +51,13 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
 
   useEffect(() => {
     if (visible && target === "SPECIFIC") {
-      if (targetType === 'DRIVER' && drivers.length === 0) {
+      if (targetType === 'DRIVER' && drivers.length === 0 && (isSuperAdmin || hasDriversRead)) {
         dispatch(fetchDrivers());
-      } else if (targetType === 'CUSTOMER' && customers.length === 0) {
+      } else if (targetType === 'CUSTOMER' && customers.length === 0 && (isSuperAdmin || hasCustomersRead)) {
         dispatch(fetchCustomers());
       }
     }
-  }, [visible, target, targetType, dispatch, drivers.length, customers.length]);
+  }, [visible, target, targetType, dispatch, drivers.length, customers.length, isSuperAdmin, hasDriversRead, hasCustomersRead]);
 
   const handleSend = async () => {
     if (target === "SPECIFIC" && selectedUserIds.length === 0) {
@@ -97,7 +105,7 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
       title={
         <Space>
           <SendOutlined className="text-indigo-600" />
-          <span>Dispatch Notification Campaign</span>
+          <span>Dispatch Notification Campaign {isAllowed ? "" : "(View Only)"}</span>
         </Space>
       }
       open={visible}
@@ -105,23 +113,34 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
       wrapClassName="dark-modal"
       footer={[
         <Button key="cancel" onClick={onCancel} className="rounded-xl border-none text-slate-400 font-bold hover:text-slate-600 dark:hover:text-slate-200 h-12 px-6">
-          Cancel
+          {isAllowed ? "Cancel" : "Close"}
         </Button>,
-        <Button
-          key="send"
-          type="primary"
-          icon={<SendOutlined />}
-          loading={loading}
-          onClick={handleSend}
-          className="!bg-gradient-to-r !from-indigo-600 !to-blue-500 border-none rounded-xl font-bold h-12 px-10 shadow-lg shadow-indigo-100 hover:scale-[1.02] transition-transform"
-        >
-          Dispatch Now
-        </Button>,
-      ]}
+        isAllowed && (
+          <Button
+            key="send"
+            type="primary"
+            icon={<SendOutlined />}
+            loading={loading}
+            onClick={handleSend}
+            className="!bg-gradient-to-r !from-indigo-600 !to-blue-500 border-none rounded-xl font-bold h-12 px-10 shadow-lg shadow-indigo-100 hover:scale-[1.02] transition-transform"
+          >
+            Dispatch Now
+          </Button>
+        ),
+      ].filter(Boolean)}
       width={600}
       className="premium-modal"
     >
       <div className="py-2">
+        {!isAllowed && (
+          <div className="mb-4 bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-[1.5rem] text-xs flex items-start gap-3 shadow-sm">
+            <InfoCircleOutlined className="text-amber-500 text-base mt-0.5 shrink-0" />
+            <div>
+              <span className="font-bold block mb-0.5">View-Only Access</span>
+              <span>You do not have permission to dispatch notification campaigns. Selection options have been locked.</span>
+            </div>
+          </div>
+        )}
         <div className="bg-indigo-50 dark:bg-indigo-500/10 p-6 rounded-[2rem] border border-indigo-100 dark:border-indigo-500/30 mb-6 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-200/20 rounded-full translate-x-10 -translate-y-10" />
 
@@ -142,6 +161,7 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
             className="w-full premium-select-large h-14"
             value={target}
             onChange={(val) => setTarget(val)}
+            disabled={!isAllowed}
             dropdownClassName="rounded-2xl overflow-hidden shadow-2xl border-slate-100"
           >
             <Option value="ALL">
@@ -199,6 +219,7 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
               showSearch
               placeholder={`Search ${targetType === 'CUSTOMER' ? 'Customer' : 'Driver'} name or phone...`}
               className="w-full premium-select-large h-auto min-h-[56px]"
+              disabled={!isAllowed}
               loading={currentLoading}
               value={selectedUserIds}
               onChange={(val) => setSelectedUserIds(val)}

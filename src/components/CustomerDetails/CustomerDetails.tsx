@@ -15,6 +15,7 @@ import {
 } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../../store";
+import { useHasPermission } from "../../hooks/usePermission";
 import {
   blockCustomer,
   unblockCustomer,
@@ -87,6 +88,8 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({ customer, onClose, op
   const dispatch = useDispatch<AppDispatch>();
   const { actionLoading } = useSelector((state: RootState) => state.customers);
   const [activeKey, setActiveKey] = useState("1");
+  const canUpdateCustomer = useHasPermission("customers", "update");
+  const canDeleteCustomer = useHasPermission("customers", "delete");
 
   // ─── Handlers ──────────────────────────────────────────────────────────────
 
@@ -195,30 +198,37 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({ customer, onClose, op
 
   // ─── Status-aware action buttons ───────────────────────────────────────────
   const renderStatusActions = () => {
-    if (!isSuperAdmin) return null;
+    const canUpdate = isSuperAdmin || canUpdateCustomer;
+    const canDelete = isSuperAdmin || canDeleteCustomer;
+
+    if (!canUpdate && !canDelete) return null;
     switch (customer.status) {
       case "blocked":
         return (
           <div className="flex w-full gap-3">
-            <Button
-              type="primary"
-              icon={<CheckCircleOutlined />}
-              className="flex-1 !h-10 !rounded-xl !font-black !uppercase !tracking-wider !bg-emerald-600 hover:!bg-emerald-700 shadow-lg shadow-emerald-100 transition-all active:scale-95 border-none"
-              loading={actionLoading}
-              onClick={handleUnblock}
-            >
-              Recover Account
-            </Button>
-            <Button
-              danger
-              type="text"
-              icon={<CloseCircleOutlined />}
-              loading={actionLoading}
-              onClick={handleDelete}
-              className="flex-1 !h-10 !rounded-xl !font-bold hover:!bg-rose-50"
-            >
-              Delete Data
-            </Button>
+            {canUpdate && (
+              <Button
+                type="primary"
+                icon={<CheckCircleOutlined />}
+                className="flex-1 !h-10 !rounded-xl !font-black !uppercase !tracking-wider !bg-emerald-600 hover:!bg-emerald-700 shadow-lg shadow-emerald-100 transition-all active:scale-95 border-none"
+                loading={actionLoading}
+                onClick={handleUnblock}
+              >
+                Recover Account
+              </Button>
+            )}
+            {canDelete && (
+              <Button
+                danger
+                type="text"
+                icon={<CloseCircleOutlined />}
+                loading={actionLoading}
+                onClick={handleDelete}
+                className="flex-1 !h-10 !rounded-xl !font-bold hover:!bg-rose-50"
+              >
+                Delete Data
+              </Button>
+            )}
           </div>
         );
 
@@ -226,50 +236,58 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({ customer, onClose, op
       case "suspended":
         return (
           <div className="flex w-full gap-3">
-            <Button
-              type="primary"
-              icon={<CheckCircleOutlined />}
-              className="flex-1 !h-10 !rounded-xl !font-black !uppercase !tracking-wider !bg-emerald-600 hover:!bg-emerald-700 shadow-lg shadow-emerald-100 transition-all active:scale-95 border-none"
-              loading={actionLoading}
-              onClick={handleEnable}
-            >
-              Enable Customer
-            </Button>
-            <Button
-              danger
-              type="dashed"
-              icon={<StopOutlined />}
-              loading={actionLoading}
-              onClick={handleBlock}
-              className="flex-1 !h-10 !rounded-xl !font-bold border-rose-200 text-rose-600 hover:!bg-rose-50"
-            >
-              Block ID
-            </Button>
+            {canUpdate && (
+              <Button
+                type="primary"
+                icon={<CheckCircleOutlined />}
+                className="flex-1 !h-10 !rounded-xl !font-black !uppercase !tracking-wider !bg-emerald-600 hover:!bg-emerald-700 shadow-lg shadow-emerald-100 transition-all active:scale-95 border-none"
+                loading={actionLoading}
+                onClick={handleEnable}
+              >
+                Enable Customer
+              </Button>
+            )}
+            {canUpdate && (
+              <Button
+                danger
+                type="dashed"
+                icon={<StopOutlined />}
+                loading={actionLoading}
+                onClick={handleBlock}
+                className="flex-1 !h-10 !rounded-xl !font-bold border-rose-200 text-rose-600 hover:!bg-rose-50"
+              >
+                Block ID
+              </Button>
+            )}
           </div>
         );
 
       default: // active
         return (
           <div className="flex w-full gap-3">
-            <Button
-              danger
-              type="primary"
-              icon={<StopOutlined />}
-              loading={actionLoading}
-              onClick={handleBlock}
-              className="flex-1 !h-10 !rounded-xl !font-black !uppercase !tracking-wider !bg-rose-600 hover:!bg-black shadow-lg shadow-rose-100 transition-all active:scale-95 border-none"
-            >
-              Block Account
-            </Button>
-            <Button
-              type="default"
-              icon={<CloseCircleOutlined />}
-              loading={actionLoading}
-              onClick={handleDisable}
-              className="flex-1 !h-10 !rounded-xl !font-black !uppercase !tracking-wider border-amber-200 text-amber-600 hover:!bg-amber-50 shadow-sm"
-            >
-              Suspend
-            </Button>
+            {canUpdate && (
+              <Button
+                danger
+                type="primary"
+                icon={<StopOutlined />}
+                loading={actionLoading}
+                onClick={handleBlock}
+                className="flex-1 !h-10 !rounded-xl !font-black !uppercase !tracking-wider !bg-rose-600 hover:!bg-black shadow-lg shadow-rose-100 transition-all active:scale-95 border-none"
+              >
+                Block Account
+              </Button>
+            )}
+            {canUpdate && (
+              <Button
+                type="default"
+                icon={<CloseCircleOutlined />}
+                loading={actionLoading}
+                onClick={handleDisable}
+                className="flex-1 !h-10 !rounded-xl !font-black !uppercase !tracking-wider border-amber-200 text-amber-600 hover:!bg-amber-50 shadow-sm"
+              >
+                Suspend
+              </Button>
+            )}
           </div>
         );
     }

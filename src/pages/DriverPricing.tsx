@@ -20,6 +20,7 @@ import PricingPreview from "../components/DriverPricing/PricingPreview";
 import HotspotTypes from "../components/DriverPricing/HotspotTypes";
 import TitleBar from "../components/TitleBarCommon/TitleBar";
 import { EyeOutlined } from "@ant-design/icons";
+import { useHasPermission } from "../hooks/usePermission";
 
 const DriverPricing = () => {
   const [activeTab, setActiveTab] = useState("configuration");
@@ -34,6 +35,10 @@ const DriverPricing = () => {
   const [pincode, setPincode] = useState("");
   const [globalPrice, setGlobalPrice] = useState(1000);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const canCreatePricing = useHasPermission("pricing", "create");
+  const canUpdatePricing = useHasPermission("pricing", "update");
+  const isAuthorized = id ? canUpdatePricing : canCreatePricing;
 
   const [timeSlots, setTimeSlots] = useState<UserTimeSlots>({
     "normal-driver": [],
@@ -476,23 +481,27 @@ const DriverPricing = () => {
                   >
                     Cancel
                   </Button>
-                  <Button
-                    type="primary"
-                    className="w-full sm:w-auto"
-                    onClick={handleSave}
-                    loading={isLoading}
-                  >
-                    Save Rule
-                  </Button>
-                  <Button
-                    type="primary"
-                    className="w-full sm:w-auto"
-                    style={{ background: "#4CAF50" }}
-                    onClick={handleSaveAndAddAnother}
-                    loading={isLoading}
-                  >
-                    Save & Add Another
-                  </Button>
+                  {isAuthorized && (
+                    <>
+                      <Button
+                        type="primary"
+                        className="w-full sm:w-auto"
+                        onClick={handleSave}
+                        loading={isLoading}
+                      >
+                        Save Rule
+                      </Button>
+                      <Button
+                        type="primary"
+                        className="w-full sm:w-auto"
+                        style={{ background: "#4CAF50" }}
+                        onClick={handleSaveAndAddAnother}
+                        loading={isLoading}
+                      >
+                        Save & Add Another
+                      </Button>
+                    </>
+                  )}
                 </div>
               </Card>
             ) : null}

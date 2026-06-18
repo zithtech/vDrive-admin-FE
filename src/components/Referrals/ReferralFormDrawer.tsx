@@ -14,6 +14,8 @@ import {
   UserOutlined,
 } from "@ant-design/icons";
 import { type ReferralConfig, type ReferralConfigPayload } from "../../store/slices/referralSlice";
+import { useHasPermission } from "../../hooks/usePermission";
+import { useAppSelector } from "../../store/hooks";
 
 const { Title, Text } = Typography;
 
@@ -35,6 +37,12 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
   loading,
 }) => {
   const [form] = Form.useForm();
+  const moduleName = defaultTarget === "CUSTOMER" ? "user_referrals" : "driver_referrals";
+  const canCreate = useHasPermission(moduleName, "create");
+  const canUpdate = useHasPermission(moduleName, "update");
+  const { role } = useAppSelector((state) => state.auth);
+  const isSuperAdmin = role === 'super_admin';
+  const isAllowed = isSuperAdmin || (initialValues ? canUpdate : canCreate);
 
   useEffect(() => {
     if (visible) {
@@ -75,16 +83,18 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
             onClick={onClose}
             className="rounded-full h-11 px-8 font-bold text-gray-400 hover:text-gray-600 border-gray-200 transition-all"
           >
-            Cancel
+            {isAllowed ? "Cancel" : "Close"}
           </Button>
-          <Button
-            type="primary"
-            onClick={() => form.submit()}
-            loading={loading}
-            className="rounded-full h-11 px-10 font-bold !bg-gradient-to-r !from-amber-500 !to-orange-500 border-none flex items-center gap-2"
-          >
-            {initialValues ? "Update Rule" : "Create Rule"}
-          </Button>
+          {isAllowed && (
+            <Button
+              type="primary"
+              onClick={() => form.submit()}
+              loading={loading}
+              className="rounded-full h-11 px-10 font-bold !bg-gradient-to-r !from-amber-500 !to-orange-500 border-none flex items-center gap-2"
+            >
+              {initialValues ? "Update Rule" : "Create Rule"}
+            </Button>
+          )}
         </div>
       }
     >
@@ -101,7 +111,7 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
             </div>
             <div>
               <Title level={3} className="!m-0 !mb-1 font-extrabold text-gray-800 dark:text-slate-100 tracking-tight">
-                {initialValues ? "Edit Referral Rule" : "Create Referral Rule"}
+                {initialValues ? (isAllowed ? "Edit Referral Rule" : "View Referral Rule") : "Create Referral Rule"}
               </Title>
               <Text className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">
                 Network Growth & Referral Rewards
@@ -123,6 +133,7 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
         onFinish={handleFinish}
         className="pt-6 pb-12 space-y-4"
         requiredMark={false}
+        disabled={!isAllowed}
       >
         <div className="bg-white dark:bg-slate-800/50 p-4 rounded-[2rem] border border-gray-100 dark:border-slate-700 shadow-sm space-y-4 mx-4 mt-4">
           <div className="flex items-center gap-3 mb-2">

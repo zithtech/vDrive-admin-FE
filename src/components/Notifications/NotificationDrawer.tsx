@@ -16,6 +16,7 @@ import {
   CheckCircleOutlined,
 } from "@ant-design/icons";
 import { useAppSelector } from "../../store/hooks";
+import { useHasPermission } from "../../hooks/usePermission";
 
 const { Title, Text } = Typography;
 
@@ -41,6 +42,12 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
   const { promos } = useAppSelector((state) => state.promo);
   const { customers } = useAppSelector((state) => state.customers);
   const { drivers } = useAppSelector((state) => state.drivers);
+
+  const canCreate = useHasPermission("notifications", "create");
+  const canUpdate = useHasPermission("notifications", "update");
+  const { role } = useAppSelector((state) => state.auth);
+  const isSuperAdmin = role === 'super_admin';
+  const isAllowed = isSuperAdmin || (initialValues ? canUpdate : canCreate);
 
   useEffect(() => {
     if (visible) {
@@ -111,17 +118,19 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
             onClick={onClose}
             className="rounded-full h-11 px-8 font-bold text-gray-400 hover:text-gray-600 border-gray-200 transition-all"
           >
-            Cancel
+            {isAllowed ? "Cancel" : "Close"}
           </Button>
-          <Button
-            type="primary"
-            onClick={() => form.submit()}
-            loading={loading}
-            icon={<CheckCircleOutlined />}
-            className="rounded-full h-11 px-10 font-bold !bg-gradient-to-r !from-indigo-600 !to-blue-600 border-none flex items-center gap-2"
-          >
-            {initialValues ? "Update Notification" : "Create Notification"}
-          </Button>
+          {isAllowed && (
+            <Button
+              type="primary"
+              onClick={() => form.submit()}
+              loading={loading}
+              icon={<CheckCircleOutlined />}
+              className="rounded-full h-11 px-10 font-bold !bg-gradient-to-r !from-indigo-600 !to-blue-600 border-none flex items-center gap-2"
+            >
+              {initialValues ? "Update Notification" : "Create Notification"}
+            </Button>
+          )}
         </div>
       }
     >
@@ -138,7 +147,7 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
             </div>
             <div>
               <Title level={3} className="!m-0 !mb-1 font-extrabold text-gray-800 dark:text-slate-100 tracking-tight">
-                {initialValues ? "Edit Notification" : "Compose Notification"}
+                {initialValues ? (isAllowed ? "Edit Notification" : "View Notification") : "Compose Notification"}
               </Title>
               <Text className="text-gray-400 dark:text-slate-500 font-bold text-[10px] uppercase tracking-widest">
                 Push Campaigns & Outreach
@@ -160,6 +169,7 @@ const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
         onFinish={handleFinish}
         className="pt-4 pb-12 space-y-4"
         requiredMark={false}
+        disabled={!isAllowed}
       >
         {/* Hidden Fields for codes */}
         <Form.Item name="coupon_code" noStyle><input type="hidden" /></Form.Item>

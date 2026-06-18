@@ -15,13 +15,25 @@ import NotificationTable from "../components/Notifications/NotificationTable";
 import NotificationDrawer from "../components/Notifications/NotificationDrawer";
 import NotificationNotifyModal from "../components/Notifications/NotificationNotifyModal";
 import { fetchNotifications, createNotification, updateNotification, deleteNotification } from "../store/slices/notificationSlice";
+import { useHasPermission } from "../hooks/usePermission";
 
 const { confirm } = Modal;
 
 const NotificationsPage: React.FC = () => {
   const dispatch = useAppDispatch();
+  const canCreate = useHasPermission("notifications", "create");
+  const canUpdate = useHasPermission("notifications", "update");
+  const canDelete = useHasPermission("notifications", "delete");
+  const hasCouponsRead = useHasPermission("coupons", "read");
+  const hasPromosRead = useHasPermission("promos", "read");
+  const hasCustomersRead = useHasPermission("customers", "read");
+  const hasDriversRead = useHasPermission("drivers", "read");
   const { role } = useAppSelector((state) => state.auth);
   const isSuperAdmin = role === 'super_admin';
+
+  const hasCreateAccess = isSuperAdmin || canCreate;
+  const hasUpdateAccess = isSuperAdmin || canUpdate;
+  const hasDeleteAccess = isSuperAdmin || canDelete;
 
   const [mainTab, setMainTab] = useState<"CUSTOMER" | "DRIVER">("CUSTOMER");
   const [subTab, setSubTab] = useState<"NOTIFICATIONS">("NOTIFICATIONS");
@@ -34,12 +46,20 @@ const NotificationsPage: React.FC = () => {
   const { notifications: data, isLoading: loading } = useAppSelector((state) => state.notification);
 
   useEffect(() => {
-    dispatch(fetchCoupons());
-    dispatch(fetchPromos());
-    dispatch(fetchCustomers());
-    dispatch(fetchDrivers());
+    if (isSuperAdmin || hasCouponsRead) {
+      dispatch(fetchCoupons());
+    }
+    if (isSuperAdmin || hasPromosRead) {
+      dispatch(fetchPromos());
+    }
+    if (isSuperAdmin || hasCustomersRead) {
+      dispatch(fetchCustomers());
+    }
+    if (isSuperAdmin || hasDriversRead) {
+      dispatch(fetchDrivers());
+    }
     dispatch(fetchNotifications(mainTab));
-  }, [dispatch, mainTab]);
+  }, [dispatch, mainTab, isSuperAdmin, hasCouponsRead, hasPromosRead, hasCustomersRead, hasDriversRead]);
 
   const handleCreateNew = () => {
     setEditingNotification(null);
@@ -103,7 +123,7 @@ const NotificationsPage: React.FC = () => {
       iconBgColor="bg-indigo-600"
       description="Design and dispatch push notifications to engage your customers and drivers"
       extraContent={
-        isSuperAdmin && (
+        hasCreateAccess && (
           <div className="flex items-center gap-3">
             <Button
               type="primary"
@@ -168,6 +188,8 @@ const NotificationsPage: React.FC = () => {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onOpenNotifyModal={handleOpenNotifyModal}
+            canUpdate={hasUpdateAccess}
+            canDelete={hasDeleteAccess}
           />
         </div>
       </div>

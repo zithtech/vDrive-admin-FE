@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Select, Button, Space, Typography, message, Divider } from "antd";
-import { SendOutlined, UserOutlined, TeamOutlined, RiseOutlined, FallOutlined } from "@ant-design/icons";
+import { SendOutlined, UserOutlined, TeamOutlined, RiseOutlined, FallOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
+import { useHasPermission } from "../../hooks/usePermission";
 import { fetchCustomers } from "../../store/slices/customerSlice";
 import { fetchDrivers } from "../../store/slices/driverSlice";
 import type { RootState, AppDispatch } from "../../store";
@@ -29,15 +30,22 @@ const NotifyModal: React.FC<NotifyModalProps> = ({ visible, onCancel, coupon, on
   const currentAudience = isDriverPromotion ? drivers : customers;
   const currentLoading = isDriverPromotion ? driversLoading : customersLoading;
 
+  const canUpdate = useHasPermission(isDriverPromotion ? "promos" : "coupons", "update");
+  const hasDriversRead = useHasPermission("drivers", "read");
+  const hasCustomersRead = useHasPermission("customers", "read");
+  const { role } = useSelector((state: RootState) => state.auth);
+  const isSuperAdmin = role === 'super_admin';
+  const isAllowed = isSuperAdmin || canUpdate;
+
   useEffect(() => {
     if (visible && target === "SPECIFIC") {
-      if (isDriverPromotion && drivers.length === 0) {
+      if (isDriverPromotion && drivers.length === 0 && (isSuperAdmin || hasDriversRead)) {
         dispatch(fetchDrivers());
-      } else if (!isDriverPromotion && customers.length === 0) {
+      } else if (!isDriverPromotion && customers.length === 0 && (isSuperAdmin || hasCustomersRead)) {
         dispatch(fetchCustomers());
       }
     }
-  }, [visible, target, customers.length, drivers.length, dispatch, isDriverPromotion]);
+  }, [visible, target, customers.length, drivers.length, dispatch, isDriverPromotion, isSuperAdmin, hasDriversRead, hasCustomersRead]);
 
   const handleSend = async () => {
     if (target === "SPECIFIC" && selectedUserIds.length === 0) {
@@ -70,30 +78,41 @@ const NotifyModal: React.FC<NotifyModalProps> = ({ visible, onCancel, coupon, on
       title={
         <Space>
           <SendOutlined className="text-blue-500" />
-          <span>Email Notification Campaign</span>
+          <span>Email Notification Campaign {isAllowed ? "" : "(View Only)"}</span>
         </Space>
       }
       open={visible}
       onCancel={onCancel}
       footer={[
         <Button key="cancel" onClick={onCancel} className="rounded-xl border-none text-slate-400 font-bold hover:text-slate-600 h-12 px-6">
-          Cancel
+          {isAllowed ? "Cancel" : "Close"}
         </Button>,
-        <Button
-          key="send"
-          type="primary"
-          icon={<SendOutlined />}
-          loading={loading}
-          onClick={handleSend}
-          className="!bg-gradient-to-r !from-indigo-600 !to-blue-500 border-none rounded-xl font-bold h-12 px-10 shadow-lg shadow-indigo-100 hover:scale-[1.02] transition-transform"
-        >
-          Dispatch Notification
-        </Button>,
-      ]}
+        isAllowed && (
+          <Button
+            key="send"
+            type="primary"
+            icon={<SendOutlined />}
+            loading={loading}
+            onClick={handleSend}
+            className="!bg-gradient-to-r !from-indigo-600 !to-blue-500 border-none rounded-xl font-bold h-12 px-10 shadow-lg shadow-indigo-100 hover:scale-[1.02] transition-transform"
+          >
+            Dispatch Notification
+          </Button>
+        ),
+      ].filter(Boolean)}
       width={650}
       className="premium-modal"
     >
       <div className="py-4">
+        {!isAllowed && (
+          <div className="mb-4 bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-[1.5rem] text-xs flex items-start gap-3 shadow-sm">
+            <InfoCircleOutlined className="text-amber-500 text-base mt-0.5 shrink-0" />
+            <div>
+              <span className="font-bold block mb-0.5">View-Only Access</span>
+              <span>You do not have permission to trigger notification campaigns for this asset. Selection options have been locked.</span>
+            </div>
+          </div>
+        )}
         <div className="bg-gradient-to-br from-indigo-50 to-blue-50 p-6 rounded-[2rem] border border-blue-100 mb-8 relative overflow-hidden shadow-sm">
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200/20 rounded-full translate-x-10 -translate-y-10" />
 
@@ -126,6 +145,7 @@ const NotifyModal: React.FC<NotifyModalProps> = ({ visible, onCancel, coupon, on
             className="w-full premium-select-large"
             value={target}
             onChange={(val) => setTarget(val)}
+            disabled={!isAllowed}
             dropdownClassName="rounded-2xl overflow-hidden shadow-2xl border-slate-100"
           >
             <Option value="ALL">
@@ -183,6 +203,7 @@ const NotifyModal: React.FC<NotifyModalProps> = ({ visible, onCancel, coupon, on
               showSearch
               placeholder={`Search ${isDriverPromotion ? 'Driver' : 'User'} identity...`}
               className="w-full premium-select-large"
+              disabled={!isAllowed}
               loading={currentLoading}
               onChange={(val) => setSelectedUserIds(val)}
               filterOption={(input, option) => {

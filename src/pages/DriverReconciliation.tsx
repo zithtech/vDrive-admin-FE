@@ -30,6 +30,7 @@ import AdvancedFilters, {
 } from "../components/AdvancedFilters/AdvanceFilters";
 import axiosIns from "../api/axios";
 import dayjs from "dayjs";
+import { useHasPermission } from "../hooks/usePermission";
 
 const { Text } = Typography;
 
@@ -52,6 +53,9 @@ interface DriverData {
 }
 
 const DriverReconciliation: React.FC = () => {
+  const canUpdate = useHasPermission("drivers_outreach", "update");
+  const canCreate = useHasPermission("drivers_outreach", "create");
+
   const [drivers, setDrivers] = useState<DriverData[]>([]);
   const [filteredDrivers, setFilteredDrivers] = useState<DriverData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -209,13 +213,17 @@ const DriverReconciliation: React.FC = () => {
       }
       if (e.altKey && e.key.toLowerCase() === "i") {
         e.preventDefault();
-        const uploadEl = document.querySelector(".import-upload input") as HTMLInputElement;
-        uploadEl?.click();
+        if (canCreate) {
+          const uploadEl = document.querySelector(".import-upload input") as HTMLInputElement;
+          uploadEl?.click();
+        } else {
+          message.warning("You do not have permission to import data.");
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [canCreate]);
 
   const exportTemplate = () => {
     const headers = [
@@ -425,14 +433,19 @@ const DriverReconciliation: React.FC = () => {
               Last Synced: {dayjs(lastSyncedAt).format("MMM DD, hh:mm A")}
             </Text>
           )}
-          <Button
-            icon={<SyncOutlined spin={syncing} />}
-            onClick={handleSync}
-            loading={syncing}
-            className="flex items-center gap-2 font-bold shadow-sm border-slate-200 text-slate-600 dark:text-slate-300 h-9"
-          >
-            Sync
-          </Button>
+          <Tooltip title={canUpdate ? "" : "You do not have permission to sync records"}>
+            <span>
+              <Button
+                icon={<SyncOutlined spin={syncing} />}
+                onClick={handleSync}
+                loading={syncing}
+                disabled={!canUpdate}
+                className="flex items-center gap-2 font-bold shadow-sm border-slate-200 text-slate-600 dark:text-slate-300 h-9"
+              >
+                Sync
+              </Button>
+            </span>
+          </Tooltip>
           <Tooltip title="Shortcut: Alt + E">
             <Button
               type="default"
@@ -443,22 +456,30 @@ const DriverReconciliation: React.FC = () => {
               Export Template
             </Button>
           </Tooltip>
-          <Tooltip title="Shortcut: Alt + I">
-            <Upload
-              beforeUpload={handleImport}
-              showUploadList={false}
-              accept=".xlsx,.xls,.csv"
-              className="import-upload"
-            >
-              <Button
-                type="primary"
-                icon={<UploadOutlined />}
-                loading={importing}
-                className="rounded-xl h-12 px-6 font-bold border-none !bg-gradient-to-r !from-indigo-600 !to-blue-500 hover:scale-[1.02] transition-transform flex items-center"
+          <Tooltip title={canCreate ? "Shortcut: Alt + I" : "You do not have permission to import data"}>
+            <span>
+              <Upload
+                beforeUpload={handleImport}
+                showUploadList={false}
+                accept=".xlsx,.xls,.csv"
+                className="import-upload"
+                disabled={!canCreate}
               >
-                Import Data
-              </Button>
-            </Upload>
+                <Button
+                  type="primary"
+                  icon={<UploadOutlined />}
+                  loading={importing}
+                  disabled={!canCreate}
+                  className={`rounded-xl h-12 px-6 font-bold border-none flex items-center transition-transform ${
+                    canCreate
+                      ? "!bg-gradient-to-r !from-indigo-600 !to-blue-500 hover:scale-[1.02]"
+                      : ""
+                  }`}
+                >
+                  Import Data
+                </Button>
+              </Upload>
+            </span>
           </Tooltip>
         </Space>
       }
@@ -561,7 +582,11 @@ const DriverReconciliation: React.FC = () => {
                   description={
                     <div className="flex flex-col gap-2">
                       <Text className="text-slate-400 dark:text-slate-500 font-medium">No driver data found</Text>
-                      <Text type="secondary" className="text-[12px]">Please export the template and import your data to get started.</Text>
+                      {canCreate ? (
+                        <Text type="secondary" className="text-[12px]">Please export the template and import your data to get started.</Text>
+                      ) : (
+                        <Text type="secondary" className="text-[12px]">No driver records are available. Contact an administrator to import data.</Text>
+                      )}
                       <div className="mt-2">
                         <Button
                           type="dashed"

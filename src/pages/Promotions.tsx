@@ -9,23 +9,26 @@ import {
   BarChart3,
   Percent,
   IndianRupee,
-  Clock
+  Clock,
+  ArrowRight
 } from 'lucide-react';
 import axios from '../api/axios';
-import { 
-  Drawer, 
-  Select, 
-  Button, 
-  Input, 
-  DatePicker, 
-  Switch, 
+import {
+  Drawer,
+  Select,
+  Button,
+  Input,
+  DatePicker,
+  Switch,
   Form,
-  InputNumber
+  InputNumber,
+  Empty
 } from 'antd';
 import { messageApi, modalApi, notificationApi } from '../utilities/antdStaticHolder';
 import dayjs from 'dayjs';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
 import { fetchDrivers } from '../store/slices/driverSlice';
+import { useHasPermission } from '../hooks/usePermission';
 
 /* ================= TYPES ================= */
 
@@ -51,6 +54,10 @@ interface Promo {
 /* ================= COMPONENT ================= */
 
 const PromotionsPage: React.FC = () => {
+  const canCreatePromo = useHasPermission("promos", "create");
+  const canUpdatePromo = useHasPermission("promos", "update");
+  const canDeletePromo = useHasPermission("promos", "delete");
+
   const [promos, setPromos] = useState<Promo[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -58,10 +65,12 @@ const PromotionsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [form] = Form.useForm();
   const dispatch = useAppDispatch();
   const { drivers } = useAppSelector((state) => state.drivers);
+
+  const isAllowed = editingId ? canUpdatePromo : canCreatePromo;
 
   useEffect(() => {
     fetchPromos();
@@ -115,7 +124,7 @@ const PromotionsPage: React.FC = () => {
     try {
       setIsSubmitting(true);
       const [start, end] = values.dates || [];
-      
+
       const payload = {
         ...values,
         start_date: start?.toISOString(),
@@ -130,7 +139,7 @@ const PromotionsPage: React.FC = () => {
         await axios.post('/api/promos', payload);
         notificationApi.success({ message: 'Promo Created', description: `New coupon "${values.code}" is now active.` });
       }
-      
+
       setIsDrawerOpen(false);
       fetchPromos();
     } catch (err: any) {
@@ -162,9 +171,9 @@ const PromotionsPage: React.FC = () => {
   const filteredPromos = useMemo(() => {
     return promos.filter(p => {
       const matchesSearch = p.code.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || 
-                           (statusFilter === 'active' && p.is_active) || 
-                           (statusFilter === 'inactive' && !p.is_active);
+      const matchesStatus = statusFilter === 'all' ||
+        (statusFilter === 'active' && p.is_active) ||
+        (statusFilter === 'inactive' && !p.is_active);
       return matchesSearch && matchesStatus;
     });
   }, [promos, searchTerm, statusFilter]);
@@ -362,6 +371,7 @@ const PromotionsPage: React.FC = () => {
           layout="vertical"
           onFinish={handleSubmit}
           className="space-y-6"
+          disabled={!isAllowed}
         >
           <Form.Item name="code" label="Offer Code" rules={[{ required: true, message: 'Code is required' }]}>
             <Input placeholder="E.g. DRIVE100" className="rounded-xl h-11 uppercase font-mono font-bold bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100" />
@@ -375,7 +385,7 @@ const PromotionsPage: React.FC = () => {
               </Select>
             </Form.Item>
 
-            <Form.Item 
+            <Form.Item
               noStyle
               shouldUpdate={(prev, curr) => prev.discount_type !== curr.discount_type}
             >
@@ -400,14 +410,14 @@ const PromotionsPage: React.FC = () => {
             <Form.Item name="description" label="Internal Description" className="mb-0">
               <Input.TextArea placeholder="Describe this offer for admin records..." rows={3} className="rounded-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100" />
             </Form.Item>
-            
+
             <div className="flex flex-wrap gap-2">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 mr-1">Quick Picks:</span>
               {[
-                "Weekend Special Drive", 
-                "New Driver Welcome Bonus", 
-                "High Demand Area Multiplier", 
-                "Festival Season Offer", 
+                "Weekend Special Drive",
+                "New Driver Welcome Bonus",
+                "High Demand Area Multiplier",
+                "Festival Season Offer",
                 "VIP Driver Loyalty Reward"
               ].map(sug => (
                 <button
@@ -415,8 +425,8 @@ const PromotionsPage: React.FC = () => {
                   key={sug}
                   onClick={() => {
                     const currentDesc = form.getFieldValue('description') || '';
-                    form.setFieldsValue({ 
-                      description: currentDesc ? `${currentDesc}. ${sug}` : sug 
+                    form.setFieldsValue({
+                      description: currentDesc ? `${currentDesc}. ${sug}` : sug
                     });
                   }}
                   className="px-3 py-1 rounded-full border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 hover:border-indigo-200 dark:hover:border-indigo-500/30 hover:text-indigo-600 dark:hover:text-indigo-400 text-[10px] font-bold text-slate-500 dark:text-slate-400 transition-colors"
@@ -431,7 +441,7 @@ const PromotionsPage: React.FC = () => {
             <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <Users size={14} /> Audience Targeting
             </h4>
-            
+
             <Form.Item name="target_type" label="Target Audience" rules={[{ required: true }]}>
               <Select className="h-11 custom-select-main" onChange={() => form.setFieldsValue({ target_driver_id: undefined, min_rides_required: 0 })}>
                 <Option value="global">Global (All Drivers)</Option>
@@ -440,7 +450,7 @@ const PromotionsPage: React.FC = () => {
               </Select>
             </Form.Item>
 
-            <Form.Item 
+            <Form.Item
               noStyle
               shouldUpdate={(prev, curr) => prev.target_type !== curr.target_type}
             >
@@ -448,8 +458,8 @@ const PromotionsPage: React.FC = () => {
                 <>
                   {getFieldValue('target_type') === 'specific_driver' && (
                     <Form.Item name="target_driver_id" label="Search Driver" rules={[{ required: true }]}>
-                      <Select 
-                        showSearch 
+                      <Select
+                        showSearch
                         placeholder="Search by name or phone"
                         className="h-11 custom-select-main"
                         optionFilterProp="children"
@@ -490,7 +500,7 @@ const PromotionsPage: React.FC = () => {
           </div>
 
           <Form.Item name="is_active" label="Status" valuePropName="checked">
-             <Switch checkedChildren="Active" unCheckedChildren="Inactive" className="custom-switch-lg" />
+            <Switch checkedChildren="Active" unCheckedChildren="Inactive" className="custom-switch-lg" />
           </Form.Item>
         </Form>
       </Drawer>

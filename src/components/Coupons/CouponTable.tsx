@@ -12,7 +12,8 @@ interface CouponTableProps {
   onDelete: (id: string) => void;
   onToggleStatus: (id: string, is_active: boolean) => void;
   onRefresh: () => void;
-  isSuperAdmin?: boolean;
+  canUpdate?: boolean;
+  canDelete?: boolean;
 }
 
 const CouponTable: React.FC<CouponTableProps> = ({
@@ -22,7 +23,8 @@ const CouponTable: React.FC<CouponTableProps> = ({
   onDelete,
   onToggleStatus,
   onRefresh,
-  isSuperAdmin = false,
+  canUpdate = false,
+  canDelete = false,
 }) => {
   const [notifyModalVisible, setNotifyModalVisible] = useState(false);
   const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
@@ -164,10 +166,10 @@ const CouponTable: React.FC<CouponTableProps> = ({
         const isExpired = dayjs().isAfter(dayjs(record.valid_until || record.expiry_date));
         const finalActive = record.is_active && !isExpired;
 
-        const switchDisabled = !isSuperAdmin || isExpired;
+        const switchDisabled = !canUpdate || isExpired;
         const switchTooltip = isExpired
           ? "This coupon has expired and cannot be reactivated until you update the expiry date"
-          : !isSuperAdmin
+          : !canUpdate
             ? "Insufficient permissions to change status"
             : "";
 
@@ -190,29 +192,33 @@ const CouponTable: React.FC<CouponTableProps> = ({
         );
       },
     },
-    ...(isSuperAdmin ? [
+    ...(canUpdate || canDelete ? [
       {
         title: <span className="text-[11px] uppercase tracking-widest font-bold text-gray-400">Actions</span>,
         key: "actions",
         render: (_: any, record: Coupon) => (
           <Space size="small">
-            <Tooltip title="Edit Promotion">
-              <Button
-                type="text"
-                icon={<EditOutlined className="text-gray-500 dark:text-slate-400" />}
-                onClick={() => onEdit(record)}
-                className="hover:bg-gray-100 dark:hover:bg-slate-700/50 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
-              />
-            </Tooltip>
-            <Tooltip title="Remove Permanent">
-              <Button
-                type="text"
-                danger
-                icon={<DeleteOutlined />}
-                onClick={() => onDelete(record.id)}
-                className="hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
-              />
-            </Tooltip>
+            {canUpdate && (
+              <Tooltip title="Edit Promotion">
+                <Button
+                  type="text"
+                  icon={<EditOutlined className="text-gray-500 dark:text-slate-400" />}
+                  onClick={() => onEdit(record)}
+                  className="hover:bg-gray-100 dark:hover:bg-slate-700/50 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
+                />
+              </Tooltip>
+            )}
+            {canDelete && (
+              <Tooltip title="Remove Permanent">
+                <Button
+                  type="text"
+                  danger
+                  icon={<DeleteOutlined />}
+                  onClick={() => onDelete(record.id)}
+                  className="hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
+                />
+              </Tooltip>
+            )}
           </Space>
         ),
       }

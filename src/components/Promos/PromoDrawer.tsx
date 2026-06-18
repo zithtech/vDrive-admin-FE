@@ -20,6 +20,7 @@ import {
 import dayjs from 'dayjs';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { fetchDrivers } from '../../store/slices/driverSlice';
+import { useHasPermission } from '../../hooks/usePermission';
 import axios from '../../api/axios';
 
 const { Option } = Select;
@@ -37,9 +38,15 @@ const PromoDrawer: React.FC<PromoDrawerProps> = ({ visible, onClose, onSuccess, 
   const dispatch = useAppDispatch();
   const { drivers } = useAppSelector((state) => state.drivers);
 
+  const hasDriversRead = useHasPermission("drivers", "read");
+  const { role } = useAppSelector((state) => state.auth);
+  const isSuperAdmin = role === 'super_admin';
+
   useEffect(() => {
     if (visible) {
-      dispatch(fetchDrivers());
+      if (isSuperAdmin || hasDriversRead) {
+        dispatch(fetchDrivers());
+      }
       if (promo) {
         form.setFieldsValue({
           ...promo,
@@ -56,7 +63,7 @@ const PromoDrawer: React.FC<PromoDrawerProps> = ({ visible, onClose, onSuccess, 
         });
       }
     }
-  }, [visible, promo, form, dispatch]);
+  }, [visible, promo, form, dispatch, isSuperAdmin, hasDriversRead]);
 
   const handleSubmit = async (values: any) => {
     setIsSubmitting(true);

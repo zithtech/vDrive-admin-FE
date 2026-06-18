@@ -15,6 +15,7 @@ import {
   type TripTransaction,
   type TripDetailsType,
 } from "../../store/slices/tripSlice";
+import { useHasPermission } from "../../hooks/usePermission";
 
 const { Text } = Typography;
 
@@ -202,6 +203,7 @@ const timelineItems = (trip: TripDetailsType | null) => [
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const TripDetailsMasonry: React.FC<Props> = ({ trip }) => {
+  const canUpdateTrips = useHasPermission("trips", "update");
   const items = timelineItems(trip);
   const tripHistory = trip ? buildTripHistory(trip) : [];
   const userTxs = trip.trip_transactions?.filter(tx => tx.actor_type === "user") ?? [];
@@ -513,10 +515,10 @@ const TripDetailsMasonry: React.FC<Props> = ({ trip }) => {
                 <GrPhone /> {trip.user_phone}
               </div>
               <div className="flex gap-1 pt-2">
-                <Button size="small" className="h-6 px-1 text-[10px] flex items-center gap-1">
+                <Button size="small" disabled={!canUpdateTrips} className="h-6 px-1 text-[10px] flex items-center gap-1">
                   <GrPhone className="text-[12px]" /> Call
                 </Button>
-                <Button size="small" className="h-6 px-1 text-[10px] flex items-center gap-1">
+                <Button size="small" disabled={!canUpdateTrips} className="h-6 px-1 text-[10px] flex items-center gap-1">
                   <MessageOutlined className="text-[12px]" /> Msg
                 </Button>
               </div>
@@ -544,10 +546,10 @@ const TripDetailsMasonry: React.FC<Props> = ({ trip }) => {
                     <GrPhone /> {trip.driver_phone}
                   </div>
                   <div className="flex gap-1 pt-2">
-                    <Button size="small" className="h-6 px-1 text-[10px] flex items-center gap-1">
+                    <Button size="small" disabled={!canUpdateTrips} className="h-6 px-1 text-[10px] flex items-center gap-1">
                       <GrPhone className="text-[12px]" /> Call
                     </Button>
-                    <Button size="small" className="h-6 px-1 text-[10px] flex items-center gap-1">
+                    <Button size="small" disabled={!canUpdateTrips} className="h-6 px-1 text-[10px] flex items-center gap-1">
                       <MessageOutlined className="text-[12px]" /> Msg
                     </Button>
                   </div>

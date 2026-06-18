@@ -19,6 +19,8 @@ import {
   // InfoCircleOutlined,
 } from "@ant-design/icons";
 import type { Tax, TaxPayload, TaxType } from "../../store/slices/taxSlice";
+import { useHasPermission } from "../../hooks/usePermission";
+import { useAppSelector } from "../../store/hooks";
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -85,6 +87,12 @@ const TaxFormDrawer: React.FC<TaxFormDrawerProps> = ({
   initialValues,
   loading,
 }) => {
+  const canCreateTax = useHasPermission("taxes", "create");
+  const canUpdateTax = useHasPermission("taxes", "update");
+  const { role } = useAppSelector((state) => state.auth);
+  const isSuperAdmin = role === 'super_admin';
+  const isAllowed = isSuperAdmin || (initialValues ? canUpdateTax : canCreateTax);
+
   const [form] = Form.useForm<TaxPayload>();
 
   const watchedIndianTax: string = Form.useWatch("indian_tax", form);
@@ -144,17 +152,19 @@ const TaxFormDrawer: React.FC<TaxFormDrawerProps> = ({
             onClick={onClose}
             className="rounded-full h-11 px-8 font-bold text-gray-400 hover:text-gray-600 border-gray-200 transition-all"
           >
-            Cancel
+            {isAllowed ? "Cancel" : "Close"}
           </Button>
-          <Button
-            type="primary"
-            onClick={() => form.submit()}
-            loading={loading}
-            disabled={!showPreview}
-            className="rounded-full h-11 px-10 font-bold !bg-gradient-to-r !from-indigo-600 !to-violet-600 border-none flex items-center gap-2"
-          >
-            {initialValues ? "Apply Revisions" : "Save Tax Rule"}
-          </Button>
+          {isAllowed && (
+            <Button
+              type="primary"
+              onClick={() => form.submit()}
+              loading={loading}
+              disabled={!showPreview}
+              className="rounded-full h-11 px-10 font-bold !bg-gradient-to-r !from-indigo-600 !to-violet-600 border-none flex items-center gap-2"
+            >
+              {initialValues ? "Apply Revisions" : "Save Tax Rule"}
+            </Button>
+          )}
         </div>
       }
     >
@@ -171,7 +181,7 @@ const TaxFormDrawer: React.FC<TaxFormDrawerProps> = ({
             </div>
             <div>
               <Title level={3} className="!m-0 !mb-1 font-extrabold text-gray-800 tracking-tight">
-                {initialValues ? "Modify Tax Rule" : "Create Tax Rule"}
+                {initialValues ? (isAllowed ? "Modify Tax Rule" : "View Tax Rule") : "Create Tax Rule"}
               </Title>
               <Text className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">
                 Statutory Configuration & Slab Management
@@ -193,6 +203,7 @@ const TaxFormDrawer: React.FC<TaxFormDrawerProps> = ({
         onFinish={onSubmit}
         className="pt-6 pb-12 space-y-4"
         requiredMark={false}
+        disabled={!isAllowed}
       >
         <div className="bg-white p-4 pb-1 rounded-[2rem] border border-gray-100 shadow-sm space-y-3 mx-4 mt-4">
           <div className="flex items-center gap-3 mb-1">

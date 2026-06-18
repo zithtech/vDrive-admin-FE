@@ -21,6 +21,7 @@ import TaxFormDrawer from "../components/Tax/TaxFormDrawer";
 import TitleBar from "../components/TitleBarCommon/TitleBar";
 import TaxTable from "../components/TaxTable/TaxTable";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { useHasPermission } from "../hooks/usePermission";
 import {
   fetchTaxes,
   addTax,
@@ -94,6 +95,10 @@ const { Title, Text } = Typography;
 // type Segment = "List" | "Add" | "Edit";
 
 const TaxPage: React.FC = () => {
+  const canCreateTax = useHasPermission("taxes", "create");
+  const canUpdateTax = useHasPermission("taxes", "update");
+  const canDeleteTax = useHasPermission("taxes", "delete");
+
   const [editingTax, setEditingTax] = useState<Tax | null>(null);
   const [viewingTax, setViewingTax] = useState<Tax | null>(null);
   const [drawerVisible, setDrawerVisible] = useState(false);
@@ -102,6 +107,10 @@ const TaxPage: React.FC = () => {
   const { taxes, isLoading, error } = useAppSelector((state) => state.tax);
   const { role } = useAppSelector((state) => state.auth);
   const isSuperAdmin = role === 'super_admin';
+
+  const hasCreateAccess = isSuperAdmin || canCreateTax;
+  const hasUpdateAccess = isSuperAdmin || canUpdateTax;
+  const hasDeleteAccess = isSuperAdmin || canDeleteTax;
 
   useEffect(() => {
     dispatch(fetchTaxes());
@@ -176,18 +185,20 @@ const TaxPage: React.FC = () => {
           >
             Close
           </Button>
-          <Button
-            key="edit"
-            type="primary"
-            className="rounded-full h-11 px-10 font-bold !bg-gradient-to-r !from-indigo-600 !to-violet-600 border-none flex items-center gap-2"
-            onClick={() => {
-              const current = viewingTax;
-              setViewingTax(null);
-              if (current) handleEdit(current);
-            }}
-          >
-            Edit Rule
-          </Button>
+          {hasUpdateAccess && (
+            <Button
+              key="edit"
+              type="primary"
+              className="rounded-full h-11 px-10 font-bold !bg-gradient-to-r !from-indigo-600 !to-violet-600 border-none flex items-center gap-2"
+              onClick={() => {
+                const current = viewingTax;
+                setViewingTax(null);
+                if (current) handleEdit(current);
+              }}
+            >
+              Edit Rule
+            </Button>
+          )}
         </div>
       }
     >
@@ -306,7 +317,7 @@ const TaxPage: React.FC = () => {
         </div>
       }
       extraContent={
-        isSuperAdmin && (
+        hasCreateAccess && (
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -345,7 +356,8 @@ const TaxPage: React.FC = () => {
             onView={handleView}
             onDelete={handleDelete}
             onToggleStatus={handleToggleStatus}
-            isSuperAdmin={isSuperAdmin}
+            canUpdate={hasUpdateAccess}
+            canDelete={hasDeleteAccess}
           />
         </div>
       </div>
