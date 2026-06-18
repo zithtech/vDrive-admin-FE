@@ -13,12 +13,7 @@ import {
   Tag,
 } from "antd";
 import { messageApi as message } from "../../utilities/antdStaticHolder";
-import {
-  PlusOutlined,
-  EditOutlined,
-  DeleteOutlined,
-  LoadingOutlined,
-} from "@ant-design/icons";
+import { PlusOutlined, EditOutlined, DeleteOutlined, LoadingOutlined } from "@ant-design/icons";
 import { LuZap } from "react-icons/lu";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import {
@@ -64,9 +59,7 @@ const HotspotTypes = () => {
       if (deleteHotspot.fulfilled.match(resultAction)) {
         message.success("Hotspot deleted successfully");
       } else {
-        message.error(
-          (resultAction.payload as string) || "Failed to delete hotspot",
-        );
+        message.error((resultAction.payload as string) || "Failed to delete hotspot");
       }
     } catch (error) {
       message.error("Failed to delete hotspot");
@@ -93,9 +86,7 @@ const HotspotTypes = () => {
         if (updateHotspot.fulfilled.match(resultAction)) {
           message.success("Hotspot updated successfully");
         } else {
-          message.error(
-            (resultAction.payload as string) || "Failed to update hotspot",
-          );
+          message.error((resultAction.payload as string) || "Failed to update hotspot");
         }
       } else {
         // Create new
@@ -104,9 +95,7 @@ const HotspotTypes = () => {
         if (createHotspot.fulfilled.match(resultAction)) {
           message.success("Hotspot created successfully");
         } else {
-          message.error(
-            (resultAction.payload as string) || "Failed to create hotspot",
-          );
+          message.error((resultAction.payload as string) || "Failed to create hotspot");
         }
       }
 
@@ -139,9 +128,7 @@ const HotspotTypes = () => {
         <div className="flex items-center justify-between w-full">
           <div className="w-full flex items-center gap-2">
             <LuZap className="text-[20px] text-[#0080FF]" />
-            <span className="text-[19px] font-semibold p-0 m-0">
-              Hotspot Types Management
-            </span>
+            <span className="text-[19px] font-semibold p-0 m-0">Hotspot Types Management</span>
           </div>
         </div>
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
@@ -175,17 +162,13 @@ const HotspotTypes = () => {
                       </Tag>
                     </div>
                     <span className="text-xs text-gray-600">
-                      ₹{Number(item.fare).toFixed(2)} fare •{" "}
-                      {Number(item.multiplier).toFixed(1)}x multiplier
+                      ₹{Number(item.fare).toFixed(2)} fare • {Number(item.multiplier).toFixed(1)}x
+                      multiplier
                     </span>
                   </div>
                 </div>
                 <div className="flex gap-2 items-center justify-end sm:justify-start">
-                  <Button
-                    icon={<EditOutlined />}
-                    onClick={() => handleEdit(item)}
-                    size="small"
-                  />
+                  <Button icon={<EditOutlined />} onClick={() => handleEdit(item)} size="small" />
                   <Popconfirm
                     title="Delete hotspot"
                     description="Are you sure you want to delete this hotspot?"

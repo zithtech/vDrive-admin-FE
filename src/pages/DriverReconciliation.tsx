@@ -1,16 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  Button,
-  Table,
-  Tag,
-  Space,
-  Upload,
-  message,
-  Typography,
-  Card,
-  Empty,
-  Tooltip,
-} from "antd";
+import { Button, Table, Tag, Space, Upload, message, Typography, Card, Empty, Tooltip } from "antd";
 import {
   UploadOutlined,
   DownloadOutlined,
@@ -70,7 +59,7 @@ const DriverReconciliation: React.FC = () => {
   const [summaryStats, setSummaryStats] = useState({
     total_processed_rows: 0,
     active_drivers: 0,
-    pending_drivers: 0
+    pending_drivers: 0,
   });
   const [syncing, setSyncing] = useState(false);
   const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
@@ -87,16 +76,21 @@ const DriverReconciliation: React.FC = () => {
 
       // Find the most recent update as "last synced" if not manually synced yet
       if (rows.length > 0 && !lastSyncedAt) {
-        const latestUpdate = rows.reduce((max: string, r: any) =>
-          (r.updated_at > max ? r.updated_at : max), rows[0].updated_at);
+        const latestUpdate = rows.reduce(
+          (max: string, r: any) => (r.updated_at > max ? r.updated_at : max),
+          rows[0].updated_at,
+        );
         setLastSyncedAt(latestUpdate);
       }
 
       // Derive stats from rows
       setSummaryStats({
         total_processed_rows: rows.length,
-        active_drivers: rows.filter((d: any) => d.status?.toLowerCase() === 'active' || d.status?.toLowerCase() === 'verified').length,
-        pending_drivers: rows.filter((d: any) => d.status?.toLowerCase() === 'pending').length
+        active_drivers: rows.filter(
+          (d: any) =>
+            d.status?.toLowerCase() === "active" || d.status?.toLowerCase() === "verified",
+        ).length,
+        pending_drivers: rows.filter((d: any) => d.status?.toLowerCase() === "pending").length,
       });
     } catch (err: any) {
       console.error("Failed to load reconciliation data:", err);
@@ -138,7 +132,7 @@ const DriverReconciliation: React.FC = () => {
         (d) =>
           d.driver_name?.toLowerCase().includes(search) ||
           d.phone?.includes(search) ||
-          d.mail?.toLowerCase().includes(search)
+          d.mail?.toLowerCase().includes(search),
       );
     }
 
@@ -152,12 +146,20 @@ const DriverReconciliation: React.FC = () => {
 
     if (filters.from) {
       const fromDate = dayjs(filters.from).startOf("day");
-      result = result.filter((d) => d.joined_date && dayjs(d.joined_date).isAfter(fromDate) || dayjs(d.joined_date).isSame(fromDate));
+      result = result.filter(
+        (d) =>
+          (d.joined_date && dayjs(d.joined_date).isAfter(fromDate)) ||
+          dayjs(d.joined_date).isSame(fromDate),
+      );
     }
 
     if (filters.to) {
       const toDate = dayjs(filters.to).endOf("day");
-      result = result.filter((d) => d.joined_date && dayjs(d.joined_date).isBefore(toDate) || dayjs(d.joined_date).isSame(toDate));
+      result = result.filter(
+        (d) =>
+          (d.joined_date && dayjs(d.joined_date).isBefore(toDate)) ||
+          dayjs(d.joined_date).isSame(toDate),
+      );
     }
 
     setFilteredDrivers(result);
@@ -189,7 +191,9 @@ const DriverReconciliation: React.FC = () => {
       name: "state",
       label: "State",
       type: "select",
-      options: Array.from(new Set(drivers.map((d) => d.state))).filter(Boolean).map(s => ({ value: s, label: s })),
+      options: Array.from(new Set(drivers.map((d) => d.state)))
+        .filter(Boolean)
+        .map((s) => ({ value: s, label: s })),
       mode: "multiple",
     },
     {
@@ -288,7 +292,7 @@ const DriverReconciliation: React.FC = () => {
         try {
           const payload = {
             filename: file.name,
-            data: jsonData
+            data: jsonData,
           };
           await axiosIns.post("/api/driver-reconciliation/process", payload);
           message.success(`${jsonData.length} driver records imported successfully!`);
@@ -317,16 +321,24 @@ const DriverReconciliation: React.FC = () => {
       title: "Driver Name",
       dataIndex: "driver_name",
       key: "name",
-      render: (text: string) => <Text strong className="text-slate-700 dark:text-slate-200">{text}</Text>,
+      render: (text: string) => (
+        <Text strong className="text-slate-700 dark:text-slate-200">
+          {text}
+        </Text>
+      ),
     },
     {
       title: "Contact Info",
       key: "contact",
       render: (_: any, record: DriverData) => (
         <div className="flex items-center gap-2">
-          <Text className="text-xs font-semibold text-slate-600 dark:text-slate-300">{record.phone}</Text>
+          <Text className="text-xs font-semibold text-slate-600 dark:text-slate-300">
+            {record.phone}
+          </Text>
           <div className="h-3 w-[1.5px] bg-indigo-200/60 dark:bg-indigo-500/30 rounded-full mx-1" />
-          <Text className="text-[11px] font-medium text-slate-400 dark:text-slate-500">{record.mail}</Text>
+          <Text className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+            {record.mail}
+          </Text>
         </div>
       ),
     },
@@ -334,7 +346,9 @@ const DriverReconciliation: React.FC = () => {
       title: "Location",
       key: "location",
       render: (_: any, record: DriverData) => (
-        <Tooltip title={`${record.address}, ${record.district}, ${record.state}, ${record.pincode}`}>
+        <Tooltip
+          title={`${record.address}, ${record.district}, ${record.state}, ${record.pincode}`}
+        >
           <div className="max-w-[200px] truncate text-[12px] text-slate-500 dark:text-slate-400 dark:text-slate-500">
             {record.address}, {record.state}
           </div>
@@ -345,28 +359,37 @@ const DriverReconciliation: React.FC = () => {
       title: "District",
       dataIndex: "district",
       key: "district",
-      render: (text: string) => <Text className="text-[12px] text-slate-600 dark:text-slate-300 font-medium">{text}</Text>,
+      render: (text: string) => (
+        <Text className="text-[12px] text-slate-600 dark:text-slate-300 font-medium">{text}</Text>
+      ),
     },
     {
       title: "Onboarding Status",
       key: "onboarding",
       render: (_: any, record: DriverData) => {
         if (!record.has_account) {
-          return <Tag color="default" className="rounded-full px-3 text-[10px] font-bold uppercase">Not Registered</Tag>;
+          return (
+            <Tag color="default" className="rounded-full px-3 text-[10px] font-bold uppercase">
+              Not Registered
+            </Tag>
+          );
         }
 
-        const status = record.onboarding_status || 'PHONE_VERIFIED';
-        let color = 'cyan';
+        const status = record.onboarding_status || "PHONE_VERIFIED";
+        let color = "cyan";
 
-        if (['ACTIVE', 'SUBSCRIPTION_ACTIVE'].includes(status)) color = 'green';
-        else if (['DOCUMENTS_APPROVED', 'DOCS_SUBMITTED'].includes(status)) color = 'blue';
-        else if (status === 'DOCS_REJECTED') color = 'red';
-        else if (['PROFILE_COMPLETED', 'ADDRESS_COMPLETED'].includes(status)) color = 'cyan';
-        else color = 'geekblue';
+        if (["ACTIVE", "SUBSCRIPTION_ACTIVE"].includes(status)) color = "green";
+        else if (["DOCUMENTS_APPROVED", "DOCS_SUBMITTED"].includes(status)) color = "blue";
+        else if (status === "DOCS_REJECTED") color = "red";
+        else if (["PROFILE_COMPLETED", "ADDRESS_COMPLETED"].includes(status)) color = "cyan";
+        else color = "geekblue";
 
         return (
-          <Tag color={color} className="rounded-full px-3 text-[10px] font-bold uppercase border-none">
-            {status.replace(/_/g, ' ')}
+          <Tag
+            color={color}
+            className="rounded-full px-3 text-[10px] font-bold uppercase border-none"
+          >
+            {status.replace(/_/g, " ")}
           </Tag>
         );
       },
@@ -388,7 +411,11 @@ const DriverReconciliation: React.FC = () => {
           color = "processing";
         }
         return (
-          <Tag icon={icon} color={color} className="rounded-full px-3 py-0.5 font-bold uppercase text-[10px]">
+          <Tag
+            icon={icon}
+            color={color}
+            className="rounded-full px-3 py-0.5 font-bold uppercase text-[10px]"
+          >
             {status}
           </Tag>
         );
@@ -456,7 +483,9 @@ const DriverReconciliation: React.FC = () => {
               Export Template
             </Button>
           </Tooltip>
-          <Tooltip title={canCreate ? "Shortcut: Alt + I" : "You do not have permission to import data"}>
+          <Tooltip
+            title={canCreate ? "Shortcut: Alt + I" : "You do not have permission to import data"}
+          >
             <span>
               <Upload
                 beforeUpload={handleImport}
@@ -487,14 +516,23 @@ const DriverReconciliation: React.FC = () => {
       <div className="w-full h-full flex flex-col gap-6 animate-in fade-in duration-500">
         {/* Stats Summary Style Card (Optional but looks premium) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-          <Card size="small" className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-300 hover:shadow-md group">
+          <Card
+            size="small"
+            className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-300 hover:shadow-md group"
+          >
             <div className="flex justify-between items-center py-1 px-1">
               <div className="flex flex-col">
-                <Text className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider leading-none">Total Imported</Text>
-                <Text className="text-[9px] text-slate-400 dark:text-slate-500 font-medium leading-none mt-1.5 italic">Overall records processed</Text>
+                <Text className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider leading-none">
+                  Total Imported
+                </Text>
+                <Text className="text-[9px] text-slate-400 dark:text-slate-500 font-medium leading-none mt-1.5 italic">
+                  Overall records processed
+                </Text>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-none">{summaryStats.total_processed_rows}</span>
+                <span className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight leading-none">
+                  {summaryStats.total_processed_rows}
+                </span>
                 <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 flex items-center justify-center transition-all duration-300 group-hover:scale-105 border border-indigo-100/50 dark:border-indigo-500/20">
                   <CloudUploadOutlined className="text-sm" />
                 </div>
@@ -502,14 +540,23 @@ const DriverReconciliation: React.FC = () => {
             </div>
           </Card>
 
-          <Card size="small" className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-300 hover:shadow-md group">
+          <Card
+            size="small"
+            className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-300 hover:shadow-md group"
+          >
             <div className="flex justify-between items-center py-1 px-1">
               <div className="flex flex-col">
-                <Text className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider leading-none">Active Drivers</Text>
-                <Text className="text-[9px] text-slate-400 dark:text-slate-500 font-medium leading-none mt-1.5 italic">Verified and operational</Text>
+                <Text className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider leading-none">
+                  Active Drivers
+                </Text>
+                <Text className="text-[9px] text-slate-400 dark:text-slate-500 font-medium leading-none mt-1.5 italic">
+                  Verified and operational
+                </Text>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-xl font-black text-emerald-600 tracking-tight leading-none">{summaryStats.active_drivers}</span>
+                <span className="text-xl font-black text-emerald-600 tracking-tight leading-none">
+                  {summaryStats.active_drivers}
+                </span>
                 <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 flex items-center justify-center transition-all duration-300 group-hover:scale-105 border border-emerald-100/50 dark:border-emerald-500/20">
                   <SafetyCertificateOutlined className="text-sm" />
                 </div>
@@ -517,14 +564,23 @@ const DriverReconciliation: React.FC = () => {
             </div>
           </Card>
 
-          <Card size="small" className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-300 hover:shadow-md group">
+          <Card
+            size="small"
+            className="bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm transition-all duration-300 hover:shadow-md group"
+          >
             <div className="flex justify-between items-center py-1 px-1">
               <div className="flex flex-col">
-                <Text className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider leading-none">Pending Review</Text>
-                <Text className="text-[9px] text-slate-400 dark:text-slate-500 font-medium leading-none mt-1.5 italic">Awaiting verification</Text>
+                <Text className="text-[9px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider leading-none">
+                  Pending Review
+                </Text>
+                <Text className="text-[9px] text-slate-400 dark:text-slate-500 font-medium leading-none mt-1.5 italic">
+                  Awaiting verification
+                </Text>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-xl font-black text-amber-500 tracking-tight leading-none">{summaryStats.pending_drivers}</span>
+                <span className="text-xl font-black text-amber-500 tracking-tight leading-none">
+                  {summaryStats.pending_drivers}
+                </span>
                 <div className="w-8 h-8 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400 flex items-center justify-center transition-all duration-300 group-hover:scale-105 border border-amber-100/50 dark:border-amber-500/20">
                   <ClockCircleOutlined className="text-sm" />
                 </div>
@@ -539,13 +595,15 @@ const DriverReconciliation: React.FC = () => {
             filterFields={filterFields}
             applyFilters={applyFilters}
             isStandalone
-            onClear={() => setFilters({
-              globalSearch: "",
-              status: [],
-              state: [],
-              from: null,
-              to: null,
-            })}
+            onClear={() =>
+              setFilters({
+                globalSearch: "",
+                status: [],
+                state: [],
+                from: null,
+                to: null,
+              })
+            }
           />
         </div>
 
@@ -562,18 +620,20 @@ const DriverReconciliation: React.FC = () => {
               showSizeChanger: true,
               size: "small",
               position: ["bottomRight"],
-              showTotal: (total) => total > 0 ? `Total ${total} drivers` : "",
+              showTotal: (total) => (total > 0 ? `Total ${total} drivers` : ""),
               onChange: (page, size) => {
                 setCurrentPage(page);
                 setPageSize(size);
-              }
+              },
             }}
             size="small"
-            scroll={{ x: 'max-content', y: 'calc(100vh - 440px)' }}
+            scroll={{ x: "max-content", y: "calc(100vh - 440px)" }}
             sticky
             rowKey={(record, index) => (record?.phone || index || 0).toString() + (index || 0)}
             rowClassName={(_, index) =>
-              (index || 0) % 2 === 0 ? "bg-slate-50/50 dark:bg-slate-800/50 hover:bg-indigo-50/30 dark:hover:bg-slate-700/50 transition-colors" : "bg-white dark:bg-slate-800 hover:bg-indigo-50/30 dark:hover:bg-slate-700/50 transition-colors"
+              (index || 0) % 2 === 0
+                ? "bg-slate-50/50 dark:bg-slate-800/50 hover:bg-indigo-50/30 dark:hover:bg-slate-700/50 transition-colors"
+                : "bg-white dark:bg-slate-800 hover:bg-indigo-50/30 dark:hover:bg-slate-700/50 transition-colors"
             }
             locale={{
               emptyText: (
@@ -581,11 +641,17 @@ const DriverReconciliation: React.FC = () => {
                   image={Empty.PRESENTED_IMAGE_SIMPLE}
                   description={
                     <div className="flex flex-col gap-2">
-                      <Text className="text-slate-400 dark:text-slate-500 font-medium">No driver data found</Text>
+                      <Text className="text-slate-400 dark:text-slate-500 font-medium">
+                        No driver data found
+                      </Text>
                       {canCreate ? (
-                        <Text type="secondary" className="text-[12px]">Please export the template and import your data to get started.</Text>
+                        <Text type="secondary" className="text-[12px]">
+                          Please export the template and import your data to get started.
+                        </Text>
                       ) : (
-                        <Text type="secondary" className="text-[12px]">No driver records are available. Contact an administrator to import data.</Text>
+                        <Text type="secondary" className="text-[12px]">
+                          No driver records are available. Contact an administrator to import data.
+                        </Text>
                       )}
                       <div className="mt-2">
                         <Button

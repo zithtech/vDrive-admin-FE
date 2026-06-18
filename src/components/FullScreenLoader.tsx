@@ -5,10 +5,7 @@ interface FullScreenLoaderProps {
   blur?: boolean;
 }
 
-const FullScreenLoader: React.FC<FullScreenLoaderProps> = ({
-  overlay = false,
-  blur = false,
-}) => {
+const FullScreenLoader: React.FC<FullScreenLoaderProps> = ({ overlay = false, blur = false }) => {
   const baseStyles: React.CSSProperties = {
     position: overlay ? "fixed" : "fixed",
     top: 0,

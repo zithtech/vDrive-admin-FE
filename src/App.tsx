@@ -18,16 +18,7 @@ import {
   // SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import {
-  Layout,
-  Menu,
-  Avatar,
-  ConfigProvider,
-  Button,
-  Drawer,
-  App as AntdApp,
-  theme,
-} from "antd";
+import { Layout, Menu, Avatar, ConfigProvider, Button, Drawer, App as AntdApp, theme } from "antd";
 import logo from "/90.png";
 import {
   createBrowserRouter,
@@ -53,7 +44,7 @@ import { useUserAlert } from "./hooks/useUserAlert";
 import { useTripVerificationAlert } from "./hooks/useTripVerificationAlert";
 import {
   // IoReceiptOutline,
-  IoCarOutline
+  IoCarOutline,
 } from "react-icons/io5";
 import { MdOutlineAccountBalanceWallet } from "react-icons/md";
 import SosMonitor from "./components/SosMonitor/SosMonitor";
@@ -98,40 +89,76 @@ const RouteLoadingFallback = () => (
 
 // Lazy load heavy components for better bundle splitting
 const Users = lazy(() => import("./pages/Users"));
-const Customers = lazy(() => import("./pages/Customers") as Promise<{ default: React.ComponentType<any> }>);
-const Admins = lazy(() => import("./pages/Admins") as Promise<{ default: React.ComponentType<any> }>);
-const InvoiceTemplates = lazy(() => import("./pages/InvoiceTemplates") as Promise<{ default: React.ComponentType<any> }>);
-const TripDetails = lazy(() => import("./pages/TripDetails") as Promise<{ default: React.ComponentType<any> }>);
-const Drivers = lazy(() => import("./pages/Drivers") as Promise<{ default: React.ComponentType<any> }>);
-const DriverApplications = lazy(() => import("./pages/DriverApplications") as Promise<{ default: React.ComponentType<any> }>);
-const DriverPricing = lazy(() => import("./pages/DriverPricing") as Promise<{ default: React.ComponentType<any> }>);
-const PricingAndFareRules = lazy(() => import("./pages/Pricing&FareRules") as Promise<{ default: React.ComponentType<any> }>);
-const Deductions = lazy(() => import("./pages/Deductions") as Promise<{ default: React.ComponentType<any> }>);
-const RechargePlan = lazy(() => import("./pages/RechargePlan") as Promise<{ default: React.ComponentType<any> }>);
-const TripTransactions = lazy(() => import("./pages/TripTransactions") as Promise<{ default: React.ComponentType<any> }>);
+const Customers = lazy(
+  () => import("./pages/Customers") as Promise<{ default: React.ComponentType<any> }>,
+);
+const Admins = lazy(
+  () => import("./pages/Admins") as Promise<{ default: React.ComponentType<any> }>,
+);
+const InvoiceTemplates = lazy(
+  () => import("./pages/InvoiceTemplates") as Promise<{ default: React.ComponentType<any> }>,
+);
+const TripDetails = lazy(
+  () => import("./pages/TripDetails") as Promise<{ default: React.ComponentType<any> }>,
+);
+const Drivers = lazy(
+  () => import("./pages/Drivers") as Promise<{ default: React.ComponentType<any> }>,
+);
+const DriverApplications = lazy(
+  () => import("./pages/DriverApplications") as Promise<{ default: React.ComponentType<any> }>,
+);
+const DriverPricing = lazy(
+  () => import("./pages/DriverPricing") as Promise<{ default: React.ComponentType<any> }>,
+);
+const PricingAndFareRules = lazy(
+  () => import("./pages/Pricing&FareRules") as Promise<{ default: React.ComponentType<any> }>,
+);
+const Deductions = lazy(
+  () => import("./pages/Deductions") as Promise<{ default: React.ComponentType<any> }>,
+);
+const RechargePlan = lazy(
+  () => import("./pages/RechargePlan") as Promise<{ default: React.ComponentType<any> }>,
+);
+const TripTransactions = lazy(
+  () => import("./pages/TripTransactions") as Promise<{ default: React.ComponentType<any> }>,
+);
 const Tax = lazy(() => import("./pages/Tax") as Promise<{ default: React.ComponentType<any> }>);
-const SignUp = lazy(() => import("./signup/Signup") as Promise<{ default: React.ComponentType<any> }>);
+const SignUp = lazy(
+  () => import("./signup/Signup") as Promise<{ default: React.ComponentType<any> }>,
+);
 const Login = lazy(() => import("./login/Login") as Promise<{ default: React.ComponentType<any> }>);
-const ResetPassword = lazy(() => import("./login/ResetPassword") as Promise<{ default: React.ComponentType<any> }>);
-const PricingCombinations = lazy(() => import("./pages/PricingCombinations") as Promise<{ default: React.ComponentType<any> }>);
-const Coupons = lazy(() => import("./pages/Coupons") as Promise<{ default: React.ComponentType<any> }>);
-const DriverReconciliation = lazy(() => import("./pages/DriverReconciliation") as Promise<{ default: React.ComponentType<any> }>);
-const TripVerifications = lazy(() => import("./pages/TripVerifications") as Promise<{ default: React.ComponentType<any> }>);
+const ResetPassword = lazy(
+  () => import("./login/ResetPassword") as Promise<{ default: React.ComponentType<any> }>,
+);
+const PricingCombinations = lazy(
+  () => import("./pages/PricingCombinations") as Promise<{ default: React.ComponentType<any> }>,
+);
+const Coupons = lazy(
+  () => import("./pages/Coupons") as Promise<{ default: React.ComponentType<any> }>,
+);
+const DriverReconciliation = lazy(
+  () => import("./pages/DriverReconciliation") as Promise<{ default: React.ComponentType<any> }>,
+);
+const TripVerifications = lazy(
+  () => import("./pages/TripVerifications") as Promise<{ default: React.ComponentType<any> }>,
+);
 const Notifications = lazy(() => import("./pages/Notifications"));
 const SupportTickets = lazy(() => import("./pages/SupportTickets"));
 const SupportAnalytics = lazy(() => import("./pages/SupportAnalytics"));
 
-
-
-
-
 const { Content, Sider, Header } = Layout;
 
 const Logo: React.FC<{ collapsed: boolean }> = ({ collapsed }) => (
-  <div className={`flex items-center justify-center gap-3 px-6 h-[80px] border-b border-gray-200 dark:border-slate-800 transition-all duration-300 ${collapsed ? "px-0" : ""}`}>
+  <div
+    className={`flex items-center justify-center gap-3 px-6 h-[80px] border-b border-gray-200 dark:border-slate-800 transition-all duration-300 ${collapsed ? "px-0" : ""}`}
+  >
     <div className="relative flex items-center justify-center">
       <div className="absolute -inset-2 bg-indigo-500/10 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
-      <img src={logo} alt="" className="w-20 h-20 object-contain relative drop-shadow-sm transition-all duration-300 dark:invert dark:brightness-200" />
+      <img
+        src={logo}
+        alt=""
+        className="w-20 h-20 object-contain relative drop-shadow-sm transition-all duration-300 dark:invert dark:brightness-200"
+      />
     </div>
 
     {!collapsed && (
@@ -166,7 +193,12 @@ const RootLayout: React.FC = () => {
   const deductionsAccess = useModuleAccess("deductions");
   const rechargePlanAccess = useModuleAccess("recharge");
   const taxesAccess = useModuleAccess("taxes");
-  const couponsAccess = useModuleAccess(["coupons", "promos", "user_referrals", "driver_referrals"]);
+  const couponsAccess = useModuleAccess([
+    "coupons",
+    "promos",
+    "user_referrals",
+    "driver_referrals",
+  ]);
   // const promotionsAccess = useModuleAccess("promos");
   const notificationsAccess = useModuleAccess("notifications");
   const tripsAccess = useModuleAccess("trips");
@@ -174,7 +206,6 @@ const RootLayout: React.FC = () => {
   const tripverificationAccess = useModuleAccess("trip_verification");
   const supportTicketsAccess = useModuleAccess("support_tickets");
   const supportAnalyticsAccess = useModuleAccess("support_analytics");
-
 
   useEffect(() => {
     if (isAuthenticated && !currentUser) {
@@ -193,16 +224,16 @@ const RootLayout: React.FC = () => {
     if (!socket) return;
 
     const handleDriverEvent = (data: any) => {
-      let title = 'Driver Notification';
-      if (data.eventType === 'NEW_DRIVER') title = 'New Driver Registered';
-      else if (data.eventType === 'DRIVER_PROFILE_COMPLETED') title = 'Profile Completed';
-      else if (data.eventType === 'SUBSCRIPTION_ACTIVATED') title = 'New Subscription';
-      else if (data.eventType === 'SUBSCRIPTION_RENEWED') title = 'Subscription Renewed';
+      let title = "Driver Notification";
+      if (data.eventType === "NEW_DRIVER") title = "New Driver Registered";
+      else if (data.eventType === "DRIVER_PROFILE_COMPLETED") title = "Profile Completed";
+      else if (data.eventType === "SUBSCRIPTION_ACTIVATED") title = "New Subscription";
+      else if (data.eventType === "SUBSCRIPTION_RENEWED") title = "Subscription Renewed";
 
       notificationApi?.info({
         message: title,
         description: data.message,
-        placement: 'topRight',
+        placement: "topRight",
         duration: 5,
       });
     };
@@ -211,31 +242,31 @@ const RootLayout: React.FC = () => {
 
     socket.on("newSupportMessageNotification", (data: any) => {
       notificationApi?.info({
-        message: 'New Support Message',
+        message: "New Support Message",
         description: data.message,
-        placement: 'bottomRight',
+        placement: "bottomRight",
         duration: 4,
-        onClick: () => navigate(`/support-tickets?ticketId=${data.ticketId}`)
+        onClick: () => navigate(`/support-tickets?ticketId=${data.ticketId}`),
       });
     });
 
-    socket.on('ADMIN_SUPPORT_TICKET_ALERT', (newTicket: any) => {
+    socket.on("ADMIN_SUPPORT_TICKET_ALERT", (newTicket: any) => {
       notificationApi?.info({
-        message: 'New Driver Support Ticket',
-        description: newTicket.subject || 'A driver has created a new support ticket.',
-        placement: 'topRight',
+        message: "New Driver Support Ticket",
+        description: newTicket.subject || "A driver has created a new support ticket.",
+        placement: "topRight",
         duration: 5,
-        onClick: () => navigate(`/support-tickets?ticketId=${newTicket.id}`)
+        onClick: () => navigate(`/support-tickets?ticketId=${newTicket.id}`),
       });
     });
 
-    socket.on('ADMIN_SUPPORT_USER_TICKET_ALERT', (newTicket: any) => {
+    socket.on("ADMIN_SUPPORT_USER_TICKET_ALERT", (newTicket: any) => {
       notificationApi?.info({
-        message: 'New Customer Support Ticket',
-        description: newTicket.subject || 'A customer has created a new support ticket.',
-        placement: 'topRight',
+        message: "New Customer Support Ticket",
+        description: newTicket.subject || "A customer has created a new support ticket.",
+        placement: "topRight",
         duration: 5,
-        onClick: () => navigate(`/support-tickets?ticketId=${newTicket.id}`)
+        onClick: () => navigate(`/support-tickets?ticketId=${newTicket.id}`),
       });
     });
 
@@ -247,193 +278,196 @@ const RootLayout: React.FC = () => {
     };
   }, [socket]);
 
+  const handleNewTrip = useCallback(
+    (newTrip: any) => {
+      logger.info("New trip received", newTrip);
 
+      const key = `trip-${newTrip.id}`; // unique key per notification
 
-  const handleNewTrip = useCallback((newTrip: any) => {
-    logger.info("New trip received", newTrip);
-
-    const key = `trip-${newTrip.id}`; // unique key per notification
-
-    notification.info({
-      key,
-      message: (
-        <span style={{ fontWeight: 600, fontSize: 14 }}>
-          🚗 New Trip Requested — #{newTrip.id}
-        </span>
-      ),
-      description: (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
-          {/* Pickup */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
-            <EnvironmentOutlined style={{ color: '#22c55e', marginTop: 2 }} />
-            <div>
-              <div style={{ fontSize: 11, color: '#888', fontWeight: 500 }}>PICKUP</div>
-              <div style={{ fontSize: 13, color: '#000' }}>
-                {newTrip.pickupLocation?.address || newTrip.pickupLocation || 'N/A'}
+      notification.info({
+        key,
+        message: (
+          <span style={{ fontWeight: 600, fontSize: 14 }}>
+            🚗 New Trip Requested — #{newTrip.id}
+          </span>
+        ),
+        description: (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+            {/* Pickup */}
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
+              <EnvironmentOutlined style={{ color: "#22c55e", marginTop: 2 }} />
+              <div>
+                <div style={{ fontSize: 11, color: "#888", fontWeight: 500 }}>PICKUP</div>
+                <div style={{ fontSize: 13, color: "#000" }}>
+                  {newTrip.pickupLocation?.address || newTrip.pickupLocation || "N/A"}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Dropoff */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
-            <EnvironmentOutlined style={{ color: '#ef4444', marginTop: 2 }} />
-            <div>
-              <div style={{ fontSize: 11, color: '#888', fontWeight: 500 }}>DROP-OFF</div>
-              <div style={{ fontSize: 13, color: '#000' }}>
-                {newTrip.dropoffLocation?.address || newTrip.dropoffLocation || 'N/A'}
+            {/* Dropoff */}
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
+              <EnvironmentOutlined style={{ color: "#ef4444", marginTop: 2 }} />
+              <div>
+                <div style={{ fontSize: 11, color: "#888", fontWeight: 500 }}>DROP-OFF</div>
+                <div style={{ fontSize: 13, color: "#000" }}>
+                  {newTrip.dropoffLocation?.address || newTrip.dropoffLocation || "N/A"}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* CTA */}
-          <div
-            onClick={() => {
-              notification.destroy(key);                          // close this notification
-              navigate(`/TripDetails?selected=${newTrip.id}`);         // ✅ redirect with trip selected
-            }}
-            style={{
-              marginTop: 6,
-              cursor: 'pointer',
-              color: '#3b82f6',
-              fontWeight: 600,
-              fontSize: 13,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-            }}
-          >
-            View Trip Details <ArrowRightOutlined />
+            {/* CTA */}
+            <div
+              onClick={() => {
+                notification.destroy(key); // close this notification
+                navigate(`/TripDetails?selected=${newTrip.id}`); // ✅ redirect with trip selected
+              }}
+              style={{
+                marginTop: 6,
+                cursor: "pointer",
+                color: "#3b82f6",
+                fontWeight: 600,
+                fontSize: 13,
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              View Trip Details <ArrowRightOutlined />
+            </div>
           </div>
-        </div>
-      ),
-      placement: 'topRight',
-      duration: 8,       // stays longer so admin can read it
-      style: {
-        background: '#fff',
-        border: '1px solid #ccc',
-        borderRadius: 10,
-      },
-    });
-  }, [navigate]);
+        ),
+        placement: "topRight",
+        duration: 8, // stays longer so admin can read it
+        style: {
+          background: "#fff",
+          border: "1px solid #ccc",
+          borderRadius: 10,
+        },
+      });
+    },
+    [navigate],
+  );
 
   useAdminTripAlert(handleNewTrip);
 
-  const handleNewUser = useCallback((newUser: any) => {
-    logger.info("New user registered", newUser);
+  const handleNewUser = useCallback(
+    (newUser: any) => {
+      logger.info("New user registered", newUser);
 
-    const key = `user-${newUser.id || Date.now()}`;
+      const key = `user-${newUser.id || Date.now()}`;
 
-    notification.success({
-      key,
-      message: (
-        <span style={{ fontWeight: 600, fontSize: 14 }}>
-          👤 New User Registered!
-        </span>
-      ),
-      description: (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
-          {/* User Detail */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
-            <UserOutlined style={{ color: '#3b82f6', marginTop: 2 }} />
-            <div>
-              <div style={{ fontSize: 13, color: '#000', fontWeight: 500 }}>
-                {newUser.full_name || newUser.fullName || 'Unknown User'}
-              </div>
-              <div style={{ fontSize: 11, color: '#888' }}>
-                {newUser.phone_number || newUser.phoneNumber || 'N/A'}
+      notification.success({
+        key,
+        message: <span style={{ fontWeight: 600, fontSize: 14 }}>👤 New User Registered!</span>,
+        description: (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+            {/* User Detail */}
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
+              <UserOutlined style={{ color: "#3b82f6", marginTop: 2 }} />
+              <div>
+                <div style={{ fontSize: 13, color: "#000", fontWeight: 500 }}>
+                  {newUser.full_name || newUser.fullName || "Unknown User"}
+                </div>
+                <div style={{ fontSize: 11, color: "#888" }}>
+                  {newUser.phone_number || newUser.phoneNumber || "N/A"}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* CTA */}
-          <div
-            onClick={() => {
-              notification.destroy(key);
-              navigate(`/customers`);
-            }}
-            style={{
-              marginTop: 6,
-              cursor: 'pointer',
-              color: '#3b82f6',
-              fontWeight: 600,
-              fontSize: 13,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-            }}
-          >
-            Manage Users <ArrowRightOutlined />
+            {/* CTA */}
+            <div
+              onClick={() => {
+                notification.destroy(key);
+                navigate(`/customers`);
+              }}
+              style={{
+                marginTop: 6,
+                cursor: "pointer",
+                color: "#3b82f6",
+                fontWeight: 600,
+                fontSize: 13,
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              Manage Users <ArrowRightOutlined />
+            </div>
           </div>
-        </div>
-      ),
-      placement: 'topRight',
-      duration: 8,
-      style: {
-        background: '#fff',
-        border: '1px solid #ccc',
-        borderRadius: 10,
-      },
-    });
-  }, [navigate]);
+        ),
+        placement: "topRight",
+        duration: 8,
+        style: {
+          background: "#fff",
+          border: "1px solid #ccc",
+          borderRadius: 10,
+        },
+      });
+    },
+    [navigate],
+  );
 
   useUserAlert(handleNewUser);
 
-  const handleNewVerification = useCallback((data: any) => {
-    logger.info("New trip verification requested", data);
+  const handleNewVerification = useCallback(
+    (data: any) => {
+      logger.info("New trip verification requested", data);
 
-    const key = `verify-${data.tripId || Date.now()}`;
+      const key = `verify-${data.tripId || Date.now()}`;
 
-    notification.warning({
-      key,
-      message: (
-        <span style={{ fontWeight: 600, fontSize: 14 }}>
-          📸 Action Required: Trip Verification
-        </span>
-      ),
-      description: (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 4 }}>
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
-            <CheckCircleOutlined style={{ color: '#fa8c16', marginTop: 2 }} />
-            <div>
-              <div style={{ fontSize: 13, color: '#000', fontWeight: 500 }}>
-                Trip #{data.tripId || 'Unknown'} requires photo verification.
-              </div>
-              <div style={{ fontSize: 11, color: '#888' }}>
-                Driver #{data.driverId || 'N/A'} is waiting to start.
+      notification.warning({
+        key,
+        message: (
+          <span style={{ fontWeight: 600, fontSize: 14 }}>
+            📸 Action Required: Trip Verification
+          </span>
+        ),
+        description: (
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
+              <CheckCircleOutlined style={{ color: "#fa8c16", marginTop: 2 }} />
+              <div>
+                <div style={{ fontSize: 13, color: "#000", fontWeight: 500 }}>
+                  Trip #{data.tripId || "Unknown"} requires photo verification.
+                </div>
+                <div style={{ fontSize: 11, color: "#888" }}>
+                  Driver #{data.driverId || "N/A"} is waiting to start.
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* CTA */}
-          <div
-            onClick={() => {
-              notification.destroy(key);
-              navigate(`/trip-verifications`);
-            }}
-            style={{
-              marginTop: 6,
-              cursor: 'pointer',
-              color: '#3b82f6',
-              fontWeight: 600,
-              fontSize: 13,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4,
-            }}
-          >
-            Review Photos <ArrowRightOutlined />
+            {/* CTA */}
+            <div
+              onClick={() => {
+                notification.destroy(key);
+                navigate(`/trip-verifications`);
+              }}
+              style={{
+                marginTop: 6,
+                cursor: "pointer",
+                color: "#3b82f6",
+                fontWeight: 600,
+                fontSize: 13,
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              Review Photos <ArrowRightOutlined />
+            </div>
           </div>
-        </div>
-      ),
-      placement: 'topRight',
-      duration: 0, // Keep open until action taken
-      style: {
-        background: '#fff',
-        border: '1px solid #fa8c16',
-        borderRadius: 10,
-      },
-    });
-  }, [navigate]);
+        ),
+        placement: "topRight",
+        duration: 0, // Keep open until action taken
+        style: {
+          background: "#fff",
+          border: "1px solid #fa8c16",
+          borderRadius: 10,
+        },
+      });
+    },
+    [navigate],
+  );
 
   useTripVerificationAlert(handleNewVerification);
 
@@ -453,9 +487,7 @@ const RootLayout: React.FC = () => {
     if (!loading && !isAuthenticated && location.pathname !== "/login") {
       navigate("/login");
     }
-
   }, [isAuthenticated, loading, location, navigate]);
-
 
   const onCloseDrawer = () => {
     setDrawerVisible(false);
@@ -486,57 +518,121 @@ const RootLayout: React.FC = () => {
       items.push({ label: <Link to="/">Dashboard</Link>, key: "/", icon: <HomeOutlined /> });
     }
     if (customersAccess) {
-      items.push({ label: <Link to="/customers">Customers</Link>, key: "/customers", icon: <UserOutlined /> });
+      items.push({
+        label: <Link to="/customers">Customers</Link>,
+        key: "/customers",
+        icon: <UserOutlined />,
+      });
     }
     if (pricingAccess) {
-      items.push({ label: <Link to="/PricingAndFareRules">Pricing And Fare Rules</Link>, key: "/PricingAndFareRules", icon: <DollarOutlined /> });
+      items.push({
+        label: <Link to="/PricingAndFareRules">Pricing And Fare Rules</Link>,
+        key: "/PricingAndFareRules",
+        icon: <DollarOutlined />,
+      });
     }
     if (driversAccess) {
-      items.push({ label: <Link to="/drivers">Drivers</Link>, key: "/drivers", icon: <PiSteeringWheel /> });
-      items.push({ label: <Link to="/driver-applications">Driver Applications</Link>, key: "/driver-applications", icon: <CheckCircleOutlined /> });
+      items.push({
+        label: <Link to="/drivers">Drivers</Link>,
+        key: "/drivers",
+        icon: <PiSteeringWheel />,
+      });
+      items.push({
+        label: <Link to="/driver-applications">Driver Applications</Link>,
+        key: "/driver-applications",
+        icon: <CheckCircleOutlined />,
+      });
     }
     if (driverOutreachAccess) {
-      items.push({ label: <Link to="/driver-reconciliation">Driver Outreach</Link>, key: "/driver-reconciliation", icon: <TableOutlined /> });
+      items.push({
+        label: <Link to="/driver-reconciliation">Driver Outreach</Link>,
+        key: "/driver-reconciliation",
+        icon: <TableOutlined />,
+      });
     }
     if (adminsAccess) {
-      items.push({ label: <Link to="/admins">Admins</Link>, key: "/admins", icon: <RiAdminLine /> });
+      items.push({
+        label: <Link to="/admins">Admins</Link>,
+        key: "/admins",
+        icon: <RiAdminLine />,
+      });
     }
 
     // Core functional tools available to authorized members
     if (tripsAccess) {
-      items.push({ label: <Link to="/TripDetails">Trip Details</Link>, key: "/TripDetails", icon: <IoCarOutline /> });
+      items.push({
+        label: <Link to="/TripDetails">Trip Details</Link>,
+        key: "/TripDetails",
+        icon: <IoCarOutline />,
+      });
     }
     if (tripTransactionAccess) {
-      items.push({ label: <Link to="/trip-transactions">Trip Transactions</Link>, key: "/trip-transactions", icon: <EnvironmentOutlined /> });
+      items.push({
+        label: <Link to="/trip-transactions">Trip Transactions</Link>,
+        key: "/trip-transactions",
+        icon: <EnvironmentOutlined />,
+      });
     }
 
     if (tripverificationAccess) {
-      items.push({ label: <Link to="/trip-verifications">Trip Verifications</Link>, key: "/trip-verifications", icon: <CheckCircleOutlined /> });
+      items.push({
+        label: <Link to="/trip-verifications">Trip Verifications</Link>,
+        key: "/trip-verifications",
+        icon: <CheckCircleOutlined />,
+      });
     }
     if (deductionsAccess) {
-      items.push({ label: <Link to="/Deductions">Deduction Management</Link>, key: "/Deductions", icon: <MdOutlineMoneyOff /> });
+      items.push({
+        label: <Link to="/Deductions">Deduction Management</Link>,
+        key: "/Deductions",
+        icon: <MdOutlineMoneyOff />,
+      });
     }
     if (rechargePlanAccess) {
-      items.push({ label: <Link to="/RechargePlan">Recharge Plan</Link>, key: "/RechargePlan", icon: <MdOutlineAccountBalanceWallet /> });
+      items.push({
+        label: <Link to="/RechargePlan">Recharge Plan</Link>,
+        key: "/RechargePlan",
+        icon: <MdOutlineAccountBalanceWallet />,
+      });
     }
     if (taxesAccess) {
-      items.push({ label: <Link to="/taxes">Tax Management</Link>, key: "/taxes", icon: <DollarOutlined /> });
+      items.push({
+        label: <Link to="/taxes">Tax Management</Link>,
+        key: "/taxes",
+        icon: <DollarOutlined />,
+      });
     }
     if (couponsAccess) {
-      items.push({ label: <Link to="/coupons">Coupons</Link>, key: "/coupons", icon: <DollarOutlined /> });
+      items.push({
+        label: <Link to="/coupons">Coupons</Link>,
+        key: "/coupons",
+        icon: <DollarOutlined />,
+      });
     }
     // if (promotionsAccess) {
     //   items.push({ label: <Link to="/promotions">Promotions</Link>, key: "/promotions", icon: <Ticket /> });
     // }
     if (notificationsAccess) {
-      items.push({ label: <Link to="/notifications">Notifications</Link>, key: "/notifications", icon: <BellOutlined /> });
+      items.push({
+        label: <Link to="/notifications">Notifications</Link>,
+        key: "/notifications",
+        icon: <BellOutlined />,
+      });
     }
 
     if (supportTicketsAccess) {
-      items.push({ label: <Link to="/support-tickets">Support Tickets</Link>, key: "/support-tickets", icon: <RiQuestionLine /> });
+      items.push({
+        label: <Link to="/support-tickets">Support Tickets</Link>,
+        key: "/support-tickets",
+        icon: <RiQuestionLine />,
+      });
     }
     if (supportAnalyticsAccess) {
-      items.push({ label: <Link to="/support-analytics">Support Analytics</Link>, key: "/support-analytics", icon: <RiQuestionLine /> });
+      items.push({
+        label: <Link to="/support-analytics">Support Analytics</Link>,
+        key: "/support-analytics",
+        icon: <RiQuestionLine />,
+      });
     }
 
     return items;
@@ -557,7 +653,7 @@ const RootLayout: React.FC = () => {
     tripTransactionAccess,
     tripverificationAccess,
     supportTicketsAccess,
-    supportAnalyticsAccess
+    supportAnalyticsAccess,
   ]);
   return (
     <ConfigProvider
@@ -566,7 +662,8 @@ const RootLayout: React.FC = () => {
         token: {
           colorPrimary: "#1d2a5c",
           colorPrimaryBg: "#ffffff",
-          fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          fontFamily:
+            "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         },
         components: {
           Layout: {
@@ -602,11 +699,7 @@ const RootLayout: React.FC = () => {
         <AntdStaticHolder />
         <SosMonitor />
         {loading && <FullScreenLoader />}
-        <Layout
-          hasSider={
-            !isMobile && isAuthenticated && location.pathname !== "/login"
-          }
-        >
+        <Layout hasSider={!isMobile && isAuthenticated && location.pathname !== "/login"}>
           {!isMobile && isAuthenticated && location.pathname !== "/login" && (
             <Sider
               style={siderStyle}
@@ -638,8 +731,9 @@ const RootLayout: React.FC = () => {
                   className={`flex-shrink-0 border-t border-gray-50 dark:border-slate-800 mt-auto transition-all duration-300 ${collapsed ? "p-2" : "p-6"}`}
                 >
                   <div
-                    className={`flex items-center w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-gray-100/50 dark:border-slate-700 shadow-sm transition-all duration-300 group cursor-pointer ${collapsed ? "justify-center p-2" : "gap-3 mb-4"
-                      }`}
+                    className={`flex items-center w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-gray-100/50 dark:border-slate-700 shadow-sm transition-all duration-300 group cursor-pointer ${
+                      collapsed ? "justify-center p-2" : "gap-3 mb-4"
+                    }`}
                   >
                     <Avatar
                       size={collapsed ? "small" : "large"}
@@ -653,7 +747,7 @@ const RootLayout: React.FC = () => {
                           {currentUser?.name || "Member User"}
                         </span>
                         <span className="text-[10px] text-indigo-500 font-bold uppercase tracking-wider whitespace-nowrap">
-                          {role === 'super_admin' ? 'Super Administrator' : 'Access Administrator'}
+                          {role === "super_admin" ? "Super Administrator" : "Access Administrator"}
                         </span>
                       </div>
                     )}
@@ -665,7 +759,11 @@ const RootLayout: React.FC = () => {
                     items={[
                       {
                         key: "logout",
-                        label: <span className="font-bold text-[11px] uppercase tracking-widest">Logout</span>,
+                        label: (
+                          <span className="font-bold text-[11px] uppercase tracking-widest">
+                            Logout
+                          </span>
+                        ),
                         icon: <LogoutOutlined className="!text-lg" />,
                         danger: true,
                         onClick: async () => {
@@ -708,10 +806,12 @@ const RootLayout: React.FC = () => {
                 }}
                 className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800"
               >
-                <img src={logo} alt="Logo" className={`w-8 h-8 object-contain transition-all duration-300 ${isDarkMode ? 'invert brightness-200' : ''}`} />
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
-                >
+                <img
+                  src={logo}
+                  alt="Logo"
+                  className={`w-8 h-8 object-contain transition-all duration-300 ${isDarkMode ? "invert brightness-200" : ""}`}
+                />
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <Button
                     type="text"
                     icon={<MenuOutlined />}
@@ -733,10 +833,11 @@ const RootLayout: React.FC = () => {
             )}
             <Content>
               <div
-                className={`w-full bg-[#F7F8FB] dark:bg-[#0b1121] ${isMobile && isAuthenticated && location.pathname !== "/login"
-                  ? "pt-16 h-[100dvh]"
-                  : "h-[100dvh]"
-                  }`}
+                className={`w-full bg-[#F7F8FB] dark:bg-[#0b1121] ${
+                  isMobile && isAuthenticated && location.pathname !== "/login"
+                    ? "pt-16 h-[100dvh]"
+                    : "h-[100dvh]"
+                }`}
               >
                 <Outlet />
               </div>
@@ -747,7 +848,11 @@ const RootLayout: React.FC = () => {
             <Drawer
               title={
                 <div className="flex items-center gap-2">
-                  <img src={logo} alt="" className={`w-8 h-8 object-contain transition-all duration-300 ${isDarkMode ? 'invert brightness-200' : ''}`} />
+                  <img
+                    src={logo}
+                    alt=""
+                    className={`w-8 h-8 object-contain transition-all duration-300 ${isDarkMode ? "invert brightness-200" : ""}`}
+                  />
                   <span>VDrive Admin</span>
                 </div>
               }
@@ -784,9 +889,7 @@ const RootLayout: React.FC = () => {
                     <Avatar size="large" icon={<UserOutlined />} />
                     <div>
                       <div className="font-medium">{currentUser?.name || "—"}</div>
-                      <div className="text-xs text-gray-500">
-                        {currentUser?.email || "—"}
-                      </div>
+                      <div className="text-xs text-gray-500">{currentUser?.email || "—"}</div>
                     </div>
                   </div>
                 </div>
@@ -807,7 +910,14 @@ const router = createBrowserRouter([
     path: "/",
     element: <RootLayout />,
     children: [
-      { index: true, element: <ModuleProtectedRoute module="dashboard"><DashBoard /></ModuleProtectedRoute> },
+      {
+        index: true,
+        element: (
+          <ModuleProtectedRoute module="dashboard">
+            <DashBoard />
+          </ModuleProtectedRoute>
+        ),
+      },
       {
         path: "users",
         element: (
@@ -962,7 +1072,9 @@ const router = createBrowserRouter([
         path: "coupons",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module={["coupons", "promos", "user_referrals", "driver_referrals"]}>
+            <ModuleProtectedRoute
+              module={["coupons", "promos", "user_referrals", "driver_referrals"]}
+            >
               <Coupons />
             </ModuleProtectedRoute>
           </Suspense>

@@ -77,10 +77,10 @@ const ResetPassword = () => {
 
         <header className="flex flex-col items-center gap-4">
           <div className="relative group transition-transform duration-300 hover:scale-105">
-            <img 
-              src="/90.png" 
-              alt="vDrive Logo" 
-              className="h-24 w-auto object-contain filter brightness-0 invert drop-shadow-[0_0_8px_rgba(99,102,241,0.2)]" 
+            <img
+              src="/90.png"
+              alt="vDrive Logo"
+              className="h-24 w-auto object-contain filter brightness-0 invert drop-shadow-[0_0_8px_rgba(99,102,241,0.2)]"
             />
           </div>
           <div className="text-center">
@@ -116,9 +116,9 @@ const ResetPassword = () => {
                   </div>
                 )}
               </div>
-              <Button 
-                type="primary" 
-                block 
+              <Button
+                type="primary"
+                block
                 onClick={handleSendOTP}
                 className="premium-btn-primary w-full mt-2"
               >
@@ -147,9 +147,9 @@ const ResetPassword = () => {
                   </div>
                 )}
               </div>
-              <Button 
-                type="primary" 
-                block 
+              <Button
+                type="primary"
+                block
                 onClick={handleVerifyOTP}
                 className="premium-btn-primary w-full mt-2"
               >
@@ -196,9 +196,9 @@ const ResetPassword = () => {
                   </div>
                 )}
               </div>
-              <Button 
-                type="primary" 
-                block 
+              <Button
+                type="primary"
+                block
                 onClick={handleResetPassword}
                 className="premium-btn-primary w-full mt-2"
               >

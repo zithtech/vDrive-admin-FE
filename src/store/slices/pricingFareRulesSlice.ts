@@ -62,8 +62,7 @@ const initialState: PricingFareRulesState = {
 };
 
 // Cancel token for managing concurrent requests
-let cancelTokenSource: ReturnType<typeof axios.CancelToken.source> | null =
-  null;
+let cancelTokenSource: ReturnType<typeof axios.CancelToken.source> | null = null;
 
 // Async thunk to fetch pricing fare rules
 export const fetchPricingFareRules = createAsyncThunk(
@@ -103,16 +102,12 @@ export const fetchPricingFareRules = createAsyncThunk(
       if (search) params.append("search", search);
       if (area_id) params.append("area_id", area_id);
       if (district_id) params.append("district_id", district_id);
-      if (is_hotspot !== undefined)
-        params.append("is_hotspot", String(is_hotspot));
+      if (is_hotspot !== undefined) params.append("is_hotspot", String(is_hotspot));
       if (include_time_slots) params.append("include_time_slots", "true");
 
-      const response = await axiosIns.get(
-        `/api/pricing-fare-rules?${params.toString()}`,
-        {
-          cancelToken: cancelTokenSource.token,
-        },
-      );
+      const response = await axiosIns.get(`/api/pricing-fare-rules?${params.toString()}`, {
+        cancelToken: cancelTokenSource.token,
+      });
 
       return {
         data: response.data.data.data,
@@ -137,9 +132,7 @@ export const fetchPricingFareRuleById = createAsyncThunk(
       const response = await axiosIns.get(`/api/pricing-fare-rules/${id}`);
       return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch pricing fare rule",
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch pricing fare rule");
     }
   },
 );
@@ -170,15 +163,11 @@ export const createPricingRuleWithSlots = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await axiosIns.post(
-        "/api/pricing-fare-rules/with-slots",
-        data,
-      );
+      const response = await axiosIns.post("/api/pricing-fare-rules/with-slots", data);
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to create pricing fare rule with slots",
+        error.response?.data?.message || "Failed to create pricing fare rule with slots",
       );
     }
   },
@@ -203,7 +192,7 @@ export const updatePricingRuleWithSlots = createAsyncThunk(
         extra_km_step?: number;
         extra_km_price?: number;
         extra_km_start_multiplier?: number;
-      extra_km_checkpoints?: Array<{ multiplier: number; sort_order: number }>;
+        extra_km_checkpoints?: Array<{ multiplier: number; sort_order: number }>;
         time_slots?: Array<{
           driver_types: string;
           day: string;
@@ -216,15 +205,11 @@ export const updatePricingRuleWithSlots = createAsyncThunk(
     { rejectWithValue },
   ) => {
     try {
-      const response = await axiosIns.put(
-        `/api/pricing-fare-rules/with-slots/${id}`,
-        data,
-      );
+      const response = await axiosIns.put(`/api/pricing-fare-rules/with-slots/${id}`, data);
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message ||
-          "Failed to update pricing fare rule with slots",
+        error.response?.data?.message || "Failed to update pricing fare rule with slots",
       );
     }
   },
@@ -282,8 +267,7 @@ const pricingFareRulesSlice = createSlice({
           // Don't change isLoading state - let the new pending request handle it
         } else {
           state.isLoading = false;
-          state.error =
-            action.error.message || "Failed to fetch pricing fare rules";
+          state.error = action.error.message || "Failed to fetch pricing fare rules";
         }
       })
       .addCase(fetchPricingFareRuleById.pending, (state) => {
@@ -295,9 +279,7 @@ const pricingFareRulesSlice = createSlice({
         (state, action: PayloadAction<PricingFareRule>) => {
           state.isLoading = false;
           // Optionally update the fareRules array with the detailed data
-          const index = state.fareRules.findIndex(
-            (rule) => rule.id === action.payload.id,
-          );
+          const index = state.fareRules.findIndex((rule) => rule.id === action.payload.id);
           if (index !== -1) {
             state.fareRules[index] = action.payload;
           }
@@ -305,8 +287,7 @@ const pricingFareRulesSlice = createSlice({
       )
       .addCase(fetchPricingFareRuleById.rejected, (state, action) => {
         state.isLoading = false;
-        state.error =
-          action.error.message || "Failed to fetch pricing fare rule";
+        state.error = action.error.message || "Failed to fetch pricing fare rule";
       })
       .addCase(createPricingRuleWithSlots.pending, (state) => {
         state.isLoading = true;

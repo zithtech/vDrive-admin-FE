@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Modal, notification, Tabs, Segmented } from "antd";
-import {
-  PlusOutlined,
-  ExclamationCircleOutlined,
-  BellOutlined,
-} from "@ant-design/icons";
+import { PlusOutlined, ExclamationCircleOutlined, BellOutlined } from "@ant-design/icons";
 import TitleBar from "../components/TitleBarCommon/TitleBar";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchCoupons } from "../store/slices/couponSlice";
@@ -14,7 +10,12 @@ import { fetchDrivers } from "../store/slices/driverSlice";
 import NotificationTable from "../components/Notifications/NotificationTable";
 import NotificationDrawer from "../components/Notifications/NotificationDrawer";
 import NotificationNotifyModal from "../components/Notifications/NotificationNotifyModal";
-import { fetchNotifications, createNotification, updateNotification, deleteNotification } from "../store/slices/notificationSlice";
+import {
+  fetchNotifications,
+  createNotification,
+  updateNotification,
+  deleteNotification,
+} from "../store/slices/notificationSlice";
 import { useHasPermission } from "../hooks/usePermission";
 
 const { confirm } = Modal;
@@ -29,7 +30,7 @@ const NotificationsPage: React.FC = () => {
   const hasCustomersRead = useHasPermission("customers", "read");
   const hasDriversRead = useHasPermission("drivers", "read");
   const { role } = useAppSelector((state) => state.auth);
-  const isSuperAdmin = role === 'super_admin';
+  const isSuperAdmin = role === "super_admin";
 
   const hasCreateAccess = isSuperAdmin || canCreate;
   const hasUpdateAccess = isSuperAdmin || canUpdate;
@@ -59,7 +60,15 @@ const NotificationsPage: React.FC = () => {
       dispatch(fetchDrivers());
     }
     dispatch(fetchNotifications(mainTab));
-  }, [dispatch, mainTab, isSuperAdmin, hasCouponsRead, hasPromosRead, hasCustomersRead, hasDriversRead]);
+  }, [
+    dispatch,
+    mainTab,
+    isSuperAdmin,
+    hasCouponsRead,
+    hasPromosRead,
+    hasCustomersRead,
+    hasDriversRead,
+  ]);
 
   const handleCreateNew = () => {
     setEditingNotification(null);
@@ -92,10 +101,12 @@ const NotificationsPage: React.FC = () => {
   const handleSubmit = async (values: any) => {
     try {
       if (editingNotification?.id) {
-        await dispatch(updateNotification({
-          id: editingNotification.id,
-          notificationData: { ...values, target_type: mainTab }
-        })).unwrap();
+        await dispatch(
+          updateNotification({
+            id: editingNotification.id,
+            notificationData: { ...values, target_type: mainTab },
+          }),
+        ).unwrap();
         notification.success({ message: "Notification template updated successfully" });
       } else {
         await dispatch(createNotification({ ...values, target_type: mainTab })).unwrap();
@@ -147,8 +158,22 @@ const NotificationsPage: React.FC = () => {
               onChange={(key) => setMainTab(key as any)}
               className="premium-tabs border-none"
               items={[
-                { key: "CUSTOMER", label: <span className="px-4 font-black uppercase tracking-widest text-[11px]">Customers Only</span> },
-                { key: "DRIVER", label: <span className="px-4 font-black uppercase tracking-widest text-[11px]">Drivers Only</span> },
+                {
+                  key: "CUSTOMER",
+                  label: (
+                    <span className="px-4 font-black uppercase tracking-widest text-[11px]">
+                      Customers Only
+                    </span>
+                  ),
+                },
+                {
+                  key: "DRIVER",
+                  label: (
+                    <span className="px-4 font-black uppercase tracking-widest text-[11px]">
+                      Drivers Only
+                    </span>
+                  ),
+                },
               ]}
             />
 
@@ -162,12 +187,14 @@ const NotificationsPage: React.FC = () => {
                 options={[
                   {
                     label: (
-                      <div className={`px-5 py-0.5 flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${subTab === "NOTIFICATIONS" ? "text-indigo-600 dark:text-indigo-400" : "text-black dark:text-slate-200"}`}>
+                      <div
+                        className={`px-5 py-0.5 flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${subTab === "NOTIFICATIONS" ? "text-indigo-600 dark:text-indigo-400" : "text-black dark:text-slate-200"}`}
+                      >
                         <BellOutlined /> Notifications
                       </div>
                     ),
                     value: "NOTIFICATIONS",
-                  }
+                  },
                 ]}
               />
             </div>
@@ -175,8 +202,12 @@ const NotificationsPage: React.FC = () => {
 
           <div className="flex items-center gap-2">
             <div className="text-right hidden sm:block">
-              <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-widest font-black leading-none mb-1">Active Ledger</p>
-              <p className="text-[11px] text-gray-500 dark:text-slate-400 font-bold">Broadcast History</p>
+              <p className="text-[10px] text-gray-400 dark:text-slate-500 uppercase tracking-widest font-black leading-none mb-1">
+                Active Ledger
+              </p>
+              <p className="text-[11px] text-gray-500 dark:text-slate-400 font-bold">
+                Broadcast History
+              </p>
             </div>
           </div>
         </div>

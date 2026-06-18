@@ -37,9 +37,7 @@ const Filter = <T extends Record<string, any>>({
 
   const handleReset = () => {
     const resetValues = fields.reduce((acc, field) => {
-      acc[field.key as keyof T] = (
-        field.type === "select" ? [] : null
-      ) as T[keyof T];
+      acc[field.key as keyof T] = (field.type === "select" ? [] : null) as T[keyof T];
       return acc;
     }, {} as T);
     setLocalFilters(resetValues);
@@ -57,27 +55,21 @@ const Filter = <T extends Record<string, any>>({
               value={localFilters[field.key as keyof T]}
               maxTagCount="responsive"
               options={field.options}
-              onChange={(value) =>
-                handleFilterChange(field.key as keyof T, value)
-              }
+              onChange={(value) => handleFilterChange(field.key as keyof T, value)}
               placeholder={field.label}
             />
           ) : field.type === "date" ? (
             <DatePicker
               style={{ width: "100%" }}
               value={localFilters[field.key as keyof T]}
-              onChange={(date: Date | null) =>
-                handleFilterChange(field.key as keyof T, date)
-              }
+              onChange={(date: Date | null) => handleFilterChange(field.key as keyof T, date)}
               placeholder={field.label}
             />
           ) : (
             <Input
               style={{ width: "100%" }}
               value={localFilters[field.key as keyof T] || ""}
-              onChange={(e) =>
-                handleFilterChange(field.key as keyof T, e.target.value)
-              }
+              onChange={(e) => handleFilterChange(field.key as keyof T, e.target.value)}
               placeholder={field.label}
               allowClear
             />

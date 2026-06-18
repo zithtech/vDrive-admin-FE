@@ -59,11 +59,9 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
         form.setFieldsValue({
           ...initialValues,
           discount_type: initialValues.discount_type?.toUpperCase() || "PERCENTAGE",
-          dateRange: fromDate && untilDate ? [
-            dayjs(fromDate),
-            dayjs(untilDate),
-          ] : [],
-          applicable_to: initialValues.applicable_to || (defaultTarget === 'DRIVER' ? 'DRIVER' : 'CUSTOMER'),
+          dateRange: fromDate && untilDate ? [dayjs(fromDate), dayjs(untilDate)] : [],
+          applicable_to:
+            initialValues.applicable_to || (defaultTarget === "DRIVER" ? "DRIVER" : "CUSTOMER"),
         });
       } else {
         setDiscountType("PERCENTAGE");
@@ -99,7 +97,7 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
         discount_type: rest.discount_type.toLowerCase(),
         start_date: dateRange[0].toISOString(),
         expiry_date: dateRange[1].toISOString(),
-        target_type: rest.user_eligibility === 'ALL' ? 'global' : 'specific_driver',
+        target_type: rest.user_eligibility === "ALL" ? "global" : "specific_driver",
       };
       onSubmit(payload);
     }
@@ -126,7 +124,7 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
       open={visible}
       closable={false}
       styles={{
-        header: { display: 'none' },
+        header: { display: "none" },
         body: { padding: 0, background: "#f8fafc" },
         footer: { borderTop: "1px solid #f1f5f9", padding: "16px 24px", background: "#fff" },
       }}
@@ -164,7 +162,11 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
             </div>
             <div>
               <Title level={3} className="!m-0 !mb-1 font-extrabold text-gray-800 tracking-tight">
-                {initialValues ? (isAllowed ? "Edit Promotion" : "View Promotion") : "Create Promotion"}
+                {initialValues
+                  ? isAllowed
+                    ? "Edit Promotion"
+                    : "View Promotion"
+                  : "Create Promotion"}
               </Title>
               <Text className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">
                 Campaign Management & Rewards
@@ -194,26 +196,36 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
             <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
               <TagOutlined className="text-sm" />
             </div>
-            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-tight">Basic Configuration</span>
+            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-tight">
+              Basic Configuration
+            </span>
           </div>
 
           <Form.Item
             name="code"
-            label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Promo Code</span>}
+            label={
+              <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                Promo Code
+              </span>
+            }
             rules={[{ required: true, message: "Required" }]}
           >
             <Input
               size="large"
               placeholder="e.g. SUMMER2024"
               className="rounded-2xl font-extrabold uppercase tracking-tight text-blue-600 border-gray-200 focus:border-blue-500 transition-all font-mono"
-              onChange={(e) => form.setFieldValue('code', e.target.value.toUpperCase())}
+              onChange={(e) => form.setFieldValue("code", e.target.value.toUpperCase())}
             />
           </Form.Item>
 
           <div className="grid grid-cols-2 gap-4">
             <Form.Item
               name="discount_type"
-              label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Reward Type</span>}
+              label={
+                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                  Reward Type
+                </span>
+              }
               rules={[{ required: true }]}
             >
               <Select size="large" className="premium-select rounded-2xl w-full">
@@ -225,7 +237,11 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
 
             <Form.Item
               name="discount_value"
-              label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Value</span>}
+              label={
+                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                  Value
+                </span>
+              }
               rules={[{ required: true, message: "Required" }]}
             >
               <InputNumber
@@ -234,8 +250,8 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
                 className="!w-full rounded-2xl border-gray-200 flex items-center px-4"
                 prefix={getDiscountIcon()}
                 placeholder={discountType === "PERCENTAGE" ? "20" : "100"}
-                formatter={value => discountType === "PERCENTAGE" ? `${value}%` : `₹ ${value}`}
-                parser={value => Number(value!.replace(/\D/g, '')) as any}
+                formatter={(value) => (discountType === "PERCENTAGE" ? `${value}%` : `₹ ${value}`)}
+                parser={(value) => Number(value!.replace(/\D/g, "")) as any}
               />
             </Form.Item>
           </div>
@@ -246,12 +262,18 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
             <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
               <CalendarOutlined className="text-sm" />
             </div>
-            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-tight">Limits & Validity</span>
+            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-tight">
+              Limits & Validity
+            </span>
           </div>
 
           <Form.Item
             name="dateRange"
-            label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Active Campaign Period</span>}
+            label={
+              <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                Active Campaign Period
+              </span>
+            }
             rules={[{ required: true, message: "Required" }]}
           >
             <DatePicker.RangePicker
@@ -262,22 +284,72 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
           </Form.Item>
 
           <div className="grid grid-cols-2 gap-4">
-            <Form.Item name="min_ride_amount" label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Min. Fare (₹)</span>} className="!mb-0">
-              <InputNumber size="large" min={0} className="!w-full rounded-2xl  border-gray-200 flex items-center px-4" placeholder="None" />
+            <Form.Item
+              name="min_ride_amount"
+              label={
+                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                  Min. Fare (₹)
+                </span>
+              }
+              className="!mb-0"
+            >
+              <InputNumber
+                size="large"
+                min={0}
+                className="!w-full rounded-2xl  border-gray-200 flex items-center px-4"
+                placeholder="None"
+              />
             </Form.Item>
 
             {discountType !== "FIXED" && (
-              <Form.Item name="max_discount_amount" label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Max Cap (₹)</span>} className="!mb-0">
-                <InputNumber size="large" min={0} className="!w-full rounded-2xl  border-gray-200 flex items-center px-4" placeholder="None" />
+              <Form.Item
+                name="max_discount_amount"
+                label={
+                  <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                    Max Cap (₹)
+                  </span>
+                }
+                className="!mb-0"
+              >
+                <InputNumber
+                  size="large"
+                  min={0}
+                  className="!w-full rounded-2xl  border-gray-200 flex items-center px-4"
+                  placeholder="None"
+                />
               </Form.Item>
             )}
 
-            <Form.Item name="usage_limit" label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Total Uses</span>} >
-              <InputNumber size="large" min={1} className="!w-full rounded-2xl  border-gray-200 flex items-center px-4" placeholder="Infinity" />
+            <Form.Item
+              name="usage_limit"
+              label={
+                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                  Total Uses
+                </span>
+              }
+            >
+              <InputNumber
+                size="large"
+                min={1}
+                className="!w-full rounded-2xl  border-gray-200 flex items-center px-4"
+                placeholder="Infinity"
+              />
             </Form.Item>
 
-            <Form.Item name="per_user_limit" label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Per User</span>} rules={[{ required: true }]}>
-              <InputNumber size="large" min={1} className="!w-full rounded-2xl  border-gray-200 flex items-center px-4" />
+            <Form.Item
+              name="per_user_limit"
+              label={
+                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                  Per User
+                </span>
+              }
+              rules={[{ required: true }]}
+            >
+              <InputNumber
+                size="large"
+                min={1}
+                className="!w-full rounded-2xl  border-gray-200 flex items-center px-4"
+              />
             </Form.Item>
           </div>
         </div>
@@ -287,13 +359,19 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
             <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500">
               <UserOutlined className="text-sm" />
             </div>
-            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-tight">Targeting & State</span>
+            <span className="text-xs font-extrabold text-gray-800 uppercase tracking-tight">
+              Targeting & State
+            </span>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <Form.Item
               name="applicable_to"
-              label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Audience</span>}
+              label={
+                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                  Audience
+                </span>
+              }
               rules={[{ required: true }]}
             >
               <Select size="large" className="rounded-2xl w-full">
@@ -304,7 +382,11 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
 
             <Form.Item
               name="user_eligibility"
-              label={<span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">Eligibility</span>}
+              label={
+                <span className="text-[10px] uppercase tracking-wider font-bold text-gray-400">
+                  Eligibility
+                </span>
+              }
             >
               <Select size="large" className="rounded-2xl w-full">
                 <Select.Option value="ALL">All Registered</Select.Option>
@@ -315,13 +397,19 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
           <div className="flex items-center justify-between p-3 px-4 bg-gray-50 rounded-2xl border border-gray-100">
             <div className="flex flex-col">
               <span className="text-xs font-bold text-gray-700">Campaign Status</span>
-              <span className="text-[10px] text-gray-400 font-medium uppercase tracking-tight">Toggle availability in the app</span>
+              <span className="text-[10px] text-gray-400 font-medium uppercase tracking-tight">
+                Toggle availability in the app
+              </span>
             </div>
             <Form.Item name="is_active" valuePropName="checked" className="m-0">
               <Switch
                 className="premium-switch"
-                checkedChildren={<span className="text-[9px] font-bold uppercase tracking-tight">Active</span>}
-                unCheckedChildren={<span className="text-[9px] font-bold uppercase tracking-tight">Off</span>}
+                checkedChildren={
+                  <span className="text-[9px] font-bold uppercase tracking-tight">Active</span>
+                }
+                unCheckedChildren={
+                  <span className="text-[9px] font-bold uppercase tracking-tight">Off</span>
+                }
               />
             </Form.Item>
           </div>

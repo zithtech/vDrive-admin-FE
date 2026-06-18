@@ -17,12 +17,7 @@ export interface Driver {
   id: string;
   phone: string;
 }
-export type DeductionStatus =
-  | "Success"
-  | "Failed"
-  | "Pending"
-  | "Initiated"
-  | "Reversed";
+export type DeductionStatus = "Success" | "Failed" | "Pending" | "Initiated" | "Reversed";
 
 export interface Deduction {
   id: string;
@@ -185,12 +180,7 @@ const Deductions = () => {
       description="Monitor and manage driver deductions"
       extraContent={
         <div>
-          <Button
-            icon={<IoMdRefresh />}
-            loading={false}
-            type="primary"
-            onClick={() => {}}
-          >
+          <Button icon={<IoMdRefresh />} loading={false} type="primary" onClick={() => {}}>
             Refresh
           </Button>
         </div>

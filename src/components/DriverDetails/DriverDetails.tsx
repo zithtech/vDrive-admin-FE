@@ -89,11 +89,7 @@ export const getMediaUrl = (path: any) => {
     return `${baseUrl}/api/media/proxy?url=${encodeURIComponent(path)}`;
   }
 
-  if (
-    path.startsWith("http://") ||
-    path.startsWith("https://") ||
-    path.startsWith("data:")
-  )
+  if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:"))
     return path;
 
   return `${baseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
@@ -105,11 +101,7 @@ interface DriverDetailsProps {
   open: boolean;
 }
 
-const DriverDetails: React.FC<DriverDetailsProps> = ({
-  driver,
-  onClose,
-  open,
-}) => {
+const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) => {
   const canUpdateDriver = useHasPermission("drivers", "update");
   // const actionLabels: Record<string, string> = {
   //   trip_started: "Trip Started",
@@ -143,8 +135,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
   // Dynamic Performance State
   type Period = "Today" | "Week" | "Month";
   const [perfPeriod, setPerfPeriod] = useState<Period>("Week");
-  const [dynamicMetrics, setDynamicMetrics] =
-    useState<PerformanceMetrics | null>(null);
+  const [dynamicMetrics, setDynamicMetrics] = useState<PerformanceMetrics | null>(null);
   const [isPerfLoading, setIsPerfLoading] = useState(false);
 
   // Activity History State
@@ -152,8 +143,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
   const [historyPeriod, setHistoryPeriod] = useState<Period>("Week");
   const [historyStatus, setHistoryStatus] = useState<string>("all");
   const [isHistoryLoading, setIsHistoryLoading] = useState(false);
-  const [historyMetrics, setHistoryMetrics] =
-    useState<PerformanceMetrics | null>(null);
+  const [historyMetrics, setHistoryMetrics] = useState<PerformanceMetrics | null>(null);
 
   // Status Action State
   const [statusModalOpen, setStatusModalOpen] = useState(false);
@@ -200,24 +190,17 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
         const dates = getDatesForPeriod(perfPeriod);
 
         // Fetch ride activity
-        const activityRes = await axiosIns.get(
-          `/api/drivers/activity/${driverId}`,
-          {
-            params: { from: dates.from, to: dates.to },
-          },
-        );
+        const activityRes = await axiosIns.get(`/api/drivers/activity/${driverId}`, {
+          params: { from: dates.from, to: dates.to },
+        });
 
-        const rides = Array.isArray(activityRes.data?.data)
-          ? activityRes.data.data
-          : [];
+        const rides = Array.isArray(activityRes.data?.data) ? activityRes.data.data : [];
         const metrics = calculatePerformanceMetrics(rides);
 
         // Fetch today overview for more accurate online time if period is 'Today'
         if (perfPeriod === "Today") {
           try {
-            const overviewRes = await axiosIns.get(
-              `/api/drivers/today-overview/${driverId}`,
-            );
+            const overviewRes = await axiosIns.get(`/api/drivers/today-overview/${driverId}`);
             if (overviewRes.data?.data?.onlineMinutes !== undefined) {
               metrics.onlineMinutes = overviewRes.data.data.onlineMinutes;
             }
@@ -279,8 +262,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     },
     {
       label: "Expired Document",
-      value:
-        "The document provided has expired. Please upload a valid and current document.",
+      value: "The document provided has expired. Please upload a valid and current document.",
     },
     {
       label: "Wrong Side Uploaded",
@@ -324,15 +306,12 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
       >
         <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-gray-50 dark:bg-slate-900">
           <div className="bg-white dark:bg-slate-800 p-12 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700">
-            <UserOutlined
-              style={{ fontSize: 64, color: "#cbd5e1", marginBottom: 24 }}
-            />
+            <UserOutlined style={{ fontSize: 64, color: "#cbd5e1", marginBottom: 24 }} />
             <Title level={3} className="text-gray-400 dark:text-slate-500">
               Driver Not Found
             </Title>
             <Text type="secondary" className="text-lg">
-              We couldn't find the details for this driver. <br /> Please try
-              refreshing the list.
+              We couldn't find the details for this driver. <br /> Please try refreshing the list.
             </Text>
             <Button
               type="primary"
@@ -350,11 +329,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
   const handleStatusUpdate = (status: DriverStatus) => {
     if (!driver) return;
 
-    if (
-      status === "blocked" ||
-      status === "suspended" ||
-      status === "rejected"
-    ) {
+    if (status === "blocked" || status === "suspended" || status === "rejected") {
       setStatusAction(status);
       setStatusReason("");
       setStatusModalOpen(true);
@@ -367,8 +342,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
           try {
             await dispatch(
               updateDriverStatus({
-                driver_id:
-                  driver.driverId || driver.driver_id || driver.id || "",
+                driver_id: driver.driverId || driver.driver_id || driver.id || "",
                 status,
               }),
             ).unwrap();
@@ -387,9 +361,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     if (!driver || !statusAction) return;
 
     if (
-      (statusAction === "rejected" ||
-        statusAction === "blocked" ||
-        statusAction === "suspended") &&
+      (statusAction === "rejected" || statusAction === "blocked" || statusAction === "suspended") &&
       !statusReason?.trim()
     ) {
       message.error("Please provide a reason for this action");
@@ -420,15 +392,12 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     if (!driver) return;
     Modal.confirm({
       title: "Approve Driver Account",
-      content:
-        "This will verify all documents and activate the driver account. Continue?",
+      content: "This will verify all documents and activate the driver account. Continue?",
       onOk: async () => {
         setLoadingAction("approve-account");
         try {
           await dispatch(
-            verifyDriverAccount(
-              driver.driverId || driver.driver_id || driver.id || "",
-            ),
+            verifyDriverAccount(driver.driverId || driver.driver_id || driver.id || ""),
           ).unwrap();
           message.success("Driver account approved and activated");
         } catch (err: any) {
@@ -445,8 +414,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     setLoadingAction("update-profile");
     try {
       // Auto-compute full_name from first_name + last_name
-      const fullName =
-        `${values.first_name || ""} ${values.last_name || ""}`.trim();
+      const fullName = `${values.first_name || ""} ${values.last_name || ""}`.trim();
 
       await dispatch(
         updateDriverProfile({
@@ -454,9 +422,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
           data: {
             ...values,
             full_name: fullName,
-            date_of_birth: values.date_of_birth
-              ? values.date_of_birth.toISOString()
-              : undefined,
+            date_of_birth: values.date_of_birth ? values.date_of_birth.toISOString() : undefined,
           },
         }),
       ).unwrap();
@@ -624,9 +590,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             </div>
             <div className="info-content">
               <span className="info-label">Phone Number</span>
-              <span className="info-value">
-                {driver?.phone_number || "N/A"}
-              </span>
+              <span className="info-value">{driver?.phone_number || "N/A"}</span>
               <Text type="secondary" className="text-[10px]">
                 Primary Contact
               </Text>
@@ -639,9 +603,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             </div>
             <div className="info-content">
               <span className="info-label">Alt Phone Number</span>
-              <span className="info-value">
-                {driver?.alternate_contact || "N/A"}
-              </span>
+              <span className="info-value">{driver?.alternate_contact || "N/A"}</span>
               <Text type="secondary" className="text-[10px]">
                 Alternative Contact
               </Text>
@@ -654,9 +616,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             </div>
             <div className="info-content">
               <span className="info-label">Email Address</span>
-              <span className="info-value truncate max-w-[180px]">
-                {driver?.email || "N/A"}
-              </span>
+              <span className="info-value truncate max-w-[180px]">{driver?.email || "N/A"}</span>
             </div>
           </div>
 
@@ -668,9 +628,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
               <span className="info-label">Date of Birth</span>
               <span className="info-value">
                 {driver?.dob || driver?.date_of_birth
-                  ? dayjs(driver.dob || driver.date_of_birth).format(
-                      "MMM D, YYYY",
-                    )
+                  ? dayjs(driver.dob || driver.date_of_birth).format("MMM D, YYYY")
                   : "N/A"}
               </span>
             </div>
@@ -693,23 +651,15 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
 
       <div className="grid grid-cols-2 gap-4">
         <div className="content-card p-4 bg-blue-50/30 dark:bg-blue-900/20 border-blue-100/50 dark:border-blue-800/30">
-          <span className="info-label text-blue-400 dark:text-blue-300">
-            Account Created
-          </span>
+          <span className="info-label text-blue-400 dark:text-blue-300">Account Created</span>
           <p className="m-0 text-sm font-bold text-blue-900 dark:text-blue-100 mt-1">
-            {driver?.created_at
-              ? dayjs(driver.created_at).format("MMMM D, YYYY")
-              : "N/A"}
+            {driver?.created_at ? dayjs(driver.created_at).format("MMMM D, YYYY") : "N/A"}
           </p>
         </div>
         <div className="content-card p-4 bg-indigo-50/30 dark:bg-indigo-900/20 border-indigo-100/50 dark:border-indigo-800/30">
-          <span className="info-label text-indigo-400 dark:text-indigo-300">
-            Last Updated
-          </span>
+          <span className="info-label text-indigo-400 dark:text-indigo-300">Last Updated</span>
           <p className="m-0 text-sm font-bold text-indigo-900 dark:text-indigo-100 mt-1">
-            {driver?.updated_at
-              ? dayjs(driver.updated_at).format("MMMM D, YYYY")
-              : "N/A"}
+            {driver?.updated_at ? dayjs(driver.updated_at).format("MMMM D, YYYY") : "N/A"}
           </p>
         </div>
       </div>
@@ -720,20 +670,16 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
     if (!driver) return;
     Modal.confirm({
       title: "Bulk Approve Documents",
-      content:
-        "Are you sure you want to approve all pending documents for this driver?",
+      content: "Are you sure you want to approve all pending documents for this driver?",
       okText: "Approve All",
       okButtonProps: {
-        className:
-          "bg-green-600 hover:bg-green-700 border-none shadow-sm rounded-xl px-6",
+        className: "bg-green-600 hover:bg-green-700 border-none shadow-sm rounded-xl px-6",
       },
       onOk: async () => {
         setLoadingAction("bulk-verify");
         try {
           await dispatch(
-            bulkVerifyDocuments(
-              driver.driverId || driver.driver_id || driver.id || "",
-            ),
+            bulkVerifyDocuments(driver.driverId || driver.driver_id || driver.id || ""),
           ).unwrap();
           message.success("All documents verified successfully");
         } catch (err: any) {
@@ -760,68 +706,47 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
 
   const documents = (
     <div className="grid grid-cols-1 gap-4">
-      {driver?.documents &&
-        driver.documents.some((d: any) => d.license_status !== "verified") && (
-          <div className="flex justify-end mb-2">
-            <Button
-              type="primary"
-              icon={<CheckCircleOutlined />}
-              onClick={handleBulkVerify}
-              loading={loadingAction === "bulk-verify"}
-              className="bg-green-600 hover:bg-green-700 border-none shadow-md rounded-xl px-6 h-10 font-bold"
-            >
-              Verify All Documents
-            </Button>
-          </div>
-        )}
+      {driver?.documents && driver.documents.some((d: any) => d.license_status !== "verified") && (
+        <div className="flex justify-end mb-2">
+          <Button
+            type="primary"
+            icon={<CheckCircleOutlined />}
+            onClick={handleBulkVerify}
+            loading={loadingAction === "bulk-verify"}
+            className="bg-green-600 hover:bg-green-700 border-none shadow-md rounded-xl px-6 h-10 font-bold"
+          >
+            Verify All Documents
+          </Button>
+        </div>
+      )}
       {driver?.documents?.map((doc: any) => (
-        <div
-          key={doc?.document_id}
-          className="content-card p-2 document-preview-card"
-        >
+        <div key={doc?.document_id} className="content-card p-2 document-preview-card">
           <div className="flex justify-between items-start mb-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
                 <FileTextOutlined />
               </div>
               <div>
-                <Title
-                  level={5}
-                  className="m-0 text-gray-800 dark:text-slate-100"
-                >
+                <Title level={5} className="m-0 text-gray-800 dark:text-slate-100">
                   {capitalize(doc?.document_type?.replace(/_/g, " "))} Document
                 </Title>
                 {!doc?.document_type?.toLowerCase().includes("selfie") &&
                   !doc?.document_type?.toLowerCase().includes("police") && (
-                    <Text
-                      type="secondary"
-                      className="text-[10px] font-mono tracking-wider"
-                    >
-                      #
-                      {doc?.extracted_data?.extracted_number ||
-                        doc?.document_number ||
-                        "N/A"}
+                    <Text type="secondary" className="text-[10px] font-mono tracking-wider">
+                      #{doc?.extracted_data?.extracted_number || doc?.document_number || "N/A"}
                     </Text>
                   )}
               </div>
             </div>
             <div className="flex flex-col items-end gap-2">
-              <Tag
-                color={getStatusColor(doc?.license_status)}
-                className="status-badge m-0"
-              >
+              <Tag color={getStatusColor(doc?.license_status)} className="status-badge m-0">
                 {capitalize(doc?.license_status)}
               </Tag>
               <Button
                 type="link"
                 size="small"
                 icon={<HistoryOutlined />}
-                onClick={() =>
-                  handleShowHistory(
-                    doc.document_id || doc.id,
-                    doc.document_type,
-                  )
-                }
+                onClick={() => handleShowHistory(doc.document_id || doc.id, doc.document_type)}
                 className="text-[10px] h-auto p-0 flex items-center gap-1 opacity-70 hover:opacity-100"
               >
                 View History
@@ -905,20 +830,11 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                   type="default"
                   icon={<DownloadOutlined />}
                   onClick={() => {
-                    if (
-                      typeof doc?.document_url === "object" &&
-                      doc.document_url !== null
-                    ) {
+                    if (typeof doc?.document_url === "object" && doc.document_url !== null) {
                       if (doc.document_url.front)
-                        window.open(
-                          getMediaUrl(doc.document_url.front),
-                          "_blank",
-                        );
+                        window.open(getMediaUrl(doc.document_url.front), "_blank");
                       if (doc.document_url.back)
-                        window.open(
-                          getMediaUrl(doc.document_url.back),
-                          "_blank",
-                        );
+                        window.open(getMediaUrl(doc.document_url.back), "_blank");
                     } else {
                       window.open(
                         getMediaUrl(
@@ -968,9 +884,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                   danger
                   ghost
                   icon={<CloseCircleOutlined />}
-                  loading={
-                    loadingAction === `reject-${doc.document_id || doc.id}`
-                  }
+                  loading={loadingAction === `reject-${doc.document_id || doc.id}`}
                   onClick={() =>
                     setRejectModalDoc({
                       id: doc.document_id || doc.id,
@@ -985,12 +899,8 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                   type="primary"
                   icon={<CheckCircleOutlined />}
                   className="bg-green-600 hover:bg-green-700 border-none shadow-sm rounded-xl px-6"
-                  loading={
-                    loadingAction === `approve-${doc.document_id || doc.id}`
-                  }
-                  onClick={() =>
-                    handleDocumentApprove(doc.document_id || doc.id)
-                  }
+                  loading={loadingAction === `approve-${doc.document_id || doc.id}`}
+                  onClick={() => handleDocumentApprove(doc.document_id || doc.id)}
                 >
                   Approve
                 </Button>
@@ -1052,12 +962,8 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                   )}
                 />
               </div>
-              <Text
-                type="secondary"
-                className="mt-4 text-center text-sm px-8 max-w-xs mx-auto"
-              >
-                Overall performance based on accepted and completed trips for
-                the selected period.
+              <Text type="secondary" className="mt-4 text-center text-sm px-8 max-w-xs mx-auto">
+                Overall performance based on accepted and completed trips for the selected period.
               </Text>
             </div>
 
@@ -1074,10 +980,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                     Earnings
                   </Text>
                   <div className="text-xl font-bold text-emerald-800 dark:text-emerald-100 mt-0.5 perf-stat-value">
-                    ₹
-                    {(dynamicMetrics?.totalEarnings || 0).toLocaleString(
-                      "en-IN",
-                    )}
+                    ₹{(dynamicMetrics?.totalEarnings || 0).toLocaleString("en-IN")}
                   </div>
                 </div>
               </div>
@@ -1111,15 +1014,11 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                     Rating
                   </Text>
                   <div className="text-xl font-bold text-amber-800 dark:text-amber-100 mt-0.5 flex items-center gap-1 perf-stat-value">
-                    {Number(
-                      dynamicMetrics?.rating || driver?.rating || 0,
-                    ).toFixed(1)}
+                    {Number(dynamicMetrics?.rating || driver?.rating || 0).toFixed(1)}
                     <Rate
                       disabled
                       allowHalf
-                      value={Number(
-                        dynamicMetrics?.rating || driver?.rating || 0,
-                      )}
+                      value={Number(dynamicMetrics?.rating || driver?.rating || 0)}
                       style={{ fontSize: 12, marginLeft: 4 }}
                     />
                   </div>
@@ -1146,10 +1045,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
 
             <div className="perf-summary-bar mb-6">
               <div className="perf-summary-item">
-                <Text
-                  type="secondary"
-                  className="text-[10px] uppercase font-bold block mb-1"
-                >
+                <Text type="secondary" className="text-[10px] uppercase font-bold block mb-1">
                   Total
                 </Text>
                 <Text className="text-lg font-bold text-gray-700 dark:text-slate-200 perf-stat-value">
@@ -1193,9 +1089,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                 </Text>
                 <Text className="text-sm font-medium text-gray-600 dark:text-slate-300">
                   {driver?.performance?.last_active
-                    ? dayjs(driver?.performance?.last_active)?.format(
-                        "MMM D, YYYY • hh:mm A",
-                      )
+                    ? dayjs(driver?.performance?.last_active)?.format("MMM D, YYYY • hh:mm A")
                     : "N/A"}
                 </Text>
               </div>
@@ -1209,10 +1103,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
   const payments = (
     <div className="space-y-6">
       <div className="content-card p-6">
-        <Title
-          level={4}
-          className="mb-6 flex items-center gap-2 text-gray-800 dark:text-slate-100"
-        >
+        <Title level={4} className="mb-6 flex items-center gap-2 text-gray-800 dark:text-slate-100">
           <WalletOutlined className="text-emerald-500" /> Payment Summary
         </Title>
 
@@ -1259,17 +1150,11 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             <SyncOutlined className="text-indigo-500" /> Active Recharge Plan
           </Title>
           {driver?.active_subscription?.status === "active" ? (
-            <Tag
-              color="#4ade80"
-              className="status-badge border-none text-green-900"
-            >
+            <Tag color="#4ade80" className="status-badge border-none text-green-900">
               Active
             </Tag>
           ) : (
-            <Tag
-              color="#f87171"
-              className="status-badge border-none text-white"
-            >
+            <Tag color="#f87171" className="status-badge border-none text-white">
               Inactive
             </Tag>
           )}
@@ -1304,9 +1189,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                 <div className="info-content">
                   <span className="info-label">Start Date</span>
                   <span className="info-value font-bold">
-                    {dayjs(driver.active_subscription.start_date).format(
-                      "MMM D, YYYY",
-                    )}
+                    {dayjs(driver.active_subscription.start_date).format("MMM D, YYYY")}
                   </span>
                 </div>
               </div>
@@ -1317,9 +1200,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                 <div className="info-content">
                   <span className="info-label">Expiry Date</span>
                   <span className="info-value font-bold">
-                    {dayjs(driver.active_subscription.expiry_date).format(
-                      "MMM D, YYYY",
-                    )}
+                    {dayjs(driver.active_subscription.expiry_date).format("MMM D, YYYY")}
                   </span>
                 </div>
               </div>
@@ -1327,23 +1208,14 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
 
             <div className="stat-box bg-indigo-50 dark:bg-indigo-900/20 border-indigo-100 dark:border-indigo-800/30 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-white dark:bg-indigo-900/40 flex items-center justify-center text-xl font-black text-indigo-600 dark:text-indigo-400 shadow-sm">
-                {dayjs(driver.active_subscription.expiry_date).diff(
-                  dayjs(),
-                  "day",
-                )}
+                {dayjs(driver.active_subscription.expiry_date).diff(dayjs(), "day")}
               </div>
               <div>
-                <Text
-                  type="secondary"
-                  className="text-[10px] font-bold block dark:text-slate-400"
-                >
+                <Text type="secondary" className="text-[10px] font-bold block dark:text-slate-400">
                   DAYS REMAINING
                 </Text>
                 <Text className="text-sm font-medium text-indigo-900 dark:text-indigo-200">
-                  Plan expires on{" "}
-                  {dayjs(driver.active_subscription.expiry_date).format(
-                    "MMMM D",
-                  )}
+                  Plan expires on {dayjs(driver.active_subscription.expiry_date).format("MMMM D")}
                 </Text>
               </div>
             </div>
@@ -1406,10 +1278,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
             {/* Activity Summary Header */}
             <div className="grid grid-cols-3 gap-3 mb-2">
               <div className="bg-gray-50 dark:bg-slate-800/50 p-3 rounded-xl border border-gray-100 dark:border-slate-700">
-                <Text
-                  type="secondary"
-                  className="text-[10px] uppercase font-bold block"
-                >
+                <Text type="secondary" className="text-[10px] uppercase font-bold block">
                   Total Trips
                 </Text>
                 <Text className="text-lg font-bold text-gray-800 dark:text-slate-100">
@@ -1449,26 +1318,16 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                   >
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <Text
-                          type="secondary"
-                          className="text-[10px] font-mono block"
-                        >
-                          #
-                          {trip.trip_code ||
-                            trip.id?.toString().slice(-6).toUpperCase()}{" "}
-                          • {trip.date}
+                        <Text type="secondary" className="text-[10px] font-mono block">
+                          #{trip.trip_code || trip.id?.toString().slice(-6).toUpperCase()} •{" "}
+                          {trip.date}
                         </Text>
-                        <Text
-                          strong
-                          className="text-gray-800 dark:text-slate-200"
-                        >
+                        <Text strong className="text-gray-800 dark:text-slate-200">
                           {trip.time}
                         </Text>
                       </div>
                       <Tag
-                        color={
-                          trip.status === "Completed" ? "success" : "error"
-                        }
+                        color={trip.status === "Completed" ? "success" : "error"}
                         className="m-0 px-3 rounded-full font-bold text-[10px]"
                       >
                         {trip.status.toUpperCase()}
@@ -1538,9 +1397,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
               ) : (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <div className="w-16 h-16 rounded-full bg-gray-50 dark:bg-slate-800 flex items-center justify-center mb-4">
-                    <HistoryOutlined
-                      style={{ fontSize: 32, color: "#cbd5e1" }}
-                    />
+                    <HistoryOutlined style={{ fontSize: 32, color: "#cbd5e1" }} />
                   </div>
                   <Text type="secondary" className="font-medium">
                     No ride activity found for this period.
@@ -1698,9 +1555,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                   <Image
                     width={100}
                     height={100}
-                    src={getMediaUrl(
-                      driver?.profilePicUrl || driver?.profile_pic_url,
-                    )}
+                    src={getMediaUrl(driver?.profilePicUrl || driver?.profile_pic_url)}
                     className="object-cover rounded-full"
                     rootClassName="rounded-full"
                     style={{
@@ -1726,11 +1581,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                   </div>
                   <p className="m-0 text-blue-100/80 text-sm font-medium mt-1 flex items-center gap-2">
                     <SafetyCertificateOutlined className="text-blue-300" />
-                    DRIVER ID:{" "}
-                    {driver?.driverId ||
-                      driver?.driver_id ||
-                      driver?.id ||
-                      "N/A"}
+                    DRIVER ID: {driver?.driverId || driver?.driver_id || driver?.id || "N/A"}
                   </p>
                   <div className="mt-3 flex gap-2">
                     {driver?.availability?.online ? (
@@ -1791,34 +1642,26 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                 <div
                   className={`text-2xl mt-1 ${driver.status === "blocked" ? "text-red-500" : "text-orange-500"}`}
                 >
-                  {driver.status === "blocked" ? (
-                    <StopOutlined />
-                  ) : (
-                    <ClockCircleOutlined />
-                  )}
+                  {driver.status === "blocked" ? <StopOutlined /> : <ClockCircleOutlined />}
                 </div>
                 <div>
                   <h3
                     className={`font-bold m-0 text-lg ${driver.status === "blocked" ? "text-red-700 dark:text-red-400" : "text-orange-700 dark:text-orange-400"}`}
                   >
-                    Account{" "}
-                    {driver.status === "blocked" ? "Blocked" : "Suspended"}
+                    Account {driver.status === "blocked" ? "Blocked" : "Suspended"}
                   </h3>
                   <p
                     className={`mt-1 mb-0 text-sm ${driver.status === "blocked" ? "text-red-600 dark:text-red-300" : "text-orange-600 dark:text-orange-300"}`}
                   >
                     <strong>Reason: </strong>{" "}
-                    {(driver as any).status_reason ||
-                      "No specific reason provided."}
+                    {(driver as any).status_reason || "No specific reason provided."}
                   </p>
                   {(driver as any).status_updated_at && (
                     <p
                       className={`mt-1 mb-0 text-xs ${driver.status === "blocked" ? "text-red-400 dark:text-red-500" : "text-orange-400 dark:text-orange-500"}`}
                     >
                       Applied on:{" "}
-                      {dayjs((driver as any).status_updated_at).format(
-                        "MMM D, YYYY • hh:mm A",
-                      )}
+                      {dayjs((driver as any).status_updated_at).format("MMM D, YYYY • hh:mm A")}
                     </p>
                   )}
                 </div>
@@ -1854,10 +1697,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
           </div>
 
           <div className="px-6 pb-24">
-            <div
-              key={activeKey}
-              className="animate-in fade-in slide-in-from-bottom-4 duration-300"
-            >
+            <div key={activeKey} className="animate-in fade-in slide-in-from-bottom-4 duration-300">
               {segments.find((tab) => tab.key === activeKey)?.content}
             </div>
           </div>
@@ -1881,21 +1721,16 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                 <span className="text-[9px] font-bold tracking-[0.2em] opacity-70 uppercase">
                   Account
                 </span>
-                <h2 className="text-xl font-bold mt-1 mb-2 leading-tight">
-                  Edit your profile
-                </h2>
+                <h2 className="text-xl font-bold mt-1 mb-2 leading-tight">Edit your profile</h2>
                 <p className="text-[11px] opacity-80 leading-relaxed font-medium">
-                  Keep your details fresh — it helps us deliver a more tailored
-                  experience.
+                  Keep your details fresh — it helps us deliver a more tailored experience.
                 </p>
 
                 <div className="flex flex-col items-center mt-10">
                   <div className="relative">
                     <Avatar
                       size={100}
-                      src={getMediaUrl(
-                        driver?.profilePicUrl || driver?.profile_pic_url,
-                      )}
+                      src={getMediaUrl(driver?.profilePicUrl || driver?.profile_pic_url)}
                       className="bg-[#b492f5] border-[3px] border-[#b492f5]/30 text-2xl font-bold shadow-2xl"
                     >
                       {driver?.first_name?.charAt(0)}
@@ -1957,82 +1792,32 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                       Basic Details
                     </span>
                     <div className="grid grid-cols-4 gap-3">
-                      <Form.Item
-                        name="first_name"
-                        label="First Name"
-                        className="col-span-2"
-                      >
-                        <Input
-                          prefix={<UserOutlined />}
-                          placeholder="First Name"
-                        />
+                      <Form.Item name="first_name" label="First Name" className="col-span-2">
+                        <Input prefix={<UserOutlined />} placeholder="First Name" />
                       </Form.Item>
-                      <Form.Item
-                        name="last_name"
-                        label="Last Name"
-                        className="col-span-2"
-                      >
-                        <Input
-                          prefix={<UserOutlined />}
-                          placeholder="Last Name"
-                        />
+                      <Form.Item name="last_name" label="Last Name" className="col-span-2">
+                        <Input prefix={<UserOutlined />} placeholder="Last Name" />
                       </Form.Item>
-                      <Form.Item
-                        name="email"
-                        label="Email Address"
-                        className="col-span-2"
-                      >
-                        <Input
-                          prefix={<MailOutlined />}
-                          placeholder="you@example.com"
-                        />
+                      <Form.Item name="email" label="Email Address" className="col-span-2">
+                        <Input prefix={<MailOutlined />} placeholder="you@example.com" />
                       </Form.Item>
-                      <Form.Item
-                        name="phone_number"
-                        label="Phone Number"
-                        className="col-span-1"
-                      >
-                        <Input
-                          prefix={<PhoneOutlined />}
-                          placeholder="+91 98765 43210"
-                        />
+                      <Form.Item name="phone_number" label="Phone Number" className="col-span-1">
+                        <Input prefix={<PhoneOutlined />} placeholder="+91 98765 43210" />
                       </Form.Item>
-                      <Form.Item
-                        name="alternate_contact"
-                        label="Alt Phone"
-                        className="col-span-1"
-                      >
-                        <Input
-                          prefix={<PhoneOutlined />}
-                          placeholder="+91 98765 00000"
-                        />
+                      <Form.Item name="alternate_contact" label="Alt Phone" className="col-span-1">
+                        <Input prefix={<PhoneOutlined />} placeholder="+91 98765 00000" />
                       </Form.Item>
-                      <Form.Item
-                        name="date_of_birth"
-                        label="Date of Birth"
-                        className="col-span-1"
-                      >
-                        <DatePicker
-                          className="w-full"
-                          placeholder="dd/mm/yyyy"
-                        />
+                      <Form.Item name="date_of_birth" label="Date of Birth" className="col-span-1">
+                        <DatePicker className="w-full" placeholder="dd/mm/yyyy" />
                       </Form.Item>
-                      <Form.Item
-                        name="gender"
-                        label="Gender"
-                        className="col-span-1"
-                      >
+                      <Form.Item name="gender" label="Gender" className="col-span-1">
                         <Select placeholder="Select gender">
                           <Select.Option value="male">Male</Select.Option>
                           <Select.Option value="female">Female</Select.Option>
                           <Select.Option value="other">Other</Select.Option>
                         </Select>
                       </Form.Item>
-                      <Form.Item
-                        name="role"
-                        label="Membership"
-                        className="col-span-2"
-                      >
+                      <Form.Item name="role" label="Membership" className="col-span-2">
                         <Select placeholder="Select role">
                           <Select.Option value="normal">Normal</Select.Option>
                           <Select.Option value="premium">Premium</Select.Option>
@@ -2047,35 +1832,14 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                       Address
                     </span>
                     <div className="grid grid-cols-4 gap-3">
-                      <Form.Item
-                        name={["address", "street"]}
-                        label="Street"
-                        className="col-span-4"
-                      >
-                        <Input
-                          prefix={<EnvironmentOutlined />}
-                          placeholder="221B Baker Street"
-                        />
+                      <Form.Item name={["address", "street"]} label="Street" className="col-span-4">
+                        <Input prefix={<EnvironmentOutlined />} placeholder="221B Baker Street" />
                       </Form.Item>
-                      <Form.Item
-                        name={["address", "city"]}
-                        label="City"
-                        className="col-span-1"
-                      >
-                        <Input
-                          prefix={<EnvironmentOutlined />}
-                          placeholder="Mumbai"
-                        />
+                      <Form.Item name={["address", "city"]} label="City" className="col-span-1">
+                        <Input prefix={<EnvironmentOutlined />} placeholder="Mumbai" />
                       </Form.Item>
-                      <Form.Item
-                        name={["address", "state"]}
-                        label="State"
-                        className="col-span-1"
-                      >
-                        <Input
-                          prefix={<EnvironmentOutlined />}
-                          placeholder="Maharashtra"
-                        />
+                      <Form.Item name={["address", "state"]} label="State" className="col-span-1">
+                        <Input prefix={<EnvironmentOutlined />} placeholder="Maharashtra" />
                       </Form.Item>
                       <Form.Item
                         name={["address", "pincode"]}
@@ -2083,11 +1847,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                         className="col-span-1"
                       >
                         <Input
-                          prefix={
-                            <span className="text-slate-400 font-bold ml-1 mr-1">
-                              #
-                            </span>
-                          }
+                          prefix={<span className="text-slate-400 font-bold ml-1 mr-1">#</span>}
                           placeholder="400001"
                         />
                       </Form.Item>
@@ -2096,10 +1856,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                         label="Country"
                         className="col-span-1"
                       >
-                        <Input
-                          prefix={<EnvironmentOutlined />}
-                          placeholder="India"
-                        />
+                        <Input prefix={<EnvironmentOutlined />} placeholder="India" />
                       </Form.Item>
                     </div>
                   </div>
@@ -2181,8 +1938,8 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
           <div className="mb-6">
             <Text type="secondary" className="text-sm">
               Please provide a clear reason for rejecting the **
-              {rejectModalDoc?.type}** document. This information will be sent
-              directly to the driver to help them correct the issue.
+              {rejectModalDoc?.type}** document. This information will be sent directly to the
+              driver to help them correct the issue.
             </Text>
           </div>
           <Form layout="vertical">
@@ -2228,9 +1985,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
           title={
             <div className="flex items-center gap-2">
               <HistoryOutlined className="text-indigo-600" />
-              <span>
-                Document History: {capitalize(historyModalDoc?.type || "")}
-              </span>
+              <span>Document History: {capitalize(historyModalDoc?.type || "")}</span>
             </div>
           }
           open={!!historyModalDoc}
@@ -2282,16 +2037,12 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
                           {item.status}
                         </Tag>
                         <Text type="secondary" className="text-[10px]">
-                          {dayjs(item.created_at).format(
-                            "MMM D, YYYY • hh:mm A",
-                          )}
+                          {dayjs(item.created_at).format("MMM D, YYYY • hh:mm A")}
                         </Text>
                       </div>
                       {item.reason && (
                         <div className="bg-white p-2 rounded-lg border border-gray-100 mt-2">
-                          <Text className="text-xs text-gray-600 italic">
-                            "{item.reason}"
-                          </Text>
+                          <Text className="text-xs text-gray-600 italic">"{item.reason}"</Text>
                         </div>
                       )}
                     </div>
@@ -2353,10 +2104,8 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
               : statusAction === "suspended"
                 ? "temporarily suspend"
                 : "reject"}{" "}
-            <span className="font-bold text-slate-800">
-              {driver?.full_name}
-            </span>
-            . The driver will be notified immediately.
+            <span className="font-bold text-slate-800">{driver?.full_name}</span>. The driver will
+            be notified immediately.
           </p>
           <div className="flex flex-col gap-2">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
@@ -2370,10 +2119,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({
               className="rounded-xl border-gray-200"
             />
             <div className="flex flex-wrap gap-1.5 mt-3">
-              {(statusAction === "blocked"
-                ? BLOCK_REASONS
-                : SUSPEND_REASONS
-              ).map((reason, idx) => (
+              {(statusAction === "blocked" ? BLOCK_REASONS : SUSPEND_REASONS).map((reason, idx) => (
                 <Tag
                   key={idx}
                   className="cursor-pointer hover:border-blue-400 hover:text-blue-600 transition-all m-0 px-3 py-1 text-[10px] rounded-full bg-slate-50 border-slate-100 text-slate-500 font-bold uppercase tracking-tight"

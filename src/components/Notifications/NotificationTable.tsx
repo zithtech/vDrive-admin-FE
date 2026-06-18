@@ -7,7 +7,7 @@ import {
   SendOutlined,
   ClockCircleOutlined,
   SyncOutlined,
-  CheckCircleOutlined
+  CheckCircleOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 
@@ -33,13 +33,41 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PENDING":
-        return <Tag icon={<ClockCircleOutlined />} color="warning" className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase">Pending</Tag>;
+        return (
+          <Tag
+            icon={<ClockCircleOutlined />}
+            color="warning"
+            className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase"
+          >
+            Pending
+          </Tag>
+        );
       case "PROCESSING":
-        return <Tag icon={<SyncOutlined spin />} color="processing" className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase">Processing</Tag>;
+        return (
+          <Tag
+            icon={<SyncOutlined spin />}
+            color="processing"
+            className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase"
+          >
+            Processing
+          </Tag>
+        );
       case "COMPLETED":
-        return <Tag icon={<CheckCircleOutlined />} color="success" className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase">Completed</Tag>;
+        return (
+          <Tag
+            icon={<CheckCircleOutlined />}
+            color="success"
+            className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase"
+          >
+            Completed
+          </Tag>
+        );
       case "FAILED":
-        return <Tag color="error" className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase">Failed</Tag>;
+        return (
+          <Tag color="error" className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase">
+            Failed
+          </Tag>
+        );
       default:
         return null;
     }
@@ -56,8 +84,12 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
             <BellOutlined />
           </div>
           <div className="flex flex-col">
-            <span className="font-bold text-slate-800 dark:text-slate-200 tracking-tight">{record.title}</span>
-            <span className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">{record.body}</span>
+            <span className="font-bold text-slate-800 dark:text-slate-200 tracking-tight">
+              {record.title}
+            </span>
+            <span className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">
+              {record.body}
+            </span>
           </div>
         </div>
       ),
@@ -74,7 +106,10 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
         if (target === "SPECIFIC") color = "purple";
 
         return (
-          <Tag color={color} className="rounded-full px-3 font-bold border-none text-[10px] uppercase tracking-wider">
+          <Tag
+            color={color}
+            className="rounded-full px-3 font-bold border-none text-[10px] uppercase tracking-wider"
+          >
             {target?.replace("_", " ") || "ALL"}
           </Tag>
         );
@@ -84,15 +119,19 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
       title: "ATTACHED OFFER",
       key: "attached_offer",
       width: 140,
-      render: (record: any) => (
+      render: (record: any) =>
         record.coupon_code || record.promo_code ? (
-          <Tag color="green" className="rounded-full px-3 font-bold border-none text-[10px] uppercase tracking-wider">
+          <Tag
+            color="green"
+            className="rounded-full px-3 font-bold border-none text-[10px] uppercase tracking-wider"
+          >
             {record.coupon_code || record.promo_code}
           </Tag>
         ) : (
-          <span className="text-gray-300 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest">— None —</span>
-        )
-      ),
+          <span className="text-gray-300 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest">
+            — None —
+          </span>
+        ),
     },
     {
       title: "DELIVERY STATUS",
@@ -121,8 +160,12 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
       width: 140,
       render: (date: string) => (
         <div className="flex flex-col">
-          <span className="text-slate-600 dark:text-slate-300 font-bold text-xs">{dayjs(date).format("DD MMM YYYY")}</span>
-          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">{dayjs(date).format("hh:mm A")}</span>
+          <span className="text-slate-600 dark:text-slate-300 font-bold text-xs">
+            {dayjs(date).format("DD MMM YYYY")}
+          </span>
+          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+            {dayjs(date).format("hh:mm A")}
+          </span>
         </div>
       ),
     },
@@ -141,39 +184,41 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
         </Button>
       ),
     },
-    ...(canUpdate || canDelete ? [
-      {
-        title: "ACTIONS",
-        key: "actions",
-        fixed: "right" as const,
-        width: 100,
-        render: (record: any) => (
-          <Space size="middle">
-            {canUpdate && (
-              <Tooltip title="Edit Notification">
-                <Button
-                  type="text"
-                  icon={<EditOutlined className="text-indigo-500 dark:text-indigo-400" />}
-                  onClick={() => onEdit(record)}
-                  className="hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all"
-                />
-              </Tooltip>
-            )}
-            {canDelete && (
-              <Tooltip title="Delete">
-                <Button
-                  type="text"
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={() => onDelete(record.id)}
-                  className="hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all"
-                />
-              </Tooltip>
-            )}
-          </Space>
-        ),
-      }
-    ] : []),
+    ...(canUpdate || canDelete
+      ? [
+          {
+            title: "ACTIONS",
+            key: "actions",
+            fixed: "right" as const,
+            width: 100,
+            render: (record: any) => (
+              <Space size="middle">
+                {canUpdate && (
+                  <Tooltip title="Edit Notification">
+                    <Button
+                      type="text"
+                      icon={<EditOutlined className="text-indigo-500 dark:text-indigo-400" />}
+                      onClick={() => onEdit(record)}
+                      className="hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all"
+                    />
+                  </Tooltip>
+                )}
+                {canDelete && (
+                  <Tooltip title="Delete">
+                    <Button
+                      type="text"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => onDelete(record.id)}
+                      className="hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all"
+                    />
+                  </Tooltip>
+                )}
+              </Space>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (

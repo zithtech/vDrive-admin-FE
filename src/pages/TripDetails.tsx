@@ -15,9 +15,7 @@ import {
 } from "@ant-design/icons";
 import TripDetailsTable from "../components/TripDetails/TripDetailsTable";
 import TitleBar from "../components/TitleBarCommon/TitleBar";
-import AdvancedFilters, {
-  type FilterField,
-} from "../components/AdvancedFilters/AdvanceFilters";
+import AdvancedFilters, { type FilterField } from "../components/AdvancedFilters/AdvanceFilters";
 import * as XLSX from "xlsx";
 import dayjs, { Dayjs } from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -25,7 +23,7 @@ import utc from "dayjs/plugin/utc";
 
 type TripFilters = {
   status: string;
-  booking_type: string,
+  booking_type: string;
   globalSearch: string;
   driverAssigned: string | string[];
   from: Dayjs | null;
@@ -34,7 +32,7 @@ type TripFilters = {
 
 const initialFilters: TripFilters = {
   status: "requested",
-  booking_type: 'live',
+  booking_type: "live",
   globalSearch: "",
   driverAssigned: "all",
   // from: null,
@@ -43,10 +41,7 @@ const initialFilters: TripFilters = {
   to: dayjs().endOf("day"),
 };
 
-export const exportTripsToExcel = (
-  data: TripDetailsType[],
-  fileName: string,
-) => {
+export const exportTripsToExcel = (data: TripDetailsType[], fileName: string) => {
   if (!data.length) return;
 
   const worksheet = XLSX.utils.json_to_sheet(
@@ -79,7 +74,7 @@ const TripDetails = () => {
 
   const { trips, loading } = useSelector((state: RootState) => state.trips);
   const { role } = useSelector((state: RootState) => state.auth);
-  const isSuperAdmin = role === 'super_admin';
+  const isSuperAdmin = role === "super_admin";
   const [filteredTrips, setFilteredTrips] = useState<TripDetailsType[]>([]);
   const [filters, setFilters] = useState(initialFilters);
   // const [filterVisible, setFilterVisible] = useState(false);
@@ -164,17 +159,15 @@ const TripDetails = () => {
     let temp = getBaseFilteredTrips();
 
     // 🔹 Status (Segmented)
-    if (filters.status === 'scheduled') {
+    if (filters.status === "scheduled") {
       // Upcoming: booking_type = scheduled AND trip_status = requested
       temp = temp.filter(
         (t) =>
-          t.booking_type?.toLowerCase() === 'scheduled' &&
-          t.trip_status?.toLowerCase() === 'requested'
+          t.booking_type?.toLowerCase() === "scheduled" &&
+          t.trip_status?.toLowerCase() === "requested",
       );
-    } else if (filters.status !== 'all') {
-      temp = temp.filter(
-        (t) => t.trip_status?.toLowerCase() === filters.status
-      );
+    } else if (filters.status !== "all") {
+      temp = temp.filter((t) => t.trip_status?.toLowerCase() === filters.status);
     }
 
     setFilteredTrips(temp);
@@ -208,9 +201,12 @@ const TripDetails = () => {
     const base = getBaseFilteredTrips();
 
     if (status === "all") return base.length;
-    if (status === 'scheduled') return base.filter((t) =>
-      t.booking_type?.toLowerCase() === 'scheduled' && t.trip_status?.toLowerCase() === 'requested'
-    ).length;
+    if (status === "scheduled")
+      return base.filter(
+        (t) =>
+          t.booking_type?.toLowerCase() === "scheduled" &&
+          t.trip_status?.toLowerCase() === "requested",
+      ).length;
     return base.filter((t) => t.trip_status?.toLowerCase() === status).length;
   };
 
@@ -256,12 +252,12 @@ const TripDetails = () => {
     const today = dayjs().startOf("day");
 
     // Check if both are same as today's range
-    if (from && to && from.isSame(today, 'day') && to.isSame(dayjs().endOf('day'), 'day')) {
+    if (from && to && from.isSame(today, "day") && to.isSame(dayjs().endOf("day"), "day")) {
       return "Today's Ride";
     }
 
     if (from && to) {
-      if (from.isSame(to, 'day')) {
+      if (from.isSame(to, "day")) {
         return from.format("MMM DD, YYYY");
       }
       return `${from.format("MMM DD")} - ${to.format("MMM DD, YYYY")}`;
@@ -284,7 +280,7 @@ const TripDetails = () => {
       extraContent={
         <div className="flex items-center gap-3">
           <Button
-            icon={<IoMdRefresh className={`text-lg ${loading ? 'animate-spin' : ''}`} />}
+            icon={<IoMdRefresh className={`text-lg ${loading ? "animate-spin" : ""}`} />}
             onClick={handleRefresh}
             className="rounded-full h-11 w-11 flex items-center justify-center border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 transition-all bg-white"
           />
@@ -312,7 +308,9 @@ const TripDetails = () => {
                 options={[
                   {
                     label: (
-                      <span className={`px-2 font-bold tracking-tight ${filters.status === "all" ? "text-slate-800" : "text-black"}`}>
+                      <span
+                        className={`px-2 font-bold tracking-tight ${filters.status === "all" ? "text-slate-800" : "text-black"}`}
+                      >
                         All ({getStatusCount("all")})
                       </span>
                     ),
@@ -320,7 +318,9 @@ const TripDetails = () => {
                   },
                   {
                     label: (
-                      <span className={`px-2 font-bold tracking-tight ${filters.status === "requested" ? "text-blue-600" : "text-black"}`}>
+                      <span
+                        className={`px-2 font-bold tracking-tight ${filters.status === "requested" ? "text-blue-600" : "text-black"}`}
+                      >
                         Requested ({getStatusCount("requested")})
                       </span>
                     ),
@@ -328,7 +328,9 @@ const TripDetails = () => {
                   },
                   {
                     label: (
-                      <span className={`px-2 font-bold tracking-tight ${filters.status === "assigned" ? "text-cyan-600" : "text-black"}`}>
+                      <span
+                        className={`px-2 font-bold tracking-tight ${filters.status === "assigned" ? "text-cyan-600" : "text-black"}`}
+                      >
                         Assigned ({getStatusCount("assigned")})
                       </span>
                     ),
@@ -336,7 +338,9 @@ const TripDetails = () => {
                   },
                   {
                     label: (
-                      <span className={`px-2 font-bold tracking-tight ${filters.status === "accepted" ? "text-emerald-600" : "text-black"}`}>
+                      <span
+                        className={`px-2 font-bold tracking-tight ${filters.status === "accepted" ? "text-emerald-600" : "text-black"}`}
+                      >
                         Accepted ({getStatusCount("accepted")})
                       </span>
                     ),
@@ -344,7 +348,9 @@ const TripDetails = () => {
                   },
                   {
                     label: (
-                      <span className={`px-2 font-bold tracking-tight ${filters.status === "scheduled" ? "text-purple-600" : "text-black"}`}>
+                      <span
+                        className={`px-2 font-bold tracking-tight ${filters.status === "scheduled" ? "text-purple-600" : "text-black"}`}
+                      >
                         Upcoming ({getStatusCount("scheduled")})
                       </span>
                     ),
@@ -352,7 +358,9 @@ const TripDetails = () => {
                   },
                   {
                     label: (
-                      <span className={`px-2 font-bold tracking-tight ${filters.status === "live" ? "text-orange-500" : "text-black"}`}>
+                      <span
+                        className={`px-2 font-bold tracking-tight ${filters.status === "live" ? "text-orange-500" : "text-black"}`}
+                      >
                         Live ({getStatusCount("live")})
                       </span>
                     ),
@@ -360,7 +368,9 @@ const TripDetails = () => {
                   },
                   {
                     label: (
-                      <span className={`px-2 font-bold tracking-tight ${filters.status === "completed" ? "text-indigo-600" : "text-black"}`}>
+                      <span
+                        className={`px-2 font-bold tracking-tight ${filters.status === "completed" ? "text-indigo-600" : "text-black"}`}
+                      >
                         Completed ({getStatusCount("completed")})
                       </span>
                     ),
@@ -368,7 +378,9 @@ const TripDetails = () => {
                   },
                   {
                     label: (
-                      <span className={`px-2 font-bold tracking-tight ${filters.status === "cancelled" ? "text-slate-500" : "text-black"}`}>
+                      <span
+                        className={`px-2 font-bold tracking-tight ${filters.status === "cancelled" ? "text-slate-500" : "text-black"}`}
+                      >
                         Cancelled ({getStatusCount("cancelled")})
                       </span>
                     ),
@@ -376,7 +388,9 @@ const TripDetails = () => {
                   },
                   {
                     label: (
-                      <span className={`px-2 font-bold tracking-tight ${filters.status === "mid_cancelled" ? "text-rose-600" : "text-black"}`}>
+                      <span
+                        className={`px-2 font-bold tracking-tight ${filters.status === "mid_cancelled" ? "text-rose-600" : "text-black"}`}
+                      >
                         Mid-Cancelled ({getStatusCount("mid_cancelled")})
                       </span>
                     ),
@@ -392,8 +406,12 @@ const TripDetails = () => {
             <div className="flex items-center gap-3 px-5 py-3 bg-white rounded-2xl border border-indigo-100 border-b-[3px] border-b-indigo-500/30">
               <CalendarOutlined className="text-indigo-500 text-lg" />
               <div className="flex flex-col leading-none">
-                <span className="text-[10px] text-indigo-400 font-black uppercase tracking-[0.2em] mb-1">Active Range</span>
-                <span className="text-sm font-black text-slate-800 tracking-tight">{formatDateRange()}</span>
+                <span className="text-[10px] text-indigo-400 font-black uppercase tracking-[0.2em] mb-1">
+                  Active Range
+                </span>
+                <span className="text-sm font-black text-slate-800 tracking-tight">
+                  {formatDateRange()}
+                </span>
               </div>
             </div>
           </div>
@@ -405,7 +423,7 @@ const TripDetails = () => {
             filterFields={fields}
             applyFilters={applyFilters}
             isStandalone
-            onClear={() => setFilters(prev => ({ ...prev, status: 'all' }))}
+            onClear={() => setFilters((prev) => ({ ...prev, status: "all" }))}
           />
         </div>
 

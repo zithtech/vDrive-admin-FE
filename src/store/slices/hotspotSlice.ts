@@ -29,8 +29,7 @@ const initialState: HotspotState = {
 };
 
 // Cancel token for managing concurrent requests
-let cancelTokenSource: ReturnType<typeof axios.CancelToken.source> | null =
-  null;
+let cancelTokenSource: ReturnType<typeof axios.CancelToken.source> | null = null;
 
 // Async thunk to fetch hotspots
 export const fetchHotspots = createAsyncThunk(
@@ -61,12 +60,9 @@ export const fetchHotspots = createAsyncThunk(
       params.append("limit", limit.toString());
       if (search) params.append("search", search);
 
-      const response = await axiosIns.get(
-        `/api/hotspots?${params.toString()}`,
-        {
-          cancelToken: cancelTokenSource.token,
-        },
-      );
+      const response = await axiosIns.get(`/api/hotspots?${params.toString()}`, {
+        cancelToken: cancelTokenSource.token,
+      });
 
       return {
         data: response.data.data.data,
@@ -91,9 +87,7 @@ export const fetchHotspotById = createAsyncThunk(
       const response = await axiosIns.get(`/api/hotspots/${id}`);
       return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch hotspot",
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch hotspot");
     }
   },
 );
@@ -113,9 +107,7 @@ export const createHotspot = createAsyncThunk(
       const response = await axiosIns.post("/api/hotspots", data);
       return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to create hotspot",
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to create hotspot");
     }
   },
 );
@@ -141,9 +133,7 @@ export const updateHotspot = createAsyncThunk(
       const response = await axiosIns.put(`/api/hotspots/${id}`, data);
       return response.data.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to update hotspot",
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to update hotspot");
     }
   },
 );
@@ -156,9 +146,7 @@ export const deleteHotspot = createAsyncThunk(
       await axiosIns.delete(`/api/hotspots/${id}`);
       return id;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to delete hotspot",
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to delete hotspot");
     }
   },
 );
@@ -219,12 +207,9 @@ const hotspotSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(
-        fetchHotspotById.fulfilled,
-        (state, _action: PayloadAction<Hotspot>) => {
-          state.isLoading = false;
-        },
-      )
+      .addCase(fetchHotspotById.fulfilled, (state, _action: PayloadAction<Hotspot>) => {
+        state.isLoading = false;
+      })
       .addCase(fetchHotspotById.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message || "Failed to fetch hotspot";
@@ -234,15 +219,12 @@ const hotspotSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(
-        createHotspot.fulfilled,
-        (state, action: PayloadAction<Hotspot>) => {
-          state.isLoading = false;
-          // Add new hotspot to the list
-          state.hotspots.unshift(action.payload);
-          state.total += 1;
-        },
-      )
+      .addCase(createHotspot.fulfilled, (state, action: PayloadAction<Hotspot>) => {
+        state.isLoading = false;
+        // Add new hotspot to the list
+        state.hotspots.unshift(action.payload);
+        state.total += 1;
+      })
       .addCase(createHotspot.rejected, (state, action) => {
         state.isLoading = false;
         state.error = (action.payload as string) || "Failed to create hotspot";
@@ -252,19 +234,14 @@ const hotspotSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(
-        updateHotspot.fulfilled,
-        (state, action: PayloadAction<Hotspot>) => {
-          state.isLoading = false;
-          // Update hotspot in the list
-          const index = state.hotspots.findIndex(
-            (h) => h.id === action.payload.id,
-          );
-          if (index !== -1) {
-            state.hotspots[index] = action.payload;
-          }
-        },
-      )
+      .addCase(updateHotspot.fulfilled, (state, action: PayloadAction<Hotspot>) => {
+        state.isLoading = false;
+        // Update hotspot in the list
+        const index = state.hotspots.findIndex((h) => h.id === action.payload.id);
+        if (index !== -1) {
+          state.hotspots[index] = action.payload;
+        }
+      })
       .addCase(updateHotspot.rejected, (state, action) => {
         state.isLoading = false;
         state.error = (action.payload as string) || "Failed to update hotspot";
@@ -274,17 +251,12 @@ const hotspotSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(
-        deleteHotspot.fulfilled,
-        (state, action: PayloadAction<string>) => {
-          state.isLoading = false;
-          // Remove hotspot from the list
-          state.hotspots = state.hotspots.filter(
-            (h) => h.id !== action.payload,
-          );
-          state.total -= 1;
-        },
-      )
+      .addCase(deleteHotspot.fulfilled, (state, action: PayloadAction<string>) => {
+        state.isLoading = false;
+        // Remove hotspot from the list
+        state.hotspots = state.hotspots.filter((h) => h.id !== action.payload);
+        state.total -= 1;
+      })
       .addCase(deleteHotspot.rejected, (state, action) => {
         state.isLoading = false;
         state.error = (action.payload as string) || "Failed to delete hotspot";
@@ -292,6 +264,5 @@ const hotspotSlice = createSlice({
   },
 });
 
-export const { clearHotspots, clearError, setPage, setPageSize } =
-  hotspotSlice.actions;
+export const { clearHotspots, clearError, setPage, setPageSize } = hotspotSlice.actions;
 export default hotspotSlice.reducer;

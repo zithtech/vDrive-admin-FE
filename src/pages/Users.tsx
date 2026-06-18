@@ -338,15 +338,7 @@ export interface Filters {
   lastLogin: Date | null;
   createdAt: Date | null;
 }
-const ROLES = [
-  "Admin",
-  "Manager",
-  "Developer",
-  "Tester",
-  "Support",
-  "Designer",
-  "Analyst",
-];
+const ROLES = ["Admin", "Manager", "Developer", "Tester", "Support", "Designer", "Analyst"];
 const STATUSES = ["Active", "Inactive", "Suspended"];
 const fields: FilterField[] = [
   {
@@ -381,28 +373,18 @@ const Users = () => {
   const applyFilters = (values: Record<string, any>) => {
     let tempData = DATA;
     if (values?.status?.length > 0) {
-      const selectedStatuses = Array.isArray(values?.status)
-        ? values?.status
-        : [values?.status];
-      tempData = tempData.filter((user) =>
-        selectedStatuses.includes(user?.status),
-      );
+      const selectedStatuses = Array.isArray(values?.status) ? values?.status : [values?.status];
+      tempData = tempData.filter((user) => selectedStatuses.includes(user?.status));
     }
     if (values?.role?.length > 0) {
-      const selectedRole = Array.isArray(values?.role)
-        ? values?.role
-        : [values?.role];
+      const selectedRole = Array.isArray(values?.role) ? values?.role : [values?.role];
       tempData = tempData.filter((user) => selectedRole.includes(user?.role));
     }
     if (values?.lastLogin) {
-      tempData = tempData.filter((user) =>
-        dayjs(user?.lastLogin).isSame(values?.lastLogin, "day"),
-      );
+      tempData = tempData.filter((user) => dayjs(user?.lastLogin).isSame(values?.lastLogin, "day"));
     }
     if (values?.createdAt) {
-      tempData = tempData.filter((user) =>
-        dayjs(user?.createdAt).isSame(values?.createdAt, "day"),
-      );
+      tempData = tempData.filter((user) => dayjs(user?.createdAt).isSame(values?.createdAt, "day"));
     }
 
     setFilteredData(tempData);
@@ -414,12 +396,7 @@ const Users = () => {
       description="Manage and oversee all user accounts within the system."
       extraContent={
         <div>
-          <Button
-            icon={<IoMdRefresh />}
-            loading={false}
-            type="primary"
-            onClick={() => {}}
-          >
+          <Button icon={<IoMdRefresh />} loading={false} type="primary" onClick={() => {}}>
             Refresh
           </Button>
         </div>

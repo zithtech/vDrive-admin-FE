@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Table, Checkbox, Button, Card, Input, Space, message, Select } from 'antd';
-import { SaveOutlined, ReloadOutlined, PlusOutlined } from '@ant-design/icons';
-import axiosIns from '../../api/axios';
+import React, { useState, useEffect } from "react";
+import { Table, Checkbox, Button, Card, Input, Space, message, Select } from "antd";
+import { SaveOutlined, ReloadOutlined, PlusOutlined } from "@ant-design/icons";
+import axiosIns from "../../api/axios";
 
-import { VDRIVE_MODULES } from '../../config/permissions';
+import { VDRIVE_MODULES } from "../../config/permissions";
 
 interface PermissionRow {
   key: string;
@@ -22,7 +22,7 @@ const SYSTEM_MODULES = Object.keys(VDRIVE_MODULES);
 const getSupportedActions = (modName: string): string[] => {
   const modConfig = VDRIVE_MODULES[modName as keyof typeof VDRIVE_MODULES];
   if (!modConfig) return [];
-  return modConfig.permissions.map(p => p.split('.')[1]);
+  return modConfig.permissions.map((p) => p.split(".")[1]);
 };
 
 interface Role {
@@ -35,9 +35,14 @@ interface Role {
 
 // Memory/Local storage fallback for demonstration & robust operation
 const MOCK_ROLES: Role[] = [
-  { id: 1, name: 'super_admin', description: 'Complete system authority bypass', is_system: true },
-  { id: 2, name: 'admin', description: 'Platform level operation manager', is_system: true },
-  { id: 3, name: 'support_agent', description: 'View only access with limited customer messaging', is_system: false },
+  { id: 1, name: "super_admin", description: "Complete system authority bypass", is_system: true },
+  { id: 2, name: "admin", description: "Platform level operation manager", is_system: true },
+  {
+    id: 3,
+    name: "support_agent",
+    description: "View only access with limited customer messaging",
+    is_system: false,
+  },
 ];
 
 const MOCK_PERMISSIONS: Record<number | string, Record<string, Record<string, boolean>>> = {
@@ -55,12 +60,17 @@ const MOCK_PERMISSIONS: Record<number | string, Record<string, Record<string, bo
     recharge: { create: false, read: true, update: false, delete: false },
     taxes: { create: false, read: true, update: false, delete: false },
     coupons: { create: true, read: true, update: true, delete: false },
-    notifications: { create: true, read: true, update: false, delete: false }
+    notifications: { create: true, read: true, update: false, delete: false },
   },
   3: SYSTEM_MODULES.reduce((acc, mod) => {
-    acc[mod] = { create: false, read: mod === 'customers' || mod === 'drivers' || mod === 'dashboard', update: false, delete: false };
+    acc[mod] = {
+      create: false,
+      read: mod === "customers" || mod === "drivers" || mod === "dashboard",
+      update: false,
+      delete: false,
+    };
     return acc;
-  }, {} as any)
+  }, {} as any),
 };
 
 interface RoleMatrixEditorProps {
@@ -73,15 +83,15 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
   const [loading, setLoading] = useState(false);
   const [matrix, setMatrix] = useState<Record<string, Record<string, boolean>>>({});
 
-  const selectedRole = roles.find(r => r.id === selectedRoleId);
+  const selectedRole = roles.find((r) => r.id === selectedRoleId);
 
   // New role inputs
-  const [newRoleName, setNewRoleName] = useState('');
-  const [newRoleDesc, setNewRoleDesc] = useState('');
+  const [newRoleName, setNewRoleName] = useState("");
+  const [newRoleDesc, setNewRoleDesc] = useState("");
 
   const fetchRoles = async () => {
     try {
-      const response = await axiosIns.get('/api/roles');
+      const response = await axiosIns.get("/api/roles");
       if (response.data && response.data.success) {
         setRoles(response.data.data);
         if (response.data.data.length > 0 && !selectedRoleId) {
@@ -93,7 +103,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
     } catch (err) {
       // Fallback
       console.log("Roles Endpoint not available yet. Using in-memory fallback.");
-      const saved = localStorage.getItem('vdrive_custom_roles');
+      const saved = localStorage.getItem("vdrive_custom_roles");
       const loadedRoles = saved ? JSON.parse(saved) : MOCK_ROLES;
       setRoles(loadedRoles);
       if (loadedRoles.length > 0 && !selectedRoleId) {
@@ -118,14 +128,17 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
       if (saved) {
         setMatrix(JSON.parse(saved));
       } else {
-        setMatrix(MOCK_PERMISSIONS[roleId] || SYSTEM_MODULES.reduce((acc, mod) => {
-          const modAcc: Record<string, boolean> = {};
-          for (const action of getSupportedActions(mod)) {
-            modAcc[action] = false;
-          }
-          acc[mod] = modAcc;
-          return acc;
-        }, {} as any));
+        setMatrix(
+          MOCK_PERMISSIONS[roleId] ||
+            SYSTEM_MODULES.reduce((acc, mod) => {
+              const modAcc: Record<string, boolean> = {};
+              for (const action of getSupportedActions(mod)) {
+                modAcc[action] = false;
+              }
+              acc[mod] = modAcc;
+              return acc;
+            }, {} as any),
+        );
       }
     } finally {
       setLoading(false);
@@ -142,32 +155,40 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
     }
   }, [selectedRoleId]);
 
-  const handleCheckboxChange = (module: string, action: 'read' | 'create' | 'update' | 'delete' | 'manage' | 'verify' | 'assign', checked: boolean) => {
-    setMatrix(prev => ({
+  const handleCheckboxChange = (
+    module: string,
+    action: "read" | "create" | "update" | "delete" | "manage" | "verify" | "assign",
+    checked: boolean,
+  ) => {
+    setMatrix((prev) => ({
       ...prev,
       [module]: {
         ...(prev[module] || {}),
-        [action]: checked
-      }
+        [action]: checked,
+      },
     }));
   };
 
   const handleSavePermissions = async () => {
     if (!selectedRoleId) return;
     setLoading(true);
-    const payload = SYSTEM_MODULES.map(moduleName => {
+    const payload = SYSTEM_MODULES.map((moduleName) => {
       const actionsObj = matrix[moduleName] || {};
-      const activeActions = Object.keys(actionsObj).filter(act => actionsObj[act] && getSupportedActions(moduleName).includes(act));
+      const activeActions = Object.keys(actionsObj).filter(
+        (act) => actionsObj[act] && getSupportedActions(moduleName).includes(act),
+      );
       return {
         module: moduleName,
-        actions: activeActions
+        actions: activeActions,
       };
     });
 
     try {
-      const res = await axiosIns.put(`/api/roles/${selectedRoleId}/permissions`, { permissions: payload });
+      const res = await axiosIns.put(`/api/roles/${selectedRoleId}/permissions`, {
+        permissions: payload,
+      });
       if (res.data && res.data.success) {
-        message.success('Role permissions updated successfully on servers!');
+        message.success("Role permissions updated successfully on servers!");
       } else {
         throw new Error();
       }
@@ -175,7 +196,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
       // Fallback to saving in LocalStorage
       const storageKey = `vdrive_role_perms_${selectedRoleId}`;
       localStorage.setItem(storageKey, JSON.stringify(matrix));
-      message.success('Role permissions updated in secure client cache!');
+      message.success("Role permissions updated in secure client cache!");
     } finally {
       setLoading(false);
     }
@@ -183,19 +204,19 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
 
   const handleCreateRole = async () => {
     if (!newRoleName.trim()) {
-      return message.warning('Please enter a valid role name.');
+      return message.warning("Please enter a valid role name.");
     }
-    const cleanName = newRoleName.toLowerCase().replace(/\s+/g, '_');
+    const cleanName = newRoleName.toLowerCase().replace(/\s+/g, "_");
 
     try {
-      const response = await axiosIns.post('/api/roles', {
+      const response = await axiosIns.post("/api/roles", {
         name: cleanName,
-        description: newRoleDesc
+        description: newRoleDesc,
       });
       if (response.data && response.data.success) {
-        message.success('New role created! Configure its permissions below.');
-        setNewRoleName('');
-        setNewRoleDesc('');
+        message.success("New role created! Configure its permissions below.");
+        setNewRoleName("");
+        setNewRoleDesc("");
         fetchRoles();
         setSelectedRoleId(response.data.data.id);
       } else {
@@ -203,16 +224,17 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
       }
     } catch (err) {
       // Fallback role creation
-      const nextId = Math.max(...roles.map(r => typeof r.id === 'number' ? r.id : Number(r.id) || 0), 0) + 1;
+      const nextId =
+        Math.max(...roles.map((r) => (typeof r.id === "number" ? r.id : Number(r.id) || 0)), 0) + 1;
       const newRole: Role = {
         id: nextId,
         name: cleanName,
-        description: newRoleDesc || 'Custom Admin Role',
-        is_system: false
+        description: newRoleDesc || "Custom Admin Role",
+        is_system: false,
       };
       const updatedRoles = [...roles, newRole];
       setRoles(updatedRoles);
-      localStorage.setItem('vdrive_custom_roles', JSON.stringify(updatedRoles));
+      localStorage.setItem("vdrive_custom_roles", JSON.stringify(updatedRoles));
 
       // Initialize matching blank permissions for this custom role
       const initialPerms = SYSTEM_MODULES.reduce((acc, mod) => {
@@ -225,9 +247,9 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
       }, {} as any);
       localStorage.setItem(`vdrive_role_perms_${nextId}`, JSON.stringify(initialPerms));
 
-      message.success('New role created in local configuration! Set permissions below.');
-      setNewRoleName('');
-      setNewRoleDesc('');
+      message.success("New role created in local configuration! Set permissions below.");
+      setNewRoleName("");
+      setNewRoleDesc("");
       setSelectedRoleId(nextId);
     }
   };
@@ -236,21 +258,26 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
     try {
       const res = await axiosIns.patch(`/api/roles/${roleId}/type`, { roleType });
       if (res.data && res.data.success) {
-        message.success('Role type updated successfully!');
+        message.success("Role type updated successfully!");
         fetchRoles();
       } else {
         throw new Error();
       }
     } catch (err) {
       // Local fallback
-      const updatedRoles = roles.map(r => r.id === roleId ? { ...r, is_system: roleType === 'system', role_type: roleType } : r);
+      const updatedRoles = roles.map((r) =>
+        r.id === roleId ? { ...r, is_system: roleType === "system", role_type: roleType } : r,
+      );
       setRoles(updatedRoles);
-      localStorage.setItem('vdrive_custom_roles', JSON.stringify(updatedRoles));
-      message.success('Role type updated in client cache!');
+      localStorage.setItem("vdrive_custom_roles", JSON.stringify(updatedRoles));
+      message.success("Role type updated in client cache!");
     }
   };
 
-  const renderCheckbox = (record: PermissionRow, action: 'read' | 'create' | 'update' | 'delete' | 'manage' | 'verify' | 'assign') => {
+  const renderCheckbox = (
+    record: PermissionRow,
+    action: "read" | "create" | "update" | "delete" | "manage" | "verify" | "assign",
+  ) => {
     const supported = getSupportedActions(record.module);
     if (!supported.includes(action)) {
       return <span className="text-slate-300">-</span>;
@@ -264,38 +291,50 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
     );
   };
 
-  const getModulesSupportingAction = (action: 'read' | 'create' | 'update' | 'delete' | 'manage' | 'verify' | 'assign') => {
-    return SYSTEM_MODULES.filter(mod => getSupportedActions(mod).includes(action));
+  const getModulesSupportingAction = (
+    action: "read" | "create" | "update" | "delete" | "manage" | "verify" | "assign",
+  ) => {
+    return SYSTEM_MODULES.filter((mod) => getSupportedActions(mod).includes(action));
   };
 
-  const isAllChecked = (action: 'read' | 'create' | 'update' | 'delete' | 'manage' | 'verify' | 'assign') => {
+  const isAllChecked = (
+    action: "read" | "create" | "update" | "delete" | "manage" | "verify" | "assign",
+  ) => {
     const supportingModules = getModulesSupportingAction(action);
     if (supportingModules.length === 0) return false;
-    return supportingModules.every(mod => !!matrix[mod]?.[action]);
+    return supportingModules.every((mod) => !!matrix[mod]?.[action]);
   };
 
-  const isIndeterminate = (action: 'read' | 'create' | 'update' | 'delete' | 'manage' | 'verify' | 'assign') => {
+  const isIndeterminate = (
+    action: "read" | "create" | "update" | "delete" | "manage" | "verify" | "assign",
+  ) => {
     const supportingModules = getModulesSupportingAction(action);
     if (supportingModules.length === 0) return false;
-    const checkedCount = supportingModules.filter(mod => !!matrix[mod]?.[action]).length;
+    const checkedCount = supportingModules.filter((mod) => !!matrix[mod]?.[action]).length;
     return checkedCount > 0 && checkedCount < supportingModules.length;
   };
 
-  const handleHeaderCheckboxChange = (action: 'read' | 'create' | 'update' | 'delete' | 'manage' | 'verify' | 'assign', checked: boolean) => {
+  const handleHeaderCheckboxChange = (
+    action: "read" | "create" | "update" | "delete" | "manage" | "verify" | "assign",
+    checked: boolean,
+  ) => {
     const supportingModules = getModulesSupportingAction(action);
-    setMatrix(prev => {
+    setMatrix((prev) => {
       const updated = { ...prev };
       for (const mod of supportingModules) {
         updated[mod] = {
           ...(updated[mod] || {}),
-          [action]: checked
+          [action]: checked,
         };
       }
       return updated;
     });
   };
 
-  const renderHeaderCheckbox = (action: 'read' | 'create' | 'update' | 'delete' | 'manage' | 'verify' | 'assign', label: string) => {
+  const renderHeaderCheckbox = (
+    action: "read" | "create" | "update" | "delete" | "manage" | "verify" | "assign",
+    label: string,
+  ) => {
     return (
       <Space size={4}>
         <Checkbox
@@ -311,49 +350,49 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
 
   const columns = [
     {
-      title: 'Module Name',
-      dataIndex: 'module',
-      key: 'module',
+      title: "Module Name",
+      dataIndex: "module",
+      key: "module",
       render: (text: string) => <strong className="capitalize text-slate-700">{text}</strong>,
     },
     {
-      title: renderHeaderCheckbox('read', 'Read (View)'),
-      key: 'read',
-      render: (_: any, record: PermissionRow) => renderCheckbox(record, 'read'),
+      title: renderHeaderCheckbox("read", "Read (View)"),
+      key: "read",
+      render: (_: any, record: PermissionRow) => renderCheckbox(record, "read"),
     },
     {
-      title: renderHeaderCheckbox('create', 'Create (Add)'),
-      key: 'create',
-      render: (_: any, record: PermissionRow) => renderCheckbox(record, 'create'),
+      title: renderHeaderCheckbox("create", "Create (Add)"),
+      key: "create",
+      render: (_: any, record: PermissionRow) => renderCheckbox(record, "create"),
     },
     {
-      title: renderHeaderCheckbox('update', 'Update (Edit)'),
-      key: 'update',
-      render: (_: any, record: PermissionRow) => renderCheckbox(record, 'update'),
+      title: renderHeaderCheckbox("update", "Update (Edit)"),
+      key: "update",
+      render: (_: any, record: PermissionRow) => renderCheckbox(record, "update"),
     },
     {
-      title: renderHeaderCheckbox('delete', 'Delete (Remove)'),
-      key: 'delete',
-      render: (_: any, record: PermissionRow) => renderCheckbox(record, 'delete'),
+      title: renderHeaderCheckbox("delete", "Delete (Remove)"),
+      key: "delete",
+      render: (_: any, record: PermissionRow) => renderCheckbox(record, "delete"),
     },
     {
-      title: renderHeaderCheckbox('manage', 'Manage (Custom)'),
-      key: 'manage',
-      render: (_: any, record: PermissionRow) => renderCheckbox(record, 'manage'),
+      title: renderHeaderCheckbox("manage", "Manage (Custom)"),
+      key: "manage",
+      render: (_: any, record: PermissionRow) => renderCheckbox(record, "manage"),
     },
     {
-      title: renderHeaderCheckbox('verify', 'Verify (Doc)'),
-      key: 'verify',
-      render: (_: any, record: PermissionRow) => renderCheckbox(record, 'verify'),
+      title: renderHeaderCheckbox("verify", "Verify (Doc)"),
+      key: "verify",
+      render: (_: any, record: PermissionRow) => renderCheckbox(record, "verify"),
     },
     {
-      title: renderHeaderCheckbox('assign', 'Assign (Role)'),
-      key: 'assign',
-      render: (_: any, record: PermissionRow) => renderCheckbox(record, 'assign'),
+      title: renderHeaderCheckbox("assign", "Assign (Role)"),
+      key: "assign",
+      render: (_: any, record: PermissionRow) => renderCheckbox(record, "assign"),
     },
   ];
 
-  const tableData: PermissionRow[] = SYSTEM_MODULES.map(modName => {
+  const tableData: PermissionRow[] = SYSTEM_MODULES.map((modName) => {
     const modObj = matrix[modName] || {};
     return {
       key: modName,
@@ -372,15 +411,26 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
   const tableScrollHeight = height ? height - 300 - alertBannerHeight : 350;
 
   return (
-    <Card 
+    <Card
       className="rounded-3xl border border-slate-100 shadow-sm mt-6 flex flex-col overflow-hidden"
       style={height ? { height: height - 24 } : undefined}
-      styles={{ body: { display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0, overflow: 'hidden', padding: '16px' } }}
+      styles={{
+        body: {
+          display: "flex",
+          flexDirection: "column",
+          flexGrow: 1,
+          minHeight: 0,
+          overflow: "hidden",
+          padding: "16px",
+        },
+      }}
     >
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 flex-shrink-0">
         <div>
           <h2 className="text-xl font-black text-slate-800">Dynamic Role Customizer</h2>
-          <p className="text-slate-400 text-sm">Select any role, configure access rules across modules, and save changes.</p>
+          <p className="text-slate-400 text-sm">
+            Select any role, configure access rules across modules, and save changes.
+          </p>
         </div>
 
         <Space size="middle">
@@ -407,34 +457,52 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-grow min-h-0 overflow-hidden">
         {/* Sidebar: Role Picker & Creation Box */}
         <div className="lg:col-span-1 flex flex-col gap-4 h-full min-h-0 overflow-hidden">
-          <Card 
-            size="small" 
-            title="Roles List" 
+          <Card
+            size="small"
+            title="Roles List"
             className="rounded-2xl border-slate-100 shadow-none flex flex-col min-h-0 overflow-hidden flex-grow"
-            styles={{ body: { display: 'flex', flexDirection: 'column', flexGrow: 1, minHeight: 0, overflow: 'hidden', padding: '12px' } }}
+            styles={{
+              body: {
+                display: "flex",
+                flexDirection: "column",
+                flexGrow: 1,
+                minHeight: 0,
+                overflow: "hidden",
+                padding: "12px",
+              },
+            }}
           >
             <div className="flex flex-col gap-1 overflow-y-auto custom-scrollbar flex-grow min-h-0">
-              {roles.map(r => (
+              {roles.map((r) => (
                 <button
                   key={r.id}
                   onClick={() => setSelectedRoleId(r.id)}
-                  className={`w-full text-left px-4 py-3 rounded-xl transition-all font-semibold ${selectedRoleId === r.id
-                    ? 'bg-indigo-50 text-indigo-700 border border-indigo-100/50'
-                    : 'text-slate-600 hover:bg-slate-50 border border-transparent'
-                    }`}
+                  className={`w-full text-left px-4 py-3 rounded-xl transition-all font-semibold ${
+                    selectedRoleId === r.id
+                      ? "bg-indigo-50 text-indigo-700 border border-indigo-100/50"
+                      : "text-slate-600 hover:bg-slate-50 border border-transparent"
+                  }`}
                 >
-                  <div className="truncate capitalize">{r.name.replace(/_/g, ' ')}</div>
+                  <div className="truncate capitalize">{r.name.replace(/_/g, " ")}</div>
                   {r.is_system ? (
-                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">System Role</span>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block">
+                      System Role
+                    </span>
                   ) : (
-                    <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-wider block">Customizable</span>
+                    <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-wider block">
+                      Customizable
+                    </span>
                   )}
                 </button>
               ))}
             </div>
           </Card>
 
-          <Card size="small" title="Create Custom Role" className="rounded-2xl border-slate-100 shadow-none flex-shrink-0">
+          <Card
+            size="small"
+            title="Create Custom Role"
+            className="rounded-2xl border-slate-100 shadow-none flex-shrink-0"
+          >
             <Space direction="vertical" className="w-full">
               <Input
                 placeholder="Role Name (e.g. support_lead)"
@@ -467,19 +535,29 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
           {selectedRole && (
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50 border border-slate-100/50 p-4 rounded-2xl mb-4 shadow-sm flex-shrink-0">
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] text-indigo-500 font-bold uppercase tracking-wider">Role Configuration</span>
-                <strong className="text-base text-slate-800 capitalize">{selectedRole.name.replace(/_/g, ' ')}</strong>
-                <span className="text-xs text-slate-400 font-medium">{selectedRole.description || 'No description provided'}</span>
+                <span className="text-[10px] text-indigo-500 font-bold uppercase tracking-wider">
+                  Role Configuration
+                </span>
+                <strong className="text-base text-slate-800 capitalize">
+                  {selectedRole.name.replace(/_/g, " ")}
+                </strong>
+                <span className="text-xs text-slate-400 font-medium">
+                  {selectedRole.description || "No description provided"}
+                </span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Role Type</span>
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Role Type
+                </span>
                 <Select
-                  value={selectedRole.role_type || (selectedRole.is_system ? 'system' : 'customizable')}
+                  value={
+                    selectedRole.role_type || (selectedRole.is_system ? "system" : "customizable")
+                  }
                   onChange={(val) => handleRoleTypeChange(selectedRole.id, val)}
                   className="w-40 font-bold"
                   options={[
-                    { value: 'system', label: 'System Locked' },
-                    { value: 'customizable', label: 'Customizable' }
+                    { value: "system", label: "System Locked" },
+                    { value: "customizable", label: "Customizable" },
                   ]}
                 />
               </div>
@@ -488,7 +566,9 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
 
           {selectedRole?.is_system && (
             <div className="bg-amber-50 border border-amber-200/50 text-amber-800 p-4 rounded-2xl mb-4 text-xs font-semibold flex-shrink-0">
-              ⚠️ Note: <strong>{selectedRole.name.toUpperCase()}</strong> is currently a platform-locked system role. Change it to "Customizable" above to edit its permissions.
+              ⚠️ Note: <strong>{selectedRole.name.toUpperCase()}</strong> is currently a
+              platform-locked system role. Change it to "Customizable" above to edit its
+              permissions.
             </div>
           )}
 

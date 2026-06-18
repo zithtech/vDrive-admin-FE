@@ -33,7 +33,14 @@ export interface TripDetailsType {
   ride_type: "ONE_WAY" | "ROUND_TRIP" | "DAILY" | "OUTSTATION";
   service_type: "DRIVER_ONLY" | "CAB+DRIVER";
   booking_type: "SCHEDULED" | "LIVE";
-  trip_status: "LIVE" | "COMPLETED" | "CANCELLED" | "UPCOMING" | "REQUESTED" | "MID_CANCELLED" | "ASSIGNED";
+  trip_status:
+    | "LIVE"
+    | "COMPLETED"
+    | "CANCELLED"
+    | "UPCOMING"
+    | "REQUESTED"
+    | "MID_CANCELLED"
+    | "ASSIGNED";
   original_scheduled_start_time: string;
   scheduled_start_time: string;
   actual_pickup_time: string | null;
@@ -79,7 +86,7 @@ export interface TripDetailsType {
   started_at: string | null;
   ended_at: string | null;
   trip_code: string;
-  trip_transactions: TripTransaction[];   // ← replaced trip_changes
+  trip_transactions: TripTransaction[]; // ← replaced trip_changes
 }
 
 // ─── buildTripHistory now uses trip_transactions ──────────────────────────────
@@ -119,22 +126,43 @@ const initialState: TripState = {
       scheduled_start_time: "2025-12-15T09:00:00Z",
       actual_pickup_time: "2025-12-15T09:05:00Z",
       actual_drop_time: "2025-12-15T10:10:00Z",
-      pickup_lat: 13.0604, pickup_lng: 80.2496,
+      pickup_lat: 13.0604,
+      pickup_lng: 80.2496,
       pickup_address: "Koramangala 4th Block, Bangalore",
-      drop_lat: 13.0827, drop_lng: 80.2707,
+      drop_lat: 13.0827,
+      drop_lng: 80.2707,
       drop_address: "Whitefield Main Road, Bangalore",
-      Estimate_km: 13, distance_km: 14.2,
-      trip_duration_minutes: 65, waiting_time_minutes: 0,
-      base_fare: 300, distance_fare_per_km: 13, distance_fare: 184.6,
-      time_fare_per_minute: 1.5, time_fare: 97.5,
-      waiting_charges: 0, driver_allowance: 150, return_compensation: 0,
-      surge_multiplier: 1.2, surge_pricing: 96,
-      tip: 20, toll_charges: 35, night_charges: 0, discount: 50,
-      subtotal: 833.1, gst_percentage: 5, gst_amount: 41.66,
-      platform_fee: 80, total_fare: 954.76, paid_amount: 954.76,
-      payment_status: "PAID", payment_method: "UPI",
-      cancel_reason: null, cancel_by: null, notes: null,
-      created_at: "2025-12-15T08:30:00Z", updated_at: "2025-12-15T10:10:00Z",
+      Estimate_km: 13,
+      distance_km: 14.2,
+      trip_duration_minutes: 65,
+      waiting_time_minutes: 0,
+      base_fare: 300,
+      distance_fare_per_km: 13,
+      distance_fare: 184.6,
+      time_fare_per_minute: 1.5,
+      time_fare: 97.5,
+      waiting_charges: 0,
+      driver_allowance: 150,
+      return_compensation: 0,
+      surge_multiplier: 1.2,
+      surge_pricing: 96,
+      tip: 20,
+      toll_charges: 35,
+      night_charges: 0,
+      discount: 50,
+      subtotal: 833.1,
+      gst_percentage: 5,
+      gst_amount: 41.66,
+      platform_fee: 80,
+      total_fare: 954.76,
+      paid_amount: 954.76,
+      payment_status: "PAID",
+      payment_method: "UPI",
+      cancel_reason: null,
+      cancel_by: null,
+      notes: null,
+      created_at: "2025-12-15T08:30:00Z",
+      updated_at: "2025-12-15T10:10:00Z",
       assigned_at: "2025-12-15T08:50:00Z",
       started_at: "2025-12-15T09:05:00Z",
       ended_at: "2025-12-15T10:10:00Z",
@@ -229,17 +257,14 @@ const initialState: TripState = {
 };
 
 // ─── Async thunk ──────────────────────────────────────────────────────────────
-export const fetchTrips = createAsyncThunk(
-  "trips/fetchTrips",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axiosIns.get("/api/trips");
-      return response.data.data;
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.data || "Something went wrong");
-    }
-  },
-);
+export const fetchTrips = createAsyncThunk("trips/fetchTrips", async (_, { rejectWithValue }) => {
+  try {
+    const response = await axiosIns.get("/api/trips");
+    return response.data.data;
+  } catch (err: any) {
+    return rejectWithValue(err.response?.data?.data || "Something went wrong");
+  }
+});
 
 // ─── Selectors ────────────────────────────────────────────────────────────────
 export const selectTripByCode = (state: { trips: { trips: any[] } }, tripCode: string) =>
@@ -254,20 +279,22 @@ const tripSlice = createSlice({
   name: "trips",
   initialState,
   reducers: {
-
     clearTrips: (state) => {
       state.trips = [];
     },
 
-    assignDriverUI: (state, action: {
-      payload: {
-        trip_id: string;
-        driver_id: string;
-        driver_name: string;
-        driver_phone: string;
-      };
-    }) => {
-      const trip = state.trips.find(t => t.trip_id === action.payload.trip_id);
+    assignDriverUI: (
+      state,
+      action: {
+        payload: {
+          trip_id: string;
+          driver_id: string;
+          driver_name: string;
+          driver_phone: string;
+        };
+      },
+    ) => {
+      const trip = state.trips.find((t) => t.trip_id === action.payload.trip_id);
       if (trip) {
         trip.driver_id = action.payload.driver_id;
         trip.driver_name = action.payload.driver_name;
@@ -294,13 +321,16 @@ const tripSlice = createSlice({
       }
     },
 
-    adjustFareUI: (state, action: {
-      payload: {
-        trip_id: string;
-        total_fare: number;
-      };
-    }) => {
-      const trip = state.trips.find(t => t.trip_id === action.payload.trip_id);
+    adjustFareUI: (
+      state,
+      action: {
+        payload: {
+          trip_id: string;
+          total_fare: number;
+        };
+      },
+    ) => {
+      const trip = state.trips.find((t) => t.trip_id === action.payload.trip_id);
       if (trip) {
         const oldFare = trip.total_fare;
         trip.total_fare = action.payload.total_fare;
@@ -329,7 +359,9 @@ const tripSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
-      .addCase(fetchTrips.pending, (state) => { state.loading = true; })
+      .addCase(fetchTrips.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(fetchTrips.fulfilled, (state, action) => {
         state.loading = false;
         state.trips = action.payload;

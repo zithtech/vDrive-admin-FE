@@ -36,10 +36,7 @@ const ExtraKmConfiguration = ({
   setExtraKmCheckpoints,
 }: ExtraKmConfigurationProps) => {
   const addCheckpoint = () => {
-    setExtraKmCheckpoints([
-      ...extraKmCheckpoints,
-      { uid: Date.now(), multiplier: 1 },
-    ]);
+    setExtraKmCheckpoints([...extraKmCheckpoints, { uid: Date.now(), multiplier: 1 }]);
   };
 
   const removeCheckpoint = (uid: number) => {
@@ -48,7 +45,7 @@ const ExtraKmConfiguration = ({
 
   const updateMultiplier = (uid: number, value: number) => {
     setExtraKmCheckpoints(
-      extraKmCheckpoints.map((c) => (c.uid === uid ? { ...c, multiplier: value } : c))
+      extraKmCheckpoints.map((c) => (c.uid === uid ? { ...c, multiplier: value } : c)),
     );
   };
 
@@ -90,9 +87,7 @@ const ExtraKmConfiguration = ({
         {/* Header */}
         <div className="flex items-center gap-2">
           <NodeIndexOutlined className="text-[20px] text-[#0080FF]" />
-          <span className="text-[19px] font-semibold p-0 m-0">
-            Extra KM Configuration
-          </span>
+          <span className="text-[19px] font-semibold p-0 m-0">Extra KM Configuration</span>
         </div>
 
         {/* Top 3 fields */}
@@ -165,21 +160,14 @@ const ExtraKmConfiguration = ({
             </div>
           ))}
 
-          <Button
-            type="dashed"
-            icon={<PlusOutlined />}
-            className="w-full"
-            onClick={addCheckpoint}
-          >
+          <Button type="dashed" icon={<PlusOutlined />} className="w-full" onClick={addCheckpoint}>
             Add Tier
           </Button>
         </div>
 
         {/* Preview table */}
         <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-            Preview
-          </span>
+          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Preview</span>
           <Table<PreviewRow>
             dataSource={previewRows}
             columns={previewColumns}

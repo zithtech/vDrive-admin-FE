@@ -12,7 +12,7 @@ export interface PerformanceMetrics {
 
 /**
  * Calculates performance metrics from a list of ride objects.
- * 
+ *
  * @param rides Array of ride objects from the API
  * @returns Object with calculated rates and counts
  */
@@ -32,22 +32,22 @@ export const calculatePerformanceMetrics = (rides: any[]): PerformanceMetrics =>
   }
 
   const totalTrips = rides.length;
-  
-  const completedRides = rides.filter(r => 
-    r.status?.toUpperCase() === 'COMPLETED' || 
-    r.trip_status?.toUpperCase() === 'COMPLETED'
+
+  const completedRides = rides.filter(
+    (r) => r.status?.toUpperCase() === "COMPLETED" || r.trip_status?.toUpperCase() === "COMPLETED",
   );
-  
+
   const completedTrips = completedRides.length;
 
-  const cancelledTrips = rides.filter(r => 
-    r.status?.toUpperCase() === 'CANCELLED' || 
-    r.trip_status?.toUpperCase() === 'CANCELLED'
+  const cancelledTrips = rides.filter(
+    (r) => r.status?.toUpperCase() === "CANCELLED" || r.trip_status?.toUpperCase() === "CANCELLED",
   ).length;
 
   // Accepted Trips: Anything that wasn't outright rejected or expired at REQUESTED state.
-  const acceptedTrips = rides.filter(r => 
-    ['ACCEPTED', 'ARRIVED', 'STARTED', 'COMPLETED', 'CANCELLED', 'DESTINATION_REACHED'].includes((r.status || r.trip_status || '').toUpperCase())
+  const acceptedTrips = rides.filter((r) =>
+    ["ACCEPTED", "ARRIVED", "STARTED", "COMPLETED", "CANCELLED", "DESTINATION_REACHED"].includes(
+      (r.status || r.trip_status || "").toUpperCase(),
+    ),
   ).length;
 
   // Acceptance Rate: (Accepted / Total)
@@ -57,21 +57,21 @@ export const calculatePerformanceMetrics = (rides: any[]): PerformanceMetrics =>
   const completionRate = acceptedTrips > 0 ? (completedTrips / acceptedTrips) * 100 : 0;
 
   // Average Rating: (Sum of Ratings / Rated Trips)
-  const ratedRides = rides.filter(r => {
+  const ratedRides = rides.filter((r) => {
     const rval = parseFloat(r.rating || r.user_rating || r.trip_rating || r.passenger_rating || 0);
     return !isNaN(rval) && rval > 0;
   });
-  
+
   const totalRating = ratedRides.reduce((sum, r) => {
     const val = parseFloat(r.rating || r.user_rating || r.trip_rating || r.passenger_rating || 0);
     return sum + val;
   }, 0);
-  
+
   const rating = ratedRides.length > 0 ? totalRating / ratedRides.length : 0;
 
   // Total Earnings: Sum of amount from completed rides
   const totalEarnings = completedRides.reduce((sum, r) => {
-    const amt = typeof r.amount === 'string' ? parseFloat(r.amount) : (r.amount || r.fare || 0);
+    const amt = typeof r.amount === "string" ? parseFloat(r.amount) : r.amount || r.fare || 0;
     return sum + amt;
   }, 0);
 
@@ -79,7 +79,9 @@ export const calculatePerformanceMetrics = (rides: any[]): PerformanceMetrics =>
   const onlineMinutes = rides.reduce((sum, r) => {
     const duration = r.trip_duration_minutes || r.duration || 0;
     const waiting = r.waiting_time_minutes || 0;
-    const wasActive = ['STARTED', 'COMPLETED', 'ARRIVED', 'DESTINATION_REACHED'].includes((r.status || r.trip_status || '').toUpperCase());
+    const wasActive = ["STARTED", "COMPLETED", "ARRIVED", "DESTINATION_REACHED"].includes(
+      (r.status || r.trip_status || "").toUpperCase(),
+    );
     return wasActive ? sum + (duration + waiting) : sum;
   }, 0);
 

@@ -116,10 +116,10 @@ const SignUp = () => {
 
         <header className="flex flex-col items-center gap-4">
           <div className="relative group transition-transform duration-300 hover:scale-105">
-            <img 
-              src="/90.png" 
-              alt="vDrive Logo" 
-              className="h-24 w-auto object-contain filter brightness-0 invert drop-shadow-[0_0_8px_rgba(99,102,241,0.2)]" 
+            <img
+              src="/90.png"
+              alt="vDrive Logo"
+              className="h-24 w-auto object-contain filter brightness-0 invert drop-shadow-[0_0_8px_rgba(99,102,241,0.2)]"
             />
           </div>
           <div className="text-center">

@@ -41,52 +41,44 @@ export const fetchPricingCombinations = createAsyncThunk(
       return response.data?.data || response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch pricing combinations"
+        error.response?.data?.message || "Failed to fetch pricing combinations",
       );
     }
-  }
+  },
 );
 
 export const addPricingCombination = createAsyncThunk(
   "pricingCombination/addPricingCombination",
-  async (
-    combinationData: PricingCombinationPayload,
-    { rejectWithValue, dispatch }
-  ) => {
+  async (combinationData: PricingCombinationPayload, { rejectWithValue, dispatch }) => {
     try {
-      const response = await axiosIns.post(
-        "/api/pricing-combinations/create",
-        combinationData
-      );
+      const response = await axiosIns.post("/api/pricing-combinations/create", combinationData);
       dispatch(fetchPricingCombinations());
       return response.data?.data || response.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to add pricing combination"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to add pricing combination");
     }
-  }
+  },
 );
 
 export const updatePricingCombination = createAsyncThunk(
   "pricingCombination/updatePricingCombination",
   async (
     { id, combinationData }: { id: string; combinationData: PricingCombinationPayload },
-    { rejectWithValue, dispatch }
+    { rejectWithValue, dispatch },
   ) => {
     try {
       const response = await axiosIns.patch(
         `/api/pricing-combinations/update/${id}`,
-        combinationData
+        combinationData,
       );
       dispatch(fetchPricingCombinations());
       return response.data?.data || response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to update pricing combination"
+        error.response?.data?.message || "Failed to update pricing combination",
       );
     }
-  }
+  },
 );
 
 export const deletePricingCombination = createAsyncThunk(
@@ -98,10 +90,10 @@ export const deletePricingCombination = createAsyncThunk(
       return id;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || "Failed to delete pricing combination"
+        error.response?.data?.message || "Failed to delete pricing combination",
       );
     }
-  }
+  },
 );
 
 export const bulkCreatePricingCombinations = createAsyncThunk(
@@ -114,11 +106,9 @@ export const bulkCreatePricingCombinations = createAsyncThunk(
       dispatch(fetchPricingCombinations());
       return response.data?.data || response.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to save pricing matrix"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to save pricing matrix");
     }
-  }
+  },
 );
 
 // ── Slice ─────────────────────────────────────────────────────────────────────
@@ -143,7 +133,7 @@ const pricingCombinationSlice = createSlice({
         (state, action: PayloadAction<PricingCombination[]>) => {
           state.isLoading = false;
           state.combinations = action.payload;
-        }
+        },
       )
       .addCase(fetchPricingCombinations.rejected, (state, action) => {
         state.isLoading = false;

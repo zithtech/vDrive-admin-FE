@@ -7,16 +7,16 @@ export type TaxType = "CENTRAL" | "STATE" | "UNION_TERRITORY" | "COMPOSITE";
 // Mirrors the DB columns exactly (camelCase of snake_case)
 export interface Tax {
   id: string;
-  tax_name: string;       // tax_name
-  tax_code: string;       // tax_code  (auto-generated)
-  tax_type: TaxType;      // tax_type  (auto-derived)
-  indian_tax: string;     // indian_tax e.g. "CGST", "GST"
-  percentage: number;    // percentage
-  description: string;   // description
-  is_active: boolean;     // is_active
-  is_default: boolean;    // is_default
-  created_at: string;     // created_at
-  updated_at: string;     // updated_at
+  tax_name: string; // tax_name
+  tax_code: string; // tax_code  (auto-generated)
+  tax_type: TaxType; // tax_type  (auto-derived)
+  indian_tax: string; // indian_tax e.g. "CGST", "GST"
+  percentage: number; // percentage
+  description: string; // description
+  is_active: boolean; // is_active
+  is_default: boolean; // is_default
+  created_at: string; // created_at
+  updated_at: string; // updated_at
 }
 
 // Payload sent to backend on create/update — no id or timestamps
@@ -36,19 +36,14 @@ const initialState: TaxState = {
 
 // ── Thunks ────────────────────────────────────────────────────────────────────
 
-export const fetchTaxes = createAsyncThunk(
-  "tax/fetchTaxes",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axiosIns.get("/api/taxes");
-      return response.data?.data || response.data;
-    } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch taxes"
-      );
-    }
+export const fetchTaxes = createAsyncThunk("tax/fetchTaxes", async (_, { rejectWithValue }) => {
+  try {
+    const response = await axiosIns.get("/api/taxes");
+    return response.data?.data || response.data;
+  } catch (error: any) {
+    return rejectWithValue(error.response?.data?.message || "Failed to fetch taxes");
   }
-);
+});
 
 export const addTax = createAsyncThunk(
   "tax/addTax",
@@ -58,47 +53,35 @@ export const addTax = createAsyncThunk(
       dispatch(fetchTaxes());
       return response.data?.data || response.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to add tax"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to add tax");
     }
-  }
+  },
 );
 
 export const updateTax = createAsyncThunk(
   "tax/updateTax",
-  async (
-    { id, taxData }: { id: string; taxData: TaxPayload },
-    { rejectWithValue, dispatch }
-  ) => {
+  async ({ id, taxData }: { id: string; taxData: TaxPayload }, { rejectWithValue, dispatch }) => {
     try {
       const response = await axiosIns.patch(`/api/taxes/update/${id}`, taxData);
       dispatch(fetchTaxes());
       return response.data?.data || response.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to update tax"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to update tax");
     }
-  }
+  },
 );
 
 export const updateTaxStatus = createAsyncThunk(
   "tax/updateStatus",
-  async (
-    { id, is_active }: { id: string; is_active: boolean },
-    { rejectWithValue, dispatch }
-  ) => {
+  async ({ id, is_active }: { id: string; is_active: boolean }, { rejectWithValue, dispatch }) => {
     try {
       await axiosIns.patch(`/api/taxes/status/${id}`, { is_active });
       dispatch(fetchTaxes());
       return { id, is_active };
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to update tax status"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to update tax status");
     }
-  }
+  },
 );
 
 export const deleteTax = createAsyncThunk(
@@ -109,11 +92,9 @@ export const deleteTax = createAsyncThunk(
       dispatch(fetchTaxes());
       return id;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to delete tax"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to delete tax");
     }
-  }
+  },
 );
 
 // ── Slice ─────────────────────────────────────────────────────────────────────

@@ -49,21 +49,15 @@ const HotspotConfiguration = ({
         <div className="flex items-center justify-between w-full">
           <div className="w-full flex items-center gap-2">
             <ThunderboltOutlined className="text-[20px] text-[#0080FF]" />
-            <span className="text-[19px] font-semibold p-0 m-0">
-              Hotspot Configuration
-            </span>
+            <span className="text-[19px] font-semibold p-0 m-0">Hotspot Configuration</span>
           </div>
         </div>
 
         <Card variant="borderless" size="small" className="w-full bg-[#F8F9FA]">
           <div className="w-full flex items-center gap-2 justify-between">
             <div className="flex flex-col gap-2 ">
-              <span className="text-[16px] font-semibold p-0 m-0">
-                Enable Hotspot Pricing
-              </span>
-              <span className="text-[10px]  p-0 m-0">
-                Apply dynamic pricing based on demand
-              </span>
+              <span className="text-[16px] font-semibold p-0 m-0">Enable Hotspot Pricing</span>
+              <span className="text-[10px]  p-0 m-0">Apply dynamic pricing based on demand</span>
             </div>
             <div>
               <Switch checked={hotspotEnabled} onChange={setHotspotEnabled} />
@@ -83,9 +77,7 @@ const HotspotConfiguration = ({
                 showSearch
                 allowClear
                 filterOption={(input, option) =>
-                  (option?.searchtext ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
+                  (option?.searchtext ?? "").toLowerCase().includes(input.toLowerCase())
                 }
                 options={hotspots.map((hotspot) => ({
                   value: hotspot.id,
@@ -128,15 +120,12 @@ const HotspotConfiguration = ({
                         addonAfter="x"
                         size="small"
                         className="w-full"
-                        placeholder={Number(selectedHotspot.multiplier).toFixed(
-                          1,
-                        )}
+                        placeholder={Number(selectedHotspot.multiplier).toFixed(1)}
                       />
                     </div>
                     <div>
                       <span className="text-xs text-gray-500 mt-1">
-                        Default: {Number(selectedHotspot.multiplier).toFixed(1)}
-                        x
+                        Default: {Number(selectedHotspot.multiplier).toFixed(1)}x
                       </span>
                     </div>
                   </div>

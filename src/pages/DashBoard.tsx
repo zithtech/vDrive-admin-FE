@@ -7,13 +7,18 @@ import ActivityFeed from "../components/DashBoard/ActivityFeed";
 import TripManagement from "../components/DashBoard/TripManagement";
 import QuickActions from "../components/DashBoard/QuickActions";
 
-
 import { useEffect, useState, useMemo } from "react";
 import axiosIns from "../api/axios";
 import { useSocket } from "../hooks/useSocket";
 import { useNavigate } from "react-router-dom";
 import { Badge, Button, Tooltip, Space } from "antd";
-import { CustomerServiceOutlined, SafetyCertificateOutlined, UserAddOutlined, MoonOutlined, SunOutlined } from "@ant-design/icons";
+import {
+  CustomerServiceOutlined,
+  SafetyCertificateOutlined,
+  UserAddOutlined,
+  MoonOutlined,
+  SunOutlined,
+} from "@ant-design/icons";
 import { useAppSelector } from "../store/hooks";
 import { useTheme } from "../contexts/ThemeContext";
 
@@ -58,14 +63,14 @@ const Dashboard = () => {
   const { drivers } = useAppSelector((state) => state.drivers);
   const awaitingCount = useMemo(() => {
     if (!drivers || !Array.isArray(drivers)) return 0;
-    return drivers.filter(d => 
-      d.status === "pending" || 
-      d.status === "pending_verification" || 
-      d.onboarding_status === "DOCS_SUBMITTED" || 
-      d.onboarding_status === "DOCS_REJECTED"
+    return drivers.filter(
+      (d) =>
+        d.status === "pending" ||
+        d.status === "pending_verification" ||
+        d.onboarding_status === "DOCS_SUBMITTED" ||
+        d.onboarding_status === "DOCS_REJECTED",
     ).length;
   }, [drivers]);
-
 
   const fetchStats = async () => {
     try {
@@ -100,27 +105,27 @@ const Dashboard = () => {
   useEffect(() => {
     fetchStats();
     fetchLatestTrips();
-    
+
     // Fetch initial open support tickets count
     const fetchOpenTickets = async () => {
       try {
-        const { data } = await axiosIns.get('/api/support-management/tickets');
-        const openTickets = data.data.tickets.filter((t: any) => t.status === 'open');
+        const { data } = await axiosIns.get("/api/support-management/tickets");
+        const openTickets = data.data.tickets.filter((t: any) => t.status === "open");
         setOpenTicketsCount(openTickets.length);
       } catch (e) {
-        console.error('Failed to fetch support tickets', e);
+        console.error("Failed to fetch support tickets", e);
       }
     };
 
     // Fetch initial pending trip verifications
     const fetchPendingVerifications = async () => {
       try {
-        const { data } = await axiosIns.get('/api/trip-verification/pending');
+        const { data } = await axiosIns.get("/api/trip-verification/pending");
         if (data?.success) {
           setPendingVerificationsCount(data.data.length || 0);
         }
       } catch (e) {
-        console.error('Failed to fetch pending verifications', e);
+        console.error("Failed to fetch pending verifications", e);
       }
     };
 
@@ -138,8 +143,11 @@ const Dashboard = () => {
       fetchStats();
 
       // Decrement pending verifications if resolved via driver_event
-      if (data?.eventType === 'TRIP_VERIFICATION_APPROVED' || data?.eventType === 'TRIP_VERIFICATION_REJECTED') {
-        setPendingVerificationsCount(prev => Math.max(0, prev - 1));
+      if (
+        data?.eventType === "TRIP_VERIFICATION_APPROVED" ||
+        data?.eventType === "TRIP_VERIFICATION_REJECTED"
+      ) {
+        setPendingVerificationsCount((prev) => Math.max(0, prev - 1));
       }
     };
 
@@ -153,9 +161,9 @@ const Dashboard = () => {
       fetchStats();
     };
 
-    const handleNewSupportTicket = () => setOpenTicketsCount(prev => prev + 1);
-    const handleSupportTicketClosed = () => setOpenTicketsCount(prev => Math.max(0, prev - 1));
-    const handleNewVerification = () => setPendingVerificationsCount(prev => prev + 1);
+    const handleNewSupportTicket = () => setOpenTicketsCount((prev) => prev + 1);
+    const handleSupportTicketClosed = () => setOpenTicketsCount((prev) => Math.max(0, prev - 1));
+    const handleNewVerification = () => setPendingVerificationsCount((prev) => prev + 1);
 
     socket.on("driver_event", handleDriverEvent);
     socket.on("ADMIN_NEW_TRIP_ALERT", handleNewTrip);
@@ -200,40 +208,71 @@ const Dashboard = () => {
           <Tooltip title={isDarkMode ? "Light Mode" : "Dark Mode"}>
             <Button
               type="text"
-              icon={isDarkMode ? <SunOutlined className="text-xl text-yellow-500" /> : <MoonOutlined className="text-xl text-slate-600" />}
+              icon={
+                isDarkMode ? (
+                  <SunOutlined className="text-xl text-yellow-500" />
+                ) : (
+                  <MoonOutlined className="text-xl text-slate-600" />
+                )
+              }
               onClick={toggleTheme}
               className="flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 shadow-sm transition-colors"
             />
           </Tooltip>
 
           <Tooltip title="Awaiting Approval">
-            <Badge count={awaitingCount} dot={false} color="blue" showZero={false} size="small" offset={[-2, 2]}>
-              <Button 
-                type="text" 
-                icon={<UserAddOutlined className="text-xl text-blue-600 dark:text-blue-400" />} 
-                onClick={() => navigate('/driver-applications')}
+            <Badge
+              count={awaitingCount}
+              dot={false}
+              color="blue"
+              showZero={false}
+              size="small"
+              offset={[-2, 2]}
+            >
+              <Button
+                type="text"
+                icon={<UserAddOutlined className="text-xl text-blue-600 dark:text-blue-400" />}
+                onClick={() => navigate("/driver-applications")}
                 className="flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 shadow-sm transition-colors"
               />
             </Badge>
           </Tooltip>
 
           <Tooltip title="Trip Verifications">
-            <Badge count={pendingVerificationsCount} dot={false} color="orange" showZero={false} size="small" offset={[-2, 2]}>
-              <Button 
-                type="text" 
-                icon={<SafetyCertificateOutlined className="text-xl text-orange-600 dark:text-orange-400" />} 
-                onClick={() => navigate('/trip-verifications')}
+            <Badge
+              count={pendingVerificationsCount}
+              dot={false}
+              color="orange"
+              showZero={false}
+              size="small"
+              offset={[-2, 2]}
+            >
+              <Button
+                type="text"
+                icon={
+                  <SafetyCertificateOutlined className="text-xl text-orange-600 dark:text-orange-400" />
+                }
+                onClick={() => navigate("/trip-verifications")}
                 className="flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:bg-orange-50 dark:hover:bg-slate-700 shadow-sm transition-colors"
               />
             </Badge>
           </Tooltip>
 
           <Tooltip title="Support Tickets">
-            <Badge count={openTicketsCount} dot={false} color="red" showZero={false} size="small" offset={[-2, 2]}>
-              <Button 
-                type="text" 
-                icon={<CustomerServiceOutlined className="text-xl text-indigo-600 dark:text-indigo-400" />} 
-                onClick={() => navigate('/support-tickets')}
+            <Badge
+              count={openTicketsCount}
+              dot={false}
+              color="red"
+              showZero={false}
+              size="small"
+              offset={[-2, 2]}
+            >
+              <Button
+                type="text"
+                icon={
+                  <CustomerServiceOutlined className="text-xl text-indigo-600 dark:text-indigo-400" />
+                }
+                onClick={() => navigate("/support-tickets")}
                 className="flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:bg-indigo-50 dark:hover:bg-slate-700 shadow-sm transition-colors"
               />
             </Badge>
@@ -246,7 +285,10 @@ const Dashboard = () => {
       </div>
 
       <div className="flex items-center gap-4 shrink-0 py-1">
-        <Typography.Title level={5} className="!m-0 text-gray-700 dark:text-gray-200 font-bold whitespace-nowrap text-sm tracking-tight uppercase">
+        <Typography.Title
+          level={5}
+          className="!m-0 text-gray-700 dark:text-gray-200 font-bold whitespace-nowrap text-sm tracking-tight uppercase"
+        >
           Operations & Live Feed
         </Typography.Title>
         <div className="h-px bg-gray-200 dark:bg-slate-700 flex-1"></div>
@@ -270,9 +312,6 @@ const Dashboard = () => {
       <div className="shrink-0 h-32 mt-1">
         <QuickActions />
       </div>
-
-
-
     </div>
   );
 };

@@ -37,18 +37,11 @@ const Login = () => {
     }));
   };
 
-  const handleKeyDown = (
-    evt: React.KeyboardEvent<HTMLInputElement>,
-    field: string,
-  ) => {
+  const handleKeyDown = (evt: React.KeyboardEvent<HTMLInputElement>, field: string) => {
     if (evt.key === "Enter") {
       if (field === "userName" && login.userName.trim()) {
         passwordRef.current?.focus();
-      } else if (
-        field === "password" &&
-        login.userName.trim() &&
-        login.password.trim()
-      ) {
+      } else if (field === "password" && login.userName.trim() && login.password.trim()) {
         handleSubmit();
       }
     }
@@ -75,8 +68,7 @@ const Login = () => {
       } catch (error) {
         console.error("Login failed", error);
         setErrors({
-          password:
-            "Login failed. Please check your credentials and try again.",
+          password: "Login failed. Please check your credentials and try again.",
         });
       }
     }
@@ -89,11 +81,11 @@ const Login = () => {
   return (
     <main className="premium-auth-bg">
       {loading && <FullScreenLoader />}
-      
+
       {/* Decorative background visual elements */}
       <div className="absolute top-1/4 left-1/3 w-72 h-72 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
-      
+
       <form
         onSubmit={handleSubmit}
         className="glass-auth-card p-8 w-full max-w-[440px] flex flex-col gap-6 mx-4 relative overflow-hidden"
@@ -101,13 +93,13 @@ const Login = () => {
       >
         {/* Top Accent Gradient Border Glow */}
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500" />
-        
+
         <header className="flex flex-col items-center gap-4">
           <div className="relative group transition-transform duration-300 hover:scale-105">
-            <img 
-              src="/90.png" 
-              alt="vDrive Logo" 
-              className="h-24 w-auto object-contain filter brightness-0 invert drop-shadow-[0_0_8px_rgba(99,102,241,0.2)]" 
+            <img
+              src="/90.png"
+              alt="vDrive Logo"
+              className="h-24 w-auto object-contain filter brightness-0 invert drop-shadow-[0_0_8px_rgba(99,102,241,0.2)]"
             />
           </div>
           <div className="text-center">
@@ -122,7 +114,10 @@ const Login = () => {
 
         <fieldset className="flex flex-col gap-5 border-none p-0 m-0">
           <div className="glass-input-wrapper">
-            <label htmlFor="admin-username-input" className="block text-[13px] font-semibold text-slate-300 tracking-wide mb-1.5">
+            <label
+              htmlFor="admin-username-input"
+              className="block text-[13px] font-semibold text-slate-300 tracking-wide mb-1.5"
+            >
               Username <span className="text-indigo-400 font-bold">*</span>
             </label>
             <Input
@@ -147,7 +142,10 @@ const Login = () => {
 
           <div className="glass-input-wrapper">
             <div className="flex justify-between items-center mb-1.5">
-              <label htmlFor="admin-password-input" className="block text-[13px] font-semibold text-slate-300 tracking-wide">
+              <label
+                htmlFor="admin-password-input"
+                className="block text-[13px] font-semibold text-slate-300 tracking-wide"
+              >
                 Password <span className="text-indigo-400 font-bold">*</span>
               </label>
               <button

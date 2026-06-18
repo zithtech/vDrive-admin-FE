@@ -22,10 +22,13 @@ interface StatCardProps {
 const StatCard: React.FC<StatCardProps> = ({ title, value, icon, description, tagColor }) => {
   const colorMap = {
     blue: "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-800/30",
-    emerald: "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/30",
-    purple: "bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-purple-100 dark:border-purple-800/30",
+    emerald:
+      "bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/30",
+    purple:
+      "bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border-purple-100 dark:border-purple-800/30",
     rose: "bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-800/30",
-    indigo: "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800/30",
+    indigo:
+      "bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-800/30",
   };
 
   return (
@@ -44,7 +47,9 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, description, ta
         </Text>
       </div>
 
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${colorMap[tagColor]} bg-opacity-100 group-hover:scale-110 shadow-sm`}>
+      <div
+        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${colorMap[tagColor]} bg-opacity-100 group-hover:scale-110 shadow-sm`}
+      >
         {React.cloneElement(icon as React.ReactElement, { className: "text-lg" })}
       </div>
     </div>
@@ -53,11 +58,13 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, description, ta
 
 const CustomerStats: React.FC<CustomerStatsProps> = ({ customers }) => {
   const total = customers.length;
-  const active = customers.filter(c => c.status === "active").length;
-  const suspended = customers.filter(c => c.status === "suspended" || c.status === "blocked").length;
+  const active = customers.filter((c) => c.status === "active").length;
+  const suspended = customers.filter(
+    (c) => c.status === "suspended" || c.status === "blocked",
+  ).length;
 
   const lastMonth = dayjs().subtract(30, "days");
-  const newThisMonth = customers.filter(c => dayjs(c.created_at).isAfter(lastMonth)).length;
+  const newThisMonth = customers.filter((c) => dayjs(c.created_at).isAfter(lastMonth)).length;
 
   const stats: StatCardProps[] = [
     {
@@ -87,7 +94,7 @@ const CustomerStats: React.FC<CustomerStatsProps> = ({ customers }) => {
       icon: <StopOutlined />,
       description: "Accounts limited/blocked",
       tagColor: "rose",
-    }
+    },
   ];
 
   return (

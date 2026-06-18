@@ -1,15 +1,5 @@
 import { useEffect, useRef } from "react";
-import {
-  Button,
-  Form,
-  Input,
-  Drawer,
-  Popconfirm,
-  Select,
-  Table,
-  Space,
-  Tabs,
-} from "antd";
+import { Button, Form, Input, Drawer, Popconfirm, Select, Table, Space, Tabs } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { EditOutlined, DeleteOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
 import { RoleMatrixEditor } from "../components/Admins/RoleMatrixEditor";
@@ -33,15 +23,12 @@ import { useHasPermission } from "../hooks/usePermission";
 
 type ModalMode = "create" | "edit";
 
-const passwordRegex =
-  /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{5,18}$/;
+const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{5,18}$/;
 const phoneRegex = /^\+?[0-9]{6,15}$/;
 
 export default function AdminPage() {
   const dispatch = useAppDispatch();
-  const { admins, loading, submitting } = useAppSelector(
-    (state) => state.admin
-  );
+  const { admins, loading, submitting } = useAppSelector((state) => state.admin);
   const currentRole = useAppSelector((state) => state.auth.role);
   const isSuperAdmin = currentRole === "super_admin";
   const canCreateAdmin = useHasPermission("admins", "create");
@@ -71,10 +58,30 @@ export default function AdminPage() {
       const loadedRoles = saved
         ? JSON.parse(saved)
         : [
-            { id: "1a1a1a1a-1a1a-1a1a-1a1a-1a1a1a1a1a1a", name: "super_admin", description: "Complete system authority bypass", is_system: true },
-            { id: "2b2b2b2b-2b2b-2b2b-2b2b-2b2b2b2b2b2b", name: "admin", description: "Platform level operation manager", is_system: true },
-            { id: "3c3c3c3c-3c3c-3c3c-3c3c-3c3c3c3c3c3c", name: "ops_manager", description: "Operations manager focusing on fleet and driver metrics", is_system: true },
-            { id: "4d4d4d4d-4d4d-4d4d-4d4d-4d4d4d4d4d4d", name: "finance_viewer", description: "Read-only view for financial models and payouts", is_system: true },
+            {
+              id: "1a1a1a1a-1a1a-1a1a-1a1a-1a1a1a1a1a1a",
+              name: "super_admin",
+              description: "Complete system authority bypass",
+              is_system: true,
+            },
+            {
+              id: "2b2b2b2b-2b2b-2b2b-2b2b-2b2b2b2b2b2b",
+              name: "admin",
+              description: "Platform level operation manager",
+              is_system: true,
+            },
+            {
+              id: "3c3c3c3c-3c3c-3c3c-3c3c-3c3c3c3c3c3c",
+              name: "ops_manager",
+              description: "Operations manager focusing on fleet and driver metrics",
+              is_system: true,
+            },
+            {
+              id: "4d4d4d4d-4d4d-4d4d-4d4d-4d4d4d4d4d4d",
+              name: "finance_viewer",
+              description: "Read-only view for financial models and payouts",
+              is_system: true,
+            },
           ];
       setRoles(loadedRoles);
     }
@@ -154,9 +161,7 @@ export default function AdminPage() {
           return;
         }
 
-        const result = await dispatch(
-          updateAdminUser({ id: editingAdmin.id, data: payload })
-        );
+        const result = await dispatch(updateAdminUser({ id: editingAdmin.id, data: payload }));
         if (updateAdminUser.fulfilled.match(result)) {
           messageApi?.success("Admin user updated successfully");
           setIsModalOpen(false);
@@ -188,7 +193,7 @@ export default function AdminPage() {
     admin: "Admin",
   };
 
-  const roleStyles: Record<string, { color: string, bg: string, border: string }> = {
+  const roleStyles: Record<string, { color: string; bg: string; border: string }> = {
     super_admin: { color: "#6366f1", bg: "#eef2ff", border: "#e0e7ff" },
     admin: { color: "#3b82f6", bg: "#eff6ff", border: "#dbeafe" },
   };
@@ -225,7 +230,7 @@ export default function AdminPage() {
           style={{
             color: roleStyles[role]?.color || "#4b5563",
             backgroundColor: roleStyles[role]?.bg || "#f3f4f6",
-            borderColor: roleStyles[role]?.border || "#e5e7eb"
+            borderColor: roleStyles[role]?.border || "#e5e7eb",
           }}
           className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border whitespace-nowrap"
         >
@@ -239,8 +244,7 @@ export default function AdminPage() {
       key: "created_at",
       minWidth: 180,
       render: (text: string) => format(new Date(text), "MMM d, yyyy h:mm a"),
-      sorter: (a, b) =>
-        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      sorter: (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     },
     {
       title: "Updated At",
@@ -248,48 +252,47 @@ export default function AdminPage() {
       key: "updated_at",
       minWidth: 180,
       render: (text: string) => format(new Date(text), "MMM d, yyyy h:mm a"),
-      sorter: (a, b) =>
-        new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime(),
+      sorter: (a, b) => new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime(),
     },
-    ...((canUpdateAdmin || canDeleteAdmin)
+    ...(canUpdateAdmin || canDeleteAdmin
       ? [
-        {
-          title: "Action",
-          key: "action",
-          width: 140,
-          render: (_: unknown, admin: AdminUser) => (
-            <div className="flex items-center gap-1">
-              {canUpdateAdmin && (
-                <Button
-                  type="text"
-                  size="small"
-                  className="!text-indigo-600 hover:!bg-indigo-50 !flex items-center justify-center !p-1 !h-8 !w-8 rounded-lg transition-all"
-                  icon={<EditOutlined className="text-lg" />}
-                  onClick={() => openEditModal(admin)}
-                />
-              )}
-              {canDeleteAdmin && (
-                <Popconfirm
-                  title="Delete admin user"
-                  description="Are you sure you want to delete this admin user?"
-                  onConfirm={() => handleDelete(admin.id)}
-                  okText="Delete"
-                  okButtonProps={{ danger: true }}
-                  cancelText="Cancel"
-                >
+          {
+            title: "Action",
+            key: "action",
+            width: 140,
+            render: (_: unknown, admin: AdminUser) => (
+              <div className="flex items-center gap-1">
+                {canUpdateAdmin && (
                   <Button
                     type="text"
-                    danger
                     size="small"
-                    className="hover:!bg-rose-50 !flex items-center justify-center !p-1 !h-8 !w-8 rounded-lg transition-all"
-                    icon={<DeleteOutlined className="text-lg" />}
+                    className="!text-indigo-600 hover:!bg-indigo-50 !flex items-center justify-center !p-1 !h-8 !w-8 rounded-lg transition-all"
+                    icon={<EditOutlined className="text-lg" />}
+                    onClick={() => openEditModal(admin)}
                   />
-                </Popconfirm>
-              )}
-            </div>
-          ),
-        } as ColumnsType<AdminUser>[number],
-      ]
+                )}
+                {canDeleteAdmin && (
+                  <Popconfirm
+                    title="Delete admin user"
+                    description="Are you sure you want to delete this admin user?"
+                    onConfirm={() => handleDelete(admin.id)}
+                    okText="Delete"
+                    okButtonProps={{ danger: true }}
+                    cancelText="Cancel"
+                  >
+                    <Button
+                      type="text"
+                      danger
+                      size="small"
+                      className="hover:!bg-rose-50 !flex items-center justify-center !p-1 !h-8 !w-8 rounded-lg transition-all"
+                      icon={<DeleteOutlined className="text-lg" />}
+                    />
+                  </Popconfirm>
+                )}
+              </div>
+            ),
+          } as ColumnsType<AdminUser>[number],
+        ]
       : []),
   ];
 
@@ -305,7 +308,7 @@ export default function AdminPage() {
       extraContent={
         <div className="flex items-center gap-3">
           <Button
-            icon={<IoMdRefresh className={`text-lg ${loading ? 'animate-spin' : ''}`} />}
+            icon={<IoMdRefresh className={`text-lg ${loading ? "animate-spin" : ""}`} />}
             onClick={() => dispatch(fetchAdminUsers())}
             className="rounded-full h-11 w-11 flex items-center justify-center border border-gray-100 dark:border-slate-700 text-gray-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all bg-white dark:bg-slate-800"
           />
@@ -339,12 +342,18 @@ export default function AdminPage() {
           </Tabs.TabPane>
           {isSuperAdmin && (
             <Tabs.TabPane tab={<span className="font-bold text-sm">Role Customizer</span>} key="2">
-              <div style={{ height: Math.max(Math.floor(tableHeight || 0) - 10, 400), overflow: 'hidden' }}>
+              <div
+                style={{
+                  height: Math.max(Math.floor(tableHeight || 0) - 10, 400),
+                  overflow: "hidden",
+                }}
+              >
                 <RoleMatrixEditor height={Math.max(Math.floor(tableHeight || 0) - 10, 400)} />
               </div>
             </Tabs.TabPane>
           )}
-        </Tabs>        <Drawer
+        </Tabs>{" "}
+        <Drawer
           rootClassName="dark-drawer"
           title={
             <div className="flex items-center gap-3">
@@ -356,7 +365,9 @@ export default function AdminPage() {
                   {modalMode === "create" ? "Add New Administrator" : "Refine Admin Profile"}
                 </div>
                 <div className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-                  {modalMode === "create" ? "Grant system-wide access permissions" : "Update user credentials and authority level"}
+                  {modalMode === "create"
+                    ? "Grant system-wide access permissions"
+                    : "Update user credentials and authority level"}
                 </div>
               </div>
             </div>
@@ -366,7 +377,9 @@ export default function AdminPage() {
           onClose={handleCancel}
           extra={
             <Space>
-              <Button onClick={handleCancel} className="rounded-xl px-6 font-bold h-10">Cancel</Button>
+              <Button onClick={handleCancel} className="rounded-xl px-6 font-bold h-10">
+                Cancel
+              </Button>
               <Button
                 type="primary"
                 onClick={handleModalSubmit}
@@ -388,30 +401,48 @@ export default function AdminPage() {
 
               <Form.Item
                 name="name"
-                label={<span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Full Name</span>}
+                label={
+                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                    Full Name
+                  </span>
+                }
                 rules={[
                   { required: true, message: "Name is required" },
                   { min: 2, message: "Name must be at least 2 characters" },
                   { max: 100, message: "Name must not exceed 100 characters" },
                 ]}
               >
-                <Input placeholder="Enter full name" className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100" />
+                <Input
+                  placeholder="Enter full name"
+                  className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
+                />
               </Form.Item>
 
               <Form.Item
                 name="email"
-                label={<span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Email Address</span>}
+                label={
+                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                    Email Address
+                  </span>
+                }
                 rules={[
                   { required: true, message: "Email is required" },
                   { type: "email", message: "Enter a valid email address" },
                 ]}
               >
-                <Input placeholder="Enter email address" className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100" />
+                <Input
+                  placeholder="Enter email address"
+                  className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
+                />
               </Form.Item>
 
               <Form.Item
                 name="role"
-                label={<span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Authority Level</span>}
+                label={
+                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                    Authority Level
+                  </span>
+                }
                 rules={[{ required: true, message: "Role is required" }]}
                 initialValue="admin"
               >
@@ -421,8 +452,10 @@ export default function AdminPage() {
                       {r.name === "super_admin"
                         ? "Super Administrator"
                         : r.name === "admin"
-                        ? "Platform Admin"
-                        : r.name.replace(/_/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                          ? "Platform Admin"
+                          : r.name
+                              .replace(/_/g, " ")
+                              .replace(/\b\w/g, (c: string) => c.toUpperCase())}
                     </Select.Option>
                   ))}
                 </Select>
@@ -437,7 +470,11 @@ export default function AdminPage() {
 
               <Form.Item
                 name="contact"
-                label={<span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Phone Contact</span>}
+                label={
+                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                    Phone Contact
+                  </span>
+                }
                 rules={[
                   {
                     pattern: phoneRegex,
@@ -445,14 +482,21 @@ export default function AdminPage() {
                   },
                 ]}
               >
-                <Input placeholder="+91 00000 00000" className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100" />
+                <Input
+                  placeholder="+91 00000 00000"
+                  className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
+                />
               </Form.Item>
 
               {modalMode === "create" && (
                 <>
                   <Form.Item
                     name="password"
-                    label={<span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Access Key</span>}
+                    label={
+                      <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                        Access Key
+                      </span>
+                    }
                     rules={[
                       { required: true, message: "Password is required" },
                       {
@@ -462,12 +506,20 @@ export default function AdminPage() {
                     ]}
                     hasFeedback
                   >
-                    <Input.Password placeholder="Create secure password" title="At least one uppercase, number, and special character" className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100" />
+                    <Input.Password
+                      placeholder="Create secure password"
+                      title="At least one uppercase, number, and special character"
+                      className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
+                    />
                   </Form.Item>
 
                   <Form.Item
                     name="confirmPassword"
-                    label={<span className="text-[11px] font-black uppercase tracking-widest text-slate-400">Verify Key</span>}
+                    label={
+                      <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                        Verify Key
+                      </span>
+                    }
                     dependencies={["password"]}
                     hasFeedback
                     rules={[
@@ -482,7 +534,10 @@ export default function AdminPage() {
                       }),
                     ]}
                   >
-                    <Input.Password placeholder="Confirm access key" className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100" />
+                    <Input.Password
+                      placeholder="Confirm access key"
+                      className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
+                    />
                   </Form.Item>
                 </>
               )}

@@ -69,10 +69,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
     if (onClear) onClear();
   };
 
-  const onFilterValuesChange = (
-    _changedValues: Record<string, any>,
-    allValues: FilterValues,
-  ) => {
+  const onFilterValuesChange = (_changedValues: Record<string, any>, allValues: FilterValues) => {
     applyFilters(allValues);
   };
 
@@ -82,10 +79,7 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
         return <Input placeholder={`Enter ${field.label.toLowerCase()}`} />;
       case "select":
         return (
-          <Select
-            mode={field.mode ?? "tags"}
-            placeholder={`Select ${field.label.toLowerCase()}`}
-          >
+          <Select mode={field.mode ?? "tags"} placeholder={`Select ${field.label.toLowerCase()}`}>
             {field.options?.map((opt: FieldOption) => (
               <Option key={opt.value.toString()} value={opt.value}>
                 {opt.label}
@@ -135,25 +129,15 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           </Form.Item>
         );
       case "time":
-        return (
-          <DatePicker.TimePicker
-            style={{ width: "100%" }}
-            use12Hours
-            format="hh:mm A"
-          />
-        );
+        return <DatePicker.TimePicker style={{ width: "100%" }} use12Hours format="hh:mm A" />;
       case "date":
         return (
           <DatePicker
             style={{ width: "100%" }}
-            showTime={
-              field.showTime ? { format: field.timeFormat ?? "hh:mm A" } : false
-            }
+            showTime={field.showTime ? { format: field.timeFormat ?? "hh:mm A" } : false}
             format={
               field.showTime
-                ? `${field.dateFormat ?? "YYYY-MM-DD"} ${
-                    field.timeFormat ?? "hh:mm A"
-                  }`
+                ? `${field.dateFormat ?? "YYYY-MM-DD"} ${field.timeFormat ?? "hh:mm A"}`
                 : (field.dateFormat ?? "YYYY-MM-DD")
             }
           />
@@ -194,7 +178,11 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
           <Col xs={24} sm={12} md={4} key={field.name}>
             <Form.Item
               name={field.type === "range" ? undefined : field.name}
-              label={<span className="text-[10px] font-black uppercase tracking-widest text-slate-400">{field.label}</span>}
+              label={
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  {field.label}
+                </span>
+              }
               style={{ marginBottom: 0 }}
             >
               {renderField(field)}
@@ -204,11 +192,11 @@ const AdvancedFilters: React.FC<AdvancedFiltersProps> = ({
         {isStandalone && (
           <Col xs={24} sm={12} md={4}>
             <Form.Item style={{ marginBottom: 0 }}>
-              <Button 
-                type="link" 
-                size="small" 
-                onClick={handleClearAllFilters} 
-                danger 
+              <Button
+                type="link"
+                size="small"
+                onClick={handleClearAllFilters}
+                danger
                 className="font-black uppercase tracking-wider text-[10px] hover:text-rose-600 transition-colors h-[40px] flex items-center"
               >
                 Clear Filters

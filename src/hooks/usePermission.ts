@@ -6,14 +6,14 @@ import { useAppSelector } from "../store/hooks";
  */
 export const useHasPermission = (
   module: string,
-  action: 'create' | 'read' | 'update' | 'delete'
+  action: "create" | "read" | "update" | "delete",
 ): boolean => {
   const currentUser = useAppSelector((state) => state.auth.currentUser);
 
   if (!currentUser) return false;
-  
+
   // Super Admin Bypass Override
-  if (currentUser.role === 'super_admin') return true;
+  if (currentUser.role === "super_admin") return true;
 
   const modulePerms = currentUser.permissions?.[module];
   return !!(modulePerms && modulePerms[action]);
@@ -27,7 +27,7 @@ export const useModuleAccess = (module: string | string[]): boolean => {
   const currentUser = useAppSelector((state) => state.auth.currentUser);
 
   if (!currentUser) return false;
-  if (currentUser.role === 'super_admin') return true;
+  if (currentUser.role === "super_admin") return true;
 
   if (Array.isArray(module)) {
     return module.some((m) => {
@@ -46,14 +46,14 @@ export const useModuleAccess = (module: string | string[]): boolean => {
  */
 interface PermissionTarget {
   module: string;
-  action: 'create' | 'read' | 'update' | 'delete';
+  action: "create" | "read" | "update" | "delete";
 }
 
 export const useAnyPermission = (targets: PermissionTarget[]): boolean => {
   const currentUser = useAppSelector((state) => state.auth.currentUser);
 
   if (!currentUser) return false;
-  if (currentUser.role === 'super_admin') return true;
+  if (currentUser.role === "super_admin") return true;
 
   return targets.some((target) => {
     const modulePerms = currentUser.permissions?.[target.module];

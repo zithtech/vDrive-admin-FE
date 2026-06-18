@@ -13,10 +13,10 @@ interface DriverMapProps {
   onTripCount: number;
 }
 
-const DriverMap: React.FC<DriverMapProps> = ({ 
-  driverLocations = [], 
-  availableCount = 0, 
-  onTripCount = 0 
+const DriverMap: React.FC<DriverMapProps> = ({
+  driverLocations = [],
+  availableCount = 0,
+  onTripCount = 0,
 }) => {
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.GOOGLE_MAP_API,
@@ -29,15 +29,11 @@ const DriverMap: React.FC<DriverMapProps> = ({
     <>
       <h1 className="text-xl font-bold">Driver Locations & Active Zones</h1>
       <p className="text-gray-600 text-md py-2">
-        Interactive map showing real-time driver positions and demand hotspots.
-        Drag to explore, click on drivers for details.
+        Interactive map showing real-time driver positions and demand hotspots. Drag to explore,
+        click on drivers for details.
       </p>
       <div className="relative rounded-lg shadow-md">
-        <GoogleMap
-          mapContainerStyle={mapContainerStyle}
-          zoom={10}
-          center={center}
-        >
+        <GoogleMap mapContainerStyle={mapContainerStyle} zoom={10} center={center}>
           <Marker position={center} title="Driver Location" />
 
           {driverLocations.map((driver) => (
@@ -52,13 +48,9 @@ const DriverMap: React.FC<DriverMapProps> = ({
           <div>
             <div className="flex items-center space-x-2">
               <FiNavigation className="text-blue-500 text-md" />
-              <span className="font-semibold text-gray-900">
-                Live Driver Locations
-              </span>
+              <span className="font-semibold text-gray-900">Live Driver Locations</span>
             </div>
-            <div className="text-gray-500 text-xs">
-              Drag to explore • Click drivers for details
-            </div>
+            <div className="text-gray-500 text-xs">Drag to explore • Click drivers for details</div>
           </div>
         </div>
         <div className="absolute top-4 right-4 flex flex-col space-y-2">
@@ -73,6 +65,5 @@ const DriverMap: React.FC<DriverMapProps> = ({
     </>
   );
 };
-
 
 export default DriverMap;

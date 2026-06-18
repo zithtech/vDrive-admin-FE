@@ -1,18 +1,6 @@
 import React, { useEffect } from "react";
-import {
-  Drawer,
-  Form,
-  InputNumber,
-  Select,
-  Switch,
-  Button,
-  Typography,
-} from "antd";
-import {
-  GiftOutlined,
-  CloseOutlined,
-  UserOutlined,
-} from "@ant-design/icons";
+import { Drawer, Form, InputNumber, Select, Switch, Button, Typography } from "antd";
+import { GiftOutlined, CloseOutlined, UserOutlined } from "@ant-design/icons";
 import { type ReferralConfig, type ReferralConfigPayload } from "../../store/slices/referralSlice";
 import { useHasPermission } from "../../hooks/usePermission";
 import { useAppSelector } from "../../store/hooks";
@@ -41,7 +29,7 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
   const canCreate = useHasPermission(moduleName, "create");
   const canUpdate = useHasPermission(moduleName, "update");
   const { role } = useAppSelector((state) => state.auth);
-  const isSuperAdmin = role === 'super_admin';
+  const isSuperAdmin = role === "super_admin";
   const isAllowed = isSuperAdmin || (initialValues ? canUpdate : canCreate);
 
   useEffect(() => {
@@ -73,7 +61,7 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
       closable={false}
       rootClassName="dark-drawer"
       styles={{
-        header: { display: 'none' },
+        header: { display: "none" },
         body: { padding: 0 },
         footer: { padding: "16px 24px" },
       }}
@@ -110,8 +98,15 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
               </div>
             </div>
             <div>
-              <Title level={3} className="!m-0 !mb-1 font-extrabold text-gray-800 dark:text-slate-100 tracking-tight">
-                {initialValues ? (isAllowed ? "Edit Referral Rule" : "View Referral Rule") : "Create Referral Rule"}
+              <Title
+                level={3}
+                className="!m-0 !mb-1 font-extrabold text-gray-800 dark:text-slate-100 tracking-tight"
+              >
+                {initialValues
+                  ? isAllowed
+                    ? "Edit Referral Rule"
+                    : "View Referral Rule"
+                  : "Create Referral Rule"}
               </Title>
               <Text className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">
                 Network Growth & Referral Rewards
@@ -140,12 +135,18 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
             <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-500 dark:text-orange-400">
               <UserOutlined className="text-sm" />
             </div>
-            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">Configuration</span>
+            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">
+              Configuration
+            </span>
           </div>
 
           <Form.Item
             name="user_type"
-            label={<span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Target Audience</span>}
+            label={
+              <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
+                Target Audience
+              </span>
+            }
             rules={[{ required: true, message: "Required" }]}
           >
             <Select size="large" className="rounded-2xl w-full">
@@ -160,13 +161,19 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
             <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-500 dark:text-amber-400">
               <GiftOutlined className="text-sm" />
             </div>
-            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">Referrer Incentives</span>
+            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">
+              Referrer Incentives
+            </span>
           </div>
 
           <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-slate-800 rounded-[1.5rem] border border-gray-100 dark:border-slate-700">
             <Form.Item
               name="referrer_reward_type"
-              label={<span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Type</span>}
+              label={
+                <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
+                  Type
+                </span>
+              }
               rules={[{ required: true }]}
               className="m-0"
             >
@@ -177,11 +184,20 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
             </Form.Item>
             <Form.Item
               name="referrer_reward"
-              label={<span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Amount/Value</span>}
+              label={
+                <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
+                  Amount/Value
+                </span>
+              }
               rules={[{ required: true, message: "Required" }]}
               className="m-0"
             >
-              <InputNumber size="large" min={0} className="!w-full rounded-xl  border-gray-200 flex items-center px-4" placeholder="e.g. 100" />
+              <InputNumber
+                size="large"
+                min={0}
+                className="!w-full rounded-xl  border-gray-200 flex items-center px-4"
+                placeholder="e.g. 100"
+              />
             </Form.Item>
           </div>
         </div>
@@ -191,13 +207,19 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
             <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500 dark:text-blue-400">
               <GiftOutlined className="text-sm" />
             </div>
-            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">Referee Benefits</span>
+            <span className="text-xs font-extrabold text-gray-800 dark:text-slate-200 uppercase tracking-tight">
+              Referee Benefits
+            </span>
           </div>
 
           <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-slate-800 rounded-[1.5rem] border border-gray-100 dark:border-slate-700">
             <Form.Item
               name="referee_reward_type"
-              label={<span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Type</span>}
+              label={
+                <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
+                  Type
+                </span>
+              }
               rules={[{ required: true }]}
               className="m-0"
             >
@@ -208,11 +230,20 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
             </Form.Item>
             <Form.Item
               name="referee_reward"
-              label={<span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Amount/Value</span>}
+              label={
+                <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
+                  Amount/Value
+                </span>
+              }
               rules={[{ required: true, message: "Required" }]}
               className="m-0"
             >
-              <InputNumber size="large" min={0} className="!w-full rounded-xl  border-gray-200 flex items-center px-4" placeholder="e.g. 50" />
+              <InputNumber
+                size="large"
+                min={0}
+                className="!w-full rounded-xl  border-gray-200 flex items-center px-4"
+                placeholder="e.g. 50"
+              />
             </Form.Item>
           </div>
         </div>
@@ -221,13 +252,19 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
           <div className="flex items-center justify-between p-1 px-4 bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700">
             <div className="flex flex-col">
               <span className="text-xs font-bold text-gray-700 dark:text-slate-200">Status</span>
-              <span className="text-[10px] text-gray-400 font-medium uppercase tracking-tight">Enable or disable this rule</span>
+              <span className="text-[10px] text-gray-400 font-medium uppercase tracking-tight">
+                Enable or disable this rule
+              </span>
             </div>
             <Form.Item name="is_active" valuePropName="checked" className="m-0">
               <Switch
                 className="premium-switch-amber"
-                checkedChildren={<span className="text-[9px] font-bold uppercase tracking-tight">Active</span>}
-                unCheckedChildren={<span className="text-[9px] font-bold uppercase tracking-tight">Off</span>}
+                checkedChildren={
+                  <span className="text-[9px] font-bold uppercase tracking-tight">Active</span>
+                }
+                unCheckedChildren={
+                  <span className="text-[9px] font-bold uppercase tracking-tight">Off</span>
+                }
               />
             </Form.Item>
           </div>

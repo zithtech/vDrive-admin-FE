@@ -1,13 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  Button,
-  notification,
-  Descriptions,
-  Tag,
-  Badge,
-  Drawer,
-  Typography,
-} from "antd";
+import { Button, notification, Descriptions, Tag, Badge, Drawer, Typography } from "antd";
 import {
   PlusOutlined,
   ReloadOutlined,
@@ -106,7 +98,7 @@ const TaxPage: React.FC = () => {
   const dispatch = useAppDispatch();
   const { taxes, isLoading, error } = useAppSelector((state) => state.tax);
   const { role } = useAppSelector((state) => state.auth);
-  const isSuperAdmin = role === 'super_admin';
+  const isSuperAdmin = role === "super_admin";
 
   const hasCreateAccess = isSuperAdmin || canCreateTax;
   const hasUpdateAccess = isSuperAdmin || canUpdateTax;
@@ -172,7 +164,7 @@ const TaxPage: React.FC = () => {
       open={!!viewingTax}
       closable={false}
       styles={{
-        header: { display: 'none' },
+        header: { display: "none" },
         body: { padding: 0, background: "#f8fafc" },
         footer: { borderTop: "1px solid #f1f5f9", padding: "16px 24px", background: "#fff" },
       }}
@@ -243,39 +235,52 @@ const TaxPage: React.FC = () => {
                 width: 160,
                 background: "#fcfdfe",
                 color: "#64748b",
-                fontSize: '10px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-                padding: '16px 20px'
+                fontSize: "10px",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                padding: "16px 20px",
               }}
               contentStyle={{
                 background: "#ffffff",
                 color: "#1e293b",
                 fontWeight: 600,
-                fontSize: '14px',
-                padding: '16px 20px'
+                fontSize: "14px",
+                padding: "16px 20px",
               }}
             >
               <Descriptions.Item label="Identity">
                 <span className="font-black text-gray-900">{viewingTax.tax_name}</span>
               </Descriptions.Item>
               <Descriptions.Item label="System Code">
-                <code className="bg-slate-50 text-indigo-500 px-2 py-1 rounded border border-slate-100 font-mono text-xs font-bold">{viewingTax.tax_code}</code>
+                <code className="bg-slate-50 text-indigo-500 px-2 py-1 rounded border border-slate-100 font-mono text-xs font-bold">
+                  {viewingTax.tax_code}
+                </code>
               </Descriptions.Item>
               <Descriptions.Item label="Classification">
-                <div className={`inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-white shadow-md bg-gradient-to-br from-indigo-500 to-violet-500`}>
+                <div
+                  className={`inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-white shadow-md bg-gradient-to-br from-indigo-500 to-violet-500`}
+                >
                   {viewingTax.tax_type?.replace(/_/g, " ")}
                 </div>
               </Descriptions.Item>
               <Descriptions.Item label="Levy Weight">
-                <Tag color="geekblue" className="font-black rounded-lg border-none bg-indigo-50 text-indigo-600 px-3 py-1 m-0">
+                <Tag
+                  color="geekblue"
+                  className="font-black rounded-lg border-none bg-indigo-50 text-indigo-600 px-3 py-1 m-0"
+                >
                   {viewingTax.percentage}%
                 </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Active Status">
                 <Badge
                   status={viewingTax.is_active ? "processing" : "default"}
-                  text={<span className={`font-black uppercase tracking-widest text-[10px] ${viewingTax.is_active ? 'text-emerald-500' : 'text-gray-400'}`}>{viewingTax.is_active ? "Operational" : "Deactivated"}</span>}
+                  text={
+                    <span
+                      className={`font-black uppercase tracking-widest text-[10px] ${viewingTax.is_active ? "text-emerald-500" : "text-gray-400"}`}
+                    >
+                      {viewingTax.is_active ? "Operational" : "Deactivated"}
+                    </span>
+                  }
                 />
               </Descriptions.Item>
               <Descriptions.Item label="Role">
@@ -284,7 +289,9 @@ const TaxPage: React.FC = () => {
                     <div className="w-2 h-2 rounded-full bg-amber-400" />
                     Primary Default Tax
                   </span>
-                ) : <span className="text-gray-400 text-xs">Standard Supplementary</span>}
+                ) : (
+                  <span className="text-gray-400 text-xs">Standard Supplementary</span>
+                )}
               </Descriptions.Item>
               <Descriptions.Item label="Legal Context">
                 <p className="text-sm text-gray-600 leading-relaxed py-2 italic">
@@ -294,10 +301,12 @@ const TaxPage: React.FC = () => {
               <Descriptions.Item label="Timeline">
                 <div className="flex flex-col gap-1 text-[11px] text-gray-400">
                   <div className="flex items-center gap-2 font-medium">
-                    <CheckCircleOutlined className="text-[10px]" /> Created: {new Date(viewingTax.created_at).toLocaleString("en-IN")}
+                    <CheckCircleOutlined className="text-[10px]" /> Created:{" "}
+                    {new Date(viewingTax.created_at).toLocaleString("en-IN")}
                   </div>
                   <div className="flex items-center gap-2 font-medium">
-                    <HistoryOutlined className="text-[10px]" /> Last Update: {new Date(viewingTax.updated_at).toLocaleString("en-IN")}
+                    <HistoryOutlined className="text-[10px]" /> Last Update:{" "}
+                    {new Date(viewingTax.updated_at).toLocaleString("en-IN")}
                   </div>
                 </div>
               </Descriptions.Item>
@@ -313,7 +322,9 @@ const TaxPage: React.FC = () => {
       title="Tax Configuration"
       description="Define and orchestrate statutory tax obligations and service levies."
       icon={
-        <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-2xl flex items-center justify-center">          <SafetyCertificateOutlined className="text-white text-2xl" />
+        <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-2xl flex items-center justify-center">
+          {" "}
+          <SafetyCertificateOutlined className="text-white text-2xl" />
         </div>
       }
       extraContent={
@@ -337,8 +348,12 @@ const TaxPage: React.FC = () => {
               <HistoryOutlined className="text-indigo-600 text-lg" />
             </div>
             <div className="mt-2">
-              <h3 className="text-lg font-black text-gray-800 tracking-tight leading-none mb-1">Tax Ledger</h3>
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Historical & active taxes</p>
+              <h3 className="text-lg font-black text-gray-800 tracking-tight leading-none mb-1">
+                Tax Ledger
+              </h3>
+              <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
+                Historical & active taxes
+              </p>
             </div>
           </div>
           <Button

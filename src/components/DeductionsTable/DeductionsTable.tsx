@@ -9,11 +9,7 @@ import {
   type TableColumnType,
   type InputRef,
 } from "antd";
-import {
-  DownloadOutlined,
-  EyeOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
+import { DownloadOutlined, EyeOutlined, SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import { format } from "date-fns-tz";
 import type { Deduction, Driver } from "../../pages/Deductions";
@@ -32,11 +28,7 @@ const DeductionTable: React.FC<DeductionTableProps> = ({ data }) => {
   const [searchedColumn, setSearchedColumn] = useState<DataIndex | "">("");
   const searchInput = useRef<InputRef>(null);
 
-  const handleSearch = (
-    selectedKeys: string[],
-    confirm: () => void,
-    dataIndex: DataIndex,
-  ) => {
+  const handleSearch = (selectedKeys: string[], confirm: () => void, dataIndex: DataIndex) => {
     confirm();
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
@@ -48,26 +40,15 @@ const DeductionTable: React.FC<DeductionTableProps> = ({ data }) => {
     confirm();
   };
 
-  const getColumnSearchProps = (
-    dataIndex: DataIndex,
-  ): TableColumnType<Deduction> => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-    }) => (
+  const getColumnSearchProps = (dataIndex: DataIndex): TableColumnType<Deduction> => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
         <Input
           ref={searchInput}
           placeholder={`Search ${String(dataIndex)}`}
           value={selectedKeys?.[0]}
-          onChange={(e) =>
-            setSelectedKeys?.(e.target.value ? [e.target.value] : [])
-          }
-          onPressEnter={() =>
-            handleSearch(selectedKeys as string[], confirm, dataIndex)
-          }
+          onChange={(e) => setSelectedKeys?.(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
           style={{ marginBottom: 8, display: "block" }}
         />
         <Space>
@@ -75,9 +56,7 @@ const DeductionTable: React.FC<DeductionTableProps> = ({ data }) => {
             type="primary"
             size="small"
             icon={<SearchOutlined />}
-            onClick={() =>
-              handleSearch(selectedKeys as string[], confirm, dataIndex)
-            }
+            onClick={() => handleSearch(selectedKeys as string[], confirm, dataIndex)}
             style={{ width: 90 }}
           >
             Search
@@ -157,8 +136,7 @@ const DeductionTable: React.FC<DeductionTableProps> = ({ data }) => {
         minWidth: 110,
 
         sorter: (a, b) =>
-          parseFloat(a.amount.replace("$", "")) -
-          parseFloat(b.amount.replace("$", "")),
+          parseFloat(a.amount.replace("$", "")) - parseFloat(b.amount.replace("$", "")),
       },
       {
         title: "Trip ID",
@@ -201,9 +179,7 @@ const DeductionTable: React.FC<DeductionTableProps> = ({ data }) => {
         dataIndex: "status",
         key: "status",
         minWidth: 110,
-        render: (status: string) => (
-          <Tag color={statusColors[status]}>{status}</Tag>
-        ),
+        render: (status: string) => <Tag color={statusColors[status]}>{status}</Tag>,
         sorter: (a, b) => a.status.localeCompare(b.status),
       },
       {
@@ -212,8 +188,7 @@ const DeductionTable: React.FC<DeductionTableProps> = ({ data }) => {
         minWidth: 120,
         key: "date",
         render: (text: string) => format(new Date(text), "MMM dd, yyyy"),
-        sorter: (a, b) =>
-          new Date(a.date).getTime() - new Date(b.date).getTime(),
+        sorter: (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
       },
       {
         title: "Reference",
@@ -234,18 +209,8 @@ const DeductionTable: React.FC<DeductionTableProps> = ({ data }) => {
         key: "actions",
         render: () => (
           <Space>
-            <Button
-              icon={<EyeOutlined />}
-              size="small"
-              type="default"
-              onClick={() => {}}
-            />
-            <Button
-              icon={<DownloadOutlined />}
-              size="small"
-              type="primary"
-              onClick={() => {}}
-            />
+            <Button icon={<EyeOutlined />} size="small" type="default" onClick={() => {}} />
+            <Button icon={<DownloadOutlined />} size="small" type="primary" onClick={() => {}} />
           </Space>
         ),
       },

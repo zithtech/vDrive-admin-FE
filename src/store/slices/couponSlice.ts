@@ -4,7 +4,7 @@ import axiosIns from "../../api/axios";
 export interface Coupon {
   id: string;
   code: string;
-  discount_type: 'PERCENTAGE' | 'FIXED' | 'FREE_RIDE';
+  discount_type: "PERCENTAGE" | "FIXED" | "FREE_RIDE";
   discount_value: number;
   min_ride_amount?: number;
   max_discount_amount?: number;
@@ -14,11 +14,11 @@ export interface Coupon {
   valid_until: string;
   applicable_ride_types?: any;
   user_eligibility?: string;
-  applicable_to: 'CUSTOMER' | 'DRIVER';
+  applicable_to: "CUSTOMER" | "DRIVER";
   is_active: boolean;
   created_at: string;
   updated_at: string;
-  notify_status?: 'NONE' | 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  notify_status?: "NONE" | "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
   notify_sent_at?: string;
   notify_count?: number;
 }
@@ -36,7 +36,7 @@ const initialState: CouponState = {
   coupons: [],
   isLoading: false,
   error: null,
-  total: 0
+  total: 0,
 };
 
 export const fetchCoupons = createAsyncThunk(
@@ -46,11 +46,9 @@ export const fetchCoupons = createAsyncThunk(
       const response = await axiosIns.get("/api/coupons", { params });
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to fetch coupons"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch coupons");
     }
-  }
+  },
 );
 
 export const addCoupon = createAsyncThunk(
@@ -61,47 +59,38 @@ export const addCoupon = createAsyncThunk(
       dispatch(fetchCoupons());
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to add coupon"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to add coupon");
     }
-  }
+  },
 );
 
 export const updateCoupon = createAsyncThunk(
   "coupon/updateCoupon",
   async (
     { id, couponData }: { id: string; couponData: Partial<CouponPayload> },
-    { rejectWithValue, dispatch }
+    { rejectWithValue, dispatch },
   ) => {
     try {
       const response = await axiosIns.patch(`/api/coupons/update/${id}`, couponData);
       dispatch(fetchCoupons());
       return response.data;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to update coupon"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to update coupon");
     }
-  }
+  },
 );
 
 export const updateCouponStatus = createAsyncThunk(
   "coupon/updateStatus",
-  async (
-    { id, is_active }: { id: string; is_active: boolean },
-    { rejectWithValue, dispatch }
-  ) => {
+  async ({ id, is_active }: { id: string; is_active: boolean }, { rejectWithValue, dispatch }) => {
     try {
       await axiosIns.patch(`/api/coupons/status/${id}`, { is_active });
       dispatch(fetchCoupons());
       return { id, is_active };
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to toggle coupon status"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to toggle coupon status");
     }
-  }
+  },
 );
 
 export const deleteCoupon = createAsyncThunk(
@@ -112,11 +101,9 @@ export const deleteCoupon = createAsyncThunk(
       dispatch(fetchCoupons());
       return id;
     } catch (error: any) {
-      return rejectWithValue(
-        error.response?.data?.message || "Failed to delete coupon"
-      );
+      return rejectWithValue(error.response?.data?.message || "Failed to delete coupon");
     }
-  }
+  },
 );
 
 const couponSlice = createSlice({
@@ -134,11 +121,14 @@ const couponSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchCoupons.fulfilled, (state, action: PayloadAction<{ coupons: Coupon[], total: number }>) => {
-        state.isLoading = false;
-        state.coupons = action.payload.coupons || [];
-        state.total = action.payload.total || 0;
-      })
+      .addCase(
+        fetchCoupons.fulfilled,
+        (state, action: PayloadAction<{ coupons: Coupon[]; total: number }>) => {
+          state.isLoading = false;
+          state.coupons = action.payload.coupons || [];
+          state.total = action.payload.total || 0;
+        },
+      )
       .addCase(fetchCoupons.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;

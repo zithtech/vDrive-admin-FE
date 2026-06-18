@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  ThunderboltOutlined,
-  TeamOutlined,
-  DollarOutlined,
-  CarOutlined,
-} from "@ant-design/icons";
+import { ThunderboltOutlined, TeamOutlined, DollarOutlined, CarOutlined } from "@ant-design/icons";
 import { FiActivity } from "react-icons/fi";
 
 interface Metric {
@@ -15,26 +10,26 @@ interface Metric {
   pillColor: string;
 }
 
-const MetricCard: React.FC<Metric> = ({
-  title,
-  value,
-  subtitle,
-  icon,
-  pillColor
-}) => {
+const MetricCard: React.FC<Metric> = ({ title, value, subtitle, icon, pillColor }) => {
   return (
     <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-5 flex flex-col hover:shadow-sm transition-all duration-300">
       <div className="flex justify-between items-start mb-1">
-        <h3 className="text-[#8c8c8c] dark:text-gray-400 text-[13px] font-medium tracking-tight whitespace-nowrap">{title}</h3>
+        <h3 className="text-[#8c8c8c] dark:text-gray-400 text-[13px] font-medium tracking-tight whitespace-nowrap">
+          {title}
+        </h3>
         <div className="text-gray-300 dark:text-gray-500 text-lg opacity-60 font-light">{icon}</div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <p className={`font-bold text-[#262626] dark:text-white leading-none tracking-tighter ${value.length > 12 ? 'text-[16px]' : 'text-[22px]'}`}>
+        <p
+          className={`font-bold text-[#262626] dark:text-white leading-none tracking-tighter ${value.length > 12 ? "text-[16px]" : "text-[22px]"}`}
+        >
           {value}
         </p>
         {subtitle && (
-          <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold ${pillColor} self-center mt-1`}>
+          <span
+            className={`text-[10px] px-2 py-0.5 rounded-md font-bold ${pillColor} self-center mt-1`}
+          >
             {subtitle}
           </span>
         )}
@@ -75,9 +70,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ stats }) => {
     },
     {
       title: "Active / Total Drivers",
-      value: stats.loading
-        ? "..."
-        : `${stats.activeDrivers} / ${stats.totalDrivers}`,
+      value: stats.loading ? "..." : `${stats.activeDrivers} / ${stats.totalDrivers}`,
       subtitle: "Verified",
       pillColor: "bg-green-50 text-green-500 dark:bg-green-900/30 dark:text-green-400",
       icon: <CarOutlined />,

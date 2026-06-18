@@ -1,6 +1,12 @@
 import { useState, useEffect, useMemo } from "react";
 import { IoMdRefresh } from "react-icons/io";
-import { CarOutlined, FilterOutlined, CloseCircleOutlined, ExclamationCircleOutlined, EnvironmentOutlined } from "@ant-design/icons";
+import {
+  CarOutlined,
+  FilterOutlined,
+  CloseCircleOutlined,
+  ExclamationCircleOutlined,
+  EnvironmentOutlined,
+} from "@ant-design/icons";
 import { Button, Select, DatePicker, Divider, Slider, Input, Spin, Tabs } from "antd";
 import DriverTable from "../components/DriverTable/DriverTable";
 import dayjs from "dayjs";
@@ -40,50 +46,48 @@ const Drivers = () => {
   // Dynamic plan options from data
   const planOptions = useMemo(() => {
     const plans = new Set<string>();
-    DATA.forEach(d => {
+    DATA.forEach((d) => {
       if (d.active_subscription?.plan_name) {
         plans.add(d.active_subscription.plan_name);
       }
     });
-    return Array.from(plans).sort().map(p => ({ value: p, label: p }));
+    return Array.from(plans)
+      .sort()
+      .map((p) => ({ value: p, label: p }));
   }, [DATA]);
 
   useEffect(() => {
     let tempData = Array.isArray(DATA) ? [...DATA] : [];
 
     // Exclude pending / awaiting approval drivers from this page
-    tempData = tempData.filter(d => 
-      d.status !== "pending" && 
-      d.status !== "pending_verification" && 
-      d.onboarding_status !== "DOCS_SUBMITTED" &&
-      d.onboarding_status !== "DOCS_REJECTED"
+    tempData = tempData.filter(
+      (d) =>
+        d.status !== "pending" &&
+        d.status !== "pending_verification" &&
+        d.onboarding_status !== "DOCS_SUBMITTED" &&
+        d.onboarding_status !== "DOCS_REJECTED",
     );
 
     // Search by Name, System ID, or vDrive ID
     if (filters.search) {
       const searchText = filters.search.toLowerCase();
-      tempData = tempData.filter((d) =>
-        d.full_name?.toLowerCase().includes(searchText) ||
-        d.driver_id?.toLowerCase().includes(searchText) ||
-        d.vdrive_id?.toLowerCase().includes(searchText) ||
-        d.id?.toLowerCase().includes(searchText)
+      tempData = tempData.filter(
+        (d) =>
+          d.full_name?.toLowerCase().includes(searchText) ||
+          d.driver_id?.toLowerCase().includes(searchText) ||
+          d.vdrive_id?.toLowerCase().includes(searchText) ||
+          d.id?.toLowerCase().includes(searchText),
       );
     }
 
     if (filters.status.length > 0) {
-      const selectedStatuses = Array.isArray(filters.status)
-        ? filters.status
-        : [filters.status];
-      tempData = tempData.filter((driver) =>
-        selectedStatuses.includes(driver.status),
-      );
+      const selectedStatuses = Array.isArray(filters.status) ? filters.status : [filters.status];
+      tempData = tempData.filter((driver) => selectedStatuses.includes(driver.status));
     }
 
     // Subscription Plan Filter
     if (filters.plan.length > 0) {
-      const selectedPlans = Array.isArray(filters.plan)
-        ? filters.plan
-        : [filters.plan];
+      const selectedPlans = Array.isArray(filters.plan) ? filters.plan : [filters.plan];
       tempData = tempData.filter((driver) =>
         selectedPlans.includes(driver.active_subscription?.plan_name || ""),
       );
@@ -109,13 +113,14 @@ const Drivers = () => {
 
   const { allFleetDrivers, activeDrivers, restrictedDrivers } = useMemo(() => {
     return {
-      allFleetDrivers: filteredData.filter(d => d.status !== "rejected"),
-      activeDrivers: filteredData.filter(d => d.status === "active"),
-      restrictedDrivers: filteredData.filter(d => 
-        d.status !== "active" && 
-        d.status !== "pending" && 
-        d.onboarding_status !== "DOCS_SUBMITTED" &&
-        d.onboarding_status !== "DOCS_REJECTED"
+      allFleetDrivers: filteredData.filter((d) => d.status !== "rejected"),
+      activeDrivers: filteredData.filter((d) => d.status === "active"),
+      restrictedDrivers: filteredData.filter(
+        (d) =>
+          d.status !== "active" &&
+          d.status !== "pending" &&
+          d.onboarding_status !== "DOCS_SUBMITTED" &&
+          d.onboarding_status !== "DOCS_REJECTED",
       ),
     };
   }, [filteredData]);
@@ -127,22 +132,50 @@ const Drivers = () => {
     }));
   };
 
-  const hasActiveFilters = filters.search || filters.status.length > 0 || filters.plan.length > 0 || filters.joined_at || filters.rating[0] > 0 || filters.rating[1] < 5;
+  const hasActiveFilters =
+    filters.search ||
+    filters.status.length > 0 ||
+    filters.plan.length > 0 ||
+    filters.joined_at ||
+    filters.rating[0] > 0 ||
+    filters.rating[1] < 5;
 
-  const TableSection = ({ title, data, icon, colorClass, bgColorClass, borderColorClass, count, flexClass = "flex-1", extraClasses = "" }: any) => (
-    <div className={`${flexClass} flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden ${extraClasses}`}>
-      <div className={`px-6 py-4 border-b border-slate-50 dark:border-slate-700 flex items-center justify-between bg-gradient-to-r ${bgColorClass} to-white dark:to-slate-800`}>
+  const TableSection = ({
+    title,
+    data,
+    icon,
+    colorClass,
+    bgColorClass,
+    borderColorClass,
+    count,
+    flexClass = "flex-1",
+    extraClasses = "",
+  }: any) => (
+    <div
+      className={`${flexClass} flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden ${extraClasses}`}
+    >
+      <div
+        className={`px-6 py-4 border-b border-slate-50 dark:border-slate-700 flex items-center justify-between bg-gradient-to-r ${bgColorClass} to-white dark:to-slate-800`}
+      >
         <div className="flex items-center gap-3">
-          <div className={`w-8 h-8 rounded-xl ${colorClass} flex items-center justify-center text-white text-xs shadow-sm`}>
+          <div
+            className={`w-8 h-8 rounded-xl ${colorClass} flex items-center justify-center text-white text-xs shadow-sm`}
+          >
             {icon}
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 m-0 tracking-tight leading-none">{title}</h3>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium m-0 mt-1 uppercase tracking-wider">Management & Overview</p>
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 m-0 tracking-tight leading-none">
+              {title}
+            </h3>
+            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium m-0 mt-1 uppercase tracking-wider">
+              Management & Overview
+            </p>
           </div>
         </div>
-        <div className={`px-3 py-1 rounded-full ${borderColorClass} border text-[11px] font-black tracking-tighter`}>
-          {count} {count === 1 ? 'DRIVER' : 'DRIVERS'}
+        <div
+          className={`px-3 py-1 rounded-full ${borderColorClass} border text-[11px] font-black tracking-tighter`}
+        >
+          {count} {count === 1 ? "DRIVER" : "DRIVERS"}
         </div>
       </div>
       <div className="flex-grow overflow-hidden">
@@ -183,7 +216,9 @@ const Drivers = () => {
           <div className="flex items-center gap-4 flex-grow flex-wrap">
             <div className="flex items-center gap-2">
               <FilterOutlined className="text-slate-900 dark:text-slate-100" />
-              <span className="text-[11px] font-black uppercase tracking-widest text-slate-900 dark:text-slate-100">Filters</span>
+              <span className="text-[11px] font-black uppercase tracking-widest text-slate-900 dark:text-slate-100">
+                Filters
+              </span>
             </div>
             <Divider type="vertical" className="h-6 border-slate-100 dark:border-slate-700" />
 
@@ -203,7 +238,7 @@ const Drivers = () => {
               className="premium-select-inline"
               value={filters.status}
               onChange={(val) => applyFilters({ status: val })}
-              options={STATUSES.map(s => ({ label: s.toUpperCase(), value: s }))}
+              options={STATUSES.map((s) => ({ label: s.toUpperCase(), value: s }))}
               maxTagCount="responsive"
             />
 
@@ -219,7 +254,9 @@ const Drivers = () => {
             />
 
             <div className="flex items-center gap-2" style={{ minWidth: 160 }}>
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-slate-100 whitespace-nowrap">Rating</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-slate-100 whitespace-nowrap">
+                Rating
+              </span>
               <Slider
                 range
                 min={0}
@@ -245,7 +282,9 @@ const Drivers = () => {
               danger
               icon={<CloseCircleOutlined />}
               className="text-[10px] font-black uppercase tracking-widest px-4 hover:bg-rose-50 rounded-xl"
-              onClick={() => setFilters({ search: "", status: [], plan: [], rating: [0, 5], joined_at: null })}
+              onClick={() =>
+                setFilters({ search: "", status: [], plan: [], rating: [0, 5], joined_at: null })
+              }
             >
               Clear Filters
             </Button>
@@ -267,7 +306,7 @@ const Drivers = () => {
               className="premium-driver-tabs"
               items={[
                 {
-                  key: 'all',
+                  key: "all",
                   label: (
                     <div className="flex items-center gap-2 px-1">
                       <EnvironmentOutlined />
@@ -291,7 +330,7 @@ const Drivers = () => {
                   ),
                 },
                 {
-                  key: 'active',
+                  key: "active",
                   label: (
                     <div className="flex items-center gap-2 px-1">
                       <CarOutlined />
@@ -316,7 +355,7 @@ const Drivers = () => {
                   ),
                 },
                 {
-                  key: 'restricted',
+                  key: "restricted",
                   label: (
                     <div className="flex items-center gap-2 px-1">
                       <ExclamationCircleOutlined />

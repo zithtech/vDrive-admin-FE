@@ -5,7 +5,15 @@
 @import "antd/dist/reset.css";
 
 body {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family:
+    "Plus Jakarta Sans",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -24,7 +32,7 @@ p {
   justify-content: center;
   overflow: hidden;
   background-color: #0b0f19;
-  background-image: 
+  background-image:
     radial-gradient(at 0% 0%, rgba(29, 42, 92, 0.15) 0px, transparent 50%),
     radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.1) 0px, transparent 50%);
 }
@@ -57,13 +65,21 @@ p {
 }
 
 @keyframes orbFloat1 {
-  0% { transform: translate(0, 0) scale(1); }
-  100% { transform: translate(180px, 120px) scale(1.3); }
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(180px, 120px) scale(1.3);
+  }
 }
 
 @keyframes orbFloat2 {
-  0% { transform: translate(0, 0) scale(1.3); }
-  100% { transform: translate(-120px, -180px) scale(0.95); }
+  0% {
+    transform: translate(0, 0) scale(1.3);
+  }
+  100% {
+    transform: translate(-120px, -180px) scale(0.95);
+  }
 }
 
 /* Glassmorphism auth card */
@@ -75,15 +91,17 @@ p {
   background-color: rgba(15, 23, 42, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 28px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 
-              0 0 40px 0 rgba(99, 102, 241, 0.05);
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 40px 0 rgba(99, 102, 241, 0.05);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass-auth-card:hover {
   border-color: rgba(99, 102, 241, 0.25);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 
-              0 0 60px 0 rgba(99, 102, 241, 0.1);
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.6),
+    0 0 60px 0 rgba(99, 102, 241, 0.1);
 }
 
 /* Custom styles for Ant Design inputs to fit dark glassmorphism */
@@ -165,13 +183,9 @@ p {
 .back-gradient-login {
   background: #c9d6ff;
   /* fallback for old browsers */
-  background: -webkit-linear-gradient(to right,
-      #e2e2e2,
-      #c9d6ff);
+  background: -webkit-linear-gradient(to right, #e2e2e2, #c9d6ff);
   /* Chrome 10-25, Safari 5.1-6 */
-  background: linear-gradient(to right,
-      #e2e2e2,
-      #c9d6ff);
+  background: linear-gradient(to right, #e2e2e2, #c9d6ff);
   /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 }
 

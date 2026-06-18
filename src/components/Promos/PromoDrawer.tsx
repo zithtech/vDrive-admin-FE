@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Drawer,
   Select,
@@ -8,20 +8,20 @@ import {
   Switch,
   Form,
   InputNumber,
-  message
-} from 'antd';
+  message,
+} from "antd";
 import {
   Ticket,
   Users,
   Clock,
-  // Percent, 
-  // IndianRupee 
-} from 'lucide-react';
-import dayjs from 'dayjs';
-import { useAppSelector, useAppDispatch } from '../../store/hooks';
-import { fetchDrivers } from '../../store/slices/driverSlice';
-import { useHasPermission } from '../../hooks/usePermission';
-import axios from '../../api/axios';
+  // Percent,
+  // IndianRupee
+} from "lucide-react";
+import dayjs from "dayjs";
+import { useAppSelector, useAppDispatch } from "../../store/hooks";
+import { fetchDrivers } from "../../store/slices/driverSlice";
+import { useHasPermission } from "../../hooks/usePermission";
+import axios from "../../api/axios";
 
 const { Option } = Select;
 
@@ -40,7 +40,7 @@ const PromoDrawer: React.FC<PromoDrawerProps> = ({ visible, onClose, onSuccess, 
 
   const hasDriversRead = useHasPermission("drivers", "read");
   const { role } = useAppSelector((state) => state.auth);
-  const isSuperAdmin = role === 'super_admin';
+  const isSuperAdmin = role === "super_admin";
 
   useEffect(() => {
     if (visible) {
@@ -50,14 +50,17 @@ const PromoDrawer: React.FC<PromoDrawerProps> = ({ visible, onClose, onSuccess, 
       if (promo) {
         form.setFieldsValue({
           ...promo,
-          dates: promo.start_date && promo.expiry_date ? [dayjs(promo.start_date), dayjs(promo.expiry_date)] : [],
-          discount_type: promo.discount_type || 'percentage',
+          dates:
+            promo.start_date && promo.expiry_date
+              ? [dayjs(promo.start_date), dayjs(promo.expiry_date)]
+              : [],
+          discount_type: promo.discount_type || "percentage",
         });
       } else {
         form.resetFields();
         form.setFieldsValue({
-          discount_type: 'percentage',
-          target_type: 'global',
+          discount_type: "percentage",
+          target_type: "global",
           is_active: true,
           max_uses_per_driver: 1,
         });
@@ -78,16 +81,16 @@ const PromoDrawer: React.FC<PromoDrawerProps> = ({ visible, onClose, onSuccess, 
 
       if (promo?.id) {
         await axios.put(`/api/promos/${promo.id}`, payload);
-        message.success('Promotion updated successfully');
+        message.success("Promotion updated successfully");
       } else {
-        await axios.post('/api/promos', payload);
-        message.success('Promotion launched successfully');
+        await axios.post("/api/promos", payload);
+        message.success("Promotion launched successfully");
       }
 
       onSuccess();
       onClose();
     } catch (err: any) {
-      message.error(err?.response?.data?.message || 'Failed to save promotion');
+      message.error(err?.response?.data?.message || "Failed to save promotion");
     } finally {
       setIsSubmitting(false);
     }
@@ -101,8 +104,12 @@ const PromoDrawer: React.FC<PromoDrawerProps> = ({ visible, onClose, onSuccess, 
             <Ticket size={24} />
           </div>
           <div>
-            <h3 className="text-lg font-black text-slate-800">{promo ? 'Edit Driver Offer' : 'Create Driver Offer'}</h3>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Define your discount logic</p>
+            <h3 className="text-lg font-black text-slate-800">
+              {promo ? "Edit Driver Offer" : "Create Driver Offer"}
+            </h3>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+              Define your discount logic
+            </p>
           </div>
         </div>
       }
@@ -112,26 +119,30 @@ const PromoDrawer: React.FC<PromoDrawerProps> = ({ visible, onClose, onSuccess, 
       className="custom-drawer"
       footer={
         <div className="flex gap-4 p-4">
-          <Button onClick={onClose} className="flex-1 rounded-xl h-12 font-bold">Cancel</Button>
+          <Button onClick={onClose} className="flex-1 rounded-xl h-12 font-bold">
+            Cancel
+          </Button>
           <Button
             type="primary"
             loading={isSubmitting}
             onClick={() => form.submit()}
             className="flex-1 rounded-xl h-12 font-bold bg-indigo-600 border-none shadow-lg shadow-indigo-100"
           >
-            {promo ? 'Update Offer' : 'Launch Offer'}
+            {promo ? "Update Offer" : "Launch Offer"}
           </Button>
         </div>
       }
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        className="space-y-6"
-      >
-        <Form.Item name="code" label="Offer Code" rules={[{ required: true, message: 'Code is required' }]}>
-          <Input placeholder="E.g. DRIVE100" className="rounded-xl h-11 uppercase font-mono font-bold border-slate-200" />
+      <Form form={form} layout="vertical" onFinish={handleSubmit} className="space-y-6">
+        <Form.Item
+          name="code"
+          label="Offer Code"
+          rules={[{ required: true, message: "Code is required" }]}
+        >
+          <Input
+            placeholder="E.g. DRIVE100"
+            className="rounded-xl h-11 uppercase font-mono font-bold border-slate-200"
+          />
         </Form.Item>
 
         <div className="grid grid-cols-2 gap-4">
@@ -147,15 +158,31 @@ const PromoDrawer: React.FC<PromoDrawerProps> = ({ visible, onClose, onSuccess, 
             shouldUpdate={(prev, curr) => prev.discount_type !== curr.discount_type}
           >
             {({ getFieldValue }) => {
-              const type = getFieldValue('discount_type');
+              const type = getFieldValue("discount_type");
               return (
-                <Form.Item name="discount_value" label="Discount Value" rules={[{ required: true }]}>
+                <Form.Item
+                  name="discount_value"
+                  label="Discount Value"
+                  rules={[{ required: true }]}
+                >
                   <InputNumber
                     className="w-full rounded-xl h-11 flex items-center border-slate-200"
                     min={1}
                     placeholder="Enter value"
-                    prefix={type === 'fixed' ? <span className="text-gray-400 font-medium mr-1 border-r pr-2 border-gray-200">₹</span> : undefined}
-                    suffix={type === 'percentage' ? <span className="text-gray-400 font-medium ml-1 border-l pl-2 border-gray-200">%</span> : undefined}
+                    prefix={
+                      type === "fixed" ? (
+                        <span className="text-gray-400 font-medium mr-1 border-r pr-2 border-gray-200">
+                          ₹
+                        </span>
+                      ) : undefined
+                    }
+                    suffix={
+                      type === "percentage" ? (
+                        <span className="text-gray-400 font-medium ml-1 border-l pl-2 border-gray-200">
+                          %
+                        </span>
+                      ) : undefined
+                    }
                   />
                 </Form.Item>
               );
@@ -165,25 +192,31 @@ const PromoDrawer: React.FC<PromoDrawerProps> = ({ visible, onClose, onSuccess, 
 
         <div className="space-y-3">
           <Form.Item name="description" label="Internal Description" className="mb-0">
-            <Input.TextArea placeholder="Describe this offer for admin records..." rows={3} className="rounded-xl border-slate-200" />
+            <Input.TextArea
+              placeholder="Describe this offer for admin records..."
+              rows={3}
+              className="rounded-xl border-slate-200"
+            />
           </Form.Item>
 
           <div className="flex flex-wrap gap-2">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 mr-1">Quick Picks:</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1 mr-1">
+              Quick Picks:
+            </span>
             {[
               "Weekend Special Drive",
               "New Driver Welcome Bonus",
               "High Demand Area Multiplier",
               "Festival Season Offer",
-              "VIP Driver Loyalty Reward"
-            ].map(sug => (
+              "VIP Driver Loyalty Reward",
+            ].map((sug) => (
               <button
                 type="button"
                 key={sug}
                 onClick={() => {
-                  const currentDesc = form.getFieldValue('description') || '';
+                  const currentDesc = form.getFieldValue("description") || "";
                   form.setFieldsValue({
-                    description: currentDesc ? `${currentDesc}. ${sug}` : sug
+                    description: currentDesc ? `${currentDesc}. ${sug}` : sug,
                   });
                 }}
                 className="px-3 py-1 rounded-full border border-slate-200 bg-slate-50 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-600 text-[10px] font-bold text-slate-500 transition-colors"
@@ -200,36 +233,53 @@ const PromoDrawer: React.FC<PromoDrawerProps> = ({ visible, onClose, onSuccess, 
           </h4>
 
           <Form.Item name="target_type" label="Target Audience" rules={[{ required: true }]}>
-            <Select className="h-11 custom-select-main" onChange={() => form.setFieldsValue({ target_driver_id: undefined, min_rides_required: 0 })}>
+            <Select
+              className="h-11 custom-select-main"
+              onChange={() =>
+                form.setFieldsValue({ target_driver_id: undefined, min_rides_required: 0 })
+              }
+            >
               <Option value="global">Global (All Drivers)</Option>
               <Option value="specific_driver">Specific Driver Offer</Option>
               <Option value="ride_count_based">Performance Based (Rides)</Option>
             </Select>
           </Form.Item>
 
-          <Form.Item
-            noStyle
-            shouldUpdate={(prev, curr) => prev.target_type !== curr.target_type}
-          >
+          <Form.Item noStyle shouldUpdate={(prev, curr) => prev.target_type !== curr.target_type}>
             {({ getFieldValue }) => (
               <>
-                {getFieldValue('target_type') === 'specific_driver' && (
-                  <Form.Item name="target_driver_id" label="Search Driver" rules={[{ required: true }]}>
+                {getFieldValue("target_type") === "specific_driver" && (
+                  <Form.Item
+                    name="target_driver_id"
+                    label="Search Driver"
+                    rules={[{ required: true }]}
+                  >
                     <Select
                       showSearch
                       placeholder="Search by name or phone"
                       className="h-11 custom-select-main"
                       optionFilterProp="children"
                       filterOption={(input, option) =>
-                        (String(option?.label) ?? '').toLowerCase().includes(input.toLowerCase())
+                        (String(option?.label) ?? "").toLowerCase().includes(input.toLowerCase())
                       }
-                      options={drivers.map(d => ({ value: d.id, label: `${d.full_name} (${d.phone_number})` }))}
+                      options={drivers.map((d) => ({
+                        value: d.id,
+                        label: `${d.full_name} (${d.phone_number})`,
+                      }))}
                     />
                   </Form.Item>
                 )}
-                {getFieldValue('target_type') === 'ride_count_based' && (
-                  <Form.Item name="min_rides_required" label="Min. Rides Required" rules={[{ required: true }]}>
-                    <InputNumber className="w-full rounded-xl h-11 flex items-center" min={1} placeholder="Keep 0 for no limit" />
+                {getFieldValue("target_type") === "ride_count_based" && (
+                  <Form.Item
+                    name="min_rides_required"
+                    label="Min. Rides Required"
+                    rules={[{ required: true }]}
+                  >
+                    <InputNumber
+                      className="w-full rounded-xl h-11 flex items-center"
+                      min={1}
+                      placeholder="Keep 0 for no limit"
+                    />
                   </Form.Item>
                 )}
               </>
@@ -248,7 +298,11 @@ const PromoDrawer: React.FC<PromoDrawerProps> = ({ visible, onClose, onSuccess, 
 
           <div className="grid grid-cols-2 gap-4">
             <Form.Item name="max_uses" label="Total Usage Limit">
-              <InputNumber className="w-full rounded-xl h-11 flex items-center" placeholder="Infinite" min={1} />
+              <InputNumber
+                className="w-full rounded-xl h-11 flex items-center"
+                placeholder="Infinite"
+                min={1}
+              />
             </Form.Item>
             <Form.Item name="max_uses_per_driver" label="Limit Per Driver">
               <InputNumber className="w-full rounded-xl h-11 flex items-center" min={1} />
@@ -257,7 +311,11 @@ const PromoDrawer: React.FC<PromoDrawerProps> = ({ visible, onClose, onSuccess, 
         </div>
 
         <Form.Item name="is_active" label="Status" valuePropName="checked">
-          <Switch checkedChildren="Active" unCheckedChildren="Inactive" className="custom-switch-lg" />
+          <Switch
+            checkedChildren="Active"
+            unCheckedChildren="Inactive"
+            className="custom-switch-lg"
+          />
         </Form.Item>
       </Form>
       <style>{`

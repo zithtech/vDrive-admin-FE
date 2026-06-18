@@ -2,12 +2,7 @@ import { Card, Tag } from "antd";
 import { format } from "date-fns-tz";
 import React from "react";
 
-export type FilterValue =
-  | string
-  | number
-  | Date
-  | null
-  | Array<string | number>;
+export type FilterValue = string | number | Date | null | Array<string | number>;
 import { capitalize } from "../../utilities/capitalize";
 export interface AppliedFiltersProps<T extends object> {
   filters: T;
@@ -71,12 +66,7 @@ const AppliedFilters = <T extends object>({
                 })
               : String(value);
           return (
-            <Tag
-              key={key}
-              closable
-              color={tagColor}
-              onClose={() => handleRemove(key as keyof T)}
-            >
+            <Tag key={key} closable color={tagColor} onClose={() => handleRemove(key as keyof T)}>
               {`${capitalize(label)}: ${capitalize(displayValue)}`}
             </Tag>
           );
