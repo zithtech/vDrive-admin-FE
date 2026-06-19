@@ -89,6 +89,9 @@ const DriverApprovalModal: React.FC<DriverApprovalModalProps> = ({ driver, open,
     ) {
       setIsOCRRunning(true);
       let imageUrl = selectedDoc.url;
+      if (typeof imageUrl === "string" && imageUrl.startsWith("{")) {
+        try { imageUrl = JSON.parse(imageUrl); } catch (e) {}
+      }
       if (typeof imageUrl === "object" && imageUrl !== null) {
         imageUrl = imageUrl.front || imageUrl.url || imageUrl.back;
       }
@@ -148,6 +151,9 @@ const DriverApprovalModal: React.FC<DriverApprovalModalProps> = ({ driver, open,
     if (!selectedDoc) return;
     setIsOCRRunning(true);
     let imageUrl = selectedDoc.url;
+    if (typeof imageUrl === "string" && imageUrl.startsWith("{")) {
+      try { imageUrl = JSON.parse(imageUrl); } catch (e) {}
+    }
     if (typeof imageUrl === "object" && imageUrl !== null) {
       imageUrl = imageUrl.front || imageUrl.url || imageUrl.back;
     }
