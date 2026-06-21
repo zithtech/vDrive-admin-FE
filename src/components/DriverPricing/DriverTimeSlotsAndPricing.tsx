@@ -23,7 +23,8 @@ export interface TimeSlot {
   id: number;
   day: Day;
   timeRange: [Dayjs, Dayjs] | null;
-  price: number;
+  perKmRate: number;
+  perHourRate: number;
 }
 
 export type UserType = "normal-driver" | "premium-driver" | "elite-driver";
@@ -49,7 +50,7 @@ const TimeSlotItem = ({
   index,
   updateTimeSlot,
   removeTimeSlot,
-  globalPrice,
+  perKmPrice,
   hasCollision,
   hotspotEnabled,
   hotspotFare,
@@ -59,16 +60,17 @@ const TimeSlotItem = ({
   index: number;
   updateTimeSlot: (index: number, updatedSlot: Partial<TimeSlot>) => void;
   removeTimeSlot: (id: number) => void;
-  globalPrice: number;
+  perKmPrice: number;
   hasCollision: boolean;
   hotspotEnabled: boolean;
   hotspotFare: number;
   multiplier: number;
 }) => {
-  // Price after hotspot, then all applicable taxes via breakdown
-  const priceAfterHotspot = hotspotEnabled ? slot.price * multiplier + hotspotFare : slot.price;
+  // Per-km rate after surge multiplier (the flat hotspot fare is a separate per-ride charge)
+  const rateAfterSurge = hotspotEnabled ? slot.perKmRate * multiplier : slot.perKmRate;
 
-  const breakdown = useTaxBreakdown(priceAfterHotspot);
+  // Indicative tax computed on the ₹/km rate (a rate is not a ride total)
+  const breakdown = useTaxBreakdown(rateAfterSurge);
   const { hasTax, totalTaxAmount, totalPrice, appliedTaxes } = breakdown;
 
   return (
@@ -88,7 +90,7 @@ const TimeSlotItem = ({
         )}
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:flex-1">
+      <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:flex-1 flex-wrap">
         <div className="flex gap-2 items-center w-full sm:w-auto">
           <span className="text-sm font-medium min-w-fit">Day:</span>
           <Select
@@ -117,35 +119,58 @@ const TimeSlotItem = ({
         </div>
 
         <div className="flex gap-2 items-center w-full sm:w-auto">
-          <span className="text-sm font-medium min-w-fit">Price:</span>
+          <span className="text-sm font-medium min-w-fit">₹/km:</span>
           <Input
-            style={{ width: 110 }}
-            value={slot.price}
-            onChange={(e) => updateTimeSlot(index, { price: Number(e.target.value) })}
+            style={{ width: 100 }}
+            value={slot.perKmRate}
+            onChange={(e) => updateTimeSlot(index, { perKmRate: Number(e.target.value) })}
             type="number"
             prefix="₹"
+            suffix="/km"
+          />
+        </div>
+
+        <div className="flex gap-2 items-center w-full sm:w-auto">
+          <span className="text-sm font-medium min-w-fit">₹/hr:</span>
+          <Input
+            style={{ width: 100 }}
+            value={slot.perHourRate}
+            onChange={(e) => updateTimeSlot(index, { perHourRate: Number(e.target.value) })}
+            type="number"
+            prefix="₹"
+            suffix="/hr"
           />
         </div>
       </div>
 
       <div className="flex items-baseline justify-between w-full sm:w-auto gap-2">
         <div className="flex flex-col gap-1">
-          {/* Base percentage diff vs global */}
+          {/* Rate vs zone ₹/km */}
           <div className="flex items-center gap-2">
             <span className="font-bold text-green-600 text-sm sm:text-base">
-              ₹{slot.price || "0"}
+              ₹{slot.perKmRate || "0"}/km
             </span>
             <Badge
               status="success"
               count={`${
-                globalPrice > 0 ? Math.round(((slot.price - globalPrice) / globalPrice) * 100) : 0
+                perKmPrice > 0
+                  ? Math.round(((slot.perKmRate - perKmPrice) / perKmPrice) * 100)
+                  : 0
               }%`}
               overflowCount={1000}
               style={{ backgroundColor: "#52c41a" }}
             />
           </div>
 
-          {/* Tax breakdown — one tag per applicable tax */}
+          {/* Hotspot effect */}
+          {hotspotEnabled && (
+            <span className="text-xs text-blue-600">
+              After surge ×{multiplier}: ₹{rateAfterSurge.toFixed(2)}/km
+              {hotspotFare > 0 && <> &middot; +₹{hotspotFare.toFixed(2)} flat/ride</>}
+            </span>
+          )}
+
+          {/* Indicative tax breakdown on the rate */}
           {hasTax && (
             <Tooltip
               title={
@@ -162,7 +187,7 @@ const TimeSlotItem = ({
                       paddingTop: 4,
                     }}
                   >
-                    Total tax: +₹{totalTaxAmount.toFixed(2)}
+                    Total tax: +₹{totalTaxAmount.toFixed(2)} / km
                   </div>
                 </div>
               }
@@ -178,14 +203,16 @@ const TimeSlotItem = ({
                   </Tag>
                 ))}
                 <span className="text-orange-500 font-semibold text-sm">
-                  +₹{totalTaxAmount.toFixed(2)}
+                  +₹{totalTaxAmount.toFixed(2)}/km
                 </span>
               </div>
             </Tooltip>
           )}
 
-          {/* Final price */}
-          <span className="text-green-700 font-bold text-sm">Final: ₹{totalPrice.toFixed(2)}</span>
+          {/* Indicative per-km incl. tax */}
+          <span className="text-green-700 font-bold text-sm">
+            ≈ ₹{totalPrice.toFixed(2)}/km incl. tax
+          </span>
         </div>
 
         <Button
@@ -205,7 +232,7 @@ interface DriverTimeSlotsAndPricingProps {
   hotspotEnabled: boolean;
   hotspotId: string;
   multiplier: number;
-  globalPrice: number;
+  perKmPrice: number;
 }
 
 const DriverTimeSlotsAndPricing = ({
@@ -214,7 +241,7 @@ const DriverTimeSlotsAndPricing = ({
   hotspotEnabled,
   hotspotId,
   multiplier,
-  globalPrice,
+  perKmPrice,
 }: DriverTimeSlotsAndPricingProps) => {
   const [userType, setUserType] = useState<UserType>("normal-driver");
 
@@ -279,14 +306,15 @@ const DriverTimeSlotsAndPricing = ({
 
   const addTimeSlot = () => {
     const currentUserTimeSlots = timeSlots[userType];
-    const newTimeSlot = {
+    const newTimeSlot: TimeSlot = {
       id:
         currentUserTimeSlots.length > 0
           ? Math.max(...currentUserTimeSlots.map((t) => t.id)) + 1
           : 1,
       day: "monday" as Day,
       timeRange: [dayjs("7:00 AM", "h:mm A"), dayjs("9:00 AM", "h:mm A")] as [Dayjs, Dayjs],
-      price: 500,
+      perKmRate: perKmPrice || 12,
+      perHourRate: 150,
     };
     setTimeSlots({
       ...timeSlots,
@@ -317,7 +345,7 @@ const DriverTimeSlotsAndPricing = ({
           <div className="w-full flex items-center gap-1">
             <BsClock className="text-[20px] text-[#0080FF]" />
             <span className="text-[19px] font-semibold p-0 m-0">
-              Driver Time Slots &amp; Pricing
+              Driver Time Slots &amp; Pricing (₹/km &amp; ₹/hr)
             </span>
           </div>
         </div>
@@ -335,7 +363,7 @@ const DriverTimeSlotsAndPricing = ({
               </Tag>
             ))}
             <span className="text-sm text-orange-700">
-              applicable taxes will be added to all slot prices
+              applicable taxes will be added to the final fare
             </span>
           </div>
         )}
@@ -407,7 +435,7 @@ const DriverTimeSlotsAndPricing = ({
                     index={index}
                     updateTimeSlot={updateTimeSlot}
                     removeTimeSlot={removeTimeSlot}
-                    globalPrice={globalPrice}
+                    perKmPrice={perKmPrice}
                     hasCollision={hasCollision}
                     hotspotEnabled={hotspotEnabled}
                     hotspotFare={hotspotFare}
@@ -431,7 +459,8 @@ const DriverTimeSlotsAndPricing = ({
               <span className="text-sm">Active Hotspot Configuration</span>
             </div>
             <span className="text-sm">
-              Fare: ₹{Number(selectedHotspot.fare).toFixed(2)} • Multiplier: {multiplier}x
+              Surge: ×{multiplier} on fare &middot; Flat fare: +₹
+              {Number(selectedHotspot.fare).toFixed(2)} per ride
             </span>
           </div>
         )}

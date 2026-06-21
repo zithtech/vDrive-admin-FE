@@ -27,7 +27,8 @@ const transformSlotsForPreview = (rule: PricingFareRule) => {
           id: index + 1,
           day: slot.day,
           timeRange: [dayjs(slot.from_time, "HH:mm:ss"), dayjs(slot.to_time, "HH:mm:ss")],
-          price: slot.price,
+          perKmRate: Number(slot.per_km_rate),
+          perHourRate: Number(slot.per_hour_rate),
         });
       }
     });
@@ -135,12 +136,28 @@ const PricingAndFareRules: React.FC = () => {
       ),
     },
     {
-      title: "Global Price",
-      dataIndex: "global_price",
-      key: "global_price",
-      width: 120,
+      title: "Price / KM",
+      dataIndex: "per_km_price",
+      key: "per_km_price",
+      width: 110,
       align: "right",
-      render: (value: number | string) => `₹${Number(value).toFixed(2)}`,
+      render: (value: number | string) => `₹${Number(value).toFixed(2)}/km`,
+    },
+    {
+      title: "Price / Hr",
+      dataIndex: "per_hour_price",
+      key: "per_hour_price",
+      width: 110,
+      align: "right",
+      render: (value: number | string) => `₹${Number(value || 0).toFixed(2)}/hr`,
+    },
+    {
+      title: "Min Fare",
+      dataIndex: "minimum_fare",
+      key: "minimum_fare",
+      width: 100,
+      align: "right",
+      render: (value: number | string) => `₹${Number(value || 0).toFixed(2)}`,
     },
     {
       title: "Actions",
@@ -250,17 +267,22 @@ const PricingAndFareRules: React.FC = () => {
                 district={previewRule.district_name || ""}
                 area={previewRule.area_name || ""}
                 pincode={previewRule.pincode || ""}
-                globalPrice={Number(previewRule.global_price)}
+                perKmPrice={Number(previewRule.per_km_price)}
+                perHourPrice={Number(previewRule.per_hour_price) || 0}
+                minimumFare={Number(previewRule.minimum_fare) || 0}
+                oneWayReturnPct={Number(previewRule.one_way_return_pct) || 0}
                 hotspotEnabled={previewRule.is_hotspot}
                 hotspotId={previewRule.hotspot_name || ""}
                 multiplier={Number(previewRule.multiplier || 1)}
                 timeSlots={transformSlotsForPreview(previewRule)}
-                extraKmStep={Number(previewRule.extra_km_step) || 5}
-                extraKmPrice={Number(previewRule.extra_km_price) || 10}
-                extraKmStartMultiplier={Number(previewRule.extra_km_start_multiplier) || 1}
                 extraKmCheckpoints={(previewRule.extra_km_checkpoints ?? [])
-                  .sort((a: any, b: any) => a.sort_order - b.sort_order)
-                  .map((c: any, i: number) => ({ uid: i, multiplier: Number(c.multiplier) }))}
+                  .slice()
+                  .sort((a: any, b: any) => a.from_km - b.from_km)
+                  .map((c: any, i: number) => ({
+                    uid: i,
+                    from_km: Number(c.from_km),
+                    price: Number(c.price),
+                  }))}
               />
             </div>
           )}
