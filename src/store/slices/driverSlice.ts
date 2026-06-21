@@ -18,6 +18,10 @@ export interface Driver {
   driver_id: string;
   driverId?: string; // Backend fallback
   vdrive_id?: string;
+  is_online?: boolean;
+  isOnDuty?: boolean;
+  is_on_duty?: boolean;
+  duty_status?: string;
   full_name: string;
   first_name?: string;
   last_name?: string;

@@ -1,19 +1,20 @@
 import { useState, useEffect, useMemo } from "react";
 import { IoMdRefresh } from "react-icons/io";
+import { ClipboardCheck } from "lucide-react";
 import {
-  FilterOutlined,
-  CloseCircleOutlined,
   SafetyCertificateOutlined,
   FileExclamationOutlined,
+  CloseCircleOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
-import { Button, Select, DatePicker, Divider, Input, Spin, Tabs } from "antd";
+import { Button, Select, DatePicker, Spin } from "antd";
 import DriverTable from "../components/DriverTable/DriverTable";
 import dayjs from "dayjs";
-import TitleBar from "../components/TitleBarCommon/TitleBar";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchDrivers } from "../store/slices/driverSlice";
 import type { Driver, DriverStatus } from "../store/slices/driverSlice";
 import DriverApprovalModal from "../components/DriverApplications/DriverApprovalModal";
+import ApplicationStats from "../components/DriverApplications/ApplicationStats";
 
 export interface Filters {
   search: string;
@@ -46,6 +47,8 @@ const DriverApplications = () => {
     joined_at: null,
     onboarding_status: [],
   });
+
+  const [currentView, setCurrentView] = useState<"pending" | "doc_rejected" | "rejected">("pending");
 
   useEffect(() => {
     dispatch(fetchDrivers());
@@ -99,8 +102,15 @@ const DriverApplications = () => {
     setFilteredData(tempData);
   }, [DATA, filters]);
 
-  const { pendingApplications, docRejectedApplications, rejectedApplications } = useMemo(() => {
+  const { pendingApplications, docRejectedApplications, rejectedApplications, allTrackedApplications } = useMemo(() => {
     return {
+      allTrackedApplications: DATA.filter(
+        (d) =>
+          d.status === "pending" ||
+          d.status === "pending_verification" ||
+          (d.onboarding_status &&
+            !["ONBOARDING_COMPLETED", "SUBSCRIPTION_ACTIVE", "ACTIVE"].includes(d.onboarding_status)),
+      ),
       pendingApplications: filteredData.filter(
         (d) => d.status !== "rejected" && d.onboarding_status !== "DOCS_REJECTED",
       ),
@@ -109,7 +119,7 @@ const DriverApplications = () => {
       ),
       rejectedApplications: filteredData.filter((d) => d.status === "rejected"),
     };
-  }, [filteredData]);
+  }, [DATA, filteredData]);
 
   const applyFilters = (values: Partial<Filters>) => {
     setFilters((prev) => ({
@@ -124,272 +134,252 @@ const DriverApplications = () => {
     filters.joined_at ||
     filters.onboarding_status.length > 0;
 
+  const ViewItem = ({ icon, label, count, isActive, onClick, activeColorClass = "text-blue-500", bgActiveColorClass = "bg-blue-50/80 dark:bg-blue-900/30", badgeColorClass = "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400" }: any) => (
+    <div
+      onClick={onClick}
+      className={`flex items-center justify-between px-3 py-2 rounded-[10px] cursor-pointer transition-all ${
+        isActive
+          ? `${bgActiveColorClass} text-slate-800 dark:text-slate-100 font-bold`
+          : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium"
+      }`}
+    >
+      <div className="flex items-center gap-2.5">
+        <span className={`text-[15px] ${isActive ? activeColorClass : "text-slate-400"}`}>{icon}</span>
+        <span className="text-[13px] tracking-tight">{label}</span>
+      </div>
+      {isActive ? (
+        <div className={`px-2 py-0.5 rounded-md text-[10px] font-black min-w-[20px] text-center ${badgeColorClass}`}>
+          {count}
+        </div>
+      ) : (
+        <div className="text-[11px] font-bold text-slate-400 mr-1">
+          {count}
+        </div>
+      )}
+    </div>
+  );
+
+  const TableSection = ({
+    data,
+    flexClass = "flex-1",
+    extraClasses = "",
+  }: any) => (
+    <div
+      className={`${flexClass} flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden ${extraClasses}`}
+    >
+      <div className="flex-grow overflow-hidden">
+        <DriverTable
+          data={data}
+          onViewDetails={(driver) => {
+            setSelectedDriverForApproval(driver);
+            setApprovalModalOpen(true);
+          }}
+        />
+      </div>
+    </div>
+  );
+
   return (
     <>
-      <TitleBar
-        title="Driver Applications"
-        description="Review and approve new driver applications and document submissions."
-        icon={
-          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl flex items-center justify-center">
-            <SafetyCertificateOutlined className="text-white" />
-          </div>
-        }
-        iconBgColor="bg-orange-500"
-        extraContent={
-          <div className="flex items-center gap-3">
-            <Button
-              icon={<IoMdRefresh />}
-              loading={loading}
-              type="primary"
-              className="rounded-xl h-11 px-6 font-bold !bg-gradient-to-br !from-orange-500 !to-amber-500 border-none"
-              onClick={() => dispatch(fetchDrivers())}
-            >
-              Refresh Data
-            </Button>
-          </div>
-        }
-      >
-        <div className="w-full h-full flex flex-col gap-6 bg-slate-50/50 dark:bg-[#0f172a] p-6 overflow-hidden">
-          {/* Inline Filter Bar */}
-          <div className="bg-white dark:bg-slate-800 p-2 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4 flex-grow flex-wrap">
-              <div className="flex items-center gap-2">
-                <FilterOutlined className="text-slate-400" />
-                <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
-                  Filters
-                </span>
+      <div className="flex h-[calc(100vh-64px)] w-full overflow-hidden bg-white dark:bg-slate-900">
+        {/* LEFT SIDEBAR */}
+        <div className="w-[220px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col flex-shrink-0">
+          {/* Sidebar Header */}
+          <div className="p-6 pb-4">
+            <div className="flex items-center gap-3 text-slate-800 dark:text-slate-100">
+              <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-400 shrink-0">
+                <ClipboardCheck size={16} strokeWidth={2.5} />
               </div>
-              <Divider type="vertical" className="h-6 border-slate-100" />
+              <div className="flex flex-col justify-center mt-0.5">
+                <h2 className="font-black text-sm uppercase tracking-wider leading-none m-0">ONBOARDING</h2>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">Awaiting Approval</p>
+              </div>
+            </div>
+          </div>
 
-              <Input
-                placeholder="Search driver..."
-                style={{ maxWidth: 250 }}
-                className="premium-input-inline"
-                value={filters.search}
-                onChange={(e) => applyFilters({ search: e.target.value })}
-                allowClear
-              />
-
-              <Select
-                mode="multiple"
-                placeholder="Status"
-                style={{ minWidth: 200 }}
-                className="premium-select-inline"
-                value={filters.status}
-                onChange={(val) => applyFilters({ status: val })}
-                options={STATUSES.map((s) => ({ label: s.toUpperCase(), value: s }))}
-                maxTagCount="responsive"
-              />
-
-              <Select
-                mode="multiple"
-                placeholder="Onboarding Status"
-                style={{ minWidth: 220 }}
-                className="premium-select-inline"
-                value={filters.onboarding_status}
-                onChange={(val) => applyFilters({ onboarding_status: val })}
-                options={ONBOARDING_STATUSES}
-                maxTagCount="responsive"
-              />
-
-              <DatePicker
-                placeholder="Applied At"
-                className="premium-datepicker-inline"
-                onChange={(date) => applyFilters({ joined_at: date ? date.toDate() : null })}
-              />
+          <div className="flex-1 overflow-y-auto overflow-x-hidden">
+            {/* VIEWS */}
+            <div className="px-4 pt-6 pb-6 border-b border-slate-200 dark:border-slate-800/50">
+              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-2 mb-5">
+                Views
+              </p>
+              <div className="flex flex-col gap-1">
+                <ViewItem
+                  icon={<SafetyCertificateOutlined />}
+                  label="Pending Auth"
+                  count={pendingApplications.length}
+                  isActive={currentView === "pending"}
+                  onClick={() => setCurrentView("pending")}
+                  activeColorClass="text-orange-500"
+                  bgActiveColorClass="bg-orange-50/80 dark:bg-orange-900/30"
+                  badgeColorClass="bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400"
+                />
+                <ViewItem
+                  icon={<FileExclamationOutlined />}
+                  label="Docs Rejected"
+                  count={docRejectedApplications.length}
+                  isActive={currentView === "doc_rejected"}
+                  onClick={() => setCurrentView("doc_rejected")}
+                  activeColorClass="text-amber-500"
+                  bgActiveColorClass="bg-amber-50/80 dark:bg-amber-900/30"
+                  badgeColorClass="bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400"
+                />
+                <ViewItem
+                  icon={<CloseCircleOutlined />}
+                  label="Rejected"
+                  count={rejectedApplications.length}
+                  isActive={currentView === "rejected"}
+                  onClick={() => setCurrentView("rejected")}
+                  activeColorClass="text-rose-500"
+                  bgActiveColorClass="bg-rose-50/80 dark:bg-rose-900/30"
+                  badgeColorClass="bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400"
+                />
+              </div>
             </div>
 
-            {hasActiveFilters && (
-              <Button
+            {/* FILTERS */}
+            <div className="px-4 py-4">
+              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-2 mb-6">
+                Filters
+              </p>
+              <div className="flex flex-col gap-3 px-2">
+                <div>
+                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1 uppercase tracking-wide">
+                    Status
+                  </span>
+                  <Select
+                    mode="multiple"
+                    placeholder="Select status..."
+                    className="w-full premium-select-inline"
+                    options={STATUSES.map((s) => ({ label: s.toUpperCase(), value: s }))}
+                    value={filters.status}
+                    onChange={(val) => applyFilters({ status: val })}
+                    maxTagCount="responsive"
+                  />
+                </div>
+
+                <div>
+                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1 uppercase tracking-wide">
+                    Onboarding Step
+                  </span>
+                  <Select
+                    mode="multiple"
+                    placeholder="Filter step..."
+                    className="w-full premium-select-inline"
+                    options={ONBOARDING_STATUSES}
+                    value={filters.onboarding_status}
+                    onChange={(val) => applyFilters({ onboarding_status: val })}
+                    maxTagCount="responsive"
+                  />
+                </div>
+
+                <div>
+                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1 uppercase tracking-wide">
+                    Applied Date
+                  </span>
+                  <DatePicker
+                    placeholder="Select Date"
+                    className="w-full premium-datepicker-inline"
+                    onChange={(date) => applyFilters({ joined_at: date ? date.toDate() : null })}
+                  />
+                </div>
+
+                {hasActiveFilters && (
+                  <Button
+                    type="text"
+                    danger
+                    icon={<CloseCircleOutlined />}
+                    className="text-[11px] font-black uppercase tracking-widest w-full hover:bg-rose-50 rounded-xl mt-2"
+                    onClick={() =>
+                      setFilters({ search: "", status: [], joined_at: null, onboarding_status: [] })
+                    }
+                  >
+                    Clear Filters
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT MAIN CONTENT */}
+        <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0b0f19]">
+          {/* Top Navbar */}
+          <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 shadow-sm z-0 flex-shrink-0">
+            <div className="relative flex-1 max-w-3xl flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
+              <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
+              <input
                 type="text"
-                danger
-                icon={<CloseCircleOutlined />}
-                className="text-[10px] font-black uppercase tracking-widest px-4 hover:bg-rose-50 rounded-xl"
-                onClick={() =>
-                  setFilters({ search: "", status: [], joined_at: null, onboarding_status: [] })
-                }
+                placeholder="Search applications..."
+                className="w-full pl-10 pr-4 py-2 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
+                value={filters.search}
+                onChange={(e) => applyFilters({ search: e.target.value })}
+              />
+              <div className="absolute right-3">
+                <span className="text-[11px] font-bold text-slate-400 border border-slate-200 dark:border-slate-600 rounded-[4px] px-1.5 py-[1px] bg-slate-50/50 dark:bg-slate-800 tracking-wide">
+                  ⌘K
+                </span>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 px-3 py-1.5 rounded-full border border-orange-100 dark:border-orange-500/20">
+                <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                <span className="text-[11px] font-black tracking-widest uppercase">
+                  {filteredData.length} RESULTS
+                </span>
+              </div>
+
+              <button
+                onClick={() => dispatch(fetchDrivers())}
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all"
               >
-                Clear Filters
-              </Button>
-            )}
+                <IoMdRefresh className={`text-lg ${loading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
           </div>
 
-          <div className="flex-grow overflow-hidden flex flex-col pb-4">
-            {loading && DATA.length === 0 ? (
-              <div className="flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700">
+          {/* Scrollable Main Content */}
+          <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 dark:bg-[#0f172a] flex flex-col gap-6">
+            <ApplicationStats drivers={allTrackedApplications} loading={loading} />
+
+            {loading && allTrackedApplications.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
                 <Spin size="large" />
               </div>
             ) : error ? (
-              <div className="flex items-center justify-center p-20 bg-rose-50 dark:bg-rose-900/20 rounded-3xl border border-rose-100 dark:border-rose-900/50 text-rose-500 font-bold">
+              <div className="flex items-center justify-center p-20 bg-rose-50 rounded-sm border border-rose-100 text-rose-500 font-bold shadow-sm">
                 {error}
               </div>
             ) : (
-              <Tabs
-                defaultActiveKey="pending"
-                className="premium-driver-tabs"
-                items={[
-                  {
-                    key: "pending",
-                    label: (
-                      <div className="flex items-center gap-2 px-1">
-                        <SafetyCertificateOutlined />
-                        <span>Pending Verification</span>
-                        <div className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-black min-w-[20px] text-center">
-                          {pendingApplications.length}
-                        </div>
-                      </div>
-                    ),
-                    children: (
-                      <div
-                        className={`flex-1 flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden`}
-                      >
-                        <div
-                          className={`px-6 py-4 border-b border-slate-50 dark:border-slate-700/50 flex items-center justify-between bg-gradient-to-r from-orange-50 via-orange-50/10 to-white dark:from-orange-900/20 dark:via-orange-900/5 dark:to-slate-800`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`w-8 h-8 rounded-xl bg-orange-500 shadow-lg shadow-orange-500/40 flex items-center justify-center text-white text-xs`}
-                            >
-                              <SafetyCertificateOutlined />
-                            </div>
-                            <div>
-                              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 m-0 tracking-tight leading-none">
-                                Pending Verification
-                              </h3>
-                              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium m-0 mt-1 uppercase tracking-wider">
-                                Awaiting Admin Action
-                              </p>
-                            </div>
-                          </div>
-                          <div
-                            className={`px-3 py-1 rounded-full border-orange-200 text-orange-700 bg-orange-100/50 font-black border text-[11px] tracking-tighter`}
-                          >
-                            {pendingApplications.length}{" "}
-                            {pendingApplications.length === 1 ? "DRIVER" : "DRIVERS"}
-                          </div>
-                        </div>
-                        <div className="flex-grow overflow-hidden">
-                          <DriverTable
-                            data={pendingApplications}
-                            onViewDetails={(driver) => {
-                              setSelectedDriverForApproval(driver);
-                              setApprovalModalOpen(true);
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ),
-                  },
-                  {
-                    key: "doc_rejected",
-                    label: (
-                      <div className="flex items-center gap-2 px-1">
-                        <FileExclamationOutlined />
-                        <span>Docs Rejected</span>
-                        <div className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-black min-w-[20px] text-center">
-                          {docRejectedApplications.length}
-                        </div>
-                      </div>
-                    ),
-                    children: (
-                      <div
-                        className={`flex-1 flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden`}
-                      >
-                        <div
-                          className={`px-6 py-4 border-b border-slate-50 dark:border-slate-700/50 flex items-center justify-between bg-gradient-to-r from-amber-50 via-amber-50/10 to-white dark:from-amber-900/20 dark:via-amber-900/5 dark:to-slate-800`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`w-8 h-8 rounded-xl bg-amber-500 shadow-lg shadow-amber-500/40 flex items-center justify-center text-white text-xs`}
-                            >
-                              <FileExclamationOutlined />
-                            </div>
-                            <div>
-                              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 m-0 tracking-tight leading-none">
-                                Documents Rejected
-                              </h3>
-                              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium m-0 mt-1 uppercase tracking-wider">
-                                Awaiting Re-upload
-                              </p>
-                            </div>
-                          </div>
-                          <div
-                            className={`px-3 py-1 rounded-full border-amber-200 text-amber-700 bg-amber-100/50 font-black border text-[11px] tracking-tighter`}
-                          >
-                            {docRejectedApplications.length}{" "}
-                            {docRejectedApplications.length === 1 ? "DRIVER" : "DRIVERS"}
-                          </div>
-                        </div>
-                        <div className="flex-grow overflow-hidden">
-                          <DriverTable
-                            data={docRejectedApplications}
-                            onViewDetails={(driver) => {
-                              setSelectedDriverForApproval(driver);
-                              setApprovalModalOpen(true);
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ),
-                  },
-                  {
-                    key: "rejected",
-                    label: (
-                      <div className="flex items-center gap-2 px-1">
-                        <CloseCircleOutlined />
-                        <span>Rejected Applications</span>
-                        <div className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-black min-w-[20px] text-center">
-                          {rejectedApplications.length}
-                        </div>
-                      </div>
-                    ),
-                    children: (
-                      <div
-                        className={`flex-1 flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden`}
-                      >
-                        <div
-                          className={`px-6 py-4 border-b border-slate-50 dark:border-slate-700/50 flex items-center justify-between bg-gradient-to-r from-rose-50 via-rose-50/10 to-white dark:from-rose-900/20 dark:via-rose-900/5 dark:to-slate-800`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div
-                              className={`w-8 h-8 rounded-xl bg-rose-500 shadow-lg shadow-rose-500/40 flex items-center justify-center text-white text-xs`}
-                            >
-                              <CloseCircleOutlined />
-                            </div>
-                            <div>
-                              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 m-0 tracking-tight leading-none">
-                                Rejected Applications
-                              </h3>
-                              <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium m-0 mt-1 uppercase tracking-wider">
-                                Unsuccessful Onboarding
-                              </p>
-                            </div>
-                          </div>
-                          <div
-                            className={`px-3 py-1 rounded-full border-rose-200 text-rose-700 bg-rose-100/50 font-black border text-[11px] tracking-tighter`}
-                          >
-                            {rejectedApplications.length}{" "}
-                            {rejectedApplications.length === 1 ? "DRIVER" : "DRIVERS"}
-                          </div>
-                        </div>
-                        <div className="flex-grow overflow-hidden">
-                          <DriverTable
-                            data={rejectedApplications}
-                            onViewDetails={(driver) => {
-                              setSelectedDriverForApproval(driver);
-                              setApprovalModalOpen(true);
-                            }}
-                          />
-                        </div>
-                      </div>
-                    ),
-                  },
-                ]}
-              />
+              <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                {currentView === "pending" && (
+                  <TableSection
+                    data={pendingApplications}
+                    flexClass="flex-1 h-full"
+                    extraClasses="border-none rounded-none !min-h-0"
+                  />
+                )}
+                {currentView === "doc_rejected" && (
+                  <TableSection
+                    data={docRejectedApplications}
+                    flexClass="flex-1 h-full"
+                    extraClasses="border-none rounded-none !min-h-0"
+                  />
+                )}
+                {currentView === "rejected" && (
+                  <TableSection
+                    data={rejectedApplications}
+                    flexClass="flex-1 h-full"
+                    extraClasses="border-none rounded-none !min-h-0"
+                  />
+                )}
+              </div>
             )}
           </div>
         </div>
-      </TitleBar>
+      </div>
+
       <DriverApprovalModal
         driver={selectedDriverForApproval}
         open={approvalModalOpen}
