@@ -311,23 +311,20 @@ const DriverTimeSlotsAndPricing = ({
   };
 
   return (
-    <Card size="small" className="!rounded-none" styles={{ body: { padding: '16px' } }}>
+    <Card size="small">
       <div className="w-full flex flex-col gap-4">
-        <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-            <BsClock className="text-base text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-tight leading-none">
+        <div className="flex items-center justify-between w-full">
+          <div className="w-full flex items-center gap-1">
+            <BsClock className="text-[20px] text-[#0080FF]" />
+            <span className="text-[19px] font-semibold p-0 m-0">
               Driver Time Slots &amp; Pricing
             </span>
-            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Configure shift-based pricing per driver type</span>
           </div>
         </div>
 
         {/* Active taxes banner */}
         {hasTax && (
-          <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-800/40 rounded-lg flex-wrap">
+          <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-md flex-wrap">
             {activeTaxes.map((t) => (
               <Tag
                 key={t.tax_code}
@@ -337,7 +334,7 @@ const DriverTimeSlotsAndPricing = ({
                 {t.tax_code} {t.percentage}%
               </Tag>
             ))}
-            <span className="text-xs text-amber-700 dark:text-amber-400">
+            <span className="text-sm text-orange-700">
               applicable taxes will be added to all slot prices
             </span>
           </div>
@@ -385,17 +382,17 @@ const DriverTimeSlotsAndPricing = ({
         </div>
 
         <div className="flex gap-1 justify-between items-center">
-          <div className="flex gap-2 flex-wrap items-center">
-            <Tag color={userTypeDetails[userType].color} className="!text-[10px] !font-bold">
+          <div className="flex gap-2 flex-wrap">
+            <Tag color={userTypeDetails[userType].color}>
               <div className="flex gap-1 items-center">
                 {userTypeDetails[userType].icon}
                 <span>{userTypeDetails[userType].tag}</span>
               </div>
             </Tag>
-            <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-bold">{userTypeDetails[userType].description}</span>
+            <span className="text-[#535454]">{userTypeDetails[userType].description}</span>
           </div>
-          <Button icon={<PlusOutlined />} onClick={addTimeSlot} size="small" className="!rounded-lg">
-            Add Slot
+          <Button icon={<PlusOutlined />} onClick={addTimeSlot}>
+            Add Time Slot
           </Button>
         </div>
 
@@ -423,17 +420,17 @@ const DriverTimeSlotsAndPricing = ({
         </div>
 
         {hotspotEnabled && selectedHotspot && (
-          <div className="w-full p-3 flex flex-col gap-2 bg-blue-50/60 dark:bg-blue-500/5 rounded-lg border border-blue-100 dark:border-blue-900/30">
+          <div className="w-full p-4 flex flex-col gap-2 bg-[#F8F9FA] rounded-md">
             <div className="flex gap-2 items-center">
-              <Tag color="processing" className="!text-[10px] !font-bold">
+              <Tag color="processing">
                 <div className="flex gap-1 items-center">
                   <LuZap />
                   <span>{selectedHotspot.hotspot_name}</span>
                 </div>
               </Tag>
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Active Hotspot Configuration</span>
+              <span className="text-sm">Active Hotspot Configuration</span>
             </div>
-            <span className="text-xs text-slate-600 dark:text-slate-400">
+            <span className="text-sm">
               Fare: ₹{Number(selectedHotspot.fare).toFixed(2)} • Multiplier: {multiplier}x
             </span>
           </div>

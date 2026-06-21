@@ -72,7 +72,7 @@ const PricingPreview = ({
   };
 
   return (
-    <Card size="small" className="w-full !rounded-none">
+    <Card size="small" className="w-full">
       <div className="w-full flex flex-col gap-4">
         <Typography.Title level={5} className="text-lg sm:text-xl">
           Pricing Preview
