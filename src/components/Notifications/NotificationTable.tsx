@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Tag, Button, Space, Tooltip } from "antd";
+import { Table, Button, Dropdown } from "antd";
 import {
   EditOutlined,
   DeleteOutlined,
@@ -8,6 +8,7 @@ import {
   ClockCircleOutlined,
   SyncOutlined,
   CheckCircleOutlined,
+  EllipsisOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 
@@ -31,46 +32,74 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
   canDelete = false,
 }) => {
   const getStatusBadge = (status: string) => {
+    let bg = "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
+    let icon = null;
+    let label = status;
+
     switch (status) {
       case "PENDING":
-        return (
-          <Tag
-            icon={<ClockCircleOutlined />}
-            color="warning"
-            className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase"
-          >
-            Pending
-          </Tag>
-        );
+        bg = "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400";
+        icon = <ClockCircleOutlined className="text-[10px]" />;
+        label = "Pending";
+        break;
       case "PROCESSING":
-        return (
-          <Tag
-            icon={<SyncOutlined spin />}
-            color="processing"
-            className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase"
-          >
-            Processing
-          </Tag>
-        );
+        bg = "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400";
+        icon = <SyncOutlined spin className="text-[10px]" />;
+        label = "Processing";
+        break;
       case "COMPLETED":
-        return (
-          <Tag
-            icon={<CheckCircleOutlined />}
-            color="success"
-            className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase"
-          >
-            Completed
-          </Tag>
-        );
+        bg = "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400";
+        icon = <CheckCircleOutlined className="text-[10px]" />;
+        label = "Completed";
+        break;
       case "FAILED":
-        return (
-          <Tag color="error" className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase">
-            Failed
-          </Tag>
-        );
+        bg = "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400";
+        icon = <CheckCircleOutlined className="text-[10px]" />;
+        label = "Failed";
+        break;
       default:
-        return null;
+        break;
     }
+
+    return (
+      <span className={`px-2 py-0.5 rounded-md font-bold text-[9px] uppercase tracking-wider inline-flex items-center gap-1 border-none ${bg}`}>
+        {icon}
+        {label}
+      </span>
+    );
+  };
+
+  const getTargetAudienceBadge = (target: string) => {
+    let bg = "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400";
+    if (target === "TOP_RIDE") {
+      bg = "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400";
+    } else if (target === "LOW_RIDE") {
+      bg = "bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400";
+    } else if (target === "SPECIFIC") {
+      bg = "bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400";
+    }
+
+    return (
+      <span className={`px-2 py-0.5 rounded-md font-bold text-[9px] uppercase tracking-wider border-none w-fit inline-block ${bg}`}>
+        {target?.replace("_", " ") || "ALL"}
+      </span>
+    );
+  };
+
+  const getOfferBadge = (record: any) => {
+    const code = record.coupon_code || record.promo_code;
+    if (code) {
+      return (
+        <span className="px-2 py-0.5 rounded-md font-bold text-[9px] uppercase tracking-wider bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-none w-fit inline-block">
+          {code}
+        </span>
+      );
+    }
+    return (
+      <span className="text-slate-300 dark:text-slate-650 text-[10px] font-bold tracking-widest">
+        —
+      </span>
+    );
   };
 
   const columns = [
@@ -79,15 +108,15 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
       key: "notification",
       width: 250,
       render: (record: any) => (
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 dark:text-indigo-400 shadow-sm">
-            <BellOutlined />
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500 dark:text-blue-400 shadow-sm flex-shrink-0">
+            <BellOutlined className="text-xs" />
           </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-slate-800 dark:text-slate-200 tracking-tight">
+          <div className="flex flex-col min-w-0 justify-center gap-0.5">
+            <span className="font-extrabold text-slate-800 dark:text-slate-100 tracking-tight text-xs leading-none truncate">
               {record.title}
             </span>
-            <span className="text-[11px] text-slate-400 dark:text-slate-500 line-clamp-1">
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 line-clamp-1">
               {record.body}
             </span>
           </div>
@@ -99,56 +128,35 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
       dataIndex: "target_audience",
       key: "target_audience",
       width: 140,
-      render: (target: string) => {
-        let color = "blue";
-        if (target === "TOP_RIDE") color = "gold";
-        if (target === "LOW_RIDE") color = "orange";
-        if (target === "SPECIFIC") color = "purple";
-
-        return (
-          <Tag
-            color={color}
-            className="rounded-full px-3 font-bold border-none text-[10px] uppercase tracking-wider"
-          >
-            {target?.replace("_", " ") || "ALL"}
-          </Tag>
-        );
-      },
+      render: (target: string) => getTargetAudienceBadge(target),
     },
     {
       title: "ATTACHED OFFER",
       key: "attached_offer",
       width: 140,
-      render: (record: any) =>
-        record.coupon_code || record.promo_code ? (
-          <Tag
-            color="green"
-            className="rounded-full px-3 font-bold border-none text-[10px] uppercase tracking-wider"
-          >
-            {record.coupon_code || record.promo_code}
-          </Tag>
-        ) : (
-          <span className="text-gray-300 dark:text-slate-500 text-[10px] font-bold uppercase tracking-widest">
-            — None —
-          </span>
-        ),
+      render: (record: any) => getOfferBadge(record),
     },
     {
       title: "DELIVERY STATUS",
       key: "notify_status",
-      width: 160,
+      width: 170,
       render: (record: any) => (
-        <div className="flex flex-col gap-1">
-          {getStatusBadge(record.notify_status)}
-          {record.notify_sent_at && (
-            <span className="text-[9px] text-gray-400 dark:text-slate-500 italic">
-              Sent: {dayjs(record.notify_sent_at).format("MMM DD, HH:mm")}
-            </span>
-          )}
-          {record.notify_count > 0 && (
-            <span className="text-[9px] text-blue-500 dark:text-blue-400 font-bold">
-              Total Sent: {record.notify_count}
-            </span>
+        <div className="flex flex-col gap-0.5 justify-center">
+          <div>{getStatusBadge(record.notify_status)}</div>
+          {(record.notify_sent_at || record.notify_count > 0) && (
+            <div className="flex items-center gap-1 text-[9px] text-slate-400 dark:text-slate-500 font-semibold whitespace-nowrap">
+              {record.notify_sent_at && (
+                <span>{dayjs(record.notify_sent_at).format("MMM DD, HH:mm")}</span>
+              )}
+              {record.notify_sent_at && record.notify_count > 0 && (
+                <span className="text-slate-300 dark:text-slate-700">•</span>
+              )}
+              {record.notify_count > 0 && (
+                <span className="text-blue-500 dark:text-blue-400">
+                  {record.notify_count} sent
+                </span>
+              )}
+            </div>
           )}
         </div>
       ),
@@ -157,13 +165,13 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
       title: "CREATED AT",
       dataIndex: "created_at",
       key: "created_at",
-      width: 140,
+      width: 130,
       render: (date: string) => (
-        <div className="flex flex-col">
-          <span className="text-slate-600 dark:text-slate-300 font-bold text-xs">
+        <div className="flex flex-col gap-0.5 justify-center">
+          <span className="text-slate-700 dark:text-slate-300 font-semibold text-xs whitespace-nowrap">
             {dayjs(date).format("DD MMM YYYY")}
           </span>
-          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+          <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium">
             {dayjs(date).format("hh:mm A")}
           </span>
         </div>
@@ -172,15 +180,15 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
     {
       title: "NOTIFY",
       key: "notify",
-      width: 180,
+      width: 100,
       render: (record: any) => (
         <Button
           type="primary"
-          icon={<SendOutlined />}
+          icon={<SendOutlined style={{ fontSize: "10px" }} />}
           onClick={() => onOpenNotifyModal(record)}
-          className="rounded-xl font-bold text-[10px] uppercase tracking-widest h-9 px-4 !bg-gradient-to-r !from-indigo-600 !to-blue-500 border-none shadow-sm flex items-center gap-2"
+          className="rounded-md font-bold text-[9px] uppercase tracking-wider h-7 px-2.5 !bg-blue-600 hover:!bg-blue-700 text-white border-none shadow-sm flex items-center gap-1 transition-all"
         >
-          Send Notification
+          Send
         </Button>
       ),
     },
@@ -190,51 +198,119 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
             title: "ACTIONS",
             key: "actions",
             fixed: "right" as const,
-            width: 100,
-            render: (record: any) => (
-              <Space size="middle">
-                {canUpdate && (
-                  <Tooltip title="Edit Notification">
-                    <Button
-                      type="text"
-                      icon={<EditOutlined className="text-indigo-500 dark:text-indigo-400" />}
-                      onClick={() => onEdit(record)}
-                      className="hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-lg transition-all"
-                    />
-                  </Tooltip>
-                )}
-                {canDelete && (
-                  <Tooltip title="Delete">
-                    <Button
-                      type="text"
-                      danger
-                      icon={<DeleteOutlined />}
-                      onClick={() => onDelete(record.id)}
-                      className="hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-all"
-                    />
-                  </Tooltip>
-                )}
-              </Space>
-            ),
+            width: 80,
+            align: "center" as const,
+            render: (record: any) => {
+              const menuItems = [
+                ...(canUpdate
+                  ? [
+                      {
+                        key: "edit",
+                        icon: <EditOutlined className="text-slate-500" />,
+                        label: <span className="font-semibold text-xs text-slate-700 dark:text-slate-200">Edit</span>,
+                      },
+                    ]
+                  : []),
+                ...(canDelete
+                  ? [
+                      {
+                        key: "delete",
+                        icon: <DeleteOutlined className="text-rose-500" />,
+                        label: <span className="font-semibold text-xs text-rose-600">Delete</span>,
+                        danger: true,
+                      },
+                    ]
+                  : []),
+              ];
+
+              return (
+                <Dropdown
+                  menu={{
+                    items: menuItems,
+                    onClick: ({ key }) => {
+                      if (key === "edit") {
+                        onEdit(record);
+                      } else if (key === "delete") {
+                        onDelete(record.id);
+                      }
+                    },
+                  }}
+                  trigger={["click"]}
+                  placement="bottomRight"
+                >
+                  <Button
+                    type="text"
+                    icon={<EllipsisOutlined className="text-slate-500 dark:text-slate-400 text-base" />}
+                    className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/80 dark:border-slate-700/80 p-0 cursor-pointer"
+                  />
+                </Dropdown>
+              );
+            },
           },
         ]
       : []),
   ];
 
   return (
-    <Table
-      columns={columns}
-      dataSource={data}
-      loading={loading}
-      rowKey="id"
-      pagination={{
-        pageSize: 10,
-        showSizeChanger: true,
-        className: "premium-pagination pt-4",
-      }}
-      className="premium-table-alt"
-      scroll={{ x: 800 }}
-    />
+    <>
+      <style>{`
+        /* Compact premium table flat styles */
+        .premium-table-compact .ant-table-thead > tr > th {
+          background: #f8fafc !important;
+          color: #64748b !important;
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          font-size: 10px !important;
+          letter-spacing: 0.05em !important;
+          border-bottom: 1px solid #e2e8f0 !important;
+          padding: 8px 12px !important;
+        }
+        .premium-table-compact .ant-table-tbody > tr > td {
+          padding: 8px 12px !important;
+          border-bottom: 1px solid #f1f5f9 !important;
+          background: #ffffff !important;
+        }
+        .premium-table-compact .ant-table-tbody > tr:hover > td {
+          background: #f8fafc !important;
+        }
+        .premium-table-compact .ant-table-cell-row-hover {
+          background: #f8fafc !important;
+        }
+        .premium-table-compact .ant-table {
+          background: transparent !important;
+        }
+
+        /* Dark mode overrides for compact table */
+        .dark .premium-table-compact .ant-table-thead > tr > th {
+          background: #1e293b !important;
+          color: #94a3b8 !important;
+          border-bottom: 1px solid #334155 !important;
+        }
+        .dark .premium-table-compact .ant-table-tbody > tr > td {
+          background: #0f172a !important;
+          border-bottom: 1px solid #1e293b !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .premium-table-compact .ant-table-tbody > tr:hover > td {
+          background: #1e293b !important;
+        }
+        .dark .premium-table-compact .ant-table-cell-row-hover {
+          background: #1e293b !important;
+        }
+      `}</style>
+      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 shadow-sm overflow-hidden pb-1">
+        <Table
+          columns={columns}
+          dataSource={data}
+          loading={loading}
+          rowKey="id"
+          pagination={false}
+          className="premium-table-compact"
+          scroll={{ x: 800 }}
+          size="small"
+        />
+      </div>
+    </>
   );
 };
 

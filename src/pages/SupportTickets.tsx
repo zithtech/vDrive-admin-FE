@@ -1,16 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   Layout,
-  List,
   Tag,
   Button,
   Typography,
   Input,
   Space,
-  Avatar,
   Spin,
   Tooltip,
-  Segmented,
   Badge,
 } from "antd";
 import { useSearchParams } from "react-router-dom";
@@ -22,6 +19,7 @@ import {
   CustomerServiceOutlined,
   ClockCircleOutlined,
   HistoryOutlined,
+  ReloadOutlined,
 } from "@ant-design/icons";
 import axiosIns from "../api/axios";
 import { useSocket } from "../hooks/useSocket";
@@ -92,14 +90,20 @@ interface SupportTicket {
   updated_at: string;
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  payment: "gold",
-  documents: "cyan",
-  app_crash: "red",
-  account: "purple",
-  subscription: "geekblue",
-  rides: "green",
-  general: "default",
+const CATEGORY_META: Record<string, { label: string; color: string; icon: string; bg: string }> = {
+  payment: { label: "Payment", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10", icon: "💰" },
+  documents: { label: "Documents", color: "text-cyan-600 dark:text-cyan-400", bg: "bg-cyan-50 dark:bg-cyan-500/10", icon: "📄" },
+  app_crash: { label: "App Issue", color: "text-rose-600 dark:text-rose-450", bg: "bg-rose-50 dark:bg-rose-500/10", icon: "🐛" },
+  account: { label: "Account", color: "text-purple-600 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-500/10", icon: "👤" },
+  subscription: { label: "Subscription", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10", icon: "📦" },
+  rides: { label: "Rides", color: "text-emerald-600 dark:text-emerald-450", bg: "bg-emerald-50 dark:bg-emerald-500/10", icon: "🚗" },
+  general: { label: "General", color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-50 dark:bg-slate-500/10", icon: "❓" },
+};
+
+const PRIORITY_META: Record<string, { label: string; color: string; bg: string }> = {
+  high: { label: "High", color: "text-rose-700 dark:text-rose-450", bg: "bg-rose-50 dark:bg-rose-500/10" },
+  medium: { label: "Medium", color: "text-amber-700 dark:text-amber-450", bg: "bg-amber-50 dark:bg-amber-500/10" },
+  low: { label: "Low", color: "text-blue-700 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10" },
 };
 
 interface ChatMessage {
@@ -110,6 +114,31 @@ interface ChatMessage {
   message: string;
   created_at: string;
 }
+
+const getInitials = (name?: string) => {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+};
+
+const getAvatarBg = (name?: string) => {
+  if (!name) return "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700";
+  const colors = [
+    "bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/50",
+    "bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50",
+    "bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/50",
+    "bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400 border-purple-100 dark:border-purple-900/50",
+    "bg-rose-50 dark:bg-rose-950 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-900/50",
+    "bg-cyan-50 dark:bg-cyan-950 text-cyan-600 dark:text-cyan-400 border-cyan-100 dark:border-cyan-900/50"
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % colors.length;
+  return colors[index];
+};
 
 const SupportTickets: React.FC = () => {
   const [driverTickets, setDriverTickets] = useState<SupportTicket[]>([]);
@@ -298,7 +327,6 @@ const SupportTickets: React.FC = () => {
           message: greetingMsg,
         };
         socket.emit("sendSupportMessage", messageData);
-        // We do not manually push to setMessages here because the socket will broadcast it back to us via 'receiveSupportMessage' shortly after.
       }
     } catch (error) {
       console.error("Failed to fetch messages", error);
@@ -308,8 +336,6 @@ const SupportTickets: React.FC = () => {
   };
 
   const handleSendMessage = async () => {
-    console.log("replyText", replyText);
-    console.log("selectedTicket", selectedTicket);
     if (!replyText.trim() || !selectedTicket) return;
 
     if (socket) {
@@ -319,7 +345,6 @@ const SupportTickets: React.FC = () => {
         senderType: "admin",
         message: replyText.trim(),
       };
-      console.log("messageData", messageData);
 
       socket.emit("sendSupportMessage", messageData);
 
@@ -385,288 +410,259 @@ const SupportTickets: React.FC = () => {
   ).length;
 
   return (
-    <Layout className="h-full bg-slate-50">
+    <Layout className="h-full bg-slate-50 dark:bg-slate-950 flex flex-col md:flex-row overflow-hidden">
+      {/* ─── Sidebar Panel ───────────────────────────────────────────── */}
       <Sider
         width={380}
         theme="light"
-        className="border-r border-slate-200 shadow-sm overflow-hidden flex flex-col"
+        className="border-r border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col bg-white dark:bg-slate-900 flex-shrink-0"
       >
-        <div className="flex flex-col h-full bg-white">
-          <div className="p-4 border-b border-slate-100 bg-white shrink-0">
-            <Title level={4} className="!mb-4 flex items-center gap-2">
-              <CustomerServiceOutlined className="text-indigo-600" />
-              Support Center
-            </Title>
-            <Space direction="vertical" className="w-full" size="middle">
-              <Segmented
-                block
-                value={userTypeFilter}
-                onChange={(v) => {
-                  setUserTypeFilter(v as any);
-                  setSelectedTicket(null);
-                  setSearchText("");
-                }}
-                options={[
-                  {
-                    label: (
-                      <div className="flex items-center justify-center gap-2 py-1 px-2">
-                        <UserOutlined
-                          className={
-                            userTypeFilter === "drivers" ? "text-indigo-600" : "text-slate-500"
-                          }
-                        />
-                        <span
-                          className={`font-semibold tracking-wide ${userTypeFilter === "drivers" ? "text-indigo-700" : "text-slate-600"}`}
-                        >
-                          Drivers
-                        </span>
-                        {driverActiveCount > 0 && (
-                          <span
-                            className={`text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm ${userTypeFilter === "drivers" ? "bg-indigo-500 text-white shadow-indigo-200" : "bg-slate-200 text-slate-500"}`}
-                          >
-                            {driverActiveCount}
-                          </span>
-                        )}
-                      </div>
-                    ),
-                    value: "drivers",
-                  },
-                  {
-                    label: (
-                      <div className="flex items-center justify-center gap-2 py-1 px-2">
-                        <UserOutlined
-                          className={
-                            userTypeFilter === "customers" ? "text-indigo-600" : "text-slate-500"
-                          }
-                        />
-                        <span
-                          className={`font-semibold tracking-wide ${userTypeFilter === "customers" ? "text-indigo-700" : "text-slate-600"}`}
-                        >
-                          Customers
-                        </span>
-                        {customerActiveCount > 0 && (
-                          <span
-                            className={`text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm ${userTypeFilter === "customers" ? "bg-indigo-500 text-white shadow-indigo-200" : "bg-slate-200 text-slate-500"}`}
-                          >
-                            {customerActiveCount}
-                          </span>
-                        )}
-                      </div>
-                    ),
-                    value: "customers",
-                  },
-                ]}
-                className="bg-slate-100 p-1 rounded-lg"
-              />
-              <Segmented
-                block
-                value={statusFilter}
-                onChange={(v) => setStatusFilter(v as any)}
-                options={[
-                  {
-                    label: (
-                      <div className="flex items-center justify-center gap-2 py-0.5 px-1">
-                        <ClockCircleOutlined
-                          className={
-                            statusFilter === "active" ? "text-indigo-600" : "text-slate-500"
-                          }
-                        />
-                        <span
-                          className={`font-medium ${statusFilter === "active" ? "text-indigo-700" : "text-slate-600"}`}
-                        >
-                          Active
-                        </span>
-                        <span
-                          className={`text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm transition-colors ${statusFilter === "active" ? "bg-indigo-100 text-indigo-700" : "bg-slate-200 text-slate-500"}`}
-                        >
-                          {currentActiveCount}
-                        </span>
-                      </div>
-                    ),
-                    value: "active",
-                  },
-                  {
-                    label: (
-                      <div className="flex items-center justify-center gap-2 py-0.5 px-1">
-                        <HistoryOutlined
-                          className={
-                            statusFilter === "resolved" ? "text-indigo-600" : "text-slate-500"
-                          }
-                        />
-                        <span
-                          className={`font-medium ${statusFilter === "resolved" ? "text-indigo-700" : "text-slate-600"}`}
-                        >
-                          History
-                        </span>
-                        <span
-                          className={`text-[10px] w-5 h-5 flex items-center justify-center rounded-full font-bold shadow-sm transition-colors ${statusFilter === "resolved" ? "bg-indigo-100 text-indigo-700" : "bg-slate-200 text-slate-500"}`}
-                        >
-                          {currentHistoryCount}
-                        </span>
-                      </div>
-                    ),
-                    value: "resolved",
-                  },
-                ]}
-                className="bg-slate-100 p-1 rounded-lg"
-              />
+        <div className="flex flex-col h-full bg-white dark:bg-slate-900">
+          {/* Header Context and Controls */}
+          <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0 flex flex-col gap-4">
+            <div className="flex items-center gap-3 px-1">
+              <div className="relative flex items-center justify-center w-9 h-9 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-100/50 dark:border-blue-900/30">
+                <CustomerServiceOutlined className="text-base text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-extrabold text-slate-800 dark:text-slate-200 tracking-tight text-xs uppercase leading-none">
+                  Support Center
+                </span>
+                <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">
+                  Live Chat Queue
+                </span>
+              </div>
+            </div>
+
+            {/* Custom styled switchers */}
+            <div className="flex flex-col gap-2.5">
+              {/* Sidenav switcher: Drivers / Customers */}
+              <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-lg w-full">
+                <button
+                  onClick={() => {
+                    setUserTypeFilter("drivers");
+                    setSelectedTicket(null);
+                    setSearchText("");
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-md text-xs font-extrabold transition-all duration-200 ${
+                    userTypeFilter === "drivers"
+                      ? "bg-white dark:bg-slate-800 text-blue-650 dark:text-blue-400 shadow-sm"
+                      : "text-slate-505 dark:text-slate-450 hover:text-slate-800 dark:hover:text-slate-200"
+                  }`}
+                >
+                  <UserOutlined />
+                  <span>Drivers</span>
+                  {driverActiveCount > 0 && (
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                      userTypeFilter === "drivers"
+                        ? "bg-blue-500 text-white"
+                        : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                    }`}>
+                      {driverActiveCount}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    setUserTypeFilter("customers");
+                    setSelectedTicket(null);
+                    setSearchText("");
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-md text-xs font-extrabold transition-all duration-200 ${
+                    userTypeFilter === "customers"
+                      ? "bg-white dark:bg-slate-800 text-blue-650 dark:text-blue-400 shadow-sm"
+                      : "text-slate-505 dark:text-slate-450 hover:text-slate-800 dark:hover:text-slate-200"
+                  }`}
+                >
+                  <UserOutlined />
+                  <span>Customers</span>
+                  {customerActiveCount > 0 && (
+                    <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                      userTypeFilter === "customers"
+                        ? "bg-blue-500 text-white"
+                        : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                    }`}>
+                      {customerActiveCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              {/* Sidenav switcher: Active / History */}
+              <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-lg w-full">
+                <button
+                  onClick={() => setStatusFilter("active")}
+                  className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-md text-xs font-extrabold transition-all duration-200 ${
+                    statusFilter === "active"
+                      ? "bg-white dark:bg-slate-800 text-blue-650 dark:text-blue-400 shadow-sm"
+                      : "text-slate-505 dark:text-slate-450 hover:text-slate-800 dark:hover:text-slate-200"
+                  }`}
+                >
+                  <ClockCircleOutlined />
+                  <span>Active</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    statusFilter === "active"
+                      ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                      : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
+                    {currentActiveCount}
+                  </span>
+                </button>
+                <button
+                  onClick={() => setStatusFilter("resolved")}
+                  className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-md text-xs font-extrabold transition-all duration-200 ${
+                    statusFilter === "resolved"
+                      ? "bg-white dark:bg-slate-800 text-blue-650 dark:text-blue-400 shadow-sm"
+                      : "text-slate-505 dark:text-slate-450 hover:text-slate-800 dark:hover:text-slate-200"
+                  }`}
+                >
+                  <HistoryOutlined />
+                  <span>History</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    statusFilter === "resolved"
+                      ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                      : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
+                    {currentHistoryCount}
+                  </span>
+                </button>
+              </div>
+
+              {/* Sider filter input */}
               <Input
                 placeholder="Search by ID or subject..."
-                prefix={<SearchOutlined className="text-slate-400" />}
-                className="rounded-lg bg-slate-50 border-none"
+                prefix={<SearchOutlined className="text-slate-400 dark:text-slate-500" />}
+                className="premium-search-input rounded-lg bg-slate-50 dark:bg-slate-950 border-none"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 allowClear
               />
-            </Space>
+            </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto bg-white min-h-0">
-            <List
-              loading={loading}
-              dataSource={filteredTickets}
-              renderItem={(item) => {
+          {/* Cards Queue List */}
+          <div className="flex-1 overflow-y-auto bg-slate-50/50 dark:bg-slate-950/10 p-3 min-h-0 custom-scrollbar flex flex-col gap-2.5">
+            {loading ? (
+              <div className="flex h-full items-center justify-center p-8">
+                <Spin size="large" />
+              </div>
+            ) : filteredTickets.length > 0 ? (
+              filteredTickets.map((item) => {
                 const isUnread = item.status === "open" && !viewedTickets.has(item.id);
+                const isSelected = selectedTicket?.id === item.id;
+                const meta = CATEGORY_META[item.category || "general"] || CATEGORY_META.general;
+                const priorityMeta = PRIORITY_META[item.priority] || PRIORITY_META.low;
+                const name = userTypeFilter === "customers" ? item.user_name : item.driver_name;
+                const initials = getInitials(name || "Anonymous");
+                const avatarBg = getAvatarBg(name || "Anonymous");
+
                 return (
-                  <List.Item
+                  <div
+                    key={item.id}
                     onClick={() => {
                       setSelectedTicket(item);
                       setViewedTickets((prev) => new Set(prev).add(item.id));
                     }}
-                    className={`!p-0 cursor-pointer transition-all duration-300 ease-in-out border-b border-slate-100/60 group overflow-hidden relative ${
-                      selectedTicket?.id === item.id
-                        ? "bg-gradient-to-r from-indigo-50/80 to-white shadow-[inset_4px_0_0_0_#4f46e5]"
+                    className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 relative flex flex-col gap-3 ${
+                      isSelected
+                        ? "bg-white dark:bg-slate-900 border-blue-500 shadow-md shadow-blue-500/5 ring-1 ring-blue-500/10"
                         : isUnread
-                          ? "bg-gradient-to-r from-blue-50/60 to-white hover:from-blue-100/50 hover:to-slate-50 shadow-[inset_4px_0_0_0_#60a5fa]"
-                          : "hover:bg-slate-50/80 shadow-[inset_4px_0_0_0_transparent] hover:shadow-[inset_4px_0_0_0_#cbd5e1]"
+                        ? "bg-white dark:bg-slate-900 border-blue-200 dark:border-blue-900/40 shadow-sm hover:border-blue-400"
+                        : "bg-white/80 dark:bg-slate-900/80 border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm"
                     }`}
                   >
-                    <div className="w-full p-4 pl-5">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center gap-2 overflow-hidden mr-2">
-                          <Avatar
-                            size={24}
-                            className={`flex-shrink-0 ${selectedTicket?.id === item.id ? "bg-indigo-600 text-white" : isUnread ? "bg-blue-500 text-white" : "bg-slate-200 text-slate-500"}`}
-                            icon={<UserOutlined />}
-                          />
-                          <Text
-                            strong
-                            className={`truncate block ${isUnread ? "text-slate-900 font-bold" : "text-slate-700"}`}
-                            title={item.subject}
-                          >
+                    {/* Unread indicator dot */}
+                    {isUnread && (
+                      <div className="absolute top-4.5 right-4 w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                    )}
+
+                    {/* Top row: Initials Avatar + Title + Date */}
+                    <div className="flex justify-between items-start gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`w-8 h-8 flex-shrink-0 rounded-full border flex items-center justify-center font-extrabold text-[10px] uppercase shadow-sm ${avatarBg}`}>
+                          {initials}
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className={`text-xs truncate block leading-tight ${isUnread ? "text-slate-900 dark:text-white font-black" : "text-slate-750 dark:text-slate-300 font-bold"}`}>
                             {item.subject}
-                          </Text>
+                          </span>
+                          <span className="text-[10px] text-slate-450 dark:text-slate-450 mt-1 font-semibold">
+                            {name || "Anonymous"}
+                          </span>
                         </div>
-                        <Text className="text-[10px] text-slate-400 whitespace-nowrap mt-0.5">
+                      </div>
+                      {!isUnread && (
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold whitespace-nowrap mt-1">
                           {dayjs(item.created_at).format("MMM DD")}
-                        </Text>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-1.5 mb-2 pl-8">
-                        <Text className="text-[10px] text-slate-400 font-mono bg-slate-100 px-1.5 py-0.5 rounded">
-                          #{item.id.split("-")[0].toUpperCase()}
-                        </Text>
-                        <Tag
-                          color={
-                            item.priority === "high"
-                              ? "red"
-                              : item.priority === "medium"
-                                ? "orange"
-                                : "blue"
-                          }
-                          className="text-[9px] border-none rounded-full px-2 m-0 leading-tight"
-                        >
-                          {item.priority.toUpperCase()}
-                        </Tag>
-                        {item.category && item.category !== "general" && (
-                          <Tag
-                            color={CATEGORY_COLORS[item.category] || "default"}
-                            className="text-[9px] border-none rounded-full px-2 m-0 leading-tight"
-                          >
-                            {item.category.replace("_", " ").toUpperCase()}
-                          </Tag>
-                        )}
-                        {item.status === "resolved" && (
-                          <Tag
-                            color="success"
-                            className="text-[9px] border-none rounded-full px-2 m-0 leading-tight"
-                          >
-                            RESOLVED
-                          </Tag>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between pl-8">
-                        <Text
-                          type="secondary"
-                          className={`text-xs truncate block max-w-[200px] ${isUnread ? "font-medium text-slate-600" : ""}`}
-                        >
-                          {userTypeFilter === "customers"
-                            ? item.user_name || "Anonymous Customer"
-                            : item.driver_name || "Anonymous Driver"}
-                        </Text>
-                        <div className="flex items-center gap-2">
-                          {isUnread && (
-                            <Tag
-                              color="blue"
-                              className="border-none rounded-full text-[9px] px-2 py-0.5 m-0 font-bold bg-blue-100 text-blue-600 animate-pulse shadow-sm"
-                            >
-                              NEW
-                            </Tag>
-                          )}
-                          {item.status === "open" && <Badge status="processing" />}
-                        </div>
-                      </div>
+                        </span>
+                      )}
                     </div>
-                  </List.Item>
-                );
-              }}
-              locale={{
-                emptyText: (
-                  <div className="p-8 text-center text-slate-400">
-                    No {statusFilter} tickets found
+
+                    {/* Bottom row: Meta Tags */}
+                    <div className="flex flex-wrap items-center gap-1.5 pl-0.5">
+                      <span className="text-[9px] font-mono font-bold text-slate-500 dark:text-slate-450 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 border border-slate-200/50 dark:border-slate-700/50 rounded uppercase">
+                        #{item.id.split("-")[0].toUpperCase()}
+                      </span>
+                      <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${priorityMeta.bg} ${priorityMeta.color} rounded`}>
+                        <span className={`w-1 h-1 rounded-full ${item.priority === "high" ? "bg-rose-500" : item.priority === "medium" ? "bg-amber-500" : "bg-blue-500"}`} />
+                        {priorityMeta.label}
+                      </span>
+                      {item.category && item.category !== "general" && (
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${meta.bg} ${meta.color} rounded`}>
+                          <span>{meta.icon}</span>
+                          <span>{meta.label}</span>
+                        </span>
+                      )}
+                      {item.status === "resolved" && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 rounded">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          RESOLVED
+                        </span>
+                      )}
+                    </div>
                   </div>
-                ),
-              }}
-            />
+                )
+              })
+            ) : (
+              <div className="p-8 text-center text-slate-400 dark:text-slate-500 font-medium">
+                No {statusFilter} tickets found
+              </div>
+            )}
           </div>
         </div>
       </Sider>
 
-      <Content className="bg-white dark:bg-slate-900 flex flex-col">
+      {/* ─── Chat Content Panel ──────────────────────────────────────── */}
+      <Content className="bg-white dark:bg-slate-905 flex flex-col flex-grow min-w-0">
         {selectedTicket ? (
           <>
-            <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white shadow-sm z-10">
-              <div className="flex items-center gap-4">
-                <Avatar
-                  size="large"
-                  icon={<UserOutlined />}
-                  className="bg-indigo-100 text-indigo-600 shadow-sm"
-                />
+            {/* Chat header */}
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 shadow-sm z-10">
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-full border flex items-center justify-center font-extrabold text-xs uppercase shadow-sm ${getAvatarBg(userTypeFilter === "customers" ? selectedTicket.user_name : selectedTicket.driver_name)}`}>
+                  {getInitials(userTypeFilter === "customers" ? selectedTicket.user_name : selectedTicket.driver_name)}
+                </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <Title level={5} className="!mb-0 text-slate-800">
+                  <div className="flex items-center gap-2.5">
+                    <Title level={5} className="!mb-0 text-slate-850 dark:text-slate-150 font-extrabold text-sm tracking-tight leading-none">
                       {selectedTicket.subject}
                     </Title>
-                    <Tag
-                      color={
-                        selectedTicket.status === "open"
-                          ? "processing"
-                          : selectedTicket.status === "resolved"
-                            ? "success"
-                            : "default"
-                      }
-                      className="border-none rounded-full text-[10px] px-2 m-0"
-                    >
+                    <span className={`inline-flex px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${
+                      selectedTicket.status === "open"
+                        ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+                        : "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                    } rounded-none`}>
                       {selectedTicket.status.toUpperCase()}
-                    </Tag>
-                  </div>
-                  <Text type="secondary" className="text-xs flex items-center gap-1.5 mt-1">
-                    <span className="font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
-                      #{selectedTicket.id.split("-")[0].toUpperCase()}
                     </span>
-                    <span className="text-slate-300">•</span>
-                    <span>
-                      {userTypeFilter === "customers" ? "Customer" : "Driver"}:{" "}
-                      <strong className="text-slate-600">
+                  </div>
+                  <Text type="secondary" className="text-xs flex items-center gap-1.5 mt-1.5">
+                    <span className="text-[9px] font-mono font-bold text-slate-500 dark:text-slate-450 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 border border-slate-200/50 dark:border-slate-700/50 rounded-none">
+                      #{selectedTicket.id.toUpperCase()}
+                    </span>
+                    <span className="text-slate-300 dark:text-slate-700">•</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                      {userTypeFilter === "customers" ? "Customer" : "Driver partner"}:{" "}
+                      <strong className="text-slate-700 dark:text-slate-300">
                         {userTypeFilter === "customers"
                           ? selectedTicket.user_name || "Anonymous Customer"
                           : selectedTicket.driver_name || "Anonymous Driver"}
@@ -679,7 +675,7 @@ const SupportTickets: React.FC = () => {
                 {selectedTicket.status === "open" && (
                   <Button
                     type="primary"
-                    className="bg-green-600 border-none rounded-lg font-semibold"
+                    className="bg-emerald-600 hover:bg-emerald-700 border-none rounded-lg font-bold text-xs uppercase tracking-wider h-8 px-4 flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.99] transition-all"
                     onClick={() => {
                       if (socket && currentUser) {
                         socket.emit("sendSupportMessage", {
@@ -698,14 +694,16 @@ const SupportTickets: React.FC = () => {
                 )}
                 <Tooltip title="Refresh Messages">
                   <Button
-                    icon={<ClockCircleOutlined />}
+                    icon={<ReloadOutlined className={messagesLoading ? "animate-spin" : ""} />}
                     onClick={() => fetchMessages(selectedTicket.id)}
+                    className="rounded-lg h-8 w-8 flex items-center justify-center border-slate-200 dark:border-slate-700 text-slate-450 dark:text-slate-400 bg-white dark:bg-slate-800"
                   />
                 </Tooltip>
               </Space>
             </div>
 
-            <div className="flex-grow overflow-y-auto p-6 bg-slate-50/30 dark:bg-slate-900/50">
+            {/* Chat messages */}
+            <div className="flex-grow overflow-y-auto p-6 bg-slate-50/70 dark:bg-slate-950/40 custom-scrollbar">
               {messagesLoading ? (
                 <div className="flex h-full items-center justify-center">
                   <Spin />
@@ -719,10 +717,15 @@ const SupportTickets: React.FC = () => {
 
                     if (isSystem) {
                       return (
-                        <div key={msg.id} className="text-center my-2">
-                          <Tag className="rounded-full border-none bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] uppercase font-bold tracking-wider">
-                            {msg.message}
-                          </Tag>
+                        <div key={msg.id} className="flex items-center justify-center my-3 relative">
+                          <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                            <div className="w-full border-t border-slate-150 dark:border-slate-800/80" />
+                          </div>
+                          <div className="relative z-10">
+                            <span className="px-3 py-0.5 text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50 rounded-none">
+                              {msg.message}
+                            </span>
+                          </div>
                         </div>
                       );
                     }
@@ -736,28 +739,36 @@ const SupportTickets: React.FC = () => {
                           className={`flex flex-col max-w-[70%] ${isMe ? "items-end" : "items-start"}`}
                         >
                           <div className="flex items-center gap-2 mb-1">
-                            <Text className="text-[10px] font-bold text-slate-400 uppercase">
+                            <span className="text-[9px] font-extrabold text-slate-450 dark:text-slate-500 uppercase tracking-wider">
                               {isBot
-                                ? "AI BOT"
+                                ? "🤖 AI Assistant"
                                 : isMe
-                                  ? "YOU"
-                                  : userTypeFilter === "customers"
-                                    ? "CUSTOMER"
-                                    : "DRIVER"}
-                            </Text>
+                                ? "You"
+                                : userTypeFilter === "customers"
+                                ? "Customer"
+                                : "Driver partner"}
+                            </span>
                           </div>
                           <div
                             className={`
-                            px-4 py-2 rounded-2xl shadow-sm text-sm
-                            ${isMe ? "bg-indigo-600 dark:bg-indigo-500 text-white rounded-tr-none" : "bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-tl-none"}
-                            ${isBot ? "border-dashed border-indigo-200 dark:border-indigo-500/30 bg-indigo-50/30 dark:bg-indigo-500/10" : ""}
+                            px-4 py-2.5 rounded-2xl shadow-sm text-sm leading-relaxed
+                            ${
+                              isMe
+                                ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-tr-none shadow-blue-500/5"
+                                : "bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-150/40 dark:border-slate-700/50 rounded-tl-none"
+                            }
+                            ${
+                              isBot
+                                ? "bg-gradient-to-br from-indigo-50/30 to-violet-50/30 dark:from-indigo-950/10 dark:to-violet-950/10 border border-dashed border-indigo-200 dark:border-indigo-850/60"
+                                : ""
+                            }
                           `}
                           >
                             {msg.message}
                           </div>
-                          <Text className="text-[9px] text-slate-400 mt-1">
+                          <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 mt-1 pl-1 pr-1">
                             {dayjs(msg.created_at).format("HH:mm")}
-                          </Text>
+                          </span>
                         </div>
                       </div>
                     );
@@ -767,7 +778,8 @@ const SupportTickets: React.FC = () => {
               )}
             </div>
 
-            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-800 flex flex-col gap-3">
+            {/* Chat footer quick replies & input */}
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col gap-3">
               <div
                 className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide"
                 style={{ scrollbarWidth: "none" }}
@@ -776,7 +788,7 @@ const SupportTickets: React.FC = () => {
                   (reply, idx) => (
                     <Tag
                       key={idx}
-                      className="cursor-pointer px-3 py-1.5 rounded-full border border-indigo-100 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white transition-colors whitespace-nowrap text-xs font-medium m-0"
+                      className="cursor-pointer px-3 py-1.5 rounded-full border border-blue-100 bg-blue-50/70 text-blue-600 dark:border-blue-900/30 dark:bg-blue-950/20 dark:text-blue-400 hover:bg-blue-600 dark:hover:bg-blue-600 hover:text-white dark:hover:text-white transition-all hover:scale-[1.03] active:scale-[0.98] whitespace-nowrap text-xs font-semibold m-0"
                       onClick={() => setReplyText(reply.text)}
                     >
                       {reply.label}
@@ -784,22 +796,22 @@ const SupportTickets: React.FC = () => {
                   ),
                 )}
               </div>
-              <Space.Compact className="w-full">
+              <Space.Compact className="w-full premium-chat-input-wrapper">
                 <Input
                   placeholder={`Type your response to the ${userTypeFilter === "customers" ? "customer" : "driver"}...`}
                   size="large"
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   onPressEnter={handleSendMessage}
-                  className="rounded-l-xl dark:bg-slate-900 dark:text-slate-200 dark:border-slate-700"
-                  prefix={<MessageOutlined className="text-slate-300 dark:text-slate-500" />}
+                  className="premium-chat-input"
+                  prefix={<MessageOutlined className="text-slate-400 dark:text-slate-500" />}
                 />
                 <Button
                   type="primary"
                   size="large"
                   icon={<SendOutlined />}
                   onClick={handleSendMessage}
-                  className="rounded-r-xl h-[40px] px-6"
+                  className="premium-chat-send-btn"
                 >
                   Reply
                 </Button>
@@ -807,20 +819,141 @@ const SupportTickets: React.FC = () => {
             </div>
           </>
         ) : (
-          <div className="flex h-full items-center justify-center flex-col gap-4 text-slate-400">
-            <CustomerServiceOutlined style={{ fontSize: 64 }} />
-            <div className="text-center">
-              <Title level={4} className="!text-slate-400">
-                Support Chat
+          /* Empty Chat State */
+          <div className="flex h-full items-center justify-center flex-col gap-6 text-slate-400 p-8 select-none bg-slate-50/20 dark:bg-slate-900/10">
+            <div className="relative">
+              {/* Inner ring */}
+              <div className="w-24 h-24 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-100/50 dark:border-blue-900/30 flex items-center justify-center text-blue-500 animate-pulse">
+                <CustomerServiceOutlined style={{ fontSize: 44 }} />
+              </div>
+              {/* Pulsing glow dot */}
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900 shadow-sm" />
+            </div>
+
+            <div className="text-center max-w-sm">
+              <Title level={4} className="!text-slate-700 dark:!text-slate-350 font-extrabold tracking-tight mb-2">
+                Support Chat Desk
               </Title>
-              <Text type="secondary">
-                Select a ticket from the list to start chatting with the{" "}
-                {userTypeFilter === "customers" ? "customer" : "driver"}.
+              <Text type="secondary" className="text-xs text-slate-450 dark:text-slate-500 block mb-6">
+                Select a ticket from the live queue to begin assisting driver partners and customers.
               </Text>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 w-full max-w-sm pt-6 border-t border-slate-100 dark:border-slate-800">
+              <div className="bg-slate-50/50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800/80 p-4 rounded-xl flex items-center justify-between shadow-sm">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider block mb-1">
+                    Active Drivers
+                  </span>
+                  <span className="text-2xl font-black text-blue-600 dark:text-blue-400 leading-none">
+                    {driverActiveCount}
+                  </span>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500 mt-2 font-medium">
+                    Waiting in queue
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg">
+                  <UserOutlined />
+                </div>
+              </div>
+
+              <div className="bg-slate-50/50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800/80 p-4 rounded-xl flex items-center justify-between shadow-sm">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-wider block mb-1">
+                    Active Customers
+                  </span>
+                  <span className="text-2xl font-black text-amber-500 dark:text-amber-400 leading-none">
+                    {customerActiveCount}
+                  </span>
+                  <span className="text-[9px] text-slate-400 dark:text-slate-500 mt-2 font-medium">
+                    Waiting in queue
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400 flex items-center justify-center text-lg">
+                  <UserOutlined />
+                </div>
+              </div>
             </div>
           </div>
         )}
       </Content>
+
+      <style>{`
+        /* Premium custom segment switch button elements overrides */
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+
+        /* Search input bar overrides */
+        .premium-search-input.ant-input-affix-wrapper {
+          border-radius: 6px !important;
+          background-color: #f8fafc !important;
+          border: 1px solid #e2e8f0 !important;
+          height: 36px !important;
+        }
+        .dark .premium-search-input.ant-input-affix-wrapper {
+          background-color: #0f172a !important;
+          border-color: #334155 !important;
+        }
+        .premium-search-input.ant-input-affix-wrapper-focused {
+          border-color: #3b82f6 !important;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+        }
+
+        /* Chat input compact overrides */
+        .premium-chat-input-wrapper.ant-space-compact {
+          border: 1px solid #e2e8f0 !important;
+          background-color: #ffffff !important;
+          border-radius: 8px !important;
+          overflow: hidden;
+        }
+        .dark .premium-chat-input-wrapper.ant-space-compact {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+        }
+        .premium-chat-input-wrapper.ant-space-compact:focus-within {
+          border-color: #3b82f6 !important;
+          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1) !important;
+        }
+        .premium-chat-input.ant-input-affix-wrapper {
+          border: none !important;
+          background-color: transparent !important;
+          box-shadow: none !important;
+          height: 40px !important;
+        }
+        .dark .premium-chat-input.ant-input-affix-wrapper input {
+          color: #f1f5f9 !important;
+        }
+        .premium-chat-send-btn.ant-btn {
+          border: none !important;
+          height: 40px !important;
+          border-radius: 0px !important;
+          background-color: #2563eb !important;
+          font-weight: 700 !important;
+        }
+        .premium-chat-send-btn.ant-btn:hover {
+          background-color: #1d4ed8 !important;
+        }
+
+        /* Custom scrollbar styling */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
+          height: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 3px;
+        }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #334155;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+      `}</style>
     </Layout>
   );
 };

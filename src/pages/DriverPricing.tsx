@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Segmented, Button, Card, Drawer } from "antd";
+import { Segmented, Button, Drawer } from "antd";
 import { messageApi as message } from "../utilities/antdStaticHolder";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
@@ -379,6 +379,7 @@ const DriverPricing = () => {
                   <Button
                     icon={<EyeOutlined />}
                     type="primary"
+                    className="!bg-blue-600 hover:!bg-blue-700 !rounded-lg text-xs font-bold uppercase tracking-wider h-8 border-none shadow-sm"
                     onClick={() => setIsDrawerOpen(true)}
                   >
                     Pricing Preview
@@ -386,7 +387,7 @@ const DriverPricing = () => {
                 </div>
               }
             >
-              <div className="w-full shrink-0">
+              <div className="w-full shrink-0 px-4 pt-4">
                 <Segmented<string>
                   options={[
                     {
@@ -407,7 +408,7 @@ const DriverPricing = () => {
                 />
               </div>
               {activeTab === "configuration" ? (
-                <div className="flex-1 min-h-0 overflow-hidden">
+                <div className="flex-1 min-h-0 overflow-hidden pl-4 pt-3">
                   <div className="grid grid-cols-1 lg:grid-cols-[450px_1fr] gap-4 lg:gap-6 mt-2 h-full overflow-hidden">
                     <div className="flex flex-col gap-4 min-w-0 overflow-y-auto pb-2 h-full">
                       <LocationConfiguration
@@ -463,37 +464,36 @@ const DriverPricing = () => {
 
           <div className="shrink-0">
             {activeTab === "configuration" ? (
-              <Card className="w-full rounded-none border-t">
-                <div className="flex flex-col sm:flex-row justify-end gap-2">
-                  <Button
-                    className="w-full sm:w-auto"
-                    onClick={() => navigate("/PricingAndFareRules")}
-                  >
-                    Cancel
-                  </Button>
-                  {isAuthorized && (
-                    <>
-                      <Button
-                        type="primary"
-                        className="w-full sm:w-auto"
-                        onClick={handleSave}
-                        loading={isLoading}
-                      >
-                        Save Rule
-                      </Button>
-                      <Button
-                        type="primary"
-                        className="w-full sm:w-auto"
-                        style={{ background: "#4CAF50" }}
-                        onClick={handleSaveAndAddAnother}
-                        loading={isLoading}
-                      >
-                        Save & Add Another
-                      </Button>
-                    </>
-                  )}
-                </div>
-              </Card>
+              <div className="w-full border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 flex flex-col sm:flex-row justify-end gap-2 shadow-[0_-2px_8px_rgba(0,0,0,0.04)]">
+                <button
+                  className="w-full sm:w-auto px-4 h-8 text-xs font-bold uppercase tracking-wider rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
+                  onClick={() => navigate("/PricingAndFareRules")}
+                >
+                  Cancel
+                </button>
+                {isAuthorized && (
+                  <>
+                    <Button
+                      type="primary"
+                      size="small"
+                      className="w-full sm:w-auto h-8 !rounded-lg font-bold text-xs uppercase tracking-wider !bg-blue-600 hover:!bg-blue-700 border-none shadow-sm"
+                      onClick={handleSave}
+                      loading={isLoading}
+                    >
+                      Save Rule
+                    </Button>
+                    <Button
+                      type="primary"
+                      size="small"
+                      className="w-full sm:w-auto h-8 !rounded-lg font-bold text-xs uppercase tracking-wider !bg-blue-600 hover:!bg-blue-700 border-none shadow-sm"
+                      onClick={handleSaveAndAddAnother}
+                      loading={isLoading}
+                    >
+                      Save &amp; Add Another
+                    </Button>
+                  </>
+                )}
+              </div>
             ) : null}
           </div>
         </div>

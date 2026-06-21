@@ -42,17 +42,17 @@ const DetailCard = ({
   className?: string;
 }) => (
   <div
-    className={`bg-white rounded-[1rem] border border-gray-100 shadow-sm overflow-hidden mb-2 ${className}`}
+    className={`bg-white border border-gray-100 shadow-sm overflow-hidden mb-2 ${className}`}
   >
-    <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/30 flex items-center gap-3">
-      <div className="w-8 h-8 rounded-xl bg-white shadow-sm border border-gray-100 flex items-center justify-center text-indigo-600">
+    <div className="px-4 py-2.5 border-b border-gray-50 bg-gray-50/30 flex items-center gap-2">
+      <div className="w-6 h-6 bg-white shadow-sm border border-gray-100 flex items-center justify-center text-indigo-600">
         {icon}
       </div>
-      <span className="text-xs font-extrabold text-gray-800 uppercase tracking-widest">
+      <span className="text-[10px] font-extrabold text-gray-800 uppercase tracking-widest">
         {title}
       </span>
     </div>
-    <div className="p-6">{children}</div>
+    <div className="p-4">{children}</div>
   </div>
 );
 
@@ -294,7 +294,7 @@ const TripDetailsMasonry: React.FC<Props> = ({ trip }) => {
             ].map(({ label, value, icon }) => (
               <div
                 key={label}
-                className="bg-gray-50/50 border border-gray-100 rounded-2xl p-3 flex flex-col gap-1"
+                className="bg-gray-50/50 border border-gray-100 p-2 flex flex-col gap-1"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">
@@ -316,7 +316,7 @@ const TripDetailsMasonry: React.FC<Props> = ({ trip }) => {
       data: (
         <DetailCard icon={<FolderOutlined />} title="Settlement Status">
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-3 bg-gray-50/50 rounded-2xl border border-gray-100">
+            <div className="p-2 bg-gray-50/50 border border-gray-100">
               <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
                 Amount
               </span>
@@ -324,7 +324,7 @@ const TripDetailsMasonry: React.FC<Props> = ({ trip }) => {
                 ₹{trip?.total_fare}
               </span>
             </div>
-            <div className="p-3 bg-gray-50/50 rounded-2xl border border-gray-100">
+            <div className="p-2 bg-gray-50/50 border border-gray-100">
               <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1">
                 Method
               </span>
@@ -333,7 +333,7 @@ const TripDetailsMasonry: React.FC<Props> = ({ trip }) => {
               </span>
             </div>
           </div>
-          <div className="mt-3 p-4 bg-white rounded-2xl border border-gray-100 flex items-center justify-between">
+          <div className="mt-3 p-3 bg-white border border-gray-100 flex items-center justify-between">
             <span className="text-xs font-bold text-gray-700">Payment Health</span>
             <span
               className={`px-4 py-1.5 rounded-full text-[10px] font-extrabold tracking-widest border
@@ -489,7 +489,7 @@ const TripDetailsMasonry: React.FC<Props> = ({ trip }) => {
                       </span>
                     </div>
 
-                    <div className="bg-gray-50/80 rounded-2xl p-3 border border-gray-100">
+                    <div className="bg-gray-50/80 p-2 border border-gray-100">
                       <p className="text-[11px] font-extrabold text-gray-800 capitalize mb-1">
                         {tx.event_type.replace(/_/g, " ")}
                       </p>

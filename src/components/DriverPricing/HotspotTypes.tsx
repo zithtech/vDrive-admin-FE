@@ -4,13 +4,14 @@ import {
   Card,
   List,
   Typography,
-  Modal,
+  Drawer,
   Form,
   Input,
   InputNumber,
   Spin,
   Popconfirm,
   Tag,
+  Space,
 } from "antd";
 import { messageApi as message } from "../../utilities/antdStaticHolder";
 import { PlusOutlined, EditOutlined, DeleteOutlined, LoadingOutlined } from "@ant-design/icons";
@@ -139,7 +140,7 @@ const HotspotTypes = () => {
             type="primary"
             icon={<PlusOutlined />}
             onClick={handleAdd}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto h-8 !rounded-lg font-bold text-xs uppercase tracking-wider !bg-blue-600 hover:!bg-blue-700 border-none shadow-sm"
           >
             Add Hotspot
           </Button>
@@ -175,6 +176,9 @@ const HotspotTypes = () => {
                     onConfirm={() => handleDelete(item.id)}
                     okText="Yes"
                     cancelText="No"
+                    okButtonProps={{
+                      className: "!bg-blue-600 hover:!bg-blue-700 !rounded-lg font-bold text-xs uppercase tracking-wider border-none shadow-sm h-7",
+                    }}
                   >
                     <Button icon={<DeleteOutlined />} danger size="small" />
                   </Popconfirm>
@@ -184,13 +188,50 @@ const HotspotTypes = () => {
           )}
         />
 
-        <Modal
-          title={editingType ? "Edit Hotspot" : "Add Hotspot"}
+        <Drawer
+          title={
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center shrink-0">
+                <LuZap className="text-xl text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-tight leading-none">
+                  {editingType ? "Edit Hotspot" : "Add Hotspot"}
+                </span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mt-1.5">
+                  Configure demand pricing zone
+                </span>
+              </div>
+            </div>
+          }
+          placement="right"
+          onClose={handleModalCancel}
           open={modalVisible}
-          onOk={handleModalOk}
-          onCancel={handleModalCancel}
-          okText={editingType ? "Update" : "Create"}
-          confirmLoading={isLoading}
+          width={400}
+          closeIcon={null}
+          styles={{
+            header: { borderBottom: '1px solid #f1f5f9', padding: '20px 24px' },
+            body: { padding: '24px' },
+            footer: { borderTop: '1px solid #f1f5f9', padding: '16px 24px' }
+          }}
+          footer={
+            <div className="flex justify-end gap-3">
+              <button
+                className="px-5 h-10 text-xs font-bold uppercase tracking-wider rounded-lg border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 hover:bg-slate-50 transition-all"
+                onClick={handleModalCancel}
+              >
+                Cancel
+              </button>
+              <Button
+                type="primary"
+                className="h-10 px-6 !rounded-lg font-bold text-xs uppercase tracking-wider !bg-blue-600 hover:!bg-blue-700 border-none shadow-sm"
+                onClick={handleModalOk}
+                loading={isLoading}
+              >
+                {editingType ? "Update" : "Create Hotspot"}
+              </Button>
+            </div>
+          }
         >
           <Form
             form={form}
@@ -199,18 +240,19 @@ const HotspotTypes = () => {
               fare: 0,
               multiplier: 1,
             }}
+            className="flex flex-col gap-2"
           >
             <Form.Item
               name="hotspot_name"
-              label="Hotspot Name"
+              label={<span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Hotspot Name</span>}
               rules={[{ required: true, message: "Please enter hotspot name" }]}
             >
-              <Input placeholder="e.g., Rush Zone" maxLength={100} />
+              <Input placeholder="e.g., Airport Rush Zone" maxLength={100} className="h-11 rounded-lg" />
             </Form.Item>
 
             <Form.Item
               name="fare"
-              label="Fare (₹)"
+              label={<span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Additional Fare (₹)</span>}
               rules={[
                 { required: true, message: "Please enter fare" },
                 {
@@ -223,7 +265,8 @@ const HotspotTypes = () => {
               <InputNumber
                 min={0}
                 placeholder="40"
-                style={{ width: "100%" }}
+                className="w-full rounded-lg"
+                size="large"
                 prefix="₹"
                 step={0.01}
                 precision={2}
@@ -232,7 +275,7 @@ const HotspotTypes = () => {
 
             <Form.Item
               name="multiplier"
-              label="Multiplier"
+              label={<span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Price Multiplier</span>}
               rules={[
                 { required: true, message: "Please enter multiplier" },
                 {
@@ -241,18 +284,20 @@ const HotspotTypes = () => {
                   message: "Multiplier must be greater than 0",
                 },
               ]}
+              extra={<span className="text-xs text-slate-400 mt-1 block">Standard multiplier applies on top of base fare.</span>}
             >
               <InputNumber
                 min={0.1}
                 step={0.1}
                 placeholder="1.0"
-                style={{ width: "100%" }}
+                className="w-full rounded-lg"
+                size="large"
                 addonAfter="x"
                 precision={1}
               />
             </Form.Item>
           </Form>
-        </Modal>
+        </Drawer>
       </div>
     </Card>
   );

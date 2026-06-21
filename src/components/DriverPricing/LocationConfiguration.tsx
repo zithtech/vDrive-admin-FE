@@ -432,22 +432,21 @@ const LocationConfiguration = ({
   }, [debouncedCountrySearch, debouncedStateSearch, debouncedCitySearch, debouncedAreaSearch]);
 
   return (
-    <Card className="w-full" size="small">
+    <Card className="w-full !rounded-none" size="small" styles={{ body: { padding: '16px' } }}>
       <div className="w-full flex flex-col gap-4">
-        <div className="flex items-center justify-between w-full">
-          <div className="w-full flex items-center gap-1">
-            <div>
-              <MdOutlineLocationOn className="text-[25px] text-[#0080FF]" />
-            </div>
-            <div>
-              <span className="text-[20px] font-semibold p-0 m-0">Location Configuration</span>
-            </div>
+        {/* Section Header */}
+        <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+            <MdOutlineLocationOn className="text-base text-blue-600 dark:text-blue-400" />
           </div>
-          <div className=""></div>
+          <div className="flex flex-col">
+            <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-tight leading-none">Location Configuration</span>
+            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Set geographic scope for this pricing rule</span>
+          </div>
         </div>
-        <div className="w-full grid grid-cols-2 gap-4">
-          <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">Country</span>
+        <div className="w-full grid grid-cols-2 gap-3">
+          <div className="w-full flex flex-col gap-1">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Country</span>
             <AutoComplete
               value={countrySearch}
               onSearch={handleCountrySearch}
@@ -462,12 +461,13 @@ const LocationConfiguration = ({
                 if (!country) setCountrySearch("");
               }}
               options={countryOptions}
-              placeholder="Search and select country"
+              placeholder="Search country"
               notFoundContent={isLoadingCountries ? "Loading..." : "No countries found"}
+              className="w-full"
             />
           </div>
-          <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">State</span>
+          <div className="w-full flex flex-col gap-1">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">State</span>
             <AutoComplete
               value={stateSearch}
               onSearch={handleStateSearch}
@@ -481,15 +481,16 @@ const LocationConfiguration = ({
                 if (!state) setStateSearch("");
               }}
               options={stateOptions}
-              placeholder="Search and select state"
+              placeholder="Search state"
               notFoundContent={isLoadingStates ? "Loading..." : "No states found"}
+              className="w-full"
             />
           </div>
         </div>
 
-        <div className="w-full grid grid-cols-2 gap-4">
-          <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">District</span>
+        <div className="w-full grid grid-cols-2 gap-3">
+          <div className="w-full flex flex-col gap-1">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">District <span className="text-rose-400">*</span></span>
             <AutoComplete
               value={districtSearch}
               onSearch={handleCitySearch}
@@ -502,12 +503,13 @@ const LocationConfiguration = ({
                 if (!district) setDistrictSearch("");
               }}
               options={cityOptions}
-              placeholder="Search and select district"
+              placeholder="Search district"
               notFoundContent={isLoadingCities ? "Loading..." : "No districts found"}
+              className="w-full"
             />
           </div>
-          <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">Area</span>
+          <div className="w-full flex flex-col gap-1">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Area <span className="text-slate-300 dark:text-slate-600">(optional)</span></span>
             <AutoComplete
               value={areaSearchValue}
               allowClear
@@ -519,6 +521,7 @@ const LocationConfiguration = ({
               options={areaOptions}
               placeholder="Search or create area"
               notFoundContent={isLoadingAreas ? "Loading..." : "No areas found"}
+              className="w-full"
               popupRender={(menu) => (
                 <>
                   {menu}
@@ -544,17 +547,19 @@ const LocationConfiguration = ({
           </div>
         </div>
 
-        <div className="w-full grid grid-cols-2 gap-4">
-          <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">Pincode</span>
-            <Input value={pincode} onChange={handlePincodeChange} />
+        <div className="w-full grid grid-cols-2 gap-3">
+          <div className="w-full flex flex-col gap-1">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Pincode</span>
+            <Input value={pincode} onChange={handlePincodeChange} placeholder="e.g. 600001" />
           </div>
-          <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">Global Price</span>
+          <div className="w-full flex flex-col gap-1">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Global Base Price</span>
             <InputNumber
               value={globalPrice}
               onChange={(e) => setGlobalPrice(e || 0)}
               className="w-full"
+              prefix="₹"
+              placeholder="1000"
             />
           </div>
         </div>
