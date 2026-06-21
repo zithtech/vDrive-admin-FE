@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, notification, Descriptions, Tag, Badge, Drawer, Typography } from "antd";
+import { Button, notification, Drawer, Typography, Select, Input, DatePicker, Pagination } from "antd";
 import {
   PlusOutlined,
   ReloadOutlined,
@@ -8,9 +8,9 @@ import {
   HistoryOutlined,
   CheckCircleOutlined,
   CloseOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
 import TaxFormDrawer from "../components/Tax/TaxFormDrawer";
-import TitleBar from "../components/TitleBarCommon/TitleBar";
 import TaxTable from "../components/TaxTable/TaxTable";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { useHasPermission } from "../hooks/usePermission";
@@ -22,69 +22,51 @@ import {
   deleteTax,
 } from "../store/slices/taxSlice";
 import type { Tax, TaxPayload } from "../store/slices/taxSlice";
+import dayjs from "dayjs";
 
-// const { TextArea } = Input;
 const { Title, Text } = Typography;
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+// Dynamic Sparkline helper
+const Sparkline: React.FC<{ color: string }> = ({ color }) => {
+  let strokeColor = "#3b82f6";
+  let gradientId = "blue-grad-tax";
+  let stopColor = "#3b82f6";
 
-// const INDIAN_TAXES = [
-//   { label: "Goods and Services Tax (GST)", value: "GST" },
-//   { label: "Central GST (CGST)", value: "CGST" },
-//   { label: "State GST (SGST)", value: "SGST" },
-//   { label: "Integrated GST (IGST)", value: "IGST" },
-//   { label: "Union Territory GST (UTGST)", value: "UTGST" },
-//   { label: "Tax Deducted at Source (TDS)", value: "TDS" },
-//   { label: "Tax Collected at Source (TCS)", value: "TCS" },
-//   { label: "Value Added Tax (VAT)", value: "VAT" },
-//   { label: "Professional Tax (PT)", value: "PT" },
-//   { label: "Surcharge", value: "SURCHARGE" },
-// ];
+  if (color === "green") {
+    strokeColor = "#10b981";
+    gradientId = "green-grad-tax";
+    stopColor = "#10b981";
+  } else if (color === "orange") {
+    strokeColor = "#f59e0b";
+    gradientId = "orange-grad-tax";
+    stopColor = "#f59e0b";
+  } else if (color === "red") {
+    strokeColor = "#ef4444";
+    gradientId = "red-grad-tax";
+    stopColor = "#ef4444";
+  }
 
-// const TAX_TYPE_MAP: Record<string, TaxType> = {
-//   GST: "COMPOSITE",
-//   CGST: "CENTRAL",
-//   IGST: "CENTRAL",
-//   TDS: "CENTRAL",
-//   TCS: "CENTRAL",
-//   SURCHARGE: "CENTRAL",
-//   SGST: "STATE",
-//   VAT: "STATE",
-//   PT: "STATE",
-//   UTGST: "UNION_TERRITORY",
-// };
-
-// const TAX_TYPE_OPTIONS: { label: string; value: TaxType }[] = [
-//   { label: "Central", value: "CENTRAL" },
-//   { label: "State", value: "STATE" },
-//   { label: "Union Territory", value: "UNION_TERRITORY" },
-//   { label: "Composite", value: "COMPOSITE" },
-// ];
-
-// const TAX_TYPE_COLORS: Record<string, string> = {
-//   CENTRAL: "gold",
-//   STATE: "green",
-//   UNION_TERRITORY: "purple",
-//   COMPOSITE: "blue",
-// };
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-// function generateTaxCode(selectedTax: string, percentage: number | undefined): string {
-//   if (!selectedTax || percentage == null || percentage <= 0) return "";
-//   return `${selectedTax}_${String(percentage).replace(".", "_")}`;
-// }
-
-// function generateTaxName(selectedTax: string, percentage: number | undefined): string {
-//   if (!selectedTax || percentage == null || percentage <= 0) return "";
-//   return `${selectedTax} – ${percentage}%`;
-// }
-
-// type TaxFormValues = TaxPayload;
-
-// // ── Component ─────────────────────────────────────────────────────────────────
-
-// type Segment = "List" | "Add" | "Edit";
+  return (
+    <svg className="w-20 h-6 opacity-70" viewBox="0 0 100 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={stopColor} stopOpacity="0.2" />
+          <stop offset="100%" stopColor={stopColor} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M0 25 C15 20, 30 28, 50 16 C70 4, 85 8, 100 2 L100 30 L0 30 Z"
+        fill={`url(#${gradientId})`}
+      />
+      <path
+        d="M0 25 C15 20, 30 28, 50 16 C70 4, 85 8, 100 2"
+        stroke={strokeColor}
+        strokeWidth="1.25"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+};
 
 const TaxPage: React.FC = () => {
   const canCreateTax = useHasPermission("taxes", "create");
@@ -103,6 +85,21 @@ const TaxPage: React.FC = () => {
   const hasCreateAccess = isSuperAdmin || canCreateTax;
   const hasUpdateAccess = isSuperAdmin || canUpdateTax;
   const hasDeleteAccess = isSuperAdmin || canDeleteTax;
+
+  // Sidebar Layout States
+  const [mainTab, setMainTab] = useState<"ALL" | "CENTRAL" | "STATE" | "COMPOSITE" | "UNION_TERRITORY">("ALL");
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [dateRange, setDateRange] = useState<any>(null);
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [mainTab, statusFilter, searchQuery, dateRange]);
 
   useEffect(() => {
     dispatch(fetchTaxes());
@@ -156,23 +153,120 @@ const TaxPage: React.FC = () => {
     }
   };
 
+  // Filter computation logic
+  const filteredData = React.useMemo(() => {
+    let result = [...taxes];
+
+    // 1. Sidenav Tab Filter
+    if (mainTab !== "ALL") {
+      result = result.filter((item) => item.tax_type === mainTab);
+    }
+
+    // 2. Status Filter
+    if (statusFilter === "ACTIVE") {
+      result = result.filter((item) => item.is_active === true);
+    } else if (statusFilter === "INACTIVE") {
+      result = result.filter((item) => item.is_active === false);
+    }
+
+    // 3. Search Query
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (item) =>
+          item.tax_name?.toLowerCase().includes(q) ||
+          item.tax_code?.toLowerCase().includes(q)
+      );
+    }
+
+    // 4. Date Range Filter
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      const start = dateRange[0].startOf("day");
+      const end = dateRange[1].endOf("day");
+      result = result.filter((item) => {
+        if (!item.created_at) return false;
+        const date = dayjs(item.created_at);
+        return (date.isAfter(start) || date.isSame(start)) && (date.isBefore(end) || date.isSame(end));
+      });
+    }
+
+    return result;
+  }, [taxes, mainTab, statusFilter, searchQuery, dateRange]);
+
+  // Paginated subset
+  const paginatedData = React.useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredData.slice(startIndex, startIndex + pageSize);
+  }, [filteredData, currentPage, pageSize]);
+
+  // Dynamically calculate stats
+  const stats = React.useMemo(() => {
+    const list = filteredData;
+    const activeCount = list.filter((item) => item.is_active).length;
+    const defaultCount = list.filter((item) => item.is_default).length;
+    const activeTaxes = list.filter((item) => item.is_active);
+    const avgRate = activeTaxes.length > 0
+      ? activeTaxes.reduce((sum, item) => sum + (parseFloat(item.percentage as any) || 0), 0) / activeTaxes.length
+      : 0;
+
+    return [
+      {
+        title: "Total Rules",
+        value: list.length,
+        label: "tax rules",
+        icon: <SafetyCertificateOutlined />,
+        iconColor: "text-blue-500 dark:text-blue-400",
+        iconBg: "bg-blue-50 dark:bg-blue-500/10",
+        sparklineColor: "blue",
+      },
+      {
+        title: "Active Rules",
+        value: activeCount,
+        label: "operational",
+        icon: <CheckCircleOutlined />,
+        iconColor: "text-emerald-500 dark:text-emerald-400",
+        iconBg: "bg-emerald-50 dark:bg-emerald-500/10",
+        sparklineColor: "green",
+      },
+      {
+        title: "Default Rules",
+        value: defaultCount,
+        label: "auto-applied",
+        icon: <InfoCircleOutlined />,
+        iconColor: "text-amber-500 dark:text-amber-400",
+        iconBg: "bg-amber-50 dark:bg-amber-500/10",
+        sparklineColor: "orange",
+      },
+      {
+        title: "Avg Tax Rate",
+        value: `${avgRate.toFixed(1)}%`,
+        label: "active rules avg",
+        icon: <SafetyCertificateOutlined />,
+        iconColor: "text-rose-500 dark:text-rose-400",
+        iconBg: "bg-rose-50 dark:bg-rose-500/10",
+        sparklineColor: "red",
+      },
+    ];
+  }, [filteredData]);
+
   const renderViewDrawer = () => (
     <Drawer
       placement="right"
-      width={600}
+      width={500}
       onClose={() => setViewingTax(null)}
       open={!!viewingTax}
       closable={false}
+      rootClassName="dark-drawer compact-tax-drawer"
       styles={{
         header: { display: "none" },
         body: { padding: 0, background: "#f8fafc" },
-        footer: { borderTop: "1px solid #f1f5f9", padding: "16px 24px", background: "#fff" },
+        footer: { borderTop: "1px solid #f1f5f9", padding: "8px 16px", background: "#fff" },
       }}
       footer={
-        <div className="flex justify-end gap-3 px-2">
+        <div className="flex justify-end gap-2 px-2">
           <Button
             key="close"
-            className="rounded-full h-11 px-8 font-bold text-gray-400 hover:text-gray-600 border-gray-200 transition-all"
+            className="rounded-none h-8 px-4 font-bold text-gray-400 hover:text-gray-600 border-gray-200 transition-all text-xs"
             onClick={() => setViewingTax(null)}
           >
             Close
@@ -181,7 +275,7 @@ const TaxPage: React.FC = () => {
             <Button
               key="edit"
               type="primary"
-              className="rounded-full h-11 px-10 font-bold !bg-gradient-to-r !from-indigo-600 !to-violet-600 border-none flex items-center gap-2"
+              className="rounded-none h-8 px-6 font-bold !bg-blue-600 hover:!bg-blue-700 border-none flex items-center gap-1.5 text-xs text-white"
               onClick={() => {
                 const current = viewingTax;
                 setViewingTax(null);
@@ -195,21 +289,21 @@ const TaxPage: React.FC = () => {
       }
     >
       {/* ─── Immersive Header ─────────────────────────────────────────── */}
-      <div className="relative overflow-hidden pt-12 pb-8 px-8 bg-white border-b border-gray-100">
-        <div className="absolute top-0 right-0 w-40 h-40 bg-indigo-600/5 rounded-full -translate-y-16 translate-x-16" />
+      <div className="relative overflow-hidden pt-4 pb-2 px-4 bg-white dark:bg-slate-805 border-b border-gray-100 dark:border-slate-700">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/5 rounded-full -translate-y-12 translate-x-12" />
 
         <div className="flex justify-between items-start relative z-10">
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="relative w-16 h-16 bg-indigo-50 border-2 border-white flex items-center justify-center rounded-3xl text-indigo-600 text-2xl">
+              <div className="relative w-9 h-9 bg-blue-50 dark:bg-blue-500/10 border border-white dark:border-slate-800 flex items-center justify-center rounded-none text-blue-600 dark:text-blue-400 text-base shadow-sm">
                 <InfoCircleOutlined />
               </div>
             </div>
             <div>
-              <Title level={3} className="!m-0 !mb-1 font-extrabold text-gray-800 tracking-tight">
+              <Title level={4} className="!m-0 !mb-0.5 font-extrabold text-gray-800 dark:text-slate-100 tracking-tight">
                 Tax Rule Intel
               </Title>
-              <Text className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">
+              <Text className="text-gray-450 dark:text-slate-500 font-bold text-[9px] uppercase tracking-widest">
                 Comprehensive configuration overview
               </Text>
             </div>
@@ -218,99 +312,112 @@ const TaxPage: React.FC = () => {
             type="text"
             icon={<CloseOutlined className="text-gray-400" />}
             onClick={() => setViewingTax(null)}
-            className="hover:bg-gray-100 rounded-full h-10 w-10 flex items-center justify-center"
+            className="hover:bg-gray-100 dark:hover:bg-slate-700 rounded-none h-7 w-7 flex items-center justify-center"
           />
         </div>
       </div>
 
       {viewingTax && (
-        <div className="p-8">
-          <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden">
-            <Descriptions
-              bordered
-              column={1}
-              size="small"
-              labelStyle={{
-                fontWeight: 800,
-                width: 160,
-                background: "#fcfdfe",
-                color: "#64748b",
-                fontSize: "10px",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                padding: "16px 20px",
-              }}
-              contentStyle={{
-                background: "#ffffff",
-                color: "#1e293b",
-                fontWeight: 600,
-                fontSize: "14px",
-                padding: "16px 20px",
-              }}
-            >
-              <Descriptions.Item label="Identity">
-                <span className="font-black text-gray-900">{viewingTax.tax_name}</span>
-              </Descriptions.Item>
-              <Descriptions.Item label="System Code">
-                <code className="bg-slate-50 text-indigo-500 px-2 py-1 rounded border border-slate-100 font-mono text-xs font-bold">
+        <div className="p-4 space-y-4">
+          {/* Overview Card */}
+          <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-4 flex items-center justify-between shadow-sm rounded-none">
+            <div>
+              <span className="text-[9px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1">
+                Levy Weight
+              </span>
+              <div className="text-3xl font-black text-blue-600 dark:text-blue-400 leading-none">
+                {viewingTax.percentage}%
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-[9px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">
+                Status
+              </span>
+              <div className="flex flex-col items-end gap-1.5">
+                <span className={`inline-flex px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${viewingTax.is_active ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'} rounded-none`}>
+                  {viewingTax.is_active ? "Active" : "Inactive"}
+                </span>
+                {viewingTax.is_default && (
+                  <span className="inline-flex px-2 py-0.5 text-[9px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 rounded-none">
+                    Default
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Rule Metadata */}
+          <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-4 shadow-sm rounded-none">
+            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-50 dark:border-slate-700/50">
+              <div className="w-5 h-5 bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500 dark:text-blue-400 rounded-none text-[10px]">
+                <SafetyCertificateOutlined />
+              </div>
+              <span className="text-[10px] font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-tight">
+                Rule Metadata
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-xs pt-3">
+              <div>
+                <span className="text-[9px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider block mb-0.5">Formal Name</span>
+                <span className="font-extrabold text-slate-800 dark:text-slate-200">{viewingTax.tax_name}</span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider block mb-0.5">System Code</span>
+                <code className="bg-slate-50 dark:bg-slate-750 text-blue-500 dark:text-blue-400 px-2 py-0.5 font-mono text-[10px] font-bold border border-slate-100 dark:border-slate-700 rounded-none inline-block">
                   {viewingTax.tax_code}
                 </code>
-              </Descriptions.Item>
-              <Descriptions.Item label="Classification">
-                <div
-                  className={`inline-flex px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest text-white shadow-md bg-gradient-to-br from-indigo-500 to-violet-500`}
-                >
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider block mb-0.5">Classification</span>
+                <span className="font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[10px]">
                   {viewingTax.tax_type?.replace(/_/g, " ")}
-                </div>
-              </Descriptions.Item>
-              <Descriptions.Item label="Levy Weight">
-                <Tag
-                  color="geekblue"
-                  className="font-black rounded-lg border-none bg-indigo-50 text-indigo-600 px-3 py-1 m-0"
-                >
-                  {viewingTax.percentage}%
-                </Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Active Status">
-                <Badge
-                  status={viewingTax.is_active ? "processing" : "default"}
-                  text={
-                    <span
-                      className={`font-black uppercase tracking-widest text-[10px] ${viewingTax.is_active ? "text-emerald-500" : "text-gray-400"}`}
-                    >
-                      {viewingTax.is_active ? "Operational" : "Deactivated"}
-                    </span>
-                  }
-                />
-              </Descriptions.Item>
-              <Descriptions.Item label="Role">
-                {viewingTax.is_default ? (
-                  <span className="text-amber-500 font-black text-[10px] uppercase tracking-widest flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-amber-400" />
-                    Primary Default Tax
-                  </span>
-                ) : (
-                  <span className="text-gray-400 text-xs">Standard Supplementary</span>
-                )}
-              </Descriptions.Item>
-              <Descriptions.Item label="Legal Context">
-                <p className="text-sm text-gray-600 leading-relaxed py-2 italic">
-                  {viewingTax.description || "No additional context provided for this rule."}
-                </p>
-              </Descriptions.Item>
-              <Descriptions.Item label="Timeline">
-                <div className="flex flex-col gap-1 text-[11px] text-gray-400">
-                  <div className="flex items-center gap-2 font-medium">
-                    <CheckCircleOutlined className="text-[10px]" /> Created:{" "}
-                    {new Date(viewingTax.created_at).toLocaleString("en-IN")}
-                  </div>
-                  <div className="flex items-center gap-2 font-medium">
-                    <HistoryOutlined className="text-[10px]" /> Last Update:{" "}
-                    {new Date(viewingTax.updated_at).toLocaleString("en-IN")}
-                  </div>
-                </div>
-              </Descriptions.Item>
-            </Descriptions>
+                </span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider block mb-0.5">Rule Role</span>
+                <span className="font-bold text-slate-600 dark:text-slate-400">
+                  {viewingTax.is_default ? "Primary Default Levy" : "Standard Supplementary"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Legal Context & Notes */}
+          <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-4 shadow-sm rounded-none">
+            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-50 dark:border-slate-700/50">
+              <div className="w-5 h-5 bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500 dark:text-blue-400 rounded-none text-[10px]">
+                <InfoCircleOutlined />
+              </div>
+              <span className="text-[10px] font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-tight">
+                Legal Context & Notes
+              </span>
+            </div>
+            <div className="mt-3 text-xs text-slate-600 dark:text-slate-350 leading-relaxed border-l-2 border-blue-500 pl-3 py-0.5 italic">
+              {viewingTax.description || "No additional context or legal reference notes provided for this tax rule."}
+            </div>
+          </div>
+
+          {/* Audit History Log */}
+          <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 p-4 shadow-sm rounded-none">
+            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-50 dark:border-slate-700/50">
+              <div className="w-5 h-5 bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500 dark:text-blue-400 rounded-none text-[10px]">
+                <HistoryOutlined />
+              </div>
+              <span className="text-[10px] font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-tight">
+                Rule History Log
+              </span>
+            </div>
+            <div className="mt-3 flex flex-col gap-2 text-[10px] text-slate-450 dark:text-slate-500 pl-1 font-medium">
+              <div className="flex items-center gap-2">
+                <CheckCircleOutlined className="text-[10px] text-emerald-500" />
+                <span>Created Rule: <strong>{dayjs(viewingTax.created_at).format("DD MMM YYYY, hh:mm A")}</strong></span>
+              </div>
+              <div className="flex items-center gap-2">
+                <HistoryOutlined className="text-[10px] text-blue-500" />
+                <span>Last Updated: <strong>{dayjs(viewingTax.updated_at).format("DD MMM YYYY, hh:mm A")}</strong></span>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -318,62 +425,284 @@ const TaxPage: React.FC = () => {
   );
 
   return (
-    <TitleBar
-      title="Tax Configuration"
-      description="Define and orchestrate statutory tax obligations and service levies."
-      icon={
-        <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-2xl flex items-center justify-center">
-          {" "}
-          <SafetyCertificateOutlined className="text-white text-2xl" />
-        </div>
-      }
-      extraContent={
-        hasCreateAccess && (
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            size="large"
-            onClick={handleAddClick}
-            className="rounded-full h-11 px-8 font-bold !bg-gradient-to-r !from-indigo-600 !to-blue-500 border-none"
-          >
-            Create Tax Rule
-          </Button>
-        )
-      }
-    >
-      <div className="w-full flex flex-col gap-6">
-        <div className="flex justify-between items-center mb-2 px-4 pt-2">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
-              <HistoryOutlined className="text-indigo-600 text-lg" />
+    <div className="w-full h-full flex flex-col bg-white dark:bg-slate-900">
+      <div className="w-full h-full flex flex-col md:flex-row bg-slate-50/50 dark:bg-slate-950/25 overflow-hidden">
+        {/* ─── Left Sidebar Panel ─────────────────────────────────────── */}
+        <div className="w-full md:w-64 flex-shrink-0 bg-white dark:bg-slate-900 border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-800/80 flex flex-col p-4 gap-4 overflow-y-auto custom-scrollbar">
+          {/* Header Title / Context */}
+          <div className="flex items-center gap-2.5 px-1">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <SafetyCertificateOutlined className="text-base" />
             </div>
-            <div className="mt-2">
-              <h3 className="text-lg font-black text-gray-800 tracking-tight leading-none mb-1">
-                Tax Ledger
-              </h3>
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
-                Historical & active taxes
-              </p>
+            <div className="flex flex-col">
+              <span className="font-extrabold text-slate-800 dark:text-slate-200 tracking-tight text-xs uppercase leading-none">
+                Tax Config
+              </span>
+              <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">
+                Levy configurations
+              </span>
             </div>
           </div>
-          <Button
-            icon={<ReloadOutlined className={isLoading ? "animate-spin" : ""} />}
-            onClick={() => dispatch(fetchTaxes())}
-            className="rounded-full h-10 w-10 flex items-center justify-center border-gray-100 text-gray-400 hover:text-indigo-600 transition-all bg-white"
-          />
+
+          {/* Action Button: Create */}
+          {hasCreateAccess && (
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleAddClick}
+              className="w-full h-9 rounded-lg font-bold text-xs uppercase tracking-wider border-none !bg-blue-600 hover:!bg-blue-700 text-white shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.01] transition-all"
+            >
+              Create Tax Rule
+            </Button>
+          )}
+
+          {/* Sidenav views section */}
+          <div className="flex flex-col gap-1">
+            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase px-2 mb-0.5">
+              Views
+            </span>
+
+            {/* View: All Rules */}
+            <div
+              onClick={() => setMainTab("ALL")}
+              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainTab === "ALL"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                }`}
+            >
+              <div className="flex items-center gap-2 text-xs">
+                <SafetyCertificateOutlined className="text-xs" />
+                <span>All Rules</span>
+              </div>
+              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainTab === "ALL"
+                  ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-440"
+                }`}>
+                {taxes.length}
+              </span>
+            </div>
+
+            {/* View: Central Taxes */}
+            <div
+              onClick={() => setMainTab("CENTRAL")}
+              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainTab === "CENTRAL"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                }`}
+            >
+              <div className="flex items-center gap-2 text-xs">
+                <SafetyCertificateOutlined className="text-xs" />
+                <span>Central Taxes</span>
+              </div>
+              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainTab === "CENTRAL"
+                  ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                }`}>
+                {taxes.filter(t => t.tax_type === "CENTRAL").length}
+              </span>
+            </div>
+
+            {/* View: State Taxes */}
+            <div
+              onClick={() => setMainTab("STATE")}
+              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainTab === "STATE"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                }`}
+            >
+              <div className="flex items-center gap-2 text-xs">
+                <SafetyCertificateOutlined className="text-xs" />
+                <span>State Taxes</span>
+              </div>
+              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainTab === "STATE"
+                  ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                }`}>
+                {taxes.filter(t => t.tax_type === "STATE").length}
+              </span>
+            </div>
+
+            {/* View: Composite Taxes */}
+            <div
+              onClick={() => setMainTab("COMPOSITE")}
+              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainTab === "COMPOSITE"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                }`}
+            >
+              <div className="flex items-center gap-2 text-xs">
+                <SafetyCertificateOutlined className="text-xs" />
+                <span>Composite</span>
+              </div>
+              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainTab === "COMPOSITE"
+                  ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                }`}>
+                {taxes.filter(t => t.tax_type === "COMPOSITE").length}
+              </span>
+            </div>
+
+            {/* View: Union Territory */}
+            <div
+              onClick={() => setMainTab("UNION_TERRITORY")}
+              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainTab === "UNION_TERRITORY"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                }`}
+            >
+              <div className="flex items-center gap-2 text-xs">
+                <SafetyCertificateOutlined className="text-xs" />
+                <span>Union Territory</span>
+              </div>
+              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainTab === "UNION_TERRITORY"
+                  ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                }`}>
+                {taxes.filter(t => t.tax_type === "UNION_TERRITORY").length}
+              </span>
+            </div>
+          </div>
+
+          <div className="h-[1px] bg-slate-100 dark:bg-slate-800/80" />
+
+          {/* Filters section */}
+          <div className="flex flex-col gap-3">
+            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase px-2">
+              Filters
+            </span>
+
+            {/* Filter: Status */}
+            <div className="flex flex-col gap-1 px-2">
+              <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
+                Status
+              </span>
+              <Select
+                placeholder="All Statuses"
+                value={statusFilter}
+                onChange={setStatusFilter}
+                allowClear
+                className="w-full text-xs premium-select-sidebar"
+                options={[
+                  { value: "ACTIVE", label: "Active" },
+                  { value: "INACTIVE", label: "Inactive" },
+                ]}
+              />
+            </div>
+
+            {/* Filter: Date Range */}
+            <div className="flex flex-col gap-1 px-2">
+              <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
+                Created Date
+              </span>
+              <DatePicker.RangePicker
+                value={dateRange}
+                onChange={setDateRange}
+                className="w-full text-xs premium-range-picker-sidebar"
+                placeholder={["Start", "End"]}
+              />
+            </div>
+          </div>
         </div>
 
-        <div className="flex-grow">
-          <TaxTable
-            data={taxes}
-            loading={isLoading}
-            onEdit={handleEdit}
-            onView={handleView}
-            onDelete={handleDelete}
-            onToggleStatus={handleToggleStatus}
-            canUpdate={hasUpdateAccess}
-            canDelete={hasDeleteAccess}
-          />
+        {/* ─── Right Content Area ─────────────────────────────────────── */}
+        <div className="flex-grow flex flex-col min-w-0 relative h-full">
+          <div className="flex-grow flex flex-col p-6 overflow-y-auto custom-scrollbar gap-5 pb-20">
+
+            {/* Top Bar: Search Input & Results Count (mockup style) */}
+            <div className="flex items-center justify-between gap-4 px-0 py-0.5 md:flex-nowrap flex-wrap">
+              <div className="flex items-center gap-3 flex-grow flex-shrink-0">
+                <Input
+                  placeholder="Search tax rule name or code..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  allowClear
+                  prefix={<SearchOutlined className="text-slate-400 text-xs" />}
+                  className="w-48 text-xs rounded-xl border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 h-9"
+                />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  {filteredData.length} results
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs">
+                <Button
+                  icon={<ReloadOutlined className={isLoading ? "animate-spin" : ""} />}
+                  onClick={() => dispatch(fetchTaxes())}
+                  className="rounded-full h-8 w-8 flex items-center justify-center border-slate-200 dark:border-slate-800 text-slate-400 hover:text-blue-600 transition-all bg-white dark:bg-slate-900"
+                />
+                <span className="text-blue-600 dark:text-blue-400 font-extrabold uppercase tracking-wider">
+                  {mainTab === "ALL" ? "All" : mainTab} Rules
+                </span>
+              </div>
+            </div>
+
+            {/* Status Cards Grid Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-0">
+              {stats.map((card, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all"
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className={`w-7 h-7 rounded-lg ${card.iconBg} ${card.iconColor} flex items-center justify-center text-sm flex-shrink-0`}>
+                      {card.icon}
+                    </div>
+                    <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-450 tracking-wide uppercase leading-none">
+                      {card.title}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1 mt-auto">
+                    <span className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">
+                      {card.value}
+                    </span>
+                    <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
+                      {card.label}
+                    </span>
+                  </div>
+
+                  {/* Bottom Right Sparkline */}
+                  <div className="absolute bottom-0 right-0 pointer-events-none">
+                    <Sparkline color={card.sparklineColor} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Table Container */}
+            <div className="flex-grow min-h-0">
+              <TaxTable
+                data={paginatedData}
+                loading={isLoading}
+                onEdit={handleEdit}
+                onView={handleView}
+                onDelete={handleDelete}
+                onToggleStatus={handleToggleStatus}
+                canUpdate={hasUpdateAccess}
+                canDelete={hasDeleteAccess}
+              />
+            </div>
+          </div>
+
+          {/* Sticky Bottom Pagination Bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-805 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+              Showing {filteredData.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
+              {Math.min(currentPage * pageSize, filteredData.length)} of {filteredData.length} rules
+            </span>
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={filteredData.length}
+              onChange={(page, size) => {
+                setCurrentPage(page);
+                setPageSize(size);
+              }}
+              showSizeChanger
+              pageSizeOptions={["5", "10", "20", "50"]}
+              size="small"
+            />
+          </div>
         </div>
       </div>
 
@@ -386,7 +715,71 @@ const TaxPage: React.FC = () => {
       />
 
       {renderViewDrawer()}
-    </TitleBar>
+
+      <style>{`
+        /* Sidebar input styling overrides */
+        .premium-select-sidebar.ant-select .ant-select-selector {
+          border-radius: 8px !important;
+          border-color: #cbd5e1 !important;
+          height: 34px !important;
+        }
+        .dark .premium-select-sidebar.ant-select .ant-select-selector {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+        .premium-range-picker-sidebar.ant-picker {
+          border-radius: 8px !important;
+          border-color: #cbd5e1 !important;
+          padding: 4px 8px !important;
+          height: 34px !important;
+        }
+        .dark .premium-range-picker-sidebar.ant-picker {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+        }
+        .dark .premium-range-picker-sidebar.ant-picker .ant-picker-input > input {
+          color: #f1f5f9 !important;
+        }
+
+        /* Pagination sharp border-radius and style overrides */
+        .ant-pagination .ant-pagination-item,
+        .ant-pagination .ant-pagination-prev,
+        .ant-pagination .ant-pagination-next,
+        .ant-pagination .ant-pagination-options-size-changer .ant-select-selector {
+          border-radius: 0px !important;
+        }
+        .dark .ant-pagination-item a {
+          color: #cbd5e1 !important;
+        }
+        .dark .ant-pagination-item-active a {
+          color: #ffffff !important;
+        }
+        .dark .ant-pagination-prev .ant-pagination-item-link,
+        .dark .ant-pagination-next .ant-pagination-item-link {
+          color: #cbd5e1 !important;
+          background-color: #0f172a !important;
+          border-color: #334155 !important;
+        }
+        .dark .ant-pagination-item {
+          background-color: #0f172a !important;
+          border-color: #334155 !important;
+        }
+        .dark .ant-pagination-item-active {
+          background-color: #2563eb !important;
+          border-color: #2563eb !important;
+        }
+
+        /* Drawer zero border radius overrides */
+        .compact-tax-drawer .ant-drawer-content-wrapper,
+        .compact-tax-drawer .ant-drawer-content {
+          border-radius: 0px !important;
+        }
+        .compact-tax-drawer .ant-btn {
+          border-radius: 0px !important;
+        }
+      `}</style>
+    </div>
   );
 };
 
