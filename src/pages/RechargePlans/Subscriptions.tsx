@@ -1,169 +1,51 @@
-import React, { useState, useEffect, lazy, Suspense } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Plus,
   Search,
-  Trash2,
-  X,
   Zap,
   ChevronDown,
   Users,
-  Edit3,
   Power,
-  Flame,
-  TrendingUp,
-  History,
   CheckCircle2,
-  Crown,
-  Sparkles,
-  BellRing,
-  Calendar,
-  CalendarDays,
-  CalendarRange,
   Activity,
   Eye,
   Mail,
   Phone,
-  CreditCard,
+  BellRing,
 } from "lucide-react";
 import SubscriptionDrawer from "../../components/RechargePlan/SubscriptionDrawer";
 import axios from "../../api/axios";
-import { messageApi, modalApi, notificationApi } from "../../utilities/antdStaticHolder";
-import { Checkbox, Select, Drawer, Button, Avatar, Tag, Spin } from "antd";
+import { messageApi } from "../../utilities/antdStaticHolder";
+import { Select, Spin } from "antd";
 import { getMediaUrl } from "../../components/DriverDetails/DriverDetails";
-import PaymentHistory from "../PaymentHistory";
 
-const PromotionsTab = lazy(() => import("../Promotions"));
 
 /* ================= TYPES ================= */
 
-interface RechargePlan {
-  id: number;
-  planName: string;
-  description: string;
-  validityDays: any;
-  dailyPrice: number;
-  weeklyPrice: number;
-  monthlyPrice: number;
-  features: any;
-  isActive: boolean;
-  tag?: string; // New field for badges
-}
+
 
 /* ================= UTILS ================= */
 
 /* ================= COMPONENT ================= */
 
 const Subscriptions: React.FC = () => {
-  const [plans, setPlans] = useState<RechargePlan[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<"plans" | "subscriptions" | "promotions" | "payments">(
-    "plans",
-  );
   const [activeSubscriptions, setActiveSubscriptions] = useState<any[]>([]);
   const [loadingActiveSubs, setLoadingActiveSubs] = useState(false);
   const [expiredSubscriptions, setExpiredSubscriptions] = useState<any[]>([]);
   const [loadingExpiredSubs, setLoadingExpiredSubs] = useState(false);
   const [subscriptionTab, setSubscriptionTab] = useState<"ACTIVE" | "EXPIRED">("ACTIVE");
-  const [managingPlanId, setManagingPlanId] = useState<number | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // Form State
-  const [formData, setFormData] = useState({
-    planName: "",
-    description: "",
-    validityDays: "",
-    dailyPrice: "",
-    weeklyPrice: "",
-    monthlyPrice: "",
-    features: [] as string[],
-    isActive: true,
-    tag: "",
-  });
 
   const [subSearchTerm, setSubSearchTerm] = useState<string>("");
   const [subFilter, setSubFilter] = useState<string>("ALL");
   const [billingCycleFilter, setBillingCycleFilter] = useState<string>("ALL");
   const [remainingDaysFilter, setRemainingDaysFilter] = useState<string>("");
-  const [selectedPlanIds, setSelectedPlanIds] = useState<number[]>([]);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [historyData, setHistoryData] = useState<any[]>([]);
-  const [historyPlanName, setHistoryPlanName] = useState("");
 
   const [subStats, setSubStats] = useState<any>(null);
   const [isDriverHistoryOpen, setIsDriverHistoryOpen] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState<any>(null);
   const [notifyingSubscribers, setNotifyingSubscribers] = useState(false);
 
-  /* ---- Fetch Plans ---- */
-  const fetchPlans = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get("/api/recharge-plans");
-
-      // Dev Logging
-      if (import.meta.env.DEV) {
-        console.group("RECHARGE PLANS API RESPONSE");
-        console.log("Full Response:", res.data);
-        console.groupEnd();
-      }
-
-      // Robust extraction: Handle various nested structures
-      const respData = res.data;
-      let rawData = [];
-
-      if (Array.isArray(respData)) {
-        rawData = respData;
-      } else if (respData.data && Array.isArray(respData.data)) {
-        rawData = respData.data;
-      } else if (respData.data?.data && Array.isArray(respData.data.data)) {
-        rawData = respData.data.data;
-      } else if (respData.plans && Array.isArray(respData.plans)) {
-        rawData = respData.plans;
-      } else if (respData.data?.plans && Array.isArray(respData.data.plans)) {
-        rawData = respData.data.plans;
-      }
-
-      // Map database snake_case to frontend CamelCase
-      const mappedPlans = rawData.map((p: any, idx: number) => ({
-        id: p.id || idx + 1000, // Ensure unique ID even if DB ID is missing to prevent expansion bugs
-        planName: p.plan_name || p.planName,
-        description: p.description,
-        validityDays: p.validity_days || p.validityDays,
-        dailyPrice: Number(p.daily_price || p.dailyPrice || 0),
-        weeklyPrice: Number(p.weekly_price || p.weeklyPrice || 0),
-        monthlyPrice: Number(p.monthly_price || p.monthlyPrice || 0),
-        features: (() => {
-          const rawFeatures = p.features;
-          if (Array.isArray(rawFeatures)) {
-            return rawFeatures.filter((f: any) => typeof f === "string" && f.trim().length > 0);
-          }
-          if (typeof rawFeatures === "object" && rawFeatures !== null) {
-            // Support legacy flag-based objects or entries where values are true
-            return Object.entries(rawFeatures)
-              .filter(([_, val]) => val === true || val === "true")
-              .map(([key]) => key);
-          }
-          return [];
-        })(),
-        tag: p.tag || "",
-        isActive: p.is_active !== undefined ? p.is_active : p.isActive,
-      }));
-      setPlans(mappedPlans);
-    } catch (err) {
-      console.error("Failed to fetch plans:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
-    fetchPlans();
     fetchSubscriptionStats();
     fetchActiveSubscriptions();
     fetchExpiredSubscriptions();
@@ -317,238 +199,8 @@ const Subscriptions: React.FC = () => {
     }
   };
 
-  const formatFeatureLabel = (key: string) => {
-    // If it already looks like a sentence, leave it
-    if (key.includes(" ")) return key;
-
-    // Mapping for common technical keys
-    const mapping: Record<string, string> = {
-      zero_commission: "Zero Commission",
-      oneway_enabled: "One-Way Trips",
-      outstation_enabled: "Outstation Trips",
-      priority_matching: "Priority Matching",
-      instant_requests: "Instant Requests",
-      no_surge_pricing: "No Surge Pricing",
-      premium_driver_rank: "Premium Driver Rank",
-      scheduled_rides: "Scheduled Rides",
-    };
-
-    if (mapping[key]) return mapping[key];
-
-    // Fallback: replace underscores/hyphens and capitalize
-    return key.replace(/[_-]/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
-  };
 
   /* ---- Handlers ---- */
-  const handleOpenModal = (plan?: RechargePlan) => {
-    if (plan) {
-      setEditingId(plan.id);
-
-      setFormData({
-        planName: plan.planName,
-        description: plan.description || "",
-        validityDays: plan.validityDays?.toString() || "",
-        dailyPrice: plan.dailyPrice.toString(),
-        weeklyPrice: plan.weeklyPrice.toString(),
-        monthlyPrice: plan.monthlyPrice.toString(),
-        features: Array.isArray(plan.features)
-          ? plan.features.map((f) => formatFeatureLabel(f))
-          : [],
-        isActive: plan.isActive,
-        tag: plan.tag || "",
-      });
-    } else {
-      setEditingId(null);
-      setFormData({
-        planName: "",
-        description: "",
-        validityDays: "",
-        dailyPrice: "",
-        weeklyPrice: "",
-        monthlyPrice: "",
-        features: [],
-        isActive: true,
-        tag: "",
-      });
-    }
-    setIsModalOpen(true);
-  };
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.planName.trim()) newErrors.planName = "Plan name is required";
-    if (!formData.validityDays || Number(formData.validityDays) <= 0)
-      newErrors.validityDays = "Validity must be greater than 0";
-    if (!formData.dailyPrice || Number(formData.dailyPrice) < 0)
-      newErrors.dailyPrice = "Price cannot be negative";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-
-    if (!validateForm()) {
-      messageApi.error("Please correct the errors in the form.");
-      return;
-    }
-
-    const action = editingId ? "update" : "create";
-
-    modalApi.confirm({
-      title: editingId ? "Confirm Plan Update" : "Confirm New Plan",
-      content: `Are you sure you want to ${action} this plan configuration?`,
-      okText: editingId ? "Update Plan" : "Create Plan",
-      cancelText: "Cancel",
-      centered: true,
-      onOk: async () => {
-        try {
-          setIsSubmitting(true);
-          const payload = {
-            planName: formData.planName,
-            description: formData.description,
-            validityDays: Number(formData.validityDays),
-            dailyPrice: Number(formData.dailyPrice),
-            weeklyPrice: Number(formData.weeklyPrice),
-            monthlyPrice: Number(formData.monthlyPrice),
-            features: formData.features.filter((f) => f.trim()),
-            isActive: formData.isActive,
-            tag: formData.tag,
-          };
-
-          if (editingId) {
-            await axios.patch(`/api/recharge-plans/update/${editingId}`, payload);
-            notificationApi.success({
-              message: "Plan Updated",
-              description: `"${formData.planName}" has been successfully updated.`,
-              placement: "topRight",
-            });
-          } else {
-            await axios.post("/api/recharge-plans/create", payload);
-            notificationApi.success({
-              message: "Plan Created",
-              description: `"${formData.planName}" has been successfully created.`,
-              placement: "topRight",
-            });
-          }
-          setIsModalOpen(false);
-          fetchPlans();
-        } catch (err: any) {
-          console.error("Failed to save plan:", err);
-          messageApi.error(
-            err?.response?.data?.message || "Failed to save plan. Please check all fields.",
-          );
-        } finally {
-          setIsSubmitting(false);
-        }
-      },
-    });
-  };
-
-  const handleBulkAction = async (action: "deactivate" | "increase_price") => {
-    if (selectedPlanIds.length === 0) return;
-
-    modalApi.confirm({
-      title: "Global Bulk Action",
-      content: `Applying change to ${selectedPlanIds.length} plans. This sequence may take a moment.`,
-      okText: "Proceed",
-      onOk: async () => {
-        try {
-          setIsSubmitting(true);
-          for (const id of selectedPlanIds) {
-            const plan = plans.find((p) => p.id === id);
-            if (!plan) continue;
-
-            if (action === "deactivate") {
-              await axios.patch(`/api/recharge-plans/status/${id}`, { isActive: false });
-            } else {
-              const payload = {
-                dailyPrice: Math.round(plan.dailyPrice * 1.1),
-                weeklyPrice: Math.round(plan.weeklyPrice * 1.1),
-                monthlyPrice: Math.round(plan.monthlyPrice * 1.1),
-              };
-              await axios.patch(`/api/recharge-plans/update/${id}`, payload);
-            }
-          }
-          notificationApi.success({
-            message: "Updates Complete",
-            description: `Modified ${selectedPlanIds.length} plans successfully.`,
-          });
-          setSelectedPlanIds([]);
-          fetchPlans();
-        } catch (err) {
-          messageApi.error("Action partially failed. Please check logs.");
-        } finally {
-          setIsSubmitting(false);
-        }
-      },
-    });
-  };
-
-  const toggleAllSelection = () => {
-    if (selectedPlanIds.length === filteredPlans.length) {
-      setSelectedPlanIds([]);
-    } else {
-      setSelectedPlanIds(filteredPlans.map((p) => p.id));
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    const plan = plans.find((p) => p.id === id);
-    modalApi.confirm({
-      title: "Delete Plan?",
-      content: `Are you sure you want to delete "${plan?.planName}"? This action cannot be undone.`,
-      okText: "Delete",
-      okType: "danger",
-      cancelText: "Cancel",
-      onOk: async () => {
-        try {
-          await axios.delete(`/api/recharge-plans/delete/${id}`);
-          messageApi.success("Plan deleted successfully");
-          fetchPlans();
-        } catch (err) {
-          console.error("Failed to delete plan:", err);
-          messageApi.error("Failed to delete plan");
-        }
-      },
-    });
-  };
-
-  const toggleStatus = async (id: number, currentStatus: boolean) => {
-    try {
-      await axios.patch(`/api/recharge-plans/status/${id}`, { isActive: !currentStatus });
-      messageApi.success(`Plan ${!currentStatus ? "activated" : "deactivated"} successfully`);
-      fetchPlans();
-    } catch (err) {
-      console.error("Failed to update status:", err);
-      messageApi.error("Failed to update status");
-    }
-  };
-
-  const fetchPlanHistory = async (id: number, name: string) => {
-    try {
-      setHistoryLoading(true);
-      setHistoryPlanName(name);
-      setIsHistoryOpen(true);
-      const res = await axios.get(`/api/recharge-plans/history/${id}`);
-      setHistoryData(res.data.data || []);
-    } catch (err) {
-      console.error("Failed to fetch history:", err);
-      messageApi.error("Failed to fetch plan history");
-    } finally {
-      setHistoryLoading(false);
-    }
-  };
-
-  const filteredPlans = plans.filter((p) => {
-    const matchesSearch = p.planName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus =
-      statusFilter === "all" ||
-      (statusFilter === "active" && p.isActive) ||
-      (statusFilter === "inactive" && !p.isActive);
-    return matchesSearch && matchesStatus;
-  });
 
   return (
     <div className="flex flex-row h-full w-full bg-[#f8f9fa] dark:bg-[#0b0f19] overflow-hidden">
