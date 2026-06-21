@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Table, Button, Input, Tag } from "antd";
+import { Table, Button, Tag } from "antd";
 import { Download, Search, FileText } from "lucide-react";
 import axios from "../api/axios";
 import { jsPDF } from "jspdf";
@@ -150,36 +150,63 @@ const PaymentHistory = () => {
   ];
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 overflow-hidden flex flex-col h-full min-h-[600px]">
-      <div className="p-4 border-b border-gray-50 dark:border-slate-800 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Input
-            placeholder="Search by name, phone or ID..."
-            prefix={<Search size={16} className="text-slate-400" />}
-            className="w-64 rounded-xl border-slate-200"
+    <div className="flex flex-col h-full w-full bg-[#f8f9fa] dark:bg-[#0b0f19] overflow-hidden">
+      {/* Top Navbar */}
+      <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 shadow-sm z-0">
+        <div className="flex items-center gap-3 w-48 shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+            <FileText size={20} />
+          </div>
+          <div>
+            <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider leading-none">
+              Payments
+            </h2>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 leading-none">
+              History
+            </p>
+          </div>
+        </div>
+
+        <div className="relative flex-1 max-w-3xl flex items-center bg-gray-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
+          <Search className="absolute left-3 text-slate-400" size={16} />
+          <input
+            type="text"
+            placeholder="Search payments by name, phone or ID..."
+            className="w-full pl-10 pr-4 py-2 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button
-          type="primary"
-          icon={<Download size={16} />}
-          onClick={handleExportAll}
-          className="bg-emerald-600 hover:bg-emerald-700 border-none rounded-xl font-bold h-10 px-4"
-        >
-          Export Report
-        </Button>
+        
+        <div className="flex items-center gap-4 shrink-0">
+          <Button
+            type="primary"
+            icon={<Download size={16} />}
+            onClick={handleExportAll}
+            className="bg-emerald-600 hover:bg-emerald-700 border-none rounded-lg font-bold h-10 px-4"
+          >
+            Export Report
+          </Button>
+          <div className="flex items-center gap-2 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 px-3 py-1.5 rounded-full border border-indigo-100 dark:border-indigo-500/20">
+            <span className="text-[11px] font-black tracking-widest uppercase">
+              {filteredPayments.length} TRANSACTIONS
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className="flex-1 p-0 overflow-y-auto">
-        <Table
-          columns={columns}
-          dataSource={filteredPayments}
-          rowKey="id"
-          loading={loading}
-          pagination={{ pageSize: 15 }}
-          className="custom-table"
-        />
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm h-full overflow-hidden flex flex-col">
+          <Table
+            columns={columns}
+            dataSource={filteredPayments}
+            rowKey="id"
+            loading={loading}
+            pagination={{ pageSize: 15 }}
+            className="custom-table flex-1 overflow-y-auto"
+            scroll={{ y: 'max-content' }}
+          />
+        </div>
       </div>
     </div>
   );
