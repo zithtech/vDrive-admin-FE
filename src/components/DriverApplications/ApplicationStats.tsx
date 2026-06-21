@@ -1,9 +1,9 @@
 import React from "react";
-import { CarOutlined, CheckCircleOutlined, StopOutlined, RiseOutlined } from "@ant-design/icons";
+import { FileProtectOutlined, SafetyCertificateOutlined, FileExclamationOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import type { Driver } from "../../store/slices/driverSlice";
 import dayjs from "dayjs";
 
-interface DriverStatsProps {
+interface ApplicationStatsProps {
   drivers: Driver[];
   loading?: boolean;
 }
@@ -35,7 +35,7 @@ const generatePath = (data: number[]) => {
   return d;
 };
 
-const StatCard = ({ title, value, icon, trend, bg, strokeColor, secondaryValue, secondaryText, chartData }: any) => {
+const StatCard = ({ title, value, icon, trend, bg, strokeColor, chartData }: any) => {
   const pathD = chartData ? generatePath(chartData) : "M0,35 C20,35 30,20 50,20 C70,20 80,5 100,5";
 
   return (
@@ -45,7 +45,7 @@ const StatCard = ({ title, value, icon, trend, bg, strokeColor, secondaryValue, 
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-base ${bg}`}>
             {icon}
           </div>
-          <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0">{title}</p>
+          <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">{title}</p>
         </div>
         {trend && (
           <div className="flex items-center text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded">
@@ -61,13 +61,8 @@ const StatCard = ({ title, value, icon, trend, bg, strokeColor, secondaryValue, 
         <div className="flex flex-col">
           <div className="flex items-baseline gap-1.5">
             <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{value}</h3>
-            <span className="text-[10px] text-slate-400 font-semibold mb-0.5">this week</span>
+            <span className="text-[10px] text-slate-400 font-semibold mb-0.5">APPLICATIONS</span>
           </div>
-          {secondaryValue !== undefined && (
-            <span className="text-[10px] text-slate-400 font-medium mt-1">
-              {secondaryValue} {secondaryText}
-            </span>
-          )}
         </div>
         <div className="w-24 h-10 mb-[-5px]">
           <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
@@ -86,77 +81,71 @@ const StatCard = ({ title, value, icon, trend, bg, strokeColor, secondaryValue, 
   );
 };
 
-const DriverStats: React.FC<DriverStatsProps> = ({ drivers }) => {
-  const total = drivers.length;
-  const active = drivers.filter((d) => d.status === "active").length;
-  const suspended = drivers.filter(
-    (d) => d.status === "suspended" || d.status === "blocked",
-  ).length;
-
-  const today = dayjs().startOf("day");
-  const newToday = drivers.filter((d) => dayjs(d.created_at).isSame(today, "day")).length;
+const ApplicationStats: React.FC<ApplicationStatsProps> = ({ drivers }) => {
+  const totalPending = drivers.filter((d) => d.status !== "rejected" && d.onboarding_status !== "DOCS_REJECTED").length;
+  const docsRejected = drivers.filter((d) => d.status !== "rejected" && d.onboarding_status === "DOCS_REJECTED").length;
+  const rejected = drivers.filter((d) => d.status === "rejected").length;
+  const total = drivers.length; // Basically total tracked in this page
 
   // Calculate dynamic weekly data (last 7 days)
   const last7DaysData = Array.from({ length: 7 }).map((_, i) => {
     return dayjs().subtract(6 - i, 'day').format('YYYY-MM-DD');
   });
 
-  const totalDriversData = last7DaysData.map(date =>
+  const totalData = last7DaysData.map(date =>
     drivers.filter(d => dayjs(d.created_at).isBefore(dayjs(date).endOf('day'))).length
   );
 
-  const activeDriversData = last7DaysData.map(date =>
-    drivers.filter(d => d.status === "active" && dayjs(d.created_at).isBefore(dayjs(date).endOf('day'))).length
+  const pendingData = last7DaysData.map(date =>
+    drivers.filter(d => d.status !== "rejected" && d.onboarding_status !== "DOCS_REJECTED" && dayjs(d.created_at).isBefore(dayjs(date).endOf('day'))).length
   );
 
-  const newDriversData = last7DaysData.map(date =>
-    drivers.filter(d => dayjs(d.created_at).isSame(dayjs(date), 'day')).length
+  const docsRejectedData = last7DaysData.map(date =>
+    drivers.filter(d => d.status !== "rejected" && d.onboarding_status === "DOCS_REJECTED" && dayjs(d.created_at).isBefore(dayjs(date).endOf('day'))).length
   );
 
-  const restrictedDriversData = last7DaysData.map(date =>
-    drivers.filter(d => (d.status === "suspended" || d.status === "blocked") && dayjs(d.created_at).isBefore(dayjs(date).endOf('day'))).length
+  const rejectedData = last7DaysData.map(date =>
+    drivers.filter(d => d.status === "rejected" && dayjs(d.created_at).isBefore(dayjs(date).endOf('day'))).length
   );
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard
-        title="Total Drivers"
+        title="Total Applications"
         value={total}
-        icon={<CarOutlined className="text-blue-600 dark:text-blue-400 text-base" />}
-        trend="+14"
+        icon={<FileProtectOutlined className="text-blue-600 dark:text-blue-400 text-base" />}
+        trend="+5"
         bg="bg-blue-50 dark:bg-blue-500/10"
         strokeColor="#3b82f6"
-        chartData={totalDriversData}
+        chartData={totalData}
       />
       <StatCard
-        title="Active Drivers"
-        value={active}
-        icon={<CheckCircleOutlined className="text-slate-500" />}
-        trend="+31"
-        bg="bg-slate-100 dark:bg-slate-800"
-        strokeColor="#34d399"
-        chartData={activeDriversData}
+        title="Pending Verification"
+        value={totalPending}
+        icon={<SafetyCertificateOutlined className="text-orange-500" />}
+        trend="+3"
+        bg="bg-orange-50 dark:bg-orange-900/20"
+        strokeColor="#f97316"
+        chartData={pendingData}
       />
       <StatCard
-        title="New Drivers"
-        value={newToday}
-        icon={<RiseOutlined className="text-indigo-500" />}
-        trend="+11"
-        bg="bg-indigo-50 dark:bg-indigo-900/20"
-        strokeColor="#34d399"
-        chartData={newDriversData}
+        title="Docs Rejected"
+        value={docsRejected}
+        icon={<FileExclamationOutlined className="text-amber-500" />}
+        bg="bg-amber-50 dark:bg-amber-900/20"
+        strokeColor="#f59e0b"
+        chartData={docsRejectedData}
       />
       <StatCard
-        title="Restricted"
-        value={suspended}
-        icon={<StopOutlined className="text-emerald-500" />}
-        trend="+14"
-        bg="bg-emerald-50 dark:bg-emerald-900/20"
-        strokeColor="#e2e8f0"
-        chartData={restrictedDriversData}
+        title="Rejected"
+        value={rejected}
+        icon={<CloseCircleOutlined className="text-rose-500" />}
+        bg="bg-rose-50 dark:bg-rose-900/20"
+        strokeColor="#f43f5e"
+        chartData={rejectedData}
       />
     </div>
   );
 };
 
-export default DriverStats;
+export default ApplicationStats;

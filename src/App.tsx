@@ -1,5 +1,7 @@
-import React, { useState, useEffect, lazy, Suspense, useCallback } from "react";
+import React, { useState, useEffect, lazy, Suspense, useCallback, useMemo } from "react";
 import { logger } from "./utils/logger";
+import axiosIns from "./api/axios";
+import { Moon, UserPlus, ShieldCheck, Headphones } from "lucide-react";
 
 import {
   // TeamOutlined,
@@ -13,12 +15,12 @@ import {
   TableOutlined,
   CheckCircleOutlined,
   BellOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
   // CustomerServiceOutlined,
-  // PieChartOutlined,
-  // SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
-import { Layout, Menu, Avatar, ConfigProvider, Button, Drawer, App as AntdApp, theme } from "antd";
+import { Layout, Menu, Avatar, ConfigProvider, Button, Drawer, App as AntdApp, theme, Dropdown } from "antd";
 import logo from "/90.png";
 import {
   createBrowserRouter,
@@ -27,6 +29,7 @@ import {
   useLocation,
   useNavigate,
   Outlet,
+  Navigate,
 } from "react-router-dom";
 import { PiSteeringWheel } from "react-icons/pi";
 import { RiAdminLine, RiQuestionLine } from "react-icons/ri";
@@ -116,8 +119,20 @@ const PricingAndFareRules = lazy(
 const Deductions = lazy(
   () => import("./pages/Deductions") as Promise<{ default: React.ComponentType<any> }>,
 );
-const RechargePlan = lazy(
-  () => import("./pages/RechargePlan") as Promise<{ default: React.ComponentType<any> }>,
+const RechargeLayout = lazy(
+  () => import("./pages/RechargePlans/RechargeLayout") as Promise<{ default: React.ComponentType<any> }>,
+);
+const ManagePlans = lazy(
+  () => import("./pages/RechargePlans/ManagePlans") as Promise<{ default: React.ComponentType<any> }>,
+);
+const Subscriptions = lazy(
+  () => import("./pages/RechargePlans/Subscriptions") as Promise<{ default: React.ComponentType<any> }>,
+);
+const SubscriptionOffers = lazy(
+  () => import("./pages/Promotions") as Promise<{ default: React.ComponentType<any> }>,
+);
+const PaymentHistory = lazy(
+  () => import("./pages/PaymentHistory") as Promise<{ default: React.ComponentType<any> }>,
 );
 const TripTransactions = lazy(
   () => import("./pages/TripTransactions") as Promise<{ default: React.ComponentType<any> }>,
@@ -148,24 +163,39 @@ const SupportAnalytics = lazy(() => import("./pages/SupportAnalytics"));
 
 const { Content, Sider, Header } = Layout;
 
-const Logo: React.FC<{ collapsed: boolean }> = ({ collapsed }) => (
-  <div
-    className={`flex items-center justify-center gap-3 px-6 h-[80px] border-b border-gray-200 dark:border-slate-800 transition-all duration-300 ${collapsed ? "px-0" : ""}`}
-  >
-    <div className="relative flex items-center justify-center">
-      <div className="absolute -inset-2 bg-indigo-500/10 rounded-full blur-lg opacity-0 group-hover:opacity-100 transition-opacity" />
-      <img
-        src={logo}
-        alt=""
-        className="w-20 h-20 object-contain relative drop-shadow-sm transition-all duration-300 dark:invert dark:brightness-200"
+const Logo: React.FC<{ collapsed: boolean; onToggle: () => void }> = ({ collapsed, onToggle }) => (
+  <div className="flex flex-col w-full">
+    <div
+      className={`flex items-center h-[64px] border-b border-gray-200 dark:border-slate-800 transition-all duration-300 ${
+        collapsed ? "justify-center" : "justify-center px-4"
+      }`}
+    >
+      <div className="flex items-center gap-2 overflow-hidden">
+        <img
+          src={logo}
+          alt=""
+          className="w-8 h-8 object-contain dark:invert dark:brightness-200"
+        />
+        {!collapsed && (
+          <span className="font-bold text-lg text-slate-900 dark:text-white whitespace-nowrap truncate">
+            VDrive Admin
+          </span>
+        )}
+      </div>
+    </div>
+    <div
+      className={`flex items-center h-[48px] border-b border-gray-200 dark:border-slate-800 transition-all duration-300 ${
+        collapsed ? "justify-center" : "justify-end px-4"
+      }`}
+    >
+      <Button
+        type="text"
+        icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+        onClick={onToggle}
+        className="flex-shrink-0 !flex !items-center !justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white"
+        style={{ fontSize: "16px", width: 32, height: 32 }}
       />
     </div>
-
-    {!collapsed && (
-      <span className="font-black text-xl text-slate-900 dark:text-white whitespace-nowrap tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-indigo-600 dark:from-white dark:to-indigo-400">
-        VDrive Admin
-      </span>
-    )}
   </div>
 );
 
@@ -181,8 +211,43 @@ const siderStyle: React.CSSProperties = {
 const RootLayout: React.FC = () => {
   const dispatch = useAppDispatch();
   const { isAuthenticated, loading, currentUser, role } = useAppSelector((state) => state.auth);
+  const { drivers } = useAppSelector((state: any) => state.drivers);
   const location = useLocation();
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, toggleTheme } = useTheme();
+
+  const awaitingCount = useMemo(() => {
+    if (!drivers || !Array.isArray(drivers)) return 0;
+    return drivers.filter(
+      (d: any) =>
+        d.status === "pending" ||
+        d.status === "pending_verification" ||
+        d.onboarding_status === "DOCS_SUBMITTED" ||
+        d.onboarding_status === "DOCS_REJECTED"
+    ).length;
+  }, [drivers]);
+
+  const [openTicketsCount, setOpenTicketsCount] = useState(0);
+  const [pendingVerificationsCount, setPendingVerificationsCount] = useState(0);
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const [{ data: tickets }, { data: verifications }] = await Promise.all([
+          axiosIns.get("/api/support-management/tickets"),
+          axiosIns.get("/api/trip-verification/pending")
+        ]);
+        if (tickets?.data?.tickets) {
+          setOpenTicketsCount(tickets.data.tickets.filter((t: any) => t.status === "open").length);
+        }
+        if (verifications?.success) {
+          setPendingVerificationsCount(verifications.data.length || 0);
+        }
+      } catch (e) {
+        console.error("Failed to fetch topnav counts", e);
+      }
+    };
+    if (isAuthenticated) fetchCounts();
+  }, [isAuthenticated]);
 
   const dashboardAccess = useModuleAccess("dashboard");
   const customersAccess = useModuleAccess("customers");
@@ -214,7 +279,7 @@ const RootLayout: React.FC = () => {
   }, [isAuthenticated, currentUser, dispatch]);
   const { socket } = useSocket();
   const navigate = useNavigate();
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -224,6 +289,12 @@ const RootLayout: React.FC = () => {
     if (!socket) return;
 
     const handleDriverEvent = (data: any) => {
+      if (
+        data.eventType === "TRIP_VERIFICATION_APPROVED" ||
+        data.eventType === "TRIP_VERIFICATION_REJECTED"
+      ) {
+        setPendingVerificationsCount((prev) => Math.max(0, prev - 1));
+      }
       let title = "Driver Notification";
       if (data.eventType === "NEW_DRIVER") title = "New Driver Registered";
       else if (data.eventType === "DRIVER_PROFILE_COMPLETED") title = "Profile Completed";
@@ -250,7 +321,16 @@ const RootLayout: React.FC = () => {
       });
     });
 
+    socket.on("ADMIN_TRIP_VERIFICATION_REQUESTED", () => {
+      setPendingVerificationsCount((prev) => prev + 1);
+    });
+
+    socket.on("ADMIN_SUPPORT_TICKET_CLOSED", () => {
+      setOpenTicketsCount((prev) => Math.max(0, prev - 1));
+    });
+
     socket.on("ADMIN_SUPPORT_TICKET_ALERT", (newTicket: any) => {
+      setOpenTicketsCount((prev) => prev + 1);
       notificationApi?.info({
         message: "New Driver Support Ticket",
         description: newTicket.subject || "A driver has created a new support ticket.",
@@ -261,6 +341,7 @@ const RootLayout: React.FC = () => {
     });
 
     socket.on("ADMIN_SUPPORT_USER_TICKET_ALERT", (newTicket: any) => {
+      setOpenTicketsCount((prev) => prev + 1);
       notificationApi?.info({
         message: "New Customer Support Ticket",
         description: newTicket.subject || "A customer has created a new support ticket.",
@@ -273,6 +354,8 @@ const RootLayout: React.FC = () => {
     return () => {
       socket.off("driver_event", handleDriverEvent);
       socket.off("newSupportMessageNotification");
+      socket.off("ADMIN_TRIP_VERIFICATION_REQUESTED");
+      socket.off("ADMIN_SUPPORT_TICKET_CLOSED");
       socket.off("ADMIN_SUPPORT_TICKET_ALERT");
       socket.off("ADMIN_SUPPORT_USER_TICKET_ALERT");
     };
@@ -590,9 +673,27 @@ const RootLayout: React.FC = () => {
     }
     if (rechargePlanAccess) {
       items.push({
-        label: <Link to="/RechargePlan">Recharge Plan</Link>,
-        key: "/RechargePlan",
+        label: "Recharge Plans",
+        key: "/recharge-plans",
         icon: <MdOutlineAccountBalanceWallet />,
+        children: [
+          {
+            label: <Link to="/recharge-plans/manage">Manage Plans</Link>,
+            key: "/recharge-plans/manage",
+          },
+          {
+            label: <Link to="/recharge-plans/subscriptions">Subscriptions</Link>,
+            key: "/recharge-plans/subscriptions",
+          },
+          {
+            label: <Link to="/recharge-plans/offers">Offers</Link>,
+            key: "/recharge-plans/offers",
+          },
+          {
+            label: <Link to="/recharge-plans/payments">Payment History</Link>,
+            key: "/recharge-plans/payments",
+          },
+        ]
       });
     }
     if (taxesAccess) {
@@ -673,15 +774,15 @@ const RootLayout: React.FC = () => {
           },
           Menu: {
             itemBg: "transparent",
-            itemSelectedBg: "transparent", // Keep transparent
-            itemSelectedColor: "#FFFFFF",
-            itemColor: isDarkMode ? "#94a3b8" : "#64748B",
-            itemHoverColor: isDarkMode ? "#ffffff" : "#1D2A5C",
-            itemHoverBg: isDarkMode ? "rgba(255,255,255,0.08)" : "rgba(29, 42, 92, 0.04)",
-            itemActiveBg: isDarkMode ? "rgba(255,255,255,0.12)" : "rgba(29, 42, 92, 0.08)",
-            itemBorderRadius: 16,
-            itemMarginInline: 12,
-            iconSize: 20,
+            itemSelectedBg: "transparent",
+            itemSelectedColor: isDarkMode ? "#4096ff" : "#3b82f6",
+            itemColor: isDarkMode ? "#94a3b8" : "#475569",
+            itemHoverColor: isDarkMode ? "#ffffff" : "#3b82f6",
+            itemHoverBg: isDarkMode ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.02)",
+            itemBorderRadius: 8,
+            itemMarginInline: 8,
+            iconSize: 16,
+            itemHeight: 36,
           },
           Typography: {
             titleMarginBottom: 0,
@@ -703,78 +804,30 @@ const RootLayout: React.FC = () => {
           {!isMobile && isAuthenticated && location.pathname !== "/login" && (
             <Sider
               style={siderStyle}
-              className="bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800"
+              className="bg-white dark:bg-slate-900"
               collapsed={collapsed}
               width={250}
-              onMouseEnter={() => setCollapsed(false)}
-              onMouseLeave={() => setCollapsed(true)}
             >
-              <div className="flex flex-col h-full bg-white dark:bg-slate-900">
+              <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800">
                 <div className="flex-shrink-0 group">
-                  <Logo collapsed={collapsed} />
+                  <Logo collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
                 </div>
 
-                <div className="flex-grow overflow-y-auto py-6 custom-scrollbar">
+                <div className="flex-grow overflow-y-auto pt-2 pb-6 custom-scrollbar">
                   <Menu
                     mode="inline"
+                    style={{ borderRight: 0 }}
                     selectedKeys={
                       location.pathname.startsWith("/PricingAndFareRules")
                         ? ["/PricingAndFareRules"]
                         : [location.pathname]
                     }
                     items={menuItems}
-                    className="font-medium"
+                    className="font-medium text-[13px]"
                   />
                 </div>
 
-                <div
-                  className={`flex-shrink-0 border-t border-gray-50 dark:border-slate-800 mt-auto transition-all duration-300 ${collapsed ? "p-2" : "p-6"}`}
-                >
-                  <div
-                    className={`flex items-center w-full p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-gray-100/50 dark:border-slate-700 shadow-sm transition-all duration-300 group cursor-pointer ${
-                      collapsed ? "justify-center p-2" : "gap-3 mb-4"
-                    }`}
-                  >
-                    <Avatar
-                      size={collapsed ? "small" : "large"}
-                      icon={<UserOutlined />}
-                      className="!bg-gradient-to-br !from-indigo-600 !to-blue-600 border-2 border-white shadow-md flex-shrink-0"
-                    />
 
-                    {!collapsed && (
-                      <div className="flex flex-col overflow-hidden transition-all duration-300">
-                        <span className="font-black text-[13px] text-slate-800 dark:text-slate-100 whitespace-nowrap leading-none mb-1">
-                          {currentUser?.name || "Member User"}
-                        </span>
-                        <span className="text-[10px] text-indigo-500 font-bold uppercase tracking-wider whitespace-nowrap">
-                          {role === "super_admin" ? "Super Administrator" : "Access Administrator"}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <Menu
-                    mode="inline"
-                    selectable={false}
-                    items={[
-                      {
-                        key: "logout",
-                        label: (
-                          <span className="font-bold text-[11px] uppercase tracking-widest">
-                            Logout
-                          </span>
-                        ),
-                        icon: <LogoutOutlined className="!text-lg" />,
-                        danger: true,
-                        onClick: async () => {
-                          await dispatch(logoutAsync());
-                          navigate("/login");
-                        },
-                      },
-                    ]}
-                    className="bg-transparent border-0 mt-2"
-                  />
-                </div>
               </div>
             </Sider>
           )}
@@ -791,51 +844,149 @@ const RootLayout: React.FC = () => {
             }}
             className="bg-[#F8FAFC] dark:bg-[#0f172a]"
           >
-            {isMobile && isAuthenticated && location.pathname !== "/login" && (
+            {isAuthenticated && location.pathname !== "/login" && (
               <Header
                 style={{
-                  padding: "0 16px",
+                  padding: "0 24px",
                   display: "flex",
-                  justifyContent: "space-between",
+                  justifyContent: isMobile ? "space-between" : "flex-end",
                   alignItems: "center",
-                  position: "fixed",
+                  position: isMobile ? "fixed" : "static",
                   top: 0,
                   left: 0,
                   right: 0,
                   zIndex: 1000,
+                  height: 64,
                 }}
                 className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800"
               >
-                <img
-                  src={logo}
-                  alt="Logo"
-                  className={`w-8 h-8 object-contain transition-all duration-300 ${isDarkMode ? "invert brightness-200" : ""}`}
-                />
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <Button
-                    type="text"
-                    icon={<MenuOutlined />}
-                    onClick={showDrawer}
-                    style={{ fontSize: "16px" }}
-                  />
-                  <Button
-                    type="text"
-                    icon={<LogoutOutlined />}
-                    danger
-                    style={{ fontSize: "16px" }}
-                    onClick={async () => {
-                      await dispatch(logoutAsync());
-                      navigate("/login");
-                    }}
-                  />
+                {isMobile && (
+                  <div className="flex items-center gap-3">
+                    <Button
+                      type="text"
+                      icon={<MenuOutlined />}
+                      onClick={showDrawer}
+                      style={{ fontSize: "16px" }}
+                    />
+                    <img
+                      src={logo}
+                      alt="Logo"
+                      className={`w-8 h-8 object-contain transition-all duration-300 ${isDarkMode ? "invert brightness-200" : ""}`}
+                    />
+                  </div>
+                )}
+
+                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                  {!isMobile && (
+                    <div className="flex items-center gap-1 pr-2">
+                      <div 
+                        onClick={toggleTheme}
+                        className="relative flex items-center justify-center w-[32px] h-[32px] rounded-[10px] cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                      >
+                        <Moon size={18} strokeWidth={2} />
+                      </div>
+                      <div 
+                        onClick={() => navigate("/driver-applications")}
+                        className="relative flex items-center justify-center w-[32px] h-[32px] rounded-[10px] cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                      >
+                        {awaitingCount > 0 && (
+                          <div className="absolute -top-1 -right-1 bg-[#2563eb] text-white text-[9px] font-bold w-[16px] h-[16px] flex items-center justify-center rounded-full leading-none shadow-sm">
+                            {awaitingCount > 99 ? '99+' : awaitingCount}
+                          </div>
+                        )}
+                        <UserPlus size={18} strokeWidth={2} />
+                      </div>
+                      <div 
+                        onClick={() => navigate("/trip-verifications")}
+                        className="relative flex items-center justify-center w-[32px] h-[32px] rounded-[10px] cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                      >
+                        {pendingVerificationsCount > 0 && (
+                          <div className="absolute -top-1 -right-1 bg-orange-500 text-white text-[9px] font-bold w-[16px] h-[16px] flex items-center justify-center rounded-full leading-none shadow-sm">
+                            {pendingVerificationsCount > 99 ? '99+' : pendingVerificationsCount}
+                          </div>
+                        )}
+                        <ShieldCheck size={18} strokeWidth={2} />
+                      </div>
+                      <div 
+                        onClick={() => navigate("/support-tickets")}
+                        className="relative flex items-center justify-center w-[32px] h-[32px] rounded-[10px] cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                      >
+                        {openTicketsCount > 0 && (
+                          <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-[16px] h-[16px] flex items-center justify-center rounded-full leading-none shadow-sm">
+                            {openTicketsCount > 99 ? '99+' : openTicketsCount}
+                          </div>
+                        )}
+                        <Headphones size={18} strokeWidth={2} />
+                      </div>
+                    </div>
+                  )}
+
+                  {!isMobile && (
+                    <Dropdown
+                      menu={{
+                        items: [
+                          {
+                            key: "profile",
+                            label: <span className="text-[14px]">Profile</span>,
+                            icon: <UserOutlined className="text-[16px]" />,
+                          },
+                          {
+                            type: "divider",
+                          },
+                          {
+                            key: "logout",
+                            label: <span className="text-[14px]">Logout</span>,
+                            icon: <LogoutOutlined className="text-[16px]" />,
+                            danger: true,
+                            onClick: async () => {
+                              await dispatch(logoutAsync());
+                              navigate("/login");
+                            },
+                          },
+                        ],
+                      }}
+                      trigger={["click"]}
+                      placement="bottomRight"
+                    >
+                      <div className="flex items-center gap-2.5 cursor-pointer border-l border-gray-200 dark:border-slate-700 pl-4 ml-2">
+                        <Avatar
+                          size={32}
+                          icon={<UserOutlined />}
+                          className="border border-gray-200 dark:border-slate-700 shadow-sm"
+                        />
+                        <div className="flex flex-col">
+                          <span className="font-bold text-[13px] text-slate-800 dark:text-white leading-tight">
+                            {currentUser?.name || "Member User"}
+                          </span>
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-tight mt-[1px]">
+                            {role === "super_admin" ? "SUPER ADMIN" : "ADMIN"}
+                          </span>
+                        </div>
+                      </div>
+                    </Dropdown>
+                  )}
+
+                  {isMobile && (
+                    <Button
+                      type="text"
+                      icon={<LogoutOutlined />}
+                      danger
+                      onClick={async () => {
+                        await dispatch(logoutAsync());
+                        navigate("/login");
+                      }}
+                    />
+                  )}
                 </div>
               </Header>
             )}
             <Content>
               <div
-                className={`w-full bg-[#F7F8FB] dark:bg-[#0b1121] ${
-                  isMobile && isAuthenticated && location.pathname !== "/login"
-                    ? "pt-16 h-[100dvh]"
+                className={`w-full bg-[#F7F8FB] dark:bg-[#0b1121] overflow-y-auto ${
+                  isAuthenticated && location.pathname !== "/login"
+                    ? isMobile
+                      ? "pt-16 h-[100dvh]"
+                      : "h-[calc(100dvh-64px)]"
                     : "h-[100dvh]"
                 }`}
               >
@@ -1039,14 +1190,49 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "RechargePlan",
+        path: "recharge-plans",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
             <ModuleProtectedRoute module="recharge">
-              <RechargePlan />
+              <RechargeLayout />
             </ModuleProtectedRoute>
           </Suspense>
         ),
+        children: [
+          { index: true, element: <Navigate to="manage" replace /> },
+          {
+            path: "manage",
+            element: (
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <ManagePlans />
+              </Suspense>
+            ),
+          },
+          {
+            path: "subscriptions",
+            element: (
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <Subscriptions />
+              </Suspense>
+            ),
+          },
+          {
+            path: "offers",
+            element: (
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <SubscriptionOffers />
+              </Suspense>
+            ),
+          },
+          {
+            path: "payments",
+            element: (
+              <Suspense fallback={<RouteLoadingFallback />}>
+                <PaymentHistory />
+              </Suspense>
+            ),
+          },
+        ]
       },
       {
         path: "taxes",
