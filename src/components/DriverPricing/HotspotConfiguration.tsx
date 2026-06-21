@@ -34,41 +34,45 @@ const HotspotConfiguration = ({
 
   if (isLoading && hotspots.length === 0) {
     return (
-      <Card size="small">
-        <div className="flex justify-center items-center h-32">
+      <Card size="small" className="!rounded-none">
+        <div className="flex justify-center items-center h-24">
           <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
-          <span className="ml-2">Loading hotspots...</span>
+          <span className="ml-2 text-xs text-slate-500">Loading hotspots...</span>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card size="small">
+    <Card size="small" className="!rounded-none" styles={{ body: { padding: '16px' } }}>
       <div className="w-full flex flex-col gap-4">
-        <div className="flex items-center justify-between w-full">
-          <div className="w-full flex items-center gap-2">
-            <ThunderboltOutlined className="text-[20px] text-[#0080FF]" />
-            <span className="text-[19px] font-semibold p-0 m-0">Hotspot Configuration</span>
+        {/* Section Header */}
+        <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center flex-shrink-0">
+            <ThunderboltOutlined className="text-base text-amber-500 dark:text-amber-400" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-tight leading-none">Hotspot Configuration</span>
+            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Dynamic demand-based pricing zones</span>
           </div>
         </div>
 
-        <Card variant="borderless" size="small" className="w-full bg-[#F8F9FA]">
+        <Card variant="borderless" size="small" className="w-full !rounded-lg bg-slate-50 dark:bg-slate-800/50 !border !border-slate-100 dark:!border-slate-700/50">
           <div className="w-full flex items-center gap-2 justify-between">
-            <div className="flex flex-col gap-2 ">
-              <span className="text-[16px] font-semibold p-0 m-0">Enable Hotspot Pricing</span>
-              <span className="text-[10px]  p-0 m-0">Apply dynamic pricing based on demand</span>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Enable Hotspot Pricing</span>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500">Apply dynamic pricing based on demand</span>
             </div>
             <div>
-              <Switch checked={hotspotEnabled} onChange={setHotspotEnabled} />
+              <Switch checked={hotspotEnabled} onChange={setHotspotEnabled} size="small" />
             </div>
           </div>
         </Card>
 
         {hotspotEnabled && (
           <>
-            <div className="w-full flex flex-col">
-              <span className="text-sm font-medium mb-1">Hotspot</span>
+            <div className="w-full flex flex-col gap-1">
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Hotspot Zone</span>
               <Select
                 value={hotspotId}
                 onChange={setHotspotId}
@@ -97,21 +101,21 @@ const HotspotConfiguration = ({
             </div>
 
             {selectedHotspot && (
-              <div className="w-full flex flex-col sm:flex-row gap-4 sm:justify-between">
-                <div className="flex flex-col">
+              <div className="w-full flex flex-col sm:flex-row gap-3 sm:justify-between p-3 bg-blue-50/60 dark:bg-blue-500/5 rounded-lg border border-blue-100 dark:border-blue-900/30">
+                <div className="flex flex-col gap-1">
                   <div>
-                    <Tag color="blue" className="mb-2">
+                    <Tag color="blue" className="mb-1 !text-[10px] !font-bold">
                       {selectedHotspot.hotspot_name}
                     </Tag>
                   </div>
-                  <span className="text-sm text-gray-600">
+                  <span className="text-xs text-slate-600 dark:text-slate-400">
                     Fare: ₹{Number(selectedHotspot.fare).toFixed(2)}
                   </span>
                 </div>
-                <div className="w-full sm:w-1/2 flex gap-6">
-                  <span className="text-sm font-medium mb-1">Multiplier:</span>
-                  <div className="flex items-center flex-col">
-                    <div>
+                <div className="w-full sm:w-1/2 flex gap-3 items-center">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider whitespace-nowrap">Multiplier:</span>
+                  <div className="flex items-center flex-col flex-1">
+                    <div className="w-full">
                       <InputNumber
                         min={0.1}
                         step={0.1}
@@ -124,7 +128,7 @@ const HotspotConfiguration = ({
                       />
                     </div>
                     <div>
-                      <span className="text-xs text-gray-500 mt-1">
+                      <span className="text-[10px] text-slate-400 mt-0.5">
                         Default: {Number(selectedHotspot.multiplier).toFixed(1)}x
                       </span>
                     </div>
