@@ -243,12 +243,7 @@ p {
   background-color: #bfbfbf;
 }
 
-/* Selected menu item styles */
-.ant-menu-item-selected {
-  background: linear-gradient(to right, #4f46e5, #3b82f6) !important;
-  color: #ffffff !important;
-}
-
+/* Selected menu item styles removed to use App.tsx tokens */
 .ant-menu-item-selected::after {
   display: none !important;
 }
