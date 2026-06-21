@@ -4,79 +4,74 @@ import { NodeIndexOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/ico
 
 export interface UiCheckpoint {
   uid: number;
-  multiplier: number;
+  from_km: number;
+  price: number;
 }
 
 interface ExtraKmConfigurationProps {
-  extraKmStep: number;
-  setExtraKmStep: (v: number) => void;
-  extraKmPrice: number;
-  setExtraKmPrice: (v: number) => void;
-  extraKmStartMultiplier: number;
-  setExtraKmStartMultiplier: (v: number) => void;
+  perKmPrice: number;
   extraKmCheckpoints: UiCheckpoint[];
   setExtraKmCheckpoints: (v: UiCheckpoint[]) => void;
 }
 
 interface PreviewRow {
-  key: number;
+  key: number | string;
   range: string;
-  multiplier: string;
-  pricePerStep: string;
+  rate: string;
 }
 
 const ExtraKmConfiguration = ({
-  extraKmStep,
-  setExtraKmStep,
-  extraKmPrice,
-  setExtraKmPrice,
-  extraKmStartMultiplier,
-  setExtraKmStartMultiplier,
+  perKmPrice,
   extraKmCheckpoints,
   setExtraKmCheckpoints,
 }: ExtraKmConfigurationProps) => {
+  // Suggest the next breakpoint a bit beyond the current furthest one
+  const nextFromKm = () => {
+    const maxFrom = extraKmCheckpoints.reduce((m, c) => Math.max(m, c.from_km), 0);
+    return maxFrom > 0 ? maxFrom + 5 : 5;
+  };
+
   const addCheckpoint = () => {
-    setExtraKmCheckpoints([...extraKmCheckpoints, { uid: Date.now(), multiplier: 1 }]);
+    setExtraKmCheckpoints([
+      ...extraKmCheckpoints,
+      { uid: Date.now(), from_km: nextFromKm(), price: perKmPrice },
+    ]);
   };
 
   const removeCheckpoint = (uid: number) => {
     setExtraKmCheckpoints(extraKmCheckpoints.filter((c) => c.uid !== uid));
   };
 
-  const updateMultiplier = (uid: number, value: number) => {
-    setExtraKmCheckpoints(
-      extraKmCheckpoints.map((c) => (c.uid === uid ? { ...c, multiplier: value } : c)),
-    );
+  const updateCheckpoint = (uid: number, patch: Partial<UiCheckpoint>) => {
+    setExtraKmCheckpoints(extraKmCheckpoints.map((c) => (c.uid === uid ? { ...c, ...patch } : c)));
   };
 
-  // Build preview rows: tier 1 (start) + one row per checkpoint
+  // Tiers sorted by from_km drive the preview band ranges
+  const sorted = [...extraKmCheckpoints].sort((a, b) => a.from_km - b.from_km);
+  const firstBreak = sorted.length > 0 ? sorted[0].from_km : null;
+
   const previewRows: PreviewRow[] = [
     {
-      key: 0,
-      range: `0 – ${extraKmStep} km`,
-      multiplier: `×${Number(extraKmStartMultiplier).toFixed(2)}`,
-      pricePerStep: `₹${(extraKmPrice * extraKmStartMultiplier).toFixed(2)}`,
+      key: "base",
+      range: firstBreak !== null ? `0 – ${firstBreak} km` : `0 km and beyond`,
+      rate: `₹${Number(perKmPrice).toFixed(2)} / km`,
     },
-    ...extraKmCheckpoints.map((c, i) => ({
-      key: c.uid,
-      range: `${extraKmStep * (i + 1)} – ${extraKmStep * (i + 2)} km`,
-      multiplier: `×${Number(c.multiplier).toFixed(2)}`,
-      pricePerStep: `₹${(extraKmPrice * c.multiplier).toFixed(2)}`,
-    })),
+    ...sorted.map((c, i) => {
+      const next = sorted[i + 1];
+      return {
+        key: c.uid,
+        range: next ? `${c.from_km} – ${next.from_km} km` : `${c.from_km} km and beyond`,
+        rate: `₹${Number(c.price).toFixed(2)} / km`,
+      };
+    }),
   ];
 
   const previewColumns: TableColumnsType<PreviewRow> = [
     { title: "KM Range", dataIndex: "range", key: "range" },
     {
-      title: "Multiplier",
-      dataIndex: "multiplier",
-      key: "multiplier",
-      render: (v: string) => <span className="text-[#0080FF] font-semibold">{v}</span>,
-    },
-    {
-      title: "₹ / Step",
-      dataIndex: "pricePerStep",
-      key: "pricePerStep",
+      title: "Rate",
+      dataIndex: "rate",
+      key: "rate",
       render: (v: string) => <span className="text-green-600 font-semibold">{v}</span>,
     },
   ];
@@ -90,62 +85,52 @@ const ExtraKmConfiguration = ({
           <span className="text-[19px] font-semibold p-0 m-0">Extra KM Configuration</span>
         </div>
 
-        {/* Top 3 fields */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium">KM Step</span>
-            <InputNumber
-              min={0.1}
-              step={0.5}
-              precision={2}
-              value={extraKmStep}
-              onChange={(v) => setExtraKmStep(v || 1)}
-              addonAfter="km"
-              className="w-full"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium">Base Price / Step</span>
-            <InputNumber
-              min={0}
-              precision={2}
-              value={extraKmPrice}
-              onChange={(v) => setExtraKmPrice(v ?? 0)}
-              prefix="₹"
-              className="w-full"
-            />
-          </div>
-          <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium">Start Multiplier</span>
-            <InputNumber
-              min={0.01}
-              step={0.1}
-              precision={2}
-              value={extraKmStartMultiplier}
-              onChange={(v) => setExtraKmStartMultiplier(v || 1)}
-              addonAfter="×"
-              className="w-full"
-            />
-          </div>
+        <span className="text-xs text-gray-500">
+          The base "Price per KM" applies from 0 km. Add breakpoints to charge a different ₹/km
+          beyond a chosen distance.
+        </span>
+
+        {/* Read-only base (from 0 km) row */}
+        <div className="flex items-center gap-2 p-2 bg-[#EEF5FF] rounded-md">
+          <span className="text-xs text-gray-600 whitespace-nowrap min-w-[110px]">
+            From 0 km (base)
+          </span>
+          <InputNumber
+            value={perKmPrice}
+            disabled
+            prefix="₹"
+            addonAfter="/km"
+            className="w-full"
+            size="small"
+          />
         </div>
 
-        {/* Checkpoints */}
+        {/* Breakpoints */}
         <div className="flex flex-col gap-2">
-          <span className="text-sm font-medium">Checkpoints</span>
+          <span className="text-sm font-medium">Distance breakpoints</span>
 
-          {extraKmCheckpoints.map((c, i) => (
+          {sorted.map((c) => (
             <div key={c.uid} className="flex items-center gap-2">
               <div className="flex-1 flex items-center gap-2 p-2 bg-[#F8F9FA] rounded-md">
-                <span className="text-xs text-gray-500 whitespace-nowrap min-w-[110px]">
-                  Tier {i + 2} &nbsp;({extraKmStep * (i + 1)}–{extraKmStep * (i + 2)} km)
-                </span>
+                <span className="text-xs text-gray-500 whitespace-nowrap">From</span>
                 <InputNumber
-                  min={0.01}
-                  step={0.1}
+                  min={0.1}
+                  step={1}
                   precision={2}
-                  value={c.multiplier}
-                  onChange={(v) => updateMultiplier(c.uid, v || 1)}
-                  addonAfter="×"
+                  value={c.from_km}
+                  onChange={(v) => updateCheckpoint(c.uid, { from_km: v || 0 })}
+                  addonAfter="km"
+                  className="w-full"
+                  size="small"
+                />
+                <span className="text-xs text-gray-500 whitespace-nowrap">→</span>
+                <InputNumber
+                  min={0}
+                  precision={2}
+                  value={c.price}
+                  onChange={(v) => updateCheckpoint(c.uid, { price: v ?? 0 })}
+                  prefix="₹"
+                  addonAfter="/km"
                   className="w-full"
                   size="small"
                 />
@@ -161,7 +146,7 @@ const ExtraKmConfiguration = ({
           ))}
 
           <Button type="dashed" icon={<PlusOutlined />} className="w-full" onClick={addCheckpoint}>
-            Add Tier
+            Add Breakpoint
           </Button>
         </div>
 

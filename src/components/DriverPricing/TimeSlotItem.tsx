@@ -20,7 +20,7 @@ interface TimeSlotItemProps {
   index: number;
   updateTimeSlot: (index: number, updatedSlot: Partial<TimeSlot>) => void;
   removeTimeSlot: (id: number) => void;
-  globalPrice: number;
+  perKmPrice: number;
   hasCollision: boolean;
   hotspotEnabled: boolean;
   hotspotFare: number;
@@ -32,17 +32,17 @@ const TimeSlotItem = ({
   index,
   updateTimeSlot,
   removeTimeSlot,
-  globalPrice,
+  perKmPrice,
   hasCollision,
   hotspotEnabled,
   hotspotFare,
   multiplier,
 }: TimeSlotItemProps) => {
-  // Price after hotspot applied
-  const priceAfterHotspot = hotspotEnabled ? slot.price * multiplier + hotspotFare : slot.price;
+  // Per-km rate after surge (flat hotspot fare is a separate per-ride charge)
+  const rateAfterSurge = hotspotEnabled ? slot.perKmRate * multiplier : slot.perKmRate;
 
-  // All applicable taxes computed from Redux store
-  const breakdown = useTaxBreakdown(priceAfterHotspot);
+  // Indicative tax computed on the ₹/km rate
+  const breakdown = useTaxBreakdown(rateAfterSurge);
 
   return (
     <div
@@ -65,7 +65,7 @@ const TimeSlotItem = ({
       </div>
 
       {/* Controls row */}
-      <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:flex-1">
+      <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:flex-1 flex-wrap">
         <div className="flex gap-2 items-center">
           <span className="text-sm font-medium min-w-fit">Day:</span>
           <Select
@@ -90,27 +90,41 @@ const TimeSlotItem = ({
           />
         </div>
         <div className="flex gap-2 items-center">
-          <span className="text-sm font-medium min-w-fit">Price:</span>
+          <span className="text-sm font-medium min-w-fit">₹/km:</span>
           <Input
-            style={{ width: 110 }}
-            value={slot.price}
-            onChange={(e) => updateTimeSlot(index, { price: Number(e.target.value) })}
+            style={{ width: 100 }}
+            value={slot.perKmRate}
+            onChange={(e) => updateTimeSlot(index, { perKmRate: Number(e.target.value) })}
             type="number"
             prefix="₹"
+            suffix="/km"
+          />
+        </div>
+        <div className="flex gap-2 items-center">
+          <span className="text-sm font-medium min-w-fit">₹/hr:</span>
+          <Input
+            style={{ width: 100 }}
+            value={slot.perHourRate}
+            onChange={(e) => updateTimeSlot(index, { perHourRate: Number(e.target.value) })}
+            type="number"
+            prefix="₹"
+            suffix="/hr"
           />
         </div>
       </div>
 
-      {/* Price summary */}
+      {/* Rate summary */}
       <div className="flex items-start justify-between w-full sm:w-auto gap-2">
         <div className="flex flex-col gap-1">
-          {/* Base vs global % diff */}
+          {/* Rate vs zone ₹/km */}
           <div className="flex items-center gap-2">
-            <span className="font-bold text-green-600 text-sm">₹{slot.price || "0"}</span>
+            <span className="font-bold text-green-600 text-sm">₹{slot.perKmRate || "0"}/km</span>
             <Badge
               status="success"
               count={`${
-                globalPrice > 0 ? Math.round(((slot.price - globalPrice) / globalPrice) * 100) : 0
+                perKmPrice > 0
+                  ? Math.round(((slot.perKmRate - perKmPrice) / perKmPrice) * 100)
+                  : 0
               }%`}
               overflowCount={1000}
               style={{ backgroundColor: "#52c41a" }}
@@ -118,9 +132,10 @@ const TimeSlotItem = ({
           </div>
 
           {/* Hotspot line */}
-          {hotspotEnabled && hotspotFare > 0 && (
+          {hotspotEnabled && (
             <span className="text-xs text-blue-600">
-              After hotspot: ₹{priceAfterHotspot.toFixed(2)}
+              After surge ×{multiplier}: ₹{rateAfterSurge.toFixed(2)}/km
+              {hotspotFare > 0 && <> &middot; +₹{hotspotFare.toFixed(2)} flat/ride</>}
             </span>
           )}
 

@@ -13,16 +13,16 @@ export interface PricingFareRule {
   district_id: string | null;
   area_name: string;
   area_id: string;
-  global_price: number;
+  per_km_price: number;
+  per_hour_price: number;
+  minimum_fare: number;
+  one_way_return_pct: number;
   is_hotspot: boolean;
   hotspot_id: string | null;
   hotspot_name: string | null;
   multiplier: number | null;
   pincode: string | null;
-  extra_km_step: number;
-  extra_km_price: number;
-  extra_km_start_multiplier: number;
-  extra_km_checkpoints?: Array<{ id: string; multiplier: number; sort_order: number }>;
+  extra_km_checkpoints?: Array<{ id: string; from_km: number; price: number; sort_order: number }>;
   time_slots?: DriverTimeSlot[];
 }
 
@@ -33,7 +33,8 @@ export interface DriverTimeSlot {
   day: string;
   from_time: string;
   to_time: string;
-  price: number;
+  per_km_rate: number;
+  per_hour_rate: number;
 }
 
 interface PricingFareRulesState {
@@ -144,20 +145,21 @@ export const createPricingRuleWithSlots = createAsyncThunk(
     data: {
       district_id: string;
       area_id?: string | null;
-      global_price: number;
+      per_km_price: number;
+      per_hour_price?: number;
+      minimum_fare?: number;
+      one_way_return_pct?: number;
       is_hotspot: boolean;
       hotspot_id?: string | null;
       multiplier?: number | null;
-      extra_km_step?: number;
-      extra_km_price?: number;
-      extra_km_start_multiplier?: number;
-      extra_km_checkpoints?: Array<{ multiplier: number; sort_order: number }>;
+      extra_km_checkpoints?: Array<{ from_km: number; price: number; sort_order: number }>;
       time_slots: Array<{
         driver_types: string;
         day: string;
         from_time: string;
         to_time: string;
-        price: number;
+        per_km_rate: number;
+        per_hour_rate: number;
       }>;
     },
     { rejectWithValue },
@@ -185,20 +187,21 @@ export const updatePricingRuleWithSlots = createAsyncThunk(
       data: {
         district_id?: string;
         area_id?: string | null;
-        global_price?: number;
+        per_km_price?: number;
+        per_hour_price?: number;
+        minimum_fare?: number;
+        one_way_return_pct?: number;
         is_hotspot?: boolean;
         hotspot_id?: string | null;
         multiplier?: number | null;
-        extra_km_step?: number;
-        extra_km_price?: number;
-        extra_km_start_multiplier?: number;
-        extra_km_checkpoints?: Array<{ multiplier: number; sort_order: number }>;
+        extra_km_checkpoints?: Array<{ from_km: number; price: number; sort_order: number }>;
         time_slots?: Array<{
           driver_types: string;
           day: string;
           from_time: string;
           to_time: string;
-          price: number;
+          per_km_rate: number;
+          per_hour_rate: number;
         }>;
       };
     },
