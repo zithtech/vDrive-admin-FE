@@ -82,23 +82,18 @@ const ExtraKmConfiguration = ({
   ];
 
   return (
-    <Card size="small" className="!rounded-none" styles={{ body: { padding: '16px' } }}>
+    <Card size="small">
       <div className="w-full flex flex-col gap-4">
         {/* Header */}
-        <div className="flex items-center gap-2.5 pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center flex-shrink-0">
-            <NodeIndexOutlined className="text-base text-indigo-600 dark:text-indigo-400" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 uppercase tracking-tight leading-none">Extra KM Configuration</span>
-            <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">Tiered per-km pricing after base distance</span>
-          </div>
+        <div className="flex items-center gap-2">
+          <NodeIndexOutlined className="text-[20px] text-[#0080FF]" />
+          <span className="text-[19px] font-semibold p-0 m-0">Extra KM Configuration</span>
         </div>
 
         {/* Top 3 fields */}
         <div className="grid grid-cols-3 gap-3">
           <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">KM Step</span>
+            <span className="text-sm font-medium">KM Step</span>
             <InputNumber
               min={0.1}
               step={0.5}
@@ -110,7 +105,7 @@ const ExtraKmConfiguration = ({
             />
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Base Price / Step</span>
+            <span className="text-sm font-medium">Base Price / Step</span>
             <InputNumber
               min={0}
               precision={2}
@@ -121,7 +116,7 @@ const ExtraKmConfiguration = ({
             />
           </div>
           <div className="flex flex-col gap-1">
-            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Start Multiplier</span>
+            <span className="text-sm font-medium">Start Multiplier</span>
             <InputNumber
               min={0.01}
               step={0.1}
@@ -136,13 +131,13 @@ const ExtraKmConfiguration = ({
 
         {/* Checkpoints */}
         <div className="flex flex-col gap-2">
-          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Checkpoints</span>
+          <span className="text-sm font-medium">Checkpoints</span>
 
           {extraKmCheckpoints.map((c, i) => (
             <div key={c.uid} className="flex items-center gap-2">
-              <div className="flex-1 flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800/50 rounded-md border border-slate-100 dark:border-slate-700/50">
-                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap min-w-[110px] uppercase tracking-wider">
-                  Tier {i + 2}&nbsp;({extraKmStep * (i + 1)}–{extraKmStep * (i + 2)} km)
+              <div className="flex-1 flex items-center gap-2 p-2 bg-[#F8F9FA] rounded-md">
+                <span className="text-xs text-gray-500 whitespace-nowrap min-w-[110px]">
+                  Tier {i + 2} &nbsp;({extraKmStep * (i + 1)}–{extraKmStep * (i + 2)} km)
                 </span>
                 <InputNumber
                   min={0.01}
@@ -165,14 +160,14 @@ const ExtraKmConfiguration = ({
             </div>
           ))}
 
-          <Button type="dashed" icon={<PlusOutlined />} className="w-full !rounded-md" onClick={addCheckpoint}>
+          <Button type="dashed" icon={<PlusOutlined />} className="w-full" onClick={addCheckpoint}>
             Add Tier
           </Button>
         </div>
 
         {/* Preview table */}
         <div className="flex flex-col gap-1">
-          <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Preview</span>
+          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Preview</span>
           <Table<PreviewRow>
             dataSource={previewRows}
             columns={previewColumns}
