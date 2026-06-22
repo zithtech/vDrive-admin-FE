@@ -9,7 +9,7 @@ interface ApplicationStatsProps {
 }
 
 const generatePath = (data: number[]) => {
-  if (!data || data.length === 0) return "M0,35 L100,35";
+  if (!data || data.length === 0) return "M0,40 L100,40";
   if (data.length === 1) return `M0,20 L100,20`;
 
   const min = Math.min(...data);
@@ -35,42 +35,34 @@ const generatePath = (data: number[]) => {
   return d;
 };
 
-const StatCard = ({ title, value, icon, trend, bg, strokeColor, chartData }: any) => {
-  const pathD = chartData ? generatePath(chartData) : "M0,35 C20,35 30,20 50,20 C70,20 80,5 100,5";
+const StatCard = ({ title, value, icon, bg, strokeColor, chartData, subtitle = "APPS" }: any) => {
+  const pathD = chartData ? generatePath(chartData) : "M0,40 L10,30 L20,35 L40,10 L60,25 L80,5 L100,20";
 
   return (
-    <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] rounded-[10px]">
+    <div className="bg-white dark:bg-slate-900 px-5 py-3 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[90px] shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-base ${bg}`}>
+          <div className={`w-8 h-8 flex items-center justify-center text-[15px] ${bg}`}>
             {icon}
           </div>
-          <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">{title}</p>
+          <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest whitespace-nowrap truncate">{title}</p>
         </div>
-        {trend && (
-          <div className="flex items-center text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded">
-            <svg className="w-3 h-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-            </svg>
-            {trend}
-          </div>
-        )}
       </div>
 
       <div className="flex items-end justify-between mt-2">
         <div className="flex flex-col">
           <div className="flex items-baseline gap-1.5">
             <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{value}</h3>
-            <span className="text-[10px] text-slate-400 font-semibold mb-0.5">APPLICATIONS</span>
+            <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">{subtitle}</span>
           </div>
         </div>
         <div className="w-24 h-10 mb-[-5px]">
           <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
-            <path d={pathD} fill="none" stroke={strokeColor || "#cbd5e1"} strokeWidth="2" strokeLinecap="round" />
+            <path d={pathD} fill="none" stroke={strokeColor || "#3b82f6"} strokeWidth="2" strokeLinecap="round" />
             <path d={`${pathD} L100,40 L0,40 Z`} fill={`url(#gradient-${strokeColor?.replace('#', '') || 'default'})`} opacity="0.1" />
             <defs>
               <linearGradient id={`gradient-${strokeColor?.replace('#', '') || 'default'}`} x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stopColor={strokeColor || "#cbd5e1"} />
+                <stop offset="0%" stopColor={strokeColor || "#3b82f6"} />
                 <stop offset="100%" stopColor="transparent" />
               </linearGradient>
             </defs>
@@ -111,36 +103,34 @@ const ApplicationStats: React.FC<ApplicationStatsProps> = ({ drivers }) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <StatCard
-        title="Total Applications"
+        title="TOTAL APPS"
         value={total}
-        icon={<FileProtectOutlined className="text-blue-600 dark:text-blue-400 text-base" />}
-        trend="+5"
-        bg="bg-blue-50 dark:bg-blue-500/10"
+        icon={<FileProtectOutlined />}
+        bg="bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400"
         strokeColor="#3b82f6"
         chartData={totalData}
       />
       <StatCard
-        title="Pending Verification"
+        title="PENDING AUTH"
         value={totalPending}
-        icon={<SafetyCertificateOutlined className="text-orange-500" />}
-        trend="+3"
-        bg="bg-orange-50 dark:bg-orange-900/20"
+        icon={<SafetyCertificateOutlined />}
+        bg="bg-orange-50 dark:bg-orange-900/20 text-orange-600"
         strokeColor="#f97316"
         chartData={pendingData}
       />
       <StatCard
-        title="Docs Rejected"
+        title="DOCS REJECTED"
         value={docsRejected}
-        icon={<FileExclamationOutlined className="text-amber-500" />}
-        bg="bg-amber-50 dark:bg-amber-900/20"
+        icon={<FileExclamationOutlined />}
+        bg="bg-amber-50 dark:bg-amber-900/20 text-amber-600"
         strokeColor="#f59e0b"
         chartData={docsRejectedData}
       />
       <StatCard
-        title="Rejected"
+        title="REJECTED APPS"
         value={rejected}
-        icon={<CloseCircleOutlined className="text-rose-500" />}
-        bg="bg-rose-50 dark:bg-rose-900/20"
+        icon={<CloseCircleOutlined />}
+        bg="bg-rose-50 dark:bg-rose-900/20 text-rose-600"
         strokeColor="#f43f5e"
         chartData={rejectedData}
       />

@@ -1,14 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { IoMdRefresh } from "react-icons/io";
-import { Users } from "lucide-react";
+import { Users, Car, ShieldAlert } from "lucide-react";
 import {
-  CarOutlined,
-  CloseCircleOutlined,
-  ExclamationCircleOutlined,
-  EnvironmentOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { Select, DatePicker,  Slider, Spin } from "antd";
+import { Select, DatePicker, Slider, Spin, Pagination } from "antd";
 import DriverTable from "../components/DriverTable/DriverTable";
 import dayjs from "dayjs";
 import DriverStats from "../components/Drivers/DriverStats";
@@ -40,6 +36,15 @@ const Drivers = () => {
   });
 
   const [currentView, setCurrentView] = useState<"all" | "active" | "restricted">("all");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
+  // Reset page to 1 when filters or view changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, currentView]);
 
   useEffect(() => {
     dispatch(fetchDrivers());
@@ -148,7 +153,7 @@ const Drivers = () => {
     extraClasses = "",
   }: any) => (
     <div
-      className={`${flexClass} flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden ${extraClasses}`}
+      className={`${flexClass} flex flex-col bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden ${extraClasses}`}
     >
       <div className="flex-grow overflow-hidden">
         <DriverTable data={data} />
@@ -156,110 +161,99 @@ const Drivers = () => {
     </div>
   );
 
-  const ViewItem = ({ icon, label, count, isActive, onClick }: any) => (
-    <div
-      onClick={onClick}
-      className={`flex items-center justify-between px-3 py-1.5 rounded-[10px] cursor-pointer transition-all ${
-        isActive
-          ? "bg-blue-50/80 dark:bg-blue-900/30 text-slate-800 dark:text-slate-100 font-bold"
-          : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium"
-      }`}
-    >
-      <div className="flex items-center gap-2.5">
-        <span className={`text-[15px] ${isActive ? "text-blue-500" : "text-slate-400"}`}>{icon}</span>
-        <span className="text-[13px] tracking-tight">{label}</span>
-      </div>
-      {isActive ? (
-        <div className="px-2 py-0.5 rounded-md text-[10px] font-black min-w-[20px] text-center bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
-          {count}
-        </div>
-      ) : (
-        <div className="text-[11px] font-bold text-slate-400 mr-1">
-          {count}
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <div className="flex flex-row h-full w-full bg-[#f8f9fa] dark:bg-[#0b0f19] overflow-hidden">
       {/* SIDEBAR */}
-      <div className="w-[240px] flex-shrink-0 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
+      <div className="w-[260px] flex-shrink-0 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
         {/* Sidebar Header */}
-        <div className="p-6 border-b border-slate-100 dark:border-slate-700/50">
-          <div className="flex items-center gap-3 text-slate-800 dark:text-slate-100">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-              <Users size={20} strokeWidth={2.5} />
+        <div className="p-6 pb-6 border-b border-slate-100 dark:border-slate-700/50">
+          <div className="flex items-center gap-3 mb-1 text-slate-800 dark:text-slate-100">
+            <div className="w-10 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+              <Users size={20} />
             </div>
-            <div>
-              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider m-0">
-                DRIVERS
-              </h2>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5 m-0">
-                Manage Fleet
-              </p>
-            </div>
+            <h2 className="text-[24px] font-bold text-slate-900 dark:text-white tracking-wider whitespace-nowrap"><b>Drivers</b></h2>
           </div>
+          <p className="text-[11px] text-slate-500 font-medium leading-snug mt-1">
+            Manage driver profiles, documents, and account status
+          </p>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
           {/* VIEWS SECTION */}
           <div>
-            <div className="flex items-center gap-2 mb-3 px-2">
-              <span className="text-[11px] font-black tracking-widest uppercase text-slate-600 dark:text-slate-400">VIEWS</span>
-            </div>
-            
-            <div className="space-y-0.5">
-              <ViewItem
-                icon={<EnvironmentOutlined />}
-                label="All Drivers"
-                count={allFleetDrivers.length}
-                isActive={currentView === "all"}
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-2">
+              Views
+            </h3>
+            <div className="space-y-1">
+              <button
                 onClick={() => setCurrentView("all")}
-              />
-              <ViewItem
-                icon={<CarOutlined />}
-                label="Active"
-                count={activeDrivers.length}
-                isActive={currentView === "active"}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${currentView === "all" ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400" : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"}`}
+              >
+                <div className="flex items-center gap-2">
+                  <Users size={16} className={currentView === "all" ? "text-blue-500" : "text-slate-400"} />
+                  All Drivers
+                </div>
+                <span className={currentView === "all" ? "bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-bold"}>
+                  {allFleetDrivers.length}
+                </span>
+              </button>
+
+              <button
                 onClick={() => setCurrentView("active")}
-              />
-              <ViewItem
-                icon={<ExclamationCircleOutlined />}
-                label="Restricted"
-                count={restrictedDrivers.length}
-                isActive={currentView === "restricted"}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${currentView === "active" ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400" : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"}`}
+              >
+                <div className="flex items-center gap-2">
+                  <Car size={16} className={currentView === "active" ? "text-blue-500" : "text-slate-400"} />
+                  Active
+                </div>
+                <span className={currentView === "active" ? "bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-bold"}>
+                  {activeDrivers.length}
+                </span>
+              </button>
+
+              <button
                 onClick={() => setCurrentView("restricted")}
-              />
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${currentView === "restricted" ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400" : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"}`}
+              >
+                <div className="flex items-center gap-2">
+                  <ShieldAlert size={16} className={currentView === "restricted" ? "text-blue-500" : "text-slate-400"} />
+                  Restricted
+                </div>
+                <span className={currentView === "restricted" ? "bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-bold"}>
+                  {restrictedDrivers.length}
+                </span>
+              </button>
             </div>
           </div>
 
           {/* FILTERS SECTION */}
           <div>
-            <div className="flex items-center gap-2 mb-3 px-2">
-              <span className="text-[11px] font-black tracking-widest uppercase text-slate-600 dark:text-slate-400">FILTERS</span>
-            </div>
-            
-            <div className="space-y-2 px-2">
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-2">
+              Filters
+            </h3>
+
+            <div className="space-y-2.5 px-2">
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Status</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">
+                  Status
+                </label>
                 <Select
                   mode="multiple"
                   placeholder="Select status..."
-                  className="w-full custom-select-compact"
+                  className="w-full custom-select-compact h-9"
                   options={STATUSES.map((s) => ({ label: s.toUpperCase(), value: s }))}
                   value={filters.status}
                   onChange={(val) => applyFilters({ status: val })}
                   maxTagCount="responsive"
                 />
               </div>
-              
+
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Plan</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Plan</label>
                 <Select
                   mode="multiple"
                   placeholder="Filter by plan..."
-                  className="w-full custom-select-compact"
+                  className="w-full custom-select-compact h-9"
                   options={planOptions}
                   value={filters.plan}
                   onChange={(val) => applyFilters({ plan: val })}
@@ -268,25 +262,30 @@ const Drivers = () => {
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Joined Date</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Joined Date</label>
                 <DatePicker
                   placeholder="Select Date"
-                  className="w-full"
+                  className="w-full h-9"
                   onChange={(date) => applyFilters({ joined_at: date ? date.toDate() : null })}
                 />
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Rating</label>
-                <Slider
-                  range
-                  min={0}
-                  max={5}
-                  step={0.1}
-                  value={filters.rating}
-                  onChange={(val) => applyFilters({ rating: val as [number, number] })}
-                  tooltip={{ formatter: (v) => `${v}★` }}
-                  className="mx-2"
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Rating</label>
+                <Select
+                  placeholder="Select rating..."
+                  className="w-full custom-select-compact h-9"
+                  options={[
+                    { label: "All Ratings", value: "0,5" },
+                    { label: "4.0 Stars & Above", value: "4,5" },
+                    { label: "3.0 Stars & Above", value: "3,5" },
+                    { label: "Under 3.0 Stars", value: "0,2.9" },
+                  ]}
+                  value={`${filters.rating[0]},${filters.rating[1]}`}
+                  onChange={(val) => {
+                    const [min, max] = val.split(',').map(Number);
+                    applyFilters({ rating: [min, max] });
+                  }}
                 />
               </div>
 
@@ -306,100 +305,129 @@ const Drivers = () => {
       {/* RIGHT MAIN CONTENT */}
       <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0b0f19]">
         {/* Top Navbar */}
-        <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 z-0 flex-shrink-0">
-          <div className="relative flex-1 max-w-3xl flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
-            <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
+        <div className="bg-white dark:bg-slate-800 px-4 py-2.5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 z-0 flex-shrink-0">
+          <div className="relative flex-1 max-w-md flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
+            <SearchOutlined className="absolute left-3 text-slate-400 text-[15px]" />
             <input
               type="text"
               placeholder="Search drivers by name or ID..."
-              className="w-full pl-10 pr-4 py-2 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
+              className="w-full pl-9 pr-4 py-1.5 bg-transparent text-[13px] font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
               value={filters.search}
               onChange={(e) => applyFilters({ search: e.target.value })}
             />
             <div className="absolute right-3">
-              <span className="text-[11px] font-bold text-slate-400 border border-slate-200 dark:border-slate-600 rounded-[4px] px-1.5 py-[1px] bg-slate-50/50 dark:bg-slate-800 tracking-wide">
+              <span className="text-[10px] font-bold text-slate-400 border border-slate-200 dark:border-slate-600 rounded-[4px] px-1.5 py-[1px] bg-slate-50/50 dark:bg-slate-800 tracking-wide">
                 ⌘K
               </span>
             </div>
           </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-100 dark:border-emerald-500/20">
-              <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-              <span className="text-[11px] font-black tracking-widest uppercase">
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-3 py-1 rounded-full border border-emerald-100 dark:border-emerald-500/20">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+              <span className="text-[10px] font-black tracking-widest uppercase">
                 {activeDrivers.length} ACTIVE
               </span>
             </div>
-            <div className="flex items-center gap-2 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 px-3 py-1.5 rounded-full border border-indigo-100 dark:border-indigo-500/20">
-              <span className="text-[11px] font-black tracking-widest uppercase">
+            <div className="flex items-center gap-2 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 px-3 py-1 rounded-full border border-indigo-100 dark:border-indigo-500/20">
+              <span className="text-[10px] font-black tracking-widest uppercase">
                 {DATA.length} TOTAL
               </span>
             </div>
 
             <button
               onClick={() => dispatch(fetchDrivers())}
-              className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all"
+              className="w-8 h-8 flex items-center justify-center rounded-md bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all"
             >
-              <IoMdRefresh className={`text-lg ${loading ? 'animate-spin' : ''}`} />
+              <IoMdRefresh className={`text-[15px] ${loading ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
 
-        {/* Scrollable Main Content */}
-        <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-slate-900 flex flex-col gap-6">
-          <DriverStats drivers={DATA} loading={loading} />
-          
-          {loading && DATA.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
-              <Spin size="large" />
-            </div>
-          ) : error ? (
-            <div className="flex items-center justify-center p-20 bg-rose-50 rounded-sm border border-rose-100 text-rose-500 font-bold shadow-sm">
-              {error}
-            </div>
-          ) : (
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-              {currentView === "all" && (
-                <TableSection
-                  title="Fleet Overview"
-                  icon={<EnvironmentOutlined />}
-                  data={allFleetDrivers}
-                  count={allFleetDrivers.length}
-                  flexClass="flex-1 h-full"
-                  extraClasses="border-none rounded-none !min-h-0"
-                  colorClass="bg-indigo-600"
-                  bgColorClass="from-indigo-50 dark:from-indigo-900/30"
-                  borderColorClass="border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 bg-indigo-100/50 dark:bg-indigo-900/30 font-black"
-                />
-              )}
-              {currentView === "active" && (
-                <TableSection
-                  title="Verified & Active"
-                  icon={<CarOutlined />}
-                  data={activeDrivers}
-                  count={activeDrivers.length}
-                  flexClass="flex-1 h-full"
-                  extraClasses="border-none rounded-none !min-h-0"
-                  colorClass="bg-emerald-500 shadow-lg shadow-emerald-500/40"
-                  bgColorClass="from-emerald-50 dark:from-emerald-900/30 via-emerald-50/10 dark:via-emerald-900/10"
-                  borderColorClass="border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-100/50 dark:bg-emerald-900/30 font-black"
-                />
-              )}
-              {currentView === "restricted" && (
-                <TableSection
-                  title="Suspended / Blocked / Rejected"
-                  icon={<CloseCircleOutlined />}
-                  data={restrictedDrivers}
-                  count={restrictedDrivers.length}
-                  flexClass="flex-1 h-full"
-                  extraClasses="border-none rounded-none !min-h-0"
-                  colorClass="bg-slate-400"
-                  bgColorClass="from-slate-50 dark:from-slate-800/50"
-                  borderColorClass="border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 font-black"
-                />
-              )}
-            </div>
-          )}
+        {/* Outer wrapper for scrollable content and sticky footer */}
+        <div className="flex-grow flex flex-col min-w-0 relative h-full">
+          {/* Scrollable Main Content */}
+          <div className="flex-grow overflow-y-auto p-4 bg-white dark:bg-slate-900 flex flex-col gap-4 pb-20 custom-scrollbar">
+            <DriverStats drivers={DATA} loading={loading} />
+
+            {loading && DATA.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
+                <Spin size="large" />
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center p-20 bg-rose-50 rounded-sm border border-rose-100 text-rose-500 font-bold shadow-sm">
+                {error}
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                {currentView === "all" && (
+                  <TableSection
+                    title="Fleet Overview"
+                    icon={<Users size={16} />}
+                    data={allFleetDrivers.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+                    count={allFleetDrivers.length}
+                    flexClass="flex-1 h-full"
+                    extraClasses="border-none rounded-none !min-h-0"
+                    colorClass="bg-indigo-600"
+                    bgColorClass="from-indigo-50 dark:from-indigo-900/30"
+                    borderColorClass="border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 bg-indigo-100/50 dark:bg-indigo-900/30 font-black"
+                  />
+                )}
+                {currentView === "active" && (
+                  <TableSection
+                    title="Verified & Active"
+                    icon={<Car size={16} />}
+                    data={activeDrivers.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+                    count={activeDrivers.length}
+                    flexClass="flex-1 h-full"
+                    extraClasses="border-none rounded-none !min-h-0"
+                    colorClass="bg-emerald-500 shadow-lg shadow-emerald-500/40"
+                    bgColorClass="from-emerald-50 dark:from-emerald-900/30 via-emerald-50/10 dark:via-emerald-900/10"
+                    borderColorClass="border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-100/50 dark:bg-emerald-900/30 font-black"
+                  />
+                )}
+                {currentView === "restricted" && (
+                  <TableSection
+                    title="Suspended / Blocked / Rejected"
+                    icon={<ShieldAlert size={16} />}
+                    data={restrictedDrivers.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+                    count={restrictedDrivers.length}
+                    flexClass="flex-1 h-full"
+                    extraClasses="border-none rounded-none !min-h-0"
+                    colorClass="bg-slate-400"
+                    bgColorClass="from-slate-50 dark:from-slate-800/50"
+                    borderColorClass="border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 font-black"
+                  />
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Sticky Bottom Pagination Bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)] overflow-x-auto gap-4 custom-scrollbar">
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider whitespace-nowrap flex-shrink-0">
+              Showing {(() => {
+                const total = currentView === "all" ? allFleetDrivers.length : currentView === "active" ? activeDrivers.length : restrictedDrivers.length;
+                return total > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+              })()}-{(() => {
+                const total = currentView === "all" ? allFleetDrivers.length : currentView === "active" ? activeDrivers.length : restrictedDrivers.length;
+                return Math.min(currentPage * pageSize, total);
+              })()} of {currentView === "all" ? allFleetDrivers.length : currentView === "active" ? activeDrivers.length : restrictedDrivers.length} {currentView === "all" ? "drivers" : currentView === "active" ? "active drivers" : "restricted drivers"}
+            </span>
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={currentView === "all" ? allFleetDrivers.length : currentView === "active" ? activeDrivers.length : restrictedDrivers.length}
+              onChange={(page, size) => {
+                setCurrentPage(page);
+                setPageSize(size);
+              }}
+              showSizeChanger
+              pageSizeOptions={["10", "20", "50", "100"]}
+              size="small"
+              className="premium-pagination"
+            />
+          </div>
         </div>
       </div>
     </div>

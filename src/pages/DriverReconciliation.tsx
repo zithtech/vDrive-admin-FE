@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Table, Tag, Upload, message, Typography, Empty, Tooltip, DatePicker, Select, Button } from "antd";
+import { Table, Tag, Upload, message, Typography, Empty, Tooltip, DatePicker, Select, Button, Pagination } from "antd";
 import {
   UploadOutlined,
   DownloadOutlined,
@@ -12,7 +12,7 @@ import {
   SearchOutlined,
   CloseCircleOutlined,
 } from "@ant-design/icons";
-import { FileSpreadsheet } from "lucide-react";
+import { FileSpreadsheet, Users, CheckCircle2, ShieldCheck, Clock, Power } from "lucide-react";
 import { IoMdRefresh } from "react-icons/io";
 import * as XLSX from "xlsx";
 import axiosIns from "../api/axios";
@@ -391,116 +391,111 @@ const DriverReconciliation: React.FC = () => {
     },
   ];
 
-  const ViewItem = ({ label, count, isActive, onClick, bgActiveColorClass = "bg-blue-50/80 dark:bg-blue-900/30", badgeColorClass = "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400" }: any) => (
-    <div
-      onClick={onClick}
-      className={`flex items-center justify-between px-3 py-2 rounded-[10px] cursor-pointer transition-all ${
-        isActive
-          ? `${bgActiveColorClass} text-slate-800 dark:text-slate-100 font-bold`
-          : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium"
-      }`}
-    >
-      <div className="flex items-center gap-2.5">
-        <span className="text-[13px] tracking-tight uppercase">{label}</span>
-      </div>
-      {isActive ? (
-        <div className={`px-2 py-0.5 rounded-md text-[10px] font-black min-w-[20px] text-center ${badgeColorClass}`}>
-          {count}
-        </div>
-      ) : (
-        <div className="text-[11px] font-bold text-slate-400 mr-1">
-          {count}
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <div className="flex flex-row h-full w-full bg-[#f8f9fa] dark:bg-[#0b0f19] overflow-hidden">
       {/* SIDEBAR */}
       <div className="w-[260px] flex-shrink-0 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
         {/* Sidebar Header */}
-        <div className="p-6 pb-4 border-b border-slate-200 dark:border-slate-800/50">
-          <div className="flex items-center gap-3 text-slate-800 dark:text-slate-100">
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
-              <FileSpreadsheet size={16} strokeWidth={2.5} />
+        <div className="p-6 pb-6 border-b border-slate-100 dark:border-slate-700/50">
+          <div className="flex items-center gap-3 mb-1 text-slate-800 dark:text-slate-100">
+            <div className="w-10 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+              <FileSpreadsheet size={20} />
             </div>
-            <div className="flex flex-col justify-center mt-0.5">
-              <h2 className="font-black text-sm uppercase tracking-wider leading-none m-0">OUTREACH</h2>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">Driver Sync</p>
-            </div>
+            <h2 className="text-[20px] text-slate-900 dark:text-white tracking-wider whitespace-nowrap"><b>Driver Outreach</b></h2>
           </div>
+          <p className="text-[11px] text-slate-500 font-medium leading-snug mt-1">
+            Manage, sync, and reconcile external driver records
+          </p>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
           {/* VIEWS SECTION */}
           <div>
-            <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-2 mb-4">
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-2">
               Views
-            </p>
-            <div className="flex flex-col gap-1">
-              <ViewItem
-                label="All Drivers"
-                count={drivers.length}
-                isActive={currentView === "all"}
+            </h3>
+            <div className="space-y-1">
+              <button
                 onClick={() => setCurrentView("all")}
-                activeColorClass="text-indigo-500"
-                bgActiveColorClass="bg-indigo-50/80 dark:bg-indigo-900/30"
-                badgeColorClass="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400"
-              />
-              <ViewItem
-                label="Active"
-                count={drivers.filter((d) => d.status?.toLowerCase() === "active").length}
-                isActive={currentView === "active"}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${currentView === "all" ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400" : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"}`}
+              >
+                <div className="flex items-center gap-2">
+                  <Users size={16} className={currentView === "all" ? "text-indigo-500" : "text-slate-400"} />
+                  All Drivers
+                </div>
+                <span className={currentView === "all" ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 text-[10px] px-2 py-0.5 rounded-full font-bold" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-bold"}>
+                  {drivers.length}
+                </span>
+              </button>
+              
+              <button
                 onClick={() => setCurrentView("active")}
-                activeColorClass="text-emerald-500"
-                bgActiveColorClass="bg-emerald-50/80 dark:bg-emerald-900/30"
-                badgeColorClass="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400"
-              />
-              <ViewItem
-                label="Verified"
-                count={drivers.filter((d) => d.status?.toLowerCase() === "verified").length}
-                isActive={currentView === "verified"}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${currentView === "active" ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400" : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"}`}
+              >
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className={currentView === "active" ? "text-indigo-500" : "text-slate-400"} />
+                  Active
+                </div>
+                <span className={currentView === "active" ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 text-[10px] px-2 py-0.5 rounded-full font-bold" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-bold"}>
+                  {drivers.filter((d) => d.status?.toLowerCase() === "active").length}
+                </span>
+              </button>
+
+              <button
                 onClick={() => setCurrentView("verified")}
-                activeColorClass="text-blue-500"
-                bgActiveColorClass="bg-blue-50/80 dark:bg-blue-900/30"
-                badgeColorClass="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400"
-              />
-              <ViewItem
-                label="Pending"
-                count={drivers.filter((d) => d.status?.toLowerCase() === "pending").length}
-                isActive={currentView === "pending"}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${currentView === "verified" ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400" : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"}`}
+              >
+                <div className="flex items-center gap-2">
+                  <ShieldCheck size={16} className={currentView === "verified" ? "text-indigo-500" : "text-slate-400"} />
+                  Verified
+                </div>
+                <span className={currentView === "verified" ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 text-[10px] px-2 py-0.5 rounded-full font-bold" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-bold"}>
+                  {drivers.filter((d) => d.status?.toLowerCase() === "verified").length}
+                </span>
+              </button>
+
+              <button
                 onClick={() => setCurrentView("pending")}
-                activeColorClass="text-amber-500"
-                bgActiveColorClass="bg-amber-50/80 dark:bg-amber-900/30"
-                badgeColorClass="bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400"
-              />
-              <ViewItem
-                label="Inactive"
-                count={drivers.filter((d) => d.status?.toLowerCase() === "inactive").length}
-                isActive={currentView === "inactive"}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${currentView === "pending" ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400" : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"}`}
+              >
+                <div className="flex items-center gap-2">
+                  <Clock size={16} className={currentView === "pending" ? "text-indigo-500" : "text-slate-400"} />
+                  Pending
+                </div>
+                <span className={currentView === "pending" ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 text-[10px] px-2 py-0.5 rounded-full font-bold" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-bold"}>
+                  {drivers.filter((d) => d.status?.toLowerCase() === "pending").length}
+                </span>
+              </button>
+
+              <button
                 onClick={() => setCurrentView("inactive")}
-                activeColorClass="text-rose-500"
-                bgActiveColorClass="bg-rose-50/80 dark:bg-rose-900/30"
-                badgeColorClass="bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400"
-              />
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${currentView === "inactive" ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400" : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"}`}
+              >
+                <div className="flex items-center gap-2">
+                  <Power size={16} className={currentView === "inactive" ? "text-indigo-500" : "text-slate-400"} />
+                  Inactive
+                </div>
+                <span className={currentView === "inactive" ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 text-[10px] px-2 py-0.5 rounded-full font-bold" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-bold"}>
+                  {drivers.filter((d) => d.status?.toLowerCase() === "inactive").length}
+                </span>
+              </button>
             </div>
           </div>
 
           {/* FILTERS SECTION */}
           <div>
-            <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-2 mb-4">
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-2">
               Filters
-            </p>
-            <div className="flex flex-col gap-4 px-2">
+            </h3>
+            <div className="space-y-4 px-2">
               <div>
-                <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1.5 uppercase tracking-wide">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">
                   State
-                </span>
+                </label>
                 <Select
                   mode="multiple"
                   placeholder="All States"
-                  className="w-full custom-select-compact"
+                  className="w-full custom-select-compact h-9"
                   value={filters.state}
                   onChange={(val) => applyFilters({ state: val })}
                   options={Array.from(new Set(drivers.map((d) => d.state))).filter(Boolean).map((s) => ({ value: s, label: s }))}
@@ -509,11 +504,11 @@ const DriverReconciliation: React.FC = () => {
               </div>
 
               <div>
-                <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1.5 uppercase tracking-wide">
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">
                   Joined Date
-                </span>
+                </label>
                 <RangePicker
-                  className="w-full custom-select-compact"
+                  className="w-full custom-select-compact h-9"
                   value={filters.joined_range}
                   onChange={(dates) => applyFilters({ joined_range: dates as [dayjs.Dayjs, dayjs.Dayjs] | null })}
                 />
@@ -538,13 +533,13 @@ const DriverReconciliation: React.FC = () => {
       {/* RIGHT MAIN CONTENT */}
       <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0b0f19]">
         {/* Top Navbar */}
-        <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 shadow-sm z-0 flex-shrink-0">
+        <div className="bg-white dark:bg-slate-800 px-4 py-2.5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 shadow-sm z-0 flex-shrink-0">
           <div className="relative flex-1 max-w-2xl flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
             <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
             <input
               type="text"
               placeholder="Search drivers by name, phone or email..."
-              className="w-full pl-10 pr-4 py-2 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
+              className="w-full pl-10 pr-4 py-1.5 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
               value={filters.search}
               onChange={(e) => applyFilters({ search: e.target.value })}
             />
@@ -555,25 +550,25 @@ const DriverReconciliation: React.FC = () => {
             </div>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Tooltip title="Shortcut: Alt + E">
               <Button
                 type="default"
                 icon={<DownloadOutlined />}
                 onClick={exportTemplate}
-                className="rounded-lg font-bold !bg-indigo-50 !text-indigo-600 hover:!bg-indigo-100 border-none flex items-center gap-2"
+                className="h-8 rounded-lg font-bold !bg-blue-50 !text-blue-600 hover:!bg-blue-100 border-none flex items-center gap-2"
               >
                 Template
               </Button>
             </Tooltip>
             
             <Tooltip title={canCreate ? "Shortcut: Alt + I" : "You do not have permission to import data"}>
-              <span>
+              <span className="flex items-center">
                 <Upload
                   beforeUpload={handleImport}
                   showUploadList={false}
                   accept=".xlsx,.xls,.csv"
-                  className="import-upload"
+                  className="import-upload flex items-center"
                   disabled={!canCreate}
                 >
                   <Button
@@ -581,7 +576,7 @@ const DriverReconciliation: React.FC = () => {
                     icon={<UploadOutlined />}
                     loading={importing}
                     disabled={!canCreate}
-                    className="rounded-lg font-bold border-none flex items-center !bg-gradient-to-r !from-indigo-600 !to-blue-500"
+                    className="h-8 rounded-lg font-bold border-none flex items-center !bg-gradient-to-r !from-blue-600 !to-blue-500"
                   >
                     Import
                   </Button>
@@ -589,7 +584,7 @@ const DriverReconciliation: React.FC = () => {
               </span>
             </Tooltip>
 
-            <div className="w-[1px] h-6 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+            <div className="w-[1px] h-4 bg-slate-200 dark:bg-slate-700"></div>
 
             <Tooltip title={canUpdate ? "Sync records" : "You do not have permission to sync records"}>
               <Button
@@ -598,7 +593,7 @@ const DriverReconciliation: React.FC = () => {
                 onClick={handleSync}
                 loading={syncing}
                 disabled={!canUpdate}
-                className="flex items-center gap-2 font-bold text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="h-8 flex items-center gap-2 font-bold text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 px-2"
               >
                 Sync
               </Button>
@@ -606,15 +601,17 @@ const DriverReconciliation: React.FC = () => {
 
             <button
               onClick={loadData}
-              className="w-9 h-9 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all"
+              className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all ml-1"
             >
               <IoMdRefresh className={`text-lg ${loading ? 'animate-spin' : ''}`} />
             </button>
           </div>
         </div>
 
-        {/* Main Content Area */}
-        <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 dark:bg-[#0f172a] flex flex-col gap-6">
+        {/* Outer wrapper for scrollable content and sticky footer */}
+        <div className="flex-grow flex flex-col min-w-0 relative h-full">
+          {/* Main Content Area */}
+          <div className="flex-grow overflow-y-auto p-4 bg-slate-50/50 dark:bg-[#0f172a] flex flex-col gap-4 pb-20 custom-scrollbar">
           
           {/* Summary Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -622,7 +619,7 @@ const DriverReconciliation: React.FC = () => {
             <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 flex items-center justify-center text-base bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                  <div className="w-8 h-8 flex items-center justify-center text-base bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
                     <CloudUploadOutlined className="text-sm" />
                   </div>
                   <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">TOTAL IMPORTED</p>
@@ -637,11 +634,11 @@ const DriverReconciliation: React.FC = () => {
                 </div>
                 <div className="w-24 h-10 mb-[-5px]">
                   <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
-                    <path d="M0,40 L10,30 L20,35 L40,10 L60,25 L80,5 L100,20" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M0,40 L10,30 L20,35 L40,10 L60,25 L80,5 L100,20 L100,40 Z" fill="url(#gradient-indigo)" opacity="0.1" />
+                    <path d="M0,40 L10,30 L20,35 L40,10 L60,25 L80,5 L100,20" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M0,40 L10,30 L20,35 L40,10 L60,25 L80,5 L100,20 L100,40 Z" fill="url(#gradient-blue)" opacity="0.1" />
                     <defs>
-                      <linearGradient id="gradient-indigo" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="#6366f1" />
+                      <linearGradient id="gradient-blue" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#3b82f6" />
                         <stop offset="100%" stopColor="transparent" />
                       </linearGradient>
                     </defs>
@@ -736,22 +733,9 @@ const DriverReconciliation: React.FC = () => {
 
             <Table
               columns={columns}
-              dataSource={filteredDrivers}
+              dataSource={filteredDrivers.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
               loading={importing || loading}
-              pagination={{
-                current: currentPage,
-                pageSize: pageSize,
-                total: filteredDrivers.length,
-                className: "px-6 py-4",
-                showSizeChanger: true,
-                size: "small",
-                position: ["bottomRight"],
-                showTotal: (total) => (total > 0 ? `Total ${total} drivers` : ""),
-                onChange: (page, size) => {
-                  setCurrentPage(page);
-                  setPageSize(size);
-                },
-              }}
+              pagination={false}
               size="small"
               scroll={{ x: "max-content", y: "calc(100vh - 440px)" }}
               rowKey={(record, index) => (record?.phone || index || 0).toString() + (index || 0)}
@@ -780,6 +764,27 @@ const DriverReconciliation: React.FC = () => {
                   </div>
                 ),
               }}
+            />
+          </div>
+          </div>
+          
+          {/* Sticky Bottom Pagination Bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)] overflow-x-auto gap-4 custom-scrollbar">
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider whitespace-nowrap flex-shrink-0">
+              Showing {filteredDrivers.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, filteredDrivers.length)} of {filteredDrivers.length} records
+            </span>
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={filteredDrivers.length}
+              onChange={(page, size) => {
+                setCurrentPage(page);
+                setPageSize(size);
+              }}
+              showSizeChanger
+              pageSizeOptions={["10", "20", "50", "100"]}
+              size="small"
+              className="premium-pagination"
             />
           </div>
         </div>

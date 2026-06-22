@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
 import { IoMdRefresh } from "react-icons/io";
-import { ClipboardCheck } from "lucide-react";
+import { ClipboardCheck, ShieldAlert, FileWarning, XCircle } from "lucide-react";
 import {
   SafetyCertificateOutlined,
   FileExclamationOutlined,
   CloseCircleOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { Button, Select, DatePicker, Spin } from "antd";
+import { Button, Select, DatePicker, Spin, Pagination } from "antd";
 import DriverTable from "../components/DriverTable/DriverTable";
 import dayjs from "dayjs";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
@@ -49,6 +49,15 @@ const DriverApplications = () => {
   });
 
   const [currentView, setCurrentView] = useState<"pending" | "doc_rejected" | "rejected">("pending");
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
+  // Reset page to 1 when filters or view changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, currentView]);
 
   useEffect(() => {
     dispatch(fetchDrivers());
@@ -134,30 +143,7 @@ const DriverApplications = () => {
     filters.joined_at ||
     filters.onboarding_status.length > 0;
 
-  const ViewItem = ({ icon, label, count, isActive, onClick, activeColorClass = "text-blue-500", bgActiveColorClass = "bg-blue-50/80 dark:bg-blue-900/30", badgeColorClass = "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400" }: any) => (
-    <div
-      onClick={onClick}
-      className={`flex items-center justify-between px-3 py-2 rounded-[10px] cursor-pointer transition-all ${
-        isActive
-          ? `${bgActiveColorClass} text-slate-800 dark:text-slate-100 font-bold`
-          : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium"
-      }`}
-    >
-      <div className="flex items-center gap-2.5">
-        <span className={`text-[15px] ${isActive ? activeColorClass : "text-slate-400"}`}>{icon}</span>
-        <span className="text-[13px] tracking-tight">{label}</span>
-      </div>
-      {isActive ? (
-        <div className={`px-2 py-0.5 rounded-md text-[10px] font-black min-w-[20px] text-center ${badgeColorClass}`}>
-          {count}
-        </div>
-      ) : (
-        <div className="text-[11px] font-bold text-slate-400 mr-1">
-          {count}
-        </div>
-      )}
-    </div>
-  );
+
 
   const TableSection = ({
     data,
@@ -183,74 +169,82 @@ const DriverApplications = () => {
     <>
       <div className="flex h-[calc(100vh-64px)] w-full overflow-hidden bg-white dark:bg-slate-900">
         {/* LEFT SIDEBAR */}
-        <div className="w-[220px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col flex-shrink-0">
+        <div className="w-[260px] flex-shrink-0 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
           {/* Sidebar Header */}
-          <div className="p-6 pb-4">
-            <div className="flex items-center gap-3 text-slate-800 dark:text-slate-100">
-              <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-400 shrink-0">
-                <ClipboardCheck size={16} strokeWidth={2.5} />
+          <div className="p-6 pb-6 border-b border-slate-100 dark:border-slate-700/50">
+            <div className="flex items-center gap-3 mb-1 text-slate-800 dark:text-slate-100">
+              <div className="w-10 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+                <ClipboardCheck size={20} />
               </div>
-              <div className="flex flex-col justify-center mt-0.5">
-                <h2 className="font-black text-sm uppercase tracking-wider leading-none m-0">ONBOARDING</h2>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">Awaiting Approval</p>
-              </div>
+              <h2 className="text-[20px] text-slate-900 dark:text-white tracking-wider whitespace-nowrap"><b>Applications</b></h2>
             </div>
+            <p className="text-[11px] text-slate-500 font-medium leading-snug mt-1">
+              Review, approve, and manage driver applications
+            </p>
           </div>
 
-          <div className="flex-1 overflow-y-auto overflow-x-hidden">
-            {/* VIEWS */}
-            <div className="px-4 pt-6 pb-6 border-b border-slate-200 dark:border-slate-800/50">
-              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-2 mb-5">
+          <div className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
+            {/* VIEWS SECTION */}
+            <div>
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-2">
                 Views
-              </p>
-              <div className="flex flex-col gap-1">
-                <ViewItem
-                  icon={<SafetyCertificateOutlined />}
-                  label="Pending Auth"
-                  count={pendingApplications.length}
-                  isActive={currentView === "pending"}
+              </h3>
+              <div className="space-y-1">
+                <button
                   onClick={() => setCurrentView("pending")}
-                  activeColorClass="text-orange-500"
-                  bgActiveColorClass="bg-orange-50/80 dark:bg-orange-900/30"
-                  badgeColorClass="bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400"
-                />
-                <ViewItem
-                  icon={<FileExclamationOutlined />}
-                  label="Docs Rejected"
-                  count={docRejectedApplications.length}
-                  isActive={currentView === "doc_rejected"}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${currentView === "pending" ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400" : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <ShieldAlert size={16} className={currentView === "pending" ? "text-blue-500" : "text-slate-400"} />
+                    Pending Auth
+                  </div>
+                  <span className={currentView === "pending" ? "bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-bold"}>
+                    {pendingApplications.length}
+                  </span>
+                </button>
+                
+                <button
                   onClick={() => setCurrentView("doc_rejected")}
-                  activeColorClass="text-amber-500"
-                  bgActiveColorClass="bg-amber-50/80 dark:bg-amber-900/30"
-                  badgeColorClass="bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400"
-                />
-                <ViewItem
-                  icon={<CloseCircleOutlined />}
-                  label="Rejected"
-                  count={rejectedApplications.length}
-                  isActive={currentView === "rejected"}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${currentView === "doc_rejected" ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400" : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <FileWarning size={16} className={currentView === "doc_rejected" ? "text-blue-500" : "text-slate-400"} />
+                    Docs Rejected
+                  </div>
+                  <span className={currentView === "doc_rejected" ? "bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-bold"}>
+                    {docRejectedApplications.length}
+                  </span>
+                </button>
+
+                <button
                   onClick={() => setCurrentView("rejected")}
-                  activeColorClass="text-rose-500"
-                  bgActiveColorClass="bg-rose-50/80 dark:bg-rose-900/30"
-                  badgeColorClass="bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400"
-                />
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${currentView === "rejected" ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400" : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"}`}
+                >
+                  <div className="flex items-center gap-2">
+                    <XCircle size={16} className={currentView === "rejected" ? "text-blue-500" : "text-slate-400"} />
+                    Rejected
+                  </div>
+                  <span className={currentView === "rejected" ? "bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold" : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-bold"}>
+                    {rejectedApplications.length}
+                  </span>
+                </button>
               </div>
             </div>
 
-            {/* FILTERS */}
-            <div className="px-4 py-4">
-              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-2 mb-6">
+            {/* FILTERS SECTION */}
+            <div>
+              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-2">
                 Filters
-              </p>
-              <div className="flex flex-col gap-3 px-2">
+              </h3>
+              <div className="space-y-4 px-2">
                 <div>
-                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1 uppercase tracking-wide">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">
                     Status
-                  </span>
+                  </label>
                   <Select
                     mode="multiple"
                     placeholder="Select status..."
-                    className="w-full premium-select-inline"
+                    className="w-full custom-select-compact h-9"
                     options={STATUSES.map((s) => ({ label: s.toUpperCase(), value: s }))}
                     value={filters.status}
                     onChange={(val) => applyFilters({ status: val })}
@@ -259,13 +253,13 @@ const DriverApplications = () => {
                 </div>
 
                 <div>
-                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1 uppercase tracking-wide">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">
                     Onboarding Step
-                  </span>
+                  </label>
                   <Select
                     mode="multiple"
                     placeholder="Filter step..."
-                    className="w-full premium-select-inline"
+                    className="w-full custom-select-compact h-9"
                     options={ONBOARDING_STATUSES}
                     value={filters.onboarding_status}
                     onChange={(val) => applyFilters({ onboarding_status: val })}
@@ -274,12 +268,12 @@ const DriverApplications = () => {
                 </div>
 
                 <div>
-                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1 uppercase tracking-wide">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">
                     Applied Date
-                  </span>
+                  </label>
                   <DatePicker
                     placeholder="Select Date"
-                    className="w-full premium-datepicker-inline"
+                    className="w-full custom-select-compact h-9"
                     onChange={(date) => applyFilters({ joined_at: date ? date.toDate() : null })}
                   />
                 </div>
@@ -289,7 +283,7 @@ const DriverApplications = () => {
                     type="text"
                     danger
                     icon={<CloseCircleOutlined />}
-                    className="text-[11px] font-black uppercase tracking-widest w-full hover:bg-rose-50 rounded-xl mt-2"
+                    className="text-[11px] font-black uppercase tracking-widest w-full hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl mt-2"
                     onClick={() =>
                       setFilters({ search: "", status: [], joined_at: null, onboarding_status: [] })
                     }
@@ -305,77 +299,107 @@ const DriverApplications = () => {
         {/* RIGHT MAIN CONTENT */}
         <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0b0f19]">
           {/* Top Navbar */}
-          <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 shadow-sm z-0 flex-shrink-0">
-            <div className="relative flex-1 max-w-3xl flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
-              <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
+          {/* Top Navbar */}
+          <div className="bg-white dark:bg-slate-800 px-4 py-2.5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 shadow-sm z-0 flex-shrink-0">
+            <div className="relative flex-1 max-w-md flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
+              <SearchOutlined className="absolute left-3 text-slate-400 text-[15px]" />
               <input
                 type="text"
                 placeholder="Search applications..."
-                className="w-full pl-10 pr-4 py-2 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
+                className="w-full pl-9 pr-4 py-1.5 bg-transparent text-[13px] font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
                 value={filters.search}
                 onChange={(e) => applyFilters({ search: e.target.value })}
               />
               <div className="absolute right-3">
-                <span className="text-[11px] font-bold text-slate-400 border border-slate-200 dark:border-slate-600 rounded-[4px] px-1.5 py-[1px] bg-slate-50/50 dark:bg-slate-800 tracking-wide">
+                <span className="text-[10px] font-bold text-slate-400 border border-slate-200 dark:border-slate-600 rounded-[4px] px-1.5 py-[1px] bg-slate-50/50 dark:bg-slate-800 tracking-wide">
                   ⌘K
                 </span>
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 px-3 py-1.5 rounded-full border border-orange-100 dark:border-orange-500/20">
-                <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                <span className="text-[11px] font-black tracking-widest uppercase">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 px-3 py-1 rounded-full border border-orange-100 dark:border-orange-500/20">
+                <div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
+                <span className="text-[10px] font-black tracking-widest uppercase">
                   {filteredData.length} RESULTS
                 </span>
               </div>
 
               <button
                 onClick={() => dispatch(fetchDrivers())}
-                className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all"
+                className="w-8 h-8 flex items-center justify-center rounded-md bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all"
               >
-                <IoMdRefresh className={`text-lg ${loading ? 'animate-spin' : ''}`} />
+                <IoMdRefresh className={`text-[15px] ${loading ? 'animate-spin' : ''}`} />
               </button>
             </div>
           </div>
 
-          {/* Scrollable Main Content */}
-          <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 dark:bg-[#0f172a] flex flex-col gap-6">
-            <ApplicationStats drivers={allTrackedApplications} loading={loading} />
+          {/* Outer wrapper for scrollable content and sticky footer */}
+          <div className="flex-grow flex flex-col min-w-0 relative h-full">
+            {/* Scrollable Main Content */}
+            <div className="flex-grow overflow-y-auto p-6 bg-slate-50/50 dark:bg-[#0f172a] flex flex-col gap-6 pb-20 custom-scrollbar">
+              <ApplicationStats drivers={allTrackedApplications} loading={loading} />
 
-            {loading && allTrackedApplications.length === 0 ? (
-              <div className="flex-1 flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
-                <Spin size="large" />
-              </div>
-            ) : error ? (
-              <div className="flex items-center justify-center p-20 bg-rose-50 rounded-sm border border-rose-100 text-rose-500 font-bold shadow-sm">
-                {error}
-              </div>
-            ) : (
-              <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                {currentView === "pending" && (
-                  <TableSection
-                    data={pendingApplications}
-                    flexClass="flex-1 h-full"
-                    extraClasses="border-none rounded-none !min-h-0"
-                  />
-                )}
-                {currentView === "doc_rejected" && (
-                  <TableSection
-                    data={docRejectedApplications}
-                    flexClass="flex-1 h-full"
-                    extraClasses="border-none rounded-none !min-h-0"
-                  />
-                )}
-                {currentView === "rejected" && (
-                  <TableSection
-                    data={rejectedApplications}
-                    flexClass="flex-1 h-full"
-                    extraClasses="border-none rounded-none !min-h-0"
-                  />
-                )}
-              </div>
-            )}
+              {loading && allTrackedApplications.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
+                  <Spin size="large" />
+                </div>
+              ) : error ? (
+                <div className="flex items-center justify-center p-20 bg-rose-50 rounded-sm border border-rose-100 text-rose-500 font-bold shadow-sm">
+                  {error}
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                  {currentView === "pending" && (
+                    <TableSection
+                      data={pendingApplications.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+                      flexClass="flex-1 h-full"
+                      extraClasses="border-none rounded-none !min-h-0"
+                    />
+                  )}
+                  {currentView === "doc_rejected" && (
+                    <TableSection
+                      data={docRejectedApplications.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+                      flexClass="flex-1 h-full"
+                      extraClasses="border-none rounded-none !min-h-0"
+                    />
+                  )}
+                  {currentView === "rejected" && (
+                    <TableSection
+                      data={rejectedApplications.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+                      flexClass="flex-1 h-full"
+                      extraClasses="border-none rounded-none !min-h-0"
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Sticky Bottom Pagination Bar */}
+            <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)] overflow-x-auto gap-4 custom-scrollbar">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider whitespace-nowrap flex-shrink-0">
+                Showing {(() => {
+                  const total = currentView === "pending" ? pendingApplications.length : currentView === "doc_rejected" ? docRejectedApplications.length : rejectedApplications.length;
+                  return total > 0 ? (currentPage - 1) * pageSize + 1 : 0;
+                })()}-{(() => {
+                  const total = currentView === "pending" ? pendingApplications.length : currentView === "doc_rejected" ? docRejectedApplications.length : rejectedApplications.length;
+                  return Math.min(currentPage * pageSize, total);
+                })()} of {currentView === "pending" ? pendingApplications.length : currentView === "doc_rejected" ? docRejectedApplications.length : rejectedApplications.length} applications
+              </span>
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={currentView === "pending" ? pendingApplications.length : currentView === "doc_rejected" ? docRejectedApplications.length : rejectedApplications.length}
+                onChange={(page, size) => {
+                  setCurrentPage(page);
+                  setPageSize(size);
+                }}
+                showSizeChanger
+                pageSizeOptions={["10", "20", "50", "100"]}
+                size="small"
+                className="premium-pagination"
+              />
+            </div>
           </div>
         </div>
       </div>
