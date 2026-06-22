@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Button, Switch, Tooltip, Space } from "antd";
+import { Table, Button, Switch, Tooltip, Space, Tag } from "antd";
 import { EditOutlined, DeleteOutlined, UserOutlined, CarOutlined } from "@ant-design/icons";
 import { type ReferralConfig } from "../../store/slices/referralSlice";
 
@@ -11,6 +11,9 @@ interface ReferralTableProps {
   onToggleStatus: (id: string, is_active: boolean) => void;
   canUpdate?: boolean;
   canDelete?: boolean;
+  currentPage?: number;
+  pageSize?: number;
+  onPageChange?: (page: number, size: number) => void;
 }
 
 const ReferralTable: React.FC<ReferralTableProps> = ({
@@ -21,77 +24,58 @@ const ReferralTable: React.FC<ReferralTableProps> = ({
   onToggleStatus,
   canUpdate = false,
   canDelete = false,
+  currentPage = 1,
+  pageSize = 15,
+  onPageChange,
 }) => {
   const columns = [
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Target Audience
-        </span>
-      ),
+      title: "Target Audience",
       dataIndex: "user_type",
       key: "user_type",
       render: (text: string) => (
         <div className="flex items-center gap-2">
-          <div
-            className={`w-8 h-8 rounded-lg ${text === "CUSTOMER" ? "bg-orange-50 dark:bg-orange-500/10 text-orange-500 dark:text-orange-400" : "bg-blue-50 dark:bg-blue-500/10 text-blue-500 dark:text-blue-400"} flex items-center justify-center`}
-          >
-            {text === "CUSTOMER" ? <UserOutlined /> : <CarOutlined />}
-          </div>
-          <span className="font-bold text-gray-700 dark:text-slate-200 text-xs tracking-wide">
-            {text}
+          {text === "CUSTOMER" ? <UserOutlined className="text-blue-500" /> : <CarOutlined className="text-purple-500" />}
+          <span className="text-gray-700 capitalize">
+            {text.toLowerCase()}
           </span>
         </div>
       ),
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Referrer Reward
-        </span>
-      ),
+      title: "Referrer Reward",
       key: "referrer_reward",
       render: (_: any, record: ReferralConfig) => (
-        <div className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-400 text-white rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-md shadow-amber-100 w-fit">
+        <Tag color="orange">
           {record.referrer_reward_type === "PERCENTAGE"
             ? `${record.referrer_reward}% DISCOUNT`
             : `₹${record.referrer_reward} CREDIT`}
-        </div>
+        </Tag>
       ),
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Referee Reward
-        </span>
-      ),
+      title: "Referee Reward",
       key: "referee_reward",
       render: (_: any, record: ReferralConfig) => (
-        <div className="px-3 py-1 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-md shadow-blue-100 w-fit">
+        <Tag color="cyan">
           {record.referee_reward_type === "PERCENTAGE"
             ? `${record.referee_reward}% DISCOUNT`
             : `₹${record.referee_reward} CREDIT`}
-        </div>
+        </Tag>
       ),
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Status
-        </span>
-      ),
+      title: "Status",
       key: "is_active",
       render: (_: any, record: ReferralConfig) => (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Switch
+            size="small"
             checked={record.is_active}
             disabled={!canUpdate}
             onChange={(checked) => onToggleStatus(record.id, checked)}
-            className={`${record.is_active ? "bg-emerald-500" : "bg-gray-300"} ${!canUpdate ? "opacity-50" : ""}`}
           />
-          <span
-            className={`text-[10px] font-bold uppercase tracking-widest ${record.is_active ? "text-emerald-600" : "text-gray-400"}`}
-          >
+          <span className={`text-xs ${record.is_active ? "text-green-600" : "text-gray-400"}`}>
             {record.is_active ? "Live" : "Paused"}
           </span>
         </div>
@@ -100,11 +84,7 @@ const ReferralTable: React.FC<ReferralTableProps> = ({
     ...(canUpdate || canDelete
       ? [
           {
-            title: (
-              <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-                Actions
-              </span>
-            ),
+            title: "Actions",
             key: "actions",
             render: (_: any, record: ReferralConfig) => (
               <Space size="small">
@@ -112,9 +92,9 @@ const ReferralTable: React.FC<ReferralTableProps> = ({
                   <Tooltip title="Configure Rule">
                     <Button
                       type="text"
-                      icon={<EditOutlined className="text-blue-500 dark:text-blue-400" />}
+                      icon={<EditOutlined />}
                       onClick={() => onEdit(record)}
-                      className="hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
+                      size="small"
                     />
                   </Tooltip>
                 )}
@@ -125,7 +105,7 @@ const ReferralTable: React.FC<ReferralTableProps> = ({
                       danger
                       icon={<DeleteOutlined />}
                       onClick={() => onDelete(record.id)}
-                      className="hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
+                      size="small"
                     />
                   </Tooltip>
                 )}
@@ -142,8 +122,8 @@ const ReferralTable: React.FC<ReferralTableProps> = ({
       dataSource={data}
       rowKey="id"
       loading={loading}
-      pagination={{ pageSize: 10 }}
-      className="premium-table shadow-sm rounded-xl overflow-hidden border border-gray-100 dark:border-slate-700"
+      pagination={{ position: ["none"], current: currentPage, pageSize: pageSize, onChange: onPageChange }}
+      size="middle"
     />
   );
 };

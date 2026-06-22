@@ -579,6 +579,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
             loading={loading}
             className="border border-slate-100 rounded-2xl overflow-hidden shadow-none flex-grow"
             scroll={{ y: tableScrollHeight }}
+            size="small"
           />
         </div>
       </div>

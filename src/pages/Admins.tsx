@@ -1,12 +1,12 @@
-import { useEffect, useRef } from "react";
-import { Button, Form, Input, Drawer, Popconfirm, Select, Table, Space, Tabs } from "antd";
+import { useEffect, useRef, useState } from "react";
+import { Button, Form, Input, Drawer, Popconfirm, Select, Table, Space, Spin, Pagination } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { EditOutlined, DeleteOutlined, SafetyCertificateOutlined } from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined, SafetyCertificateOutlined, SearchOutlined, UsergroupAddOutlined, AppstoreAddOutlined } from "@ant-design/icons";
 import { RoleMatrixEditor } from "../components/Admins/RoleMatrixEditor";
 import { IoPersonAddOutline } from "react-icons/io5";
 import { IoMdRefresh } from "react-icons/io";
 import { format } from "date-fns";
-import TitleBar from "../components/TitleBarCommon/TitleBar";
+import { ShieldCheck } from "lucide-react";
 import { useGetHeight } from "../utilities/customheightWidth";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
@@ -17,7 +17,6 @@ import {
   type AdminUser,
 } from "../store/slices/adminSlice";
 import { messageApi } from "../utilities/antdStaticHolder";
-import { useState } from "react";
 import axiosIns from "../api/axios";
 import { useHasPermission } from "../hooks/usePermission";
 
@@ -43,6 +42,16 @@ export default function AdminPage() {
   const [editingAdmin, setEditingAdmin] = useState<AdminUser | null>(null);
   const [form] = Form.useForm();
   const [roles, setRoles] = useState<any[]>([]);
+
+  const [currentView, setCurrentView] = useState<"administrators" | "roles">("administrators");
+  const [globalSearch, setGlobalSearch] = useState("");
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [currentView, globalSearch]);
 
   const fetchRoles = async () => {
     try {
@@ -183,11 +192,6 @@ export default function AdminPage() {
     form.resetFields();
   };
 
-  // const roleTagColor: Record<string, string> = {
-  //   super_admin: "purple",
-  //   admin: "blue",
-  // };
-
   const roleLabel: Record<string, string> = {
     super_admin: "Super Admin",
     admin: "Admin",
@@ -296,255 +300,390 @@ export default function AdminPage() {
       : []),
   ];
 
-  return (
-    <TitleBar
-      title="Admin Management"
-      description="Manage and orchestrate administrative access and platform permissions."
-      icon={
-        <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-2xl flex items-center justify-center">
-          <SafetyCertificateOutlined className="text-white text-2xl" />
-        </div>
-      }
-      extraContent={
-        <div className="flex items-center gap-3">
-          <Button
-            icon={<IoMdRefresh className={`text-lg ${loading ? "animate-spin" : ""}`} />}
-            onClick={() => dispatch(fetchAdminUsers())}
-            className="rounded-full h-11 w-11 flex items-center justify-center border border-gray-100 dark:border-slate-700 text-gray-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all bg-white dark:bg-slate-800"
-          />
-          {canCreateAdmin && (
-            <Button
-              icon={<IoPersonAddOutline className="text-lg" />}
-              type="primary"
-              onClick={openCreateModal}
-              className="rounded-full h-11 px-8 font-bold !bg-gradient-to-r !from-indigo-600 !to-blue-500 border-none transition-all active:scale-95 flex items-center gap-2"
-            >
-              Create Admin
-            </Button>
-          )}
-        </div>
-      }
+  const filteredAdmins = admins.filter((admin) => {
+    if (!globalSearch) return true;
+    const lowerSearch = globalSearch.toLowerCase();
+    return (
+      admin.name.toLowerCase().includes(lowerSearch) ||
+      admin.email.toLowerCase().includes(lowerSearch) ||
+      (admin.contact && admin.contact.includes(lowerSearch))
+    );
+  });
+
+  const ViewItem = ({ icon, label, count, isActive, onClick, activeColorClass = "text-indigo-500", bgActiveColorClass = "bg-indigo-50/80 dark:bg-indigo-900/30", badgeColorClass = "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400" }: any) => (
+    <div
+      onClick={onClick}
+      className={`flex items-center justify-between px-3 py-2 rounded-[10px] cursor-pointer transition-all ${isActive
+        ? `${bgActiveColorClass} text-slate-800 dark:text-slate-100 font-bold`
+        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium"
+        }`}
     >
-      <div ref={contentRef} className="h-full w-full px-6 pb-6">
-        <Tabs defaultActiveKey="1" className="premium-tabs">
-          <Tabs.TabPane tab={<span className="font-bold text-sm">Administrators</span>} key="1">
-            <Table
-              key={tableHeight}
-              dataSource={admins}
-              columns={columns}
-              rowKey="id"
-              loading={loading}
-              pagination={false}
-              showSorterTooltip={false}
-              tableLayout="auto"
-              scroll={{ y: Math.max(Math.floor(tableHeight || 0) - 100, 250) }}
-            />
-          </Tabs.TabPane>
-          {isSuperAdmin && (
-            <Tabs.TabPane tab={<span className="font-bold text-sm">Role Customizer</span>} key="2">
-              <div
-                style={{
-                  height: Math.max(Math.floor(tableHeight || 0) - 10, 400),
-                  overflow: "hidden",
-                }}
-              >
-                <RoleMatrixEditor height={Math.max(Math.floor(tableHeight || 0) - 10, 400)} />
-              </div>
-            </Tabs.TabPane>
-          )}
-        </Tabs>{" "}
-        <Drawer
-          rootClassName="dark-drawer"
-          title={
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                <SafetyCertificateOutlined className="text-xl" />
-              </div>
-              <div>
-                <div className="text-lg font-black text-slate-800 dark:text-slate-200 leading-none mb-1">
-                  {modalMode === "create" ? "Add New Administrator" : "Refine Admin Profile"}
-                </div>
-                <div className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-                  {modalMode === "create"
-                    ? "Grant system-wide access permissions"
-                    : "Update user credentials and authority level"}
-                </div>
-              </div>
-            </div>
-          }
-          width={560}
-          open={isModalOpen}
-          onClose={handleCancel}
-          extra={
-            <Space>
-              <Button onClick={handleCancel} className="rounded-xl px-6 font-bold h-10">
-                Cancel
-              </Button>
-              <Button
-                type="primary"
-                onClick={handleModalSubmit}
-                loading={submitting}
-                className="rounded-xl px-8 font-bold h-10 !bg-gradient-to-r !from-indigo-600 !to-blue-500 border-none"
-              >
-                {modalMode === "create" ? "Provision Access" : "Commit Changes"}
-              </Button>
-            </Space>
-          }
-          className="premium-drawer"
-        >
-          <Form form={form} layout="vertical" validateTrigger="onSubmit" className="mt-4">
-            <div className="bg-slate-50/50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6">
-              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 mb-4 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-                Identity & Access
-              </div>
-
-              <Form.Item
-                name="name"
-                label={
-                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
-                    Full Name
-                  </span>
-                }
-                rules={[
-                  { required: true, message: "Name is required" },
-                  { min: 2, message: "Name must be at least 2 characters" },
-                  { max: 100, message: "Name must not exceed 100 characters" },
-                ]}
-              >
-                <Input
-                  placeholder="Enter full name"
-                  className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="email"
-                label={
-                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
-                    Email Address
-                  </span>
-                }
-                rules={[
-                  { required: true, message: "Email is required" },
-                  { type: "email", message: "Enter a valid email address" },
-                ]}
-              >
-                <Input
-                  placeholder="Enter email address"
-                  className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
-                />
-              </Form.Item>
-
-              <Form.Item
-                name="role"
-                label={
-                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
-                    Authority Level
-                  </span>
-                }
-                rules={[{ required: true, message: "Role is required" }]}
-                initialValue="admin"
-              >
-                <Select placeholder="Select role" className="premium-select-xl">
-                  {roles.map((r) => (
-                    <Select.Option key={r.id} value={r.name}>
-                      {r.name === "super_admin"
-                        ? "Super Administrator"
-                        : r.name === "admin"
-                          ? "Platform Admin"
-                          : r.name
-                              .replace(/_/g, " ")
-                              .replace(/\b\w/g, (c: string) => c.toUpperCase())}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
-            </div>
-
-            <div className="bg-slate-50/50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-700">
-              <div className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 mb-4 flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                Contact & Security
-              </div>
-
-              <Form.Item
-                name="contact"
-                label={
-                  <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
-                    Phone Contact
-                  </span>
-                }
-                rules={[
-                  {
-                    pattern: phoneRegex,
-                    message: "Enter valid phone number",
-                  },
-                ]}
-              >
-                <Input
-                  placeholder="+91 00000 00000"
-                  className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
-                />
-              </Form.Item>
-
-              {modalMode === "create" && (
-                <>
-                  <Form.Item
-                    name="password"
-                    label={
-                      <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
-                        Access Key
-                      </span>
-                    }
-                    rules={[
-                      { required: true, message: "Password is required" },
-                      {
-                        pattern: passwordRegex,
-                        message: "Must be 5–18 chars with Upper, Num, Special",
-                      },
-                    ]}
-                    hasFeedback
-                  >
-                    <Input.Password
-                      placeholder="Create secure password"
-                      title="At least one uppercase, number, and special character"
-                      className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
-                    />
-                  </Form.Item>
-
-                  <Form.Item
-                    name="confirmPassword"
-                    label={
-                      <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
-                        Verify Key
-                      </span>
-                    }
-                    dependencies={["password"]}
-                    hasFeedback
-                    rules={[
-                      { required: true, message: "Please confirm password" },
-                      ({ getFieldValue }) => ({
-                        validator(_, value) {
-                          if (!value || getFieldValue("password") === value) {
-                            return Promise.resolve();
-                          }
-                          return Promise.reject(new Error("Keys do not match"));
-                        },
-                      }),
-                    ]}
-                  >
-                    <Input.Password
-                      placeholder="Confirm access key"
-                      className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
-                    />
-                  </Form.Item>
-                </>
-              )}
-            </div>
-          </Form>
-        </Drawer>
+      <div className="flex items-center gap-2.5">
+        <span className={`text-[15px] ${isActive ? activeColorClass : "text-slate-400"}`}>{icon}</span>
+        <span className="text-[13px] tracking-tight">{label}</span>
       </div>
-    </TitleBar>
+      {count !== undefined && (
+        isActive ? (
+          <div className={`px-2 py-0.5 rounded-md text-[10px] font-black min-w-[20px] text-center ${badgeColorClass}`}>
+            {count}
+          </div>
+        ) : (
+          <div className="text-[11px] font-bold text-slate-400 mr-1">
+            {count}
+          </div>
+        )
+      )}
+    </div>
+  );
+
+  return (
+    <>
+      <div className="flex h-full w-full overflow-hidden bg-white dark:bg-slate-900">
+        {/* LEFT SIDEBAR */}
+        <div className="w-[220px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col flex-shrink-0">
+          {/* Sidebar Header */}
+          <div className="p-6 pb-4">
+            <div className="flex items-center gap-3 text-slate-800 dark:text-slate-100">
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                <ShieldCheck size={16} strokeWidth={2.5} />
+              </div>
+              <div className="flex flex-col justify-center mt-0.5">
+                <h2 className="font-black text-sm uppercase tracking-wider leading-none m-0">ADMINISTRATION</h2>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">System Access</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-y-auto overflow-x-hidden">
+            {/* VIEWS */}
+            <div className="px-4 pt-6 pb-6 border-b border-slate-200 dark:border-slate-800/50">
+              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-2 mb-5">
+                Views
+              </p>
+              <div className="flex flex-col gap-1">
+                <ViewItem
+                  icon={<UsergroupAddOutlined />}
+                  label="Administrators"
+                  count={admins.length}
+                  isActive={currentView === "administrators"}
+                  onClick={() => setCurrentView("administrators")}
+                  activeColorClass="text-indigo-500"
+                  bgActiveColorClass="bg-indigo-50/80 dark:bg-indigo-900/30"
+                  badgeColorClass="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400"
+                />
+                {isSuperAdmin && (
+                  <ViewItem
+                    icon={<AppstoreAddOutlined />}
+                    label="Role Customizer"
+                    isActive={currentView === "roles"}
+                    onClick={() => setCurrentView("roles")}
+                    activeColorClass="text-purple-500"
+                    bgActiveColorClass="bg-purple-50/80 dark:bg-purple-900/30"
+                    badgeColorClass="bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400"
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT MAIN CONTENT */}
+        <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0b0f19]">
+          {/* Top Navbar */}
+          <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 shadow-sm z-0 flex-shrink-0">
+            <div className="relative flex-1 max-w-3xl flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
+              <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
+              <input
+                type="text"
+                placeholder="Search administrators..."
+                className="w-full pl-10 pr-4 py-2 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+              />
+              <div className="absolute right-3">
+                <span className="text-[11px] font-bold text-slate-400 border border-slate-200 dark:border-slate-600 rounded-[4px] px-1.5 py-[1px] bg-slate-50/50 dark:bg-slate-800 tracking-wide">
+                  ⌘K
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 px-3 py-1.5 rounded-full border border-indigo-100 dark:border-indigo-500/20">
+                <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                <span className="text-[11px] font-black tracking-widest uppercase">
+                  {currentView === "administrators" ? filteredAdmins.length : Object.keys(roles).length} RESULTS
+                </span>
+              </div>
+
+              {canCreateAdmin && currentView === "administrators" && (
+                <Button
+                  type="primary"
+                  icon={<IoPersonAddOutline className="text-lg" />}
+                  onClick={openCreateModal}
+                  className="rounded-lg h-10 px-4 font-bold border-none !bg-indigo-600 hover:!bg-indigo-700 flex items-center shadow-sm"
+                >
+                  Create Admin
+                </Button>
+              )}
+
+              <button
+                onClick={() => {
+                  dispatch(fetchAdminUsers());
+                  fetchRoles();
+                }}
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all shrink-0"
+              >
+                <IoMdRefresh className={`text-lg ${loading ? "animate-spin" : ""}`} />
+              </button>
+            </div>
+          </div>
+
+          {/* Scrollable Main Content */}
+          <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 dark:bg-[#0f172a] flex flex-col gap-6" ref={contentRef}>
+            {loading && admins.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
+                <Spin size="large" />
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="flex-grow overflow-hidden">
+                  {currentView === "administrators" ? (
+                    <Table
+                      key={tableHeight}
+                      dataSource={filteredAdmins}
+                      columns={columns}
+                      rowKey="id"
+                      loading={loading}
+                      pagination={{ position: ["none"], current: currentPage, pageSize: pageSize }}
+                      showSorterTooltip={false}
+                      tableLayout="auto"
+                      scroll={{ y: Math.max(Math.floor(tableHeight || 0) - 100, 250) }}
+                      size="small"
+                    />
+                  ) : (
+                    <div style={{ height: Math.max(Math.floor(tableHeight || 0) - 10, 400), overflow: "hidden" }}>
+                      <RoleMatrixEditor height={Math.max(Math.floor(tableHeight || 0) - 10, 400)} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Sticky Pagination Footer (only for administrators view) */}
+          {currentView === "administrators" && (
+            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10 flex-shrink-0">
+              <div className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
+                Showing <span className="font-bold text-slate-800 dark:text-slate-200">{filteredAdmins.length === 0 ? 0 : (currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, filteredAdmins.length)}</span> of <span className="font-bold text-slate-800 dark:text-slate-200">{filteredAdmins.length}</span> admins
+              </div>
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={filteredAdmins.length}
+                onChange={(page, size) => {
+                  setCurrentPage(page);
+                  setPageSize(size);
+                }}
+                showSizeChanger
+                pageSizeOptions={[10, 15, 20, 50, 100]}
+                size="small"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Drawer
+        rootClassName="dark-drawer"
+        title={
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-indigo-50 dark:bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+              <SafetyCertificateOutlined className="text-xl" />
+            </div>
+            <div>
+              <div className="text-lg font-black text-slate-800 dark:text-slate-200 leading-none mb-1">
+                {modalMode === "create" ? "Add New Administrator" : "Refine Admin Profile"}
+              </div>
+              <div className="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                {modalMode === "create"
+                  ? "Grant system-wide access permissions"
+                  : "Update user credentials and authority level"}
+              </div>
+            </div>
+          </div>
+        }
+        width={560}
+        open={isModalOpen}
+        onClose={handleCancel}
+        extra={
+          <Space>
+            <Button onClick={handleCancel} className="rounded-xl px-6 font-bold h-10">
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              onClick={handleModalSubmit}
+              loading={submitting}
+              className="rounded-xl px-8 font-bold h-10 !bg-gradient-to-r !from-indigo-600 !to-blue-500 border-none"
+            >
+              {modalMode === "create" ? "Provision Access" : "Commit Changes"}
+            </Button>
+          </Space>
+        }
+        className="premium-drawer"
+      >
+        <Form form={form} layout="vertical" validateTrigger="onSubmit" className="mt-4">
+          <div className="bg-slate-50/50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 mb-6">
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 mb-4 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+              Identity & Access
+            </div>
+
+            <Form.Item
+              name="name"
+              label={
+                <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                  Full Name
+                </span>
+              }
+              rules={[
+                { required: true, message: "Name is required" },
+                { min: 2, message: "Name must be at least 2 characters" },
+                { max: 100, message: "Name must not exceed 100 characters" },
+              ]}
+            >
+              <Input
+                placeholder="Enter full name"
+                className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="email"
+              label={
+                <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                  Email Address
+                </span>
+              }
+              rules={[
+                { required: true, message: "Email is required" },
+                { type: "email", message: "Enter a valid email address" },
+              ]}
+            >
+              <Input
+                placeholder="Enter email address"
+                className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="role"
+              label={
+                <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                  Authority Level
+                </span>
+              }
+              rules={[{ required: true, message: "Role is required" }]}
+              initialValue="admin"
+            >
+              <Select placeholder="Select role" className="premium-select-xl">
+                {roles.map((r) => (
+                  <Select.Option key={r.id} value={r.name}>
+                    {r.name === "super_admin"
+                      ? "Super Administrator"
+                      : r.name === "admin"
+                        ? "Platform Admin"
+                        : r.name
+                            .replace(/_/g, " ")
+                            .replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+          </div>
+
+          <div className="bg-slate-50/50 dark:bg-slate-800/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-700">
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 mb-4 flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+              Contact & Security
+            </div>
+
+            <Form.Item
+              name="contact"
+              label={
+                <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                  Phone Contact
+                </span>
+              }
+              rules={[
+                {
+                  pattern: phoneRegex,
+                  message: "Enter valid phone number",
+                },
+              ]}
+            >
+              <Input
+                placeholder="+91 00000 00000"
+                className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
+              />
+            </Form.Item>
+
+            {modalMode === "create" && (
+              <>
+                <Form.Item
+                  name="password"
+                  label={
+                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                      Access Key
+                    </span>
+                  }
+                  rules={[
+                    { required: true, message: "Password is required" },
+                    {
+                      pattern: passwordRegex,
+                      message: "Must be 5–18 chars with Upper, Num, Special",
+                    },
+                  ]}
+                  hasFeedback
+                >
+                  <Input.Password
+                    placeholder="Create secure password"
+                    title="At least one uppercase, number, and special character"
+                    className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="confirmPassword"
+                  label={
+                    <span className="text-[11px] font-black uppercase tracking-widest text-slate-400">
+                      Verify Key
+                    </span>
+                  }
+                  dependencies={["password"]}
+                  hasFeedback
+                  rules={[
+                    { required: true, message: "Please confirm password" },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        if (!value || getFieldValue("password") === value) {
+                          return Promise.resolve();
+                        }
+                        return Promise.reject(new Error("Keys do not match"));
+                      },
+                    }),
+                  ]}
+                >
+                  <Input.Password
+                    placeholder="Confirm access key"
+                    className="premium-input-xl bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
+                  />
+                </Form.Item>
+              </>
+            )}
+          </div>
+        </Form>
+      </Drawer>
+    </>
   );
 }

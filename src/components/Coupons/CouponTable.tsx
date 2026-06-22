@@ -21,6 +21,9 @@ interface CouponTableProps {
   onRefresh: () => void;
   canUpdate?: boolean;
   canDelete?: boolean;
+  currentPage?: number;
+  pageSize?: number;
+  onPageChange?: (page: number, size: number) => void;
 }
 
 const CouponTable: React.FC<CouponTableProps> = ({
@@ -32,6 +35,9 @@ const CouponTable: React.FC<CouponTableProps> = ({
   onRefresh,
   canUpdate = false,
   canDelete = false,
+  currentPage = 1,
+  pageSize = 15,
+  onPageChange,
 }) => {
   const [notifyModalVisible, setNotifyModalVisible] = useState(false);
   const [selectedCoupon, setSelectedCoupon] = useState<Coupon | null>(null);
@@ -44,41 +50,13 @@ const CouponTable: React.FC<CouponTableProps> = ({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PENDING":
-        return (
-          <Tag
-            icon={<ClockCircleOutlined />}
-            color="warning"
-            className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase"
-          >
-            Pending
-          </Tag>
-        );
+        return <Tag icon={<ClockCircleOutlined />} color="warning">Pending</Tag>;
       case "PROCESSING":
-        return (
-          <Tag
-            icon={<SyncOutlined spin />}
-            color="processing"
-            className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase"
-          >
-            Processing
-          </Tag>
-        );
+        return <Tag icon={<SyncOutlined spin />} color="processing">Processing</Tag>;
       case "COMPLETED":
-        return (
-          <Tag
-            icon={<CheckCircleOutlined />}
-            color="success"
-            className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase"
-          >
-            Completed
-          </Tag>
-        );
+        return <Tag icon={<CheckCircleOutlined />} color="success">Completed</Tag>;
       case "FAILED":
-        return (
-          <Tag color="error" className="rounded-full px-3 py-0.5 font-bold text-[10px] uppercase">
-            Failed
-          </Tag>
-        );
+        return <Tag color="error">Failed</Tag>;
       default:
         return null;
     }
@@ -86,100 +64,57 @@ const CouponTable: React.FC<CouponTableProps> = ({
 
   const columns = [
     {
-      title: (
-        <span className="text-[11px] uppercase tracking-widest font-bold text-gray-400">
-          Promo Code
-        </span>
-      ),
+      title: "Promo Code",
       dataIndex: "code",
       key: "code",
       render: (text: string) => (
-        <div className="flex items-center gap-2">
-          <div className="bg-blue-50 dark:bg-blue-500/10 px-3 py-1 rounded-lg border border-blue-100 dark:border-blue-500/30 shadow-sm">
-            <span className="font-extrabold text-sm font-mono text-blue-700 tracking-widest">
-              {text}
-            </span>
-          </div>
-        </div>
+        <span className="font-mono text-blue-600 font-semibold">{text}</span>
       ),
     },
     {
-      title: (
-        <span className="text-[11px] uppercase tracking-widest font-bold text-gray-400">
-          Discount Offer
-        </span>
-      ),
+      title: "Discount Offer",
       key: "discount",
       render: (_: any, record: any) => {
         if (record.discount_type?.toUpperCase() === "PERCENTAGE") {
-          return (
-            <div className="px-3 py-1 bg-gradient-to-r from-blue-600 to-indigo-500 text-white rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-md shadow-blue-100 w-fit">
-              {record.discount_value}% OFF
-            </div>
-          );
+          return <Tag color="blue">{record.discount_value}% OFF</Tag>;
         }
         if (record.discount_type?.toUpperCase() === "FIXED") {
-          return (
-            <div className="px-3 py-1 bg-gradient-to-r from-emerald-600 to-teal-500 text-white rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-md shadow-emerald-100 w-fit">
-              ₹{record.discount_value} OFF
-            </div>
-          );
+          return <Tag color="green">₹{record.discount_value} OFF</Tag>;
         }
-        return (
-          <div className="px-3 py-1 bg-gradient-to-r from-violet-600 to-purple-500 text-white rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-md shadow-violet-100 w-fit">
-            FREE RIDE
-          </div>
-        );
+        return <Tag color="purple">FREE RIDE</Tag>;
       },
     },
     {
-      title: (
-        <span className="text-[11px] uppercase tracking-widest font-bold text-gray-400">
-          Validity Period
-        </span>
-      ),
+      title: "Validity Period",
       key: "validity",
       render: (_: any, record: any) => {
         const fromDate = record.valid_from || record.start_date;
         const untilDate = record.valid_until || record.expiry_date;
         const isExpired = dayjs().isAfter(dayjs(untilDate));
         return (
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2 text-xs font-bold text-gray-700 dark:text-slate-200">
-              <span className="text-gray-300">FROM</span> {dayjs(fromDate).format("MMM DD, YYYY")}
-            </div>
-            <div
-              className={`flex items-center gap-2 text-xs font-bold ${isExpired ? "text-rose-500 dark:text-rose-400" : "text-gray-700 dark:text-slate-200"}`}
-            >
-              <span className="text-gray-300 dark:text-slate-500 uppercase">THRU</span>{" "}
-              {dayjs(untilDate).format("MMM DD, YYYY")}
-              {isExpired && (
-                <span className="text-[10px] bg-rose-50 dark:bg-rose-500/10 px-1 rounded">
-                  EXPIRED
-                </span>
-              )}
+          <div className="flex flex-col text-xs gap-1">
+            <div><span className="text-gray-500">From:</span> {dayjs(fromDate).format("MMM DD, YYYY")}</div>
+            <div className={isExpired ? "text-red-500" : ""}>
+              <span className="text-gray-500">To:</span> {dayjs(untilDate).format("MMM DD, YYYY")}
+              {isExpired && <span className="ml-1 text-red-500">(Expired)</span>}
             </div>
           </div>
         );
       },
     },
     {
-      title: (
-        <span className="text-[11px] uppercase tracking-widest font-bold text-gray-400">
-          Notify Status
-        </span>
-      ),
+      title: "Notify Status",
       key: "notify_status",
       render: (_: any, record: any) => (
-        <div className="flex flex-col gap-1">
-          {getStatusBadge(record.notify_status)}
+        <div className="flex flex-col gap-1 text-xs">
+          <div>{getStatusBadge(record.notify_status)}</div>
           {record.notify_sent_at && (
-            <span className="text-[9px] text-gray-400 italic">
+            <span className="text-gray-400">
               Last: {dayjs(record.notify_sent_at).format("MMM DD, HH:mm")}
             </span>
           )}
           {record.notify_count > 0 && (
-            <span className="text-[9px] text-blue-500 font-bold">
+            <span className="text-blue-500 font-semibold">
               Total Sent: {record.notify_count}
             </span>
           )}
@@ -187,11 +122,7 @@ const CouponTable: React.FC<CouponTableProps> = ({
       ),
     },
     {
-      title: (
-        <span className="text-[11px] uppercase tracking-widest font-bold text-gray-400">
-          Notification
-        </span>
-      ),
+      title: "Notification",
       key: "notify_action",
       render: (_: any, record: any) => {
         const isExpired = dayjs().isAfter(dayjs(record.valid_until || record.expiry_date));
@@ -206,27 +137,21 @@ const CouponTable: React.FC<CouponTableProps> = ({
 
         return (
           <Tooltip title={tooltipMsg}>
-            <div className="w-fit">
-              <Button
-                type="primary"
-                icon={<SendOutlined />}
-                onClick={() => handleNotify(record)}
-                disabled={isDisabled}
-                className={`${isDisabled ? "opacity-40 grayscale pointer-events-none" : "!bg-gradient-to-r !from-indigo-600 !to-blue-500 hover:scale-[1.05] hover:shadow-lg hover:shadow-blue-200"} transition-all border-none rounded-xl font-black text-[10px] uppercase tracking-widest h-10 px-5 flex items-center shadow-md shadow-indigo-100`}
-              >
-                Send in Email
-              </Button>
-            </div>
+            <Button
+              type="default"
+              icon={<SendOutlined />}
+              onClick={() => handleNotify(record)}
+              disabled={isDisabled}
+              size="small"
+            >
+              Email
+            </Button>
           </Tooltip>
         );
       },
     },
     {
-      title: (
-        <span className="text-[11px] uppercase tracking-widest font-bold text-gray-400">
-          Status
-        </span>
-      ),
+      title: "Status",
       key: "is_active",
       render: (_: any, record: any) => {
         const isExpired = dayjs().isAfter(dayjs(record.valid_until || record.expiry_date));
@@ -240,20 +165,16 @@ const CouponTable: React.FC<CouponTableProps> = ({
             : "";
 
         return (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Tooltip title={switchTooltip}>
-              <div className="flex items-center">
-                <Switch
-                  checked={finalActive}
-                  disabled={switchDisabled}
-                  onChange={(checked) => onToggleStatus(record.id, checked)}
-                  className={`${finalActive ? "!bg-emerald-500" : "bg-gray-300"} ${switchDisabled ? "opacity-50" : ""}`}
-                />
-              </div>
+              <Switch
+                size="small"
+                checked={finalActive}
+                disabled={switchDisabled}
+                onChange={(checked) => onToggleStatus(record.id, checked)}
+              />
             </Tooltip>
-            <span
-              className={`text-[10px] font-bold uppercase tracking-widest ${finalActive ? "text-emerald-600" : "text-gray-400"}`}
-            >
+            <span className={`text-xs ${finalActive ? "text-green-600" : "text-gray-400"}`}>
               {finalActive ? "Active" : isExpired ? "Expired" : "Disabled"}
             </span>
           </div>
@@ -263,11 +184,7 @@ const CouponTable: React.FC<CouponTableProps> = ({
     ...(canUpdate || canDelete
       ? [
           {
-            title: (
-              <span className="text-[11px] uppercase tracking-widest font-bold text-gray-400">
-                Actions
-              </span>
-            ),
+            title: "Actions",
             key: "actions",
             render: (_: any, record: Coupon) => (
               <Space size="small">
@@ -275,20 +192,20 @@ const CouponTable: React.FC<CouponTableProps> = ({
                   <Tooltip title="Edit Promotion">
                     <Button
                       type="text"
-                      icon={<EditOutlined className="text-gray-500 dark:text-slate-400" />}
+                      icon={<EditOutlined />}
                       onClick={() => onEdit(record)}
-                      className="hover:bg-gray-100 dark:hover:bg-slate-700/50 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
+                      size="small"
                     />
                   </Tooltip>
                 )}
                 {canDelete && (
-                  <Tooltip title="Remove Permanent">
+                  <Tooltip title="Delete">
                     <Button
                       type="text"
                       danger
                       icon={<DeleteOutlined />}
                       onClick={() => onDelete(record.id)}
-                      className="hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
+                      size="small"
                     />
                   </Tooltip>
                 )}
@@ -306,8 +223,8 @@ const CouponTable: React.FC<CouponTableProps> = ({
         dataSource={data}
         rowKey="id"
         loading={loading}
-        pagination={{ pageSize: 10 }}
-        className="premium-table shadow-sm rounded-xl overflow-hidden border border-gray-100 dark:border-slate-700"
+        pagination={{ position: ["none"], current: currentPage, pageSize: pageSize, onChange: onPageChange }}
+        size="small"
       />
 
       {selectedCoupon && (

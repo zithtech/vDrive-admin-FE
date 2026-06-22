@@ -15,145 +15,107 @@ interface ReferralLogsTableProps {
   data: ReferralLog[];
   loading: boolean;
   type: "CUSTOMER" | "DRIVER";
+  currentPage?: number;
+  pageSize?: number;
+  onPageChange?: (page: number, size: number) => void;
 }
 
-const ReferralLogsTable: React.FC<ReferralLogsTableProps> = ({ data, loading, type }) => {
+const ReferralLogsTable: React.FC<ReferralLogsTableProps> = ({ 
+  data, 
+  loading, 
+  type,
+  currentPage = 1,
+  pageSize = 15,
+  onPageChange
+}) => {
   const isDriver = type === "DRIVER";
 
   const columns = [
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Date</span>
-      ),
+      title: "Date",
       dataIndex: "referred_at",
       key: "referred_at",
       render: (text: string) => (
-        <div className="flex flex-col">
-          <span className="text-xs font-bold text-gray-700 dark:text-slate-200">
-            {dayjs(text).format("DD MMM YYYY")}
-          </span>
-          <span className="text-[10px] text-gray-400 font-medium">
-            {dayjs(text).format("hh:mm A")}
-          </span>
+        <div className="flex flex-col text-xs">
+          <span>{dayjs(text).format("DD MMM YYYY")}</span>
+          <span className="text-gray-400">{dayjs(text).format("hh:mm A")}</span>
         </div>
       ),
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Referrer ({isDriver ? "Driver" : "User"})
-        </span>
-      ),
+      title: `Referrer (${isDriver ? "Driver" : "User"})`,
       key: "referrer",
       render: (_: any, record: ReferralLog) => (
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-8 h-8 rounded-full ${isDriver ? "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400" : "bg-purple-50 dark:bg-purple-500/10 text-purple-500 dark:text-purple-400"} flex items-center justify-center`}
-          >
-            <UserOutlined />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xs font-black text-slate-800 dark:text-slate-200 leading-none mb-1">
-              {record.referrer_name}
-            </span>
-            <Text className="text-[10px] text-gray-400 flex items-center gap-1 font-mono">
-              {record.referrer_phone}
-            </Text>
+        <div className="flex items-center gap-2">
+          <UserOutlined className={isDriver ? "text-indigo-500" : "text-purple-500"} />
+          <div className="flex flex-col text-xs">
+            <span className="font-semibold">{record.referrer_name}</span>
+            <Text className="text-gray-400 font-mono">{record.referrer_phone}</Text>
           </div>
         </div>
       ),
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Referral Code
-        </span>
-      ),
+      title: "Referral Code",
       dataIndex: "referral_code",
       key: "referral_code",
       render: (text: string) => (
-        <Tag className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 font-mono font-bold text-[10px] uppercase px-2 py-0.5 rounded">
-          {text}
-        </Tag>
+        <Tag className="font-mono">{text}</Tag>
       ),
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Referee ({isDriver ? "Driver" : "User"})
-        </span>
-      ),
+      title: `Referee (${isDriver ? "Driver" : "User"})`,
       key: "referee",
       render: (_: any, record: ReferralLog) => (
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-8 h-8 rounded-full ${isDriver ? "bg-blue-50 dark:bg-blue-500/10 text-blue-500 dark:text-blue-400" : "bg-pink-50 dark:bg-pink-500/10 text-pink-500 dark:text-pink-400"} flex items-center justify-center`}
-          >
-            <UserOutlined />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-xs font-black text-slate-800 dark:text-slate-200 leading-none mb-1">
-              {record.referee_name || "Unknown"}
-            </span>
-            <Text className="text-[10px] text-gray-400 flex items-center gap-1 font-mono">
-              {record.referee_phone || "N/A"}
-            </Text>
+        <div className="flex items-center gap-2">
+          <UserOutlined className={isDriver ? "text-blue-500" : "text-pink-500"} />
+          <div className="flex flex-col text-xs">
+            <span className="font-semibold">{record.referee_name || "Unknown"}</span>
+            <Text className="text-gray-400 font-mono">{record.referee_phone || "N/A"}</Text>
           </div>
         </div>
       ),
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Status
-        </span>
-      ),
+      title: "Status",
       dataIndex: "status",
       key: "status",
       render: (status: string) => {
-        let color = "gray";
+        let color = "default";
         let icon = <ClockCircleOutlined />;
         let label = status;
 
         if (status === "COMPLETED") {
-          color = "emerald";
+          color = "success";
           icon = <CheckCircleOutlined />;
           label = "Rewarded";
         } else if (status === "PENDING") {
-          color = "amber";
+          color = "warning";
           icon = <ClockCircleOutlined />;
           label = isDriver ? "Pending Ride" : "Pending Activity";
         } else if (status === "EXPIRED") {
-          color = "rose";
+          color = "error";
           icon = <ExclamationCircleOutlined />;
         }
 
         return (
-          <Tag
-            className={`bg-${color}-50 dark:bg-${color}-500/10 text-${color}-600 dark:text-${color}-400 border-${color}-100 dark:border-${color}-500/30 flex items-center gap-1.5 w-fit px-2.5 py-0.5 rounded-full font-black text-[10px] uppercase tracking-widest`}
-          >
-            {icon} {label}
+          <Tag color={color} icon={icon}>
+            {label}
           </Tag>
         );
       },
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Reward
-        </span>
-      ),
+      title: "Reward",
       dataIndex: "reward_amount",
       key: "reward_amount",
       render: (amount: any, record: ReferralLog) => (
-        <div className="flex flex-col">
-          <span
-            className={`text-xs font-black ${record.status === "COMPLETED" ? "text-emerald-600" : "text-gray-400"}`}
-          >
+        <div className="flex flex-col text-xs">
+          <span className={record.status === "COMPLETED" ? "text-green-600 font-semibold" : "text-gray-500"}>
             ₹{parseFloat((amount as string) || "0").toFixed(2)}
           </span>
           {record.completed_at && (
-            <span className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter">
+            <span className="text-gray-400">
               Issued {dayjs(record.completed_at).format("DD MMM")}
             </span>
           )}
@@ -163,24 +125,14 @@ const ReferralLogsTable: React.FC<ReferralLogsTableProps> = ({ data, loading, ty
   ];
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden">
-      <Table
-        columns={columns}
-        dataSource={data}
-        rowKey="id"
-        loading={loading}
-        pagination={{
-          pageSize: 10,
-          className: "px-6 pb-4",
-          showTotal: (total) => (
-            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-              {total} Referrals Total
-            </span>
-          ),
-        }}
-        className="premium-table"
-      />
-    </div>
+    <Table
+      columns={columns}
+      dataSource={data}
+      rowKey="id"
+      loading={loading}
+      pagination={{ position: ["none"], current: currentPage, pageSize: pageSize, onChange: onPageChange }}
+      size="middle"
+    />
   );
 };
 

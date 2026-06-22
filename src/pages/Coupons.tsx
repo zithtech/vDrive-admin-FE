@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Button, Modal, notification, Tabs, Segmented } from "antd";
+import { Button, Modal, notification, Select, Spin, Pagination } from "antd";
 import {
   PlusOutlined,
   ExclamationCircleOutlined,
+  SearchOutlined,
   TagOutlined,
   GiftOutlined,
-  // HistoryOutlined
+  FileTextOutlined,
 } from "@ant-design/icons";
-import TitleBar from "../components/TitleBarCommon/TitleBar";
+import { IoMdRefresh } from "react-icons/io";
+import { Gift } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
   fetchCoupons,
@@ -63,6 +65,15 @@ const CouponsPage: React.FC = () => {
   const [referralDrawerVisible, setReferralDrawerVisible] = useState(false);
   const [editingReferral, setEditingReferral] = useState<ReferralConfig | null>(null);
 
+  const [globalSearch, setGlobalSearch] = useState("");
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [subTab, mainTab]);
+
   // Dynamically switch active subtab if permissions are missing
   useEffect(() => {
     const canReadCoupons = isSuperAdmin || hasCouponsRead;
@@ -108,33 +119,19 @@ const CouponsPage: React.FC = () => {
 
   // Conditional data fetching
   useEffect(() => {
-    if (isSuperAdmin || hasCouponsRead) {
-      dispatch(fetchCoupons());
-    }
-    if (isSuperAdmin || hasPromosRead) {
-      dispatch(fetchPromos());
-    }
-    if (isSuperAdmin || hasUserReferralsRead || hasDriverReferralsRead) {
-      dispatch(fetchReferralConfigs());
-    }
-  }, [
-    dispatch,
-    isSuperAdmin,
-    hasCouponsRead,
-    hasPromosRead,
-    hasUserReferralsRead,
-    hasDriverReferralsRead,
-  ]);
+    if (isSuperAdmin || hasCouponsRead) dispatch(fetchCoupons());
+    if (isSuperAdmin || hasPromosRead) dispatch(fetchPromos());
+    if (isSuperAdmin || hasUserReferralsRead || hasDriverReferralsRead) dispatch(fetchReferralConfigs());
+  }, [dispatch, isSuperAdmin, hasCouponsRead, hasPromosRead, hasUserReferralsRead, hasDriverReferralsRead]);
 
-  // Dynamically resolve module and actions based on selection
+  useEffect(() => {
+    if (subTab === "LOGS") dispatch(fetchReferralLogs(mainTab));
+  }, [dispatch, subTab, mainTab]);
+
   const currentModule =
     subTab === "COUPONS"
-      ? mainTab === "CUSTOMER"
-        ? "coupons"
-        : "promos"
-      : mainTab === "CUSTOMER"
-        ? "user_referrals"
-        : "driver_referrals";
+      ? mainTab === "CUSTOMER" ? "coupons" : "promos"
+      : mainTab === "CUSTOMER" ? "user_referrals" : "driver_referrals";
 
   const canCreate = useHasPermission(currentModule, "create");
   const canUpdate = useHasPermission(currentModule, "update");
@@ -143,58 +140,6 @@ const CouponsPage: React.FC = () => {
   const hasCreateAccess = isSuperAdmin || canCreate;
   const hasUpdateAccess = isSuperAdmin || canUpdate;
   const hasDeleteAccess = isSuperAdmin || canDelete;
-
-  const segmentedOptions = [
-    (isSuperAdmin || hasCouponsRead || hasPromosRead) && {
-      label: (
-        <div
-          className={`px-5 py-0.5 flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${subTab === "COUPONS" ? "text-blue-600" : "text-black"}`}
-        >
-          <TagOutlined /> Coupons
-        </div>
-      ),
-      value: "COUPONS",
-    },
-    (isSuperAdmin || hasUserReferralsRead || hasDriverReferralsRead) && {
-      label: (
-        <div
-          className={`px-5 py-0.5 flex items-center gap-2 font-black text-[10px] uppercase tracking-wider ${subTab === "REFERRALS" ? "text-amber-600" : "text-black"}`}
-        >
-          <GiftOutlined /> Referrals
-        </div>
-      ),
-      value: "REFERRALS",
-    },
-  ].filter(Boolean) as any[];
-
-  const customerTabAllowed =
-    subTab === "COUPONS" ? isSuperAdmin || hasCouponsRead : isSuperAdmin || hasUserReferralsRead;
-
-  const driverTabAllowed =
-    subTab === "COUPONS" ? isSuperAdmin || hasPromosRead : isSuperAdmin || hasDriverReferralsRead;
-
-  const tabItems = [
-    customerTabAllowed && {
-      key: "CUSTOMER",
-      label: (
-        <span className="px-4 font-black uppercase tracking-widest text-[11px]">
-          Customers Only
-        </span>
-      ),
-    },
-    driverTabAllowed && {
-      key: "DRIVER",
-      label: (
-        <span className="px-4 font-black uppercase tracking-widest text-[11px]">Drivers Only</span>
-      ),
-    },
-  ].filter(Boolean) as any[];
-
-  useEffect(() => {
-    if (subTab === "LOGS") {
-      dispatch(fetchReferralLogs(mainTab));
-    }
-  }, [dispatch, subTab, mainTab]);
 
   const handleCreateNew = () => {
     if (subTab === "COUPONS") {
@@ -208,6 +153,17 @@ const CouponsPage: React.FC = () => {
     } else {
       setEditingReferral(null);
       setReferralDrawerVisible(true);
+    }
+  };
+
+  const handleRefresh = () => {
+    if (subTab === "COUPONS") {
+      if (mainTab === "CUSTOMER") dispatch(fetchCoupons());
+      else dispatch(fetchPromos());
+    } else if (subTab === "REFERRALS") {
+      dispatch(fetchReferralConfigs());
+    } else {
+      dispatch(fetchReferralLogs(mainTab));
     }
   };
 
@@ -226,23 +182,18 @@ const CouponsPage: React.FC = () => {
     confirm({
       title: mainTab === "CUSTOMER" ? "Delete Coupon?" : "Delete Promotion?",
       icon: <ExclamationCircleOutlined />,
-      content:
-        mainTab === "CUSTOMER"
-          ? "This action cannot be undone."
-          : `Are you sure you want to delete this promotion? This will remove all history and cannot be undone.`,
-      okText: mainTab === "CUSTOMER" ? "Yes, Delete" : "Delete",
+      content: "This action cannot be undone.",
+      okText: "Delete",
       okType: "danger",
       onOk: async () => {
         if (mainTab === "CUSTOMER") {
           dispatch(deleteCoupon(id)).then((res: any) => {
-            if (!res.hasOwnProperty("error")) {
-              notification.success({ message: "Coupon deleted" });
-            }
+            if (!res.hasOwnProperty("error")) notification.success({ message: "Coupon deleted" });
           });
         } else {
           try {
             await axios.delete(`/api/promos/${id}`);
-            notification.success({ message: "Promo deleted successfully" });
+            notification.success({ message: "Promo deleted" });
             dispatch(fetchPromos());
           } catch (err) {
             notification.error({ message: "Failed to delete" });
@@ -255,15 +206,11 @@ const CouponsPage: React.FC = () => {
   const handleCouponToggle = (id: string, is_active: boolean) => {
     if (mainTab === "CUSTOMER") {
       dispatch(updateCouponStatus({ id, is_active })).then((res: any) => {
-        if (!res.hasOwnProperty("error")) {
-          notification.success({ message: `Coupon ${is_active ? "activated" : "disabled"}` });
-        }
+        if (!res.hasOwnProperty("error")) notification.success({ message: `Coupon ${is_active ? "activated" : "disabled"}` });
       });
     } else {
       dispatch(updatePromoStatus({ id: Number(id), is_active })).then((res: any) => {
-        if (!res.hasOwnProperty("error")) {
-          notification.success({ message: `Promo ${is_active ? "activated" : "disabled"}` });
-        }
+        if (!res.hasOwnProperty("error")) notification.success({ message: `Promo ${is_active ? "activated" : "disabled"}` });
       });
     }
   };
@@ -272,35 +219,21 @@ const CouponsPage: React.FC = () => {
     if (mainTab === "CUSTOMER") {
       if (editingCoupon) {
         dispatch(updateCoupon({ id: editingCoupon.id, couponData: values })).then((res: any) => {
-          if (!res.hasOwnProperty("error")) {
-            notification.success({ message: "Updated" });
-            setCouponDrawerVisible(false);
-          }
+          if (!res.hasOwnProperty("error")) { notification.success({ message: "Updated" }); setCouponDrawerVisible(false); }
         });
       } else {
         dispatch(addCoupon(values)).then((res: any) => {
-          if (!res.hasOwnProperty("error")) {
-            notification.success({ message: "Created" });
-            setCouponDrawerVisible(false);
-          }
+          if (!res.hasOwnProperty("error")) { notification.success({ message: "Created" }); setCouponDrawerVisible(false); }
         });
       }
     } else {
       if (editingCoupon) {
-        dispatch(updatePromo({ id: Number(editingCoupon.id), promoData: values })).then(
-          (res: any) => {
-            if (!res.hasOwnProperty("error")) {
-              notification.success({ message: "Promo Updated" });
-              setCouponDrawerVisible(false);
-            }
-          },
-        );
+        dispatch(updatePromo({ id: Number(editingCoupon.id), promoData: values })).then((res: any) => {
+          if (!res.hasOwnProperty("error")) { notification.success({ message: "Promo Updated" }); setCouponDrawerVisible(false); }
+        });
       } else {
         dispatch(addPromo(values)).then((res: any) => {
-          if (!res.hasOwnProperty("error")) {
-            notification.success({ message: "Promo Created" });
-            setCouponDrawerVisible(false);
-          }
+          if (!res.hasOwnProperty("error")) { notification.success({ message: "Promo Created" }); setCouponDrawerVisible(false); }
         });
       }
     }
@@ -317,9 +250,7 @@ const CouponsPage: React.FC = () => {
       title: "Delete Referral Rule?",
       onOk() {
         dispatch(deleteReferralConfig(id)).then((res: any) => {
-          if (!res.hasOwnProperty("error")) {
-            notification.success({ message: "Deleted" });
-          }
+          if (!res.hasOwnProperty("error")) notification.success({ message: "Deleted" });
         });
       },
     });
@@ -327,26 +258,18 @@ const CouponsPage: React.FC = () => {
 
   const handleReferralToggle = (id: string, is_active: boolean) => {
     dispatch(updateReferralConfig({ id, data: { is_active } })).then((res: any) => {
-      if (!res.hasOwnProperty("error")) {
-        notification.success({ message: `Rule ${is_active ? "activated" : "disabled"}` });
-      }
+      if (!res.hasOwnProperty("error")) notification.success({ message: `Rule ${is_active ? "activated" : "disabled"}` });
     });
   };
 
   const handleReferralSubmit = (values: ReferralConfigPayload) => {
     if (editingReferral) {
       dispatch(updateReferralConfig({ id: editingReferral.id, data: values })).then((res: any) => {
-        if (!res.hasOwnProperty("error")) {
-          notification.success({ message: "Updated" });
-          setReferralDrawerVisible(false);
-        }
+        if (!res.hasOwnProperty("error")) { notification.success({ message: "Updated" }); setReferralDrawerVisible(false); }
       });
     } else {
       dispatch(addReferralConfig(values)).then((res: any) => {
-        if (!res.hasOwnProperty("error")) {
-          notification.success({ message: "Created" });
-          setReferralDrawerVisible(false);
-        }
+        if (!res.hasOwnProperty("error")) { notification.success({ message: "Created" }); setReferralDrawerVisible(false); }
       });
     }
   };
@@ -354,107 +277,265 @@ const CouponsPage: React.FC = () => {
   const filteredCoupons = mainTab === "CUSTOMER" ? coupons : (promos as any);
   const filteredReferrals = configs.filter((r) => r.user_type === mainTab);
 
-  return (
-    <TitleBar
-      title="Coupons & Referrals"
-      icon={
-        <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-2xl flex items-center justify-center">
-          <GiftOutlined className="text-white" />
-        </div>
-      }
-      iconBgColor="bg-indigo-600"
-      description="Manage promotions and referral rewards for both customers and drivers"
-      extraContent={
-        hasCreateAccess && (
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            size="large"
-            onClick={handleCreateNew}
-            className="rounded-xl h-12 px-6 font-bold border-none !bg-gradient-to-r !from-indigo-600 !to-blue-500 hover:scale-[1.02] transition-transform flex items-center"
-          >
-            {subTab === "COUPONS"
-              ? mainTab === "CUSTOMER"
-                ? "Create Coupon"
-                : "Create New Offer"
-              : "Create Referral Rule"}
-          </Button>
-        )
-      }
+  const applyGlobalSearch = (data: any[], keyField: string) => {
+    if (!globalSearch) return data;
+    const lowerSearch = globalSearch.toLowerCase();
+    return data.filter((item) => {
+      if (item[keyField] && item[keyField].toLowerCase().includes(lowerSearch)) return true;
+      if (item.code && item.code.toLowerCase().includes(lowerSearch)) return true;
+      return false;
+    });
+  };
+
+  const currentDataCoupons = Array.isArray(filteredCoupons) ? applyGlobalSearch(filteredCoupons, "code") : [];
+  const currentDataReferrals = Array.isArray(filteredReferrals) ? applyGlobalSearch(filteredReferrals, "rule_name") : [];
+  const currentDataLogs = Array.isArray(logs) ? applyGlobalSearch(logs, "referrer_name") : [];
+
+  const ViewItem = ({ icon, label, count, isActive, onClick, activeColorClass = "text-indigo-500", bgActiveColorClass = "bg-indigo-50/80 dark:bg-indigo-900/30", badgeColorClass = "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400" }: any) => (
+    <div
+      onClick={onClick}
+      className={`flex items-center justify-between px-3 py-2 rounded-[10px] cursor-pointer transition-all ${isActive
+        ? `${bgActiveColorClass} text-slate-800 dark:text-slate-100 font-bold`
+        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium"
+        }`}
     >
-      <div className="w-full h-full flex flex-col p-6 bg-white dark:bg-slate-800 overflow-y-auto custom-scrollbar gap-6">
-        {/* ─── Control Header ─────────────────────────────────────────── */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-4">
-          <div className="flex items-center gap-6">
-            {tabItems.length > 1 ? (
-              <Tabs
-                activeKey={mainTab}
-                onChange={(key) => setMainTab(key as any)}
-                className="premium-tabs border-none"
-                items={tabItems}
-              />
-            ) : (
-              <div className="h-10" /> // Spacer if only one tab is allowed
-            )}
+      <div className="flex items-center gap-2.5">
+        <span className={`text-[15px] ${isActive ? activeColorClass : "text-slate-400"}`}>{icon}</span>
+        <span className="text-[13px] tracking-tight">{label}</span>
+      </div>
+      {isActive ? (
+        <div className={`px-2 py-0.5 rounded-md text-[10px] font-black min-w-[20px] text-center ${badgeColorClass}`}>
+          {count}
+        </div>
+      ) : (
+        <div className="text-[11px] font-bold text-slate-400 mr-1">
+          {count}
+        </div>
+      )}
+    </div>
+  );
 
-            <div className="h-8 w-[1px] bg-gray-200 dark:bg-slate-700 hidden md:block" />
+  const TableSection = ({ children, flexClass = "flex-1", extraClasses = "" }: any) => (
+    <div className={`${flexClass} flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden ${extraClasses}`}>
+      <div className="flex-grow overflow-hidden">
+        {children}
+      </div>
+    </div>
+  );
 
-            <div className="p-1 bg-gray-100 rounded-xl w-fit">
-              {segmentedOptions.length > 0 && (
-                <Segmented
-                  value={subTab}
-                  onChange={(value) => setSubTab(value as any)}
-                  className="premium-segmented-alt"
-                  options={segmentedOptions}
-                />
-              )}
+  const currentCount = subTab === "COUPONS" ? currentDataCoupons.length : subTab === "REFERRALS" ? currentDataReferrals.length : currentDataLogs.length;
+  const isLoading = couponsLoading || referralsLoading;
+
+  return (
+    <>
+      <div className="flex h-full w-full overflow-hidden bg-white dark:bg-slate-900">
+        {/* LEFT SIDEBAR */}
+        <div className="w-[220px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col flex-shrink-0">
+          {/* Sidebar Header */}
+          <div className="p-6 pb-4">
+            <div className="flex items-center gap-3 text-slate-800 dark:text-slate-100">
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+                <Gift size={16} strokeWidth={2.5} />
+              </div>
+              <div className="flex flex-col justify-center mt-0.5">
+                <h2 className="font-black text-sm uppercase tracking-wider leading-none m-0">REWARDS</h2>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">Coupons & Promos</p>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="text-right hidden sm:block">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest font-black leading-none mb-1">
-                Active Ledger
+          <div className="flex-1 overflow-y-auto overflow-x-hidden">
+            {/* VIEWS */}
+            <div className="px-4 pt-6 pb-6 border-b border-slate-200 dark:border-slate-800/50">
+              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-2 mb-5">
+                Record Type
               </p>
-              <p className="text-[11px] text-gray-500 font-bold">
-                {subTab === "COUPONS"
-                  ? "Historical Promo Records"
-                  : subTab === "REFERRALS"
-                    ? "Loyalty Incentive Rules"
-                    : "Real-time referral activity"}
+              <div className="flex flex-col gap-1">
+                {(isSuperAdmin || hasCouponsRead || hasPromosRead) && (
+                  <ViewItem
+                    icon={<TagOutlined />}
+                    label="Coupons"
+                    count={currentDataCoupons.length}
+                    isActive={subTab === "COUPONS"}
+                    onClick={() => setSubTab("COUPONS")}
+                    activeColorClass="text-indigo-500"
+                    bgActiveColorClass="bg-indigo-50/80 dark:bg-indigo-900/30"
+                    badgeColorClass="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400"
+                  />
+                )}
+                {(isSuperAdmin || hasUserReferralsRead || hasDriverReferralsRead) && (
+                  <ViewItem
+                    icon={<GiftOutlined />}
+                    label="Referral Rules"
+                    count={currentDataReferrals.length}
+                    isActive={subTab === "REFERRALS"}
+                    onClick={() => setSubTab("REFERRALS")}
+                    activeColorClass="text-amber-500"
+                    bgActiveColorClass="bg-amber-50/80 dark:bg-amber-900/30"
+                    badgeColorClass="bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400"
+                  />
+                )}
+                {(isSuperAdmin || hasUserReferralsRead || hasDriverReferralsRead) && (
+                  <ViewItem
+                    icon={<FileTextOutlined />}
+                    label="Referral Logs"
+                    count={currentDataLogs.length}
+                    isActive={subTab === "LOGS"}
+                    onClick={() => setSubTab("LOGS")}
+                    activeColorClass="text-blue-500"
+                    bgActiveColorClass="bg-blue-50/80 dark:bg-blue-900/30"
+                    badgeColorClass="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* FILTERS */}
+            <div className="px-4 py-4">
+              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-2 mb-6">
+                Filters
               </p>
+              <div className="flex flex-col gap-3 px-2">
+                <div>
+                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1 uppercase tracking-wide">
+                    Target Audience
+                  </span>
+                  <Select
+                    className="w-full premium-select-inline"
+                    value={mainTab}
+                    onChange={(val) => setMainTab(val as "CUSTOMER" | "DRIVER")}
+                    options={[
+                      { label: "Customers Only", value: "CUSTOMER" },
+                      { label: "Drivers Only", value: "DRIVER" },
+                    ]}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="flex-grow min-h-0 px-2 transition-all duration-300">
-          {subTab === "COUPONS" ? (
-            <CouponTable
-              data={filteredCoupons}
-              loading={couponsLoading}
-              onEdit={handleCouponEdit}
-              onDelete={handleCouponDelete}
-              onToggleStatus={handleCouponToggle}
-              onRefresh={() => {
-                if (mainTab === "CUSTOMER") dispatch(fetchCoupons());
-                else dispatch(fetchPromos());
+        {/* RIGHT MAIN CONTENT */}
+        <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0b0f19]">
+          {/* Top Navbar */}
+          <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 shadow-sm z-0 flex-shrink-0">
+            <div className="relative flex-1 max-w-3xl flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
+              <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
+              <input
+                type="text"
+                placeholder="Search promos or rules..."
+                className="w-full pl-10 pr-4 py-2 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+              />
+              <div className="absolute right-3">
+                <span className="text-[11px] font-bold text-slate-400 border border-slate-200 dark:border-slate-600 rounded-[4px] px-1.5 py-[1px] bg-slate-50/50 dark:bg-slate-800 tracking-wide">
+                  ⌘K
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 px-3 py-1.5 rounded-full border border-indigo-100 dark:border-indigo-500/20">
+                <div className="w-2 h-2 rounded-full bg-indigo-500"></div>
+                <span className="text-[11px] font-black tracking-widest uppercase">
+                  {currentCount} RESULTS
+                </span>
+              </div>
+
+              {hasCreateAccess && subTab !== "LOGS" && (
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleCreateNew}
+                  className="rounded-lg h-10 px-4 font-bold border-none !bg-indigo-600 hover:!bg-indigo-700 flex items-center shadow-sm"
+                >
+                  {subTab === "COUPONS"
+                    ? mainTab === "CUSTOMER"
+                      ? "Create Coupon"
+                      : "Create Offer"
+                    : "Create Rule"}
+                </Button>
+              )}
+
+              <button
+                onClick={handleRefresh}
+                className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all shrink-0"
+              >
+                <IoMdRefresh className={`text-lg ${isLoading ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+          </div>
+
+          {/* Scrollable Main Content */}
+          <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 dark:bg-[#0f172a] flex flex-col gap-6">
+            {isLoading && currentCount === 0 ? (
+              <div className="flex-1 flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
+                <Spin size="large" />
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                <TableSection flexClass="flex-1 h-full" extraClasses="border-none rounded-none !min-h-0">
+                  {subTab === "COUPONS" ? (
+                    <CouponTable
+                      data={currentDataCoupons}
+                      loading={couponsLoading}
+                      onEdit={handleCouponEdit}
+                      onDelete={handleCouponDelete}
+                      onToggleStatus={handleCouponToggle}
+                      onRefresh={handleRefresh}
+                      canUpdate={hasUpdateAccess}
+                      canDelete={hasDeleteAccess}
+                      currentPage={currentPage}
+                      pageSize={pageSize}
+                      onPageChange={(page, size) => { setCurrentPage(page); setPageSize(size); }}
+                    />
+                  ) : subTab === "REFERRALS" ? (
+                    <ReferralTable
+                      data={currentDataReferrals}
+                      loading={referralsLoading}
+                      onEdit={handleReferralEdit}
+                      onDelete={handleReferralDelete}
+                      onToggleStatus={handleReferralToggle}
+                      canUpdate={hasUpdateAccess}
+                      canDelete={hasDeleteAccess}
+                      currentPage={currentPage}
+                      pageSize={pageSize}
+                      onPageChange={(page, size) => { setCurrentPage(page); setPageSize(size); }}
+                    />
+                  ) : (
+                    <ReferralLogsTable
+                      data={currentDataLogs}
+                      loading={referralsLoading}
+                      type={mainTab}
+                      currentPage={currentPage}
+                      pageSize={pageSize}
+                      onPageChange={(page, size) => { setCurrentPage(page); setPageSize(size); }}
+                    />
+                  )}
+                </TableSection>
+              </div>
+            )}
+          </div>
+
+          {/* Sticky Pagination Footer */}
+          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10 flex-shrink-0">
+            <div className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
+              Showing <span className="font-bold text-slate-800 dark:text-slate-200">{currentCount === 0 ? 0 : (currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, currentCount)}</span> of <span className="font-bold text-slate-800 dark:text-slate-200">{currentCount}</span> records
+            </div>
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={currentCount}
+              onChange={(page, size) => {
+                setCurrentPage(page);
+                setPageSize(size);
               }}
-              canUpdate={hasUpdateAccess}
-              canDelete={hasDeleteAccess}
+              showSizeChanger
+              pageSizeOptions={[10, 15, 20, 50, 100]}
+              size="small"
             />
-          ) : subTab === "REFERRALS" ? (
-            <ReferralTable
-              data={filteredReferrals}
-              loading={referralsLoading}
-              onEdit={handleReferralEdit}
-              onDelete={handleReferralDelete}
-              onToggleStatus={handleReferralToggle}
-              canUpdate={hasUpdateAccess}
-              canDelete={hasDeleteAccess}
-            />
-          ) : (
-            <ReferralLogsTable data={logs} loading={referralsLoading} type={mainTab} />
-          )}
+          </div>
         </div>
       </div>
 
@@ -482,33 +563,7 @@ const CouponsPage: React.FC = () => {
         promo={editingPromo}
         onSuccess={() => dispatch(fetchPromos())}
       />
-
-      <style>{`
-        .dark .premium-table .ant-table-thead > tr > th {
-          background: #1e293b;
-          color: #94a3b8;
-          border-bottom: 2px solid #334155;
-        }
-        .dark .premium-table .ant-table-tbody > tr > td {
-          border-bottom: 1px solid #334155;
-        }
-        .dark .premium-table .ant-table-wrapper .ant-table-pagination.ant-pagination {
-          color: #cbd5e1;
-        }
-        .dark .premium-table .ant-table-cell-row-hover {
-          background: transparent !important;
-        }
-        .dark .ant-segmented {
-          background-color: transparent !important;
-        }
-        .dark .ant-segmented-item-selected {
-          background-color: #1e293b !important;
-        }
-        .dark .ant-segmented-item {
-          color: #94a3b8;
-        }
-      `}</style>
-    </TitleBar>
+    </>
   );
 };
 
