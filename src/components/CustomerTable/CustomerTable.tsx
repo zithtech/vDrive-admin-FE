@@ -19,7 +19,7 @@ import {
   Popover,
   Typography,
   Tooltip,
-  Pagination,
+  // Pagination,
   // Divider,
   message,
 } from "antd";
@@ -268,20 +268,15 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
         key: "status",
         sorter: (a: Customer, b: Customer) => a.status.localeCompare(b.status),
         render: (status: string) => {
-          let config = { color: "#10b981", bg: "#ecfdf5", border: "#a7f3d0" }; // active
+          let colorClass = "text-emerald-600 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-emerald-500/20"; // active
           if (status === "inactive")
-            config = { color: "#f59e0b", bg: "#fffbeb", border: "#fde68a" };
+            colorClass = "text-amber-600 bg-amber-50 border-amber-200 dark:text-amber-400 dark:bg-amber-500/10 dark:border-amber-500/20";
           if (status === "suspended" || status === "blocked")
-            config = { color: "#ef4444", bg: "#fef2f2", border: "#fecaca" };
+            colorClass = "text-rose-600 bg-rose-50 border-rose-200 dark:text-rose-400 dark:bg-rose-500/10 dark:border-rose-500/20";
 
           return (
             <Tag
-              className="customer-status-tag"
-              style={{
-                color: config.color,
-                backgroundColor: config.bg,
-                borderColor: config.border,
-              }}
+              className={`customer-status-tag border ${colorClass}`}
             >
               {status}
             </Tag>
@@ -372,13 +367,16 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
                         color: #64748b !important;
                         font-weight: 700 !important;
                         text-transform: uppercase !important;
-                        font-size: 9px !important;
+                        font-size: 12px !important;
                         letter-spacing: 0.05em !important;
                         border-bottom: 2px solid #f1f5f9 !important;
-                        padding: 5px 16px !important;
+                        padding: 10px 12px !important;
+                    }
+                    .premium-table-flat .ant-table-thead > tr > th::before {
+                        display: none !important;
                     }
                     .premium-table-flat .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
-                        padding: 3px 16px !important;
+                        padding: 4px 12px !important;
                         border-bottom: 1px solid #f8fafc !important;
                     }
                     .dark .premium-table-flat .ant-table-thead > tr > th {
@@ -389,9 +387,16 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
                     .dark .premium-table-flat .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
                         border-bottom: 1px solid #1e293b !important;
                         color: #f1f5f9 !important;
+                        background: #0f172a !important;
                     }
-                    .dark .premium-table-flat .ant-table-row:hover > td {
-                        background: #334155 !important;
+                    .dark .premium-table-flat .ant-table-cell-fix-left,
+                    .dark .premium-table-flat .ant-table-cell-fix-right {
+                        background: #0f172a !important;
+                    }
+                    .dark .premium-table-flat .ant-table-row:hover > td,
+                    .dark .premium-table-flat .ant-table-row:hover > td.ant-table-cell-fix-left,
+                    .dark .premium-table-flat .ant-table-row:hover > td.ant-table-cell-fix-right {
+                        background: #1e293b !important;
                     }
                     .premium-table-flat .ant-table-row {
                         cursor: pointer;
@@ -422,59 +427,61 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
                         display: none !important;
                     }
                     .customer-avatar-wrapper { display: flex; align-items: center; gap: 0.5rem; }
-                    .customer-avatar { border: 2px solid white; flex-shrink: 0; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
+                    .customer-avatar { border: 2px solid white; flex-shrink: 0; background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); color: white; }
+                    .dark .customer-avatar { border-color: transparent; }
                     .customer-name-wrapper { display: flex; flex-direction: column; justify-content: center; gap: 0.125rem; }
-                    .customer-name-text { font-weight: 800; color: #1e293b; letter-spacing: -0.025em; font-size: 12px; line-height: 1; }
+                    .customer-name-text { font-weight: 800; color: #1e293b; letter-spacing: -0.025em; font-size: 13px; line-height: 1; }
                     .dark .customer-name-text { color: #f1f5f9; }
                     .customer-id-wrapper { display: flex; align-items: center; gap: 0.375rem; }
-                    .customer-id-wrapper:hover .customer-copy-icon { opacity: 1; }
-                    .customer-id-text { font-size: 9px; font-weight: 900; text-transform: uppercase; letter-spacing: -0.025em; font-family: monospace; line-height: 1; color: #6b7280; }
+                    .customer-id-text { font-size: 11px; font-weight: 700;  letter-spacing: -0.025em; font-family: monospace; line-height: 1; color: #6b7280; }
                     .dark .customer-id-text { color: #94a3b8; }
-                    .customer-copy-icon { font-size: 10px; color: #cbd5e1; cursor: pointer; transition: color 0.15s; opacity: 0; }
-                    .customer-copy-icon:hover { color: #6366f1; }
-                    .customer-contact-wrapper, .customer-updated-wrapper { display: flex; align-items: center; gap: 0.5rem; }
-                    .customer-phone-text { font-size: 10px; font-weight: 600; color: #475569; }
+                    .customer-contact-wrapper, .customer-updated-wrapper { display: flex; flex-direction: column; gap: 0.125rem; }
+                    .customer-phone-text { font-size: 13px; font-weight: 600; color: #475569; }
                     .dark .customer-phone-text { color: #cbd5e1; }
-                    .customer-contact-separator { height: 0.75rem; width: 1.5px; background-color: rgba(199, 210, 254, 0.6); border-radius: 9999px; margin-left: 0.25rem; margin-right: 0.25rem; }
-                    .dark .customer-contact-separator { background-color: rgba(55, 48, 163, 0.6); }
-                    .customer-email-text { font-size: 10px; font-weight: 900; color: #94a3b8; }
+                    .customer-contact-separator { display: none; }
+                    .customer-email-text { font-size: 12px; font-weight: 900; color: #94a3b8; }
                     .dark .customer-email-text { color: #64748b; }
-                    .customer-no-contacts { color: #9ca3af; font-size: 10px; font-style: italic; font-weight: 500; }
+                    .customer-no-contacts { color: #9ca3af; font-size: 12px; font-style: italic; font-weight: 500; }
+                    .customer-status-tag { margin: 0; border-radius: 6px; padding: 2px 6px; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.025em; display: inline-block; text-align: center; border-width: 1px; }
                     .customer-popover-wrapper { display: flex; flex-direction: column; gap: 0.75rem; padding: 0.25rem; }
                     .customer-popover-item { display: flex; flex-direction: column; border-bottom: 1px solid #f3f4f6; padding-bottom: 0.5rem; }
                     .customer-popover-item:last-child { border-bottom: 0; padding-bottom: 0; }
                     .dark .customer-popover-item { border-color: #334155; }
-                    .customer-popover-name { font-weight: 700; font-size: 12px; color: #1f2937; }
+                    .customer-popover-name { font-weight: 700; font-size: 13px; color: #1f2937; }
                     .dark .customer-popover-name { color: #e2e8f0; }
-                    .customer-popover-phone { font-size: 10px; font-weight: 600; color: #6b7280; }
+                    .customer-popover-phone { font-size: 12px; font-weight: 600; color: #6b7280; }
                     .dark .customer-popover-phone { color: #94a3b8; }
                     .customer-emergency-wrapper { display: flex; align-items: center; gap: 0.5rem; }
                     .customer-emergency-info { display: flex; flex-direction: column; }
-                    .customer-emergency-name { font-size: 10px; font-weight: 700; color: #374151; line-height: 1.25; }
+                    .customer-emergency-name { font-size: 13px; font-weight: 700; color: #374151; line-height: 1.25; }
                     .dark .customer-emergency-name { color: #cbd5e1; }
-                    .customer-emergency-phone { font-size: 8px; font-weight: 600; color: #9ca3af; }
+                    .customer-emergency-phone { font-size: 12px; font-weight: 600; color: #9ca3af; }
                     .dark .customer-emergency-phone { color: #64748b; }
-                    .customer-emergency-tag { cursor: pointer; transition: transform 0.15s; font-size: 9px; font-weight: 700; margin: 0; border: none; border-radius: 9999px; padding-left: 0.5rem; padding-right: 0.5rem; background-color: #eff6ff; color: #2563eb; }
+                    .customer-emergency-tag { cursor: pointer; transition: transform 0.15s; font-size: 11px; font-weight: 700; margin: 0; border: none; border-radius: 9999px; padding-left: 0.5rem; padding-right: 0.5rem; background-color: #eff6ff; color: #2563eb; }
                     .customer-emergency-tag:hover { transform: scale(1.05); }
-                    .customer-status-tag { margin: 0; border-radius: 6px; padding: 0px 4px; font-weight: 700; font-size: 7px; border-width: 1px; text-transform: uppercase; letter-spacing: 0.025em; }
-                    .customer-updated-date { font-size: 10px; font-weight: 700; color: #1e293b; text-transform: Capitalize; letter-spacing: -0.025em; }
+                    .customer-status-tag { margin: 0; border-radius: 6px; padding: 2px 6px; font-weight: 700; font-size: 11px; border-width: 1px; text-transform: uppercase; letter-spacing: 0.025em; }
+                    .customer-updated-date { font-size: 13px; font-weight: 700; color: #1e293b; text-transform: Capitalize; letter-spacing: -0.025em; }
                     .dark .customer-updated-date { color: #e2e8f0; }
-                    .customer-updated-time { font-size: 9px; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: 0.1em; }
+                    .customer-updated-time { font-size: 12px; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: 0.1em; }
                     .dark .customer-updated-time { color: #a5b4fc; }
                     .customer-action-view { color: #2563eb; transition: background-color 0.15s, color 0.15s; }
+                    .dark .customer-action-view { color: #60a5fa; }
                     .customer-action-view:hover { background-color: #eff6ff; }
-                    .customer-action-ellipsis { color: #9ca3af; }
+                    .dark .customer-action-view:hover { background-color: rgba(30, 58, 138, 0.5); }
+                    .customer-action-ellipsis { color: #9ca3af; font-size: 18px; }
+                    .dark .customer-action-ellipsis { color: #64748b; }
                     .customer-action-ellipsis:hover { color: #4b5563; }
+                    .dark .customer-action-ellipsis:hover { color: #f1f5f9; }
                     .customer-table-container { flex-grow: 1; background-color: white; border-radius: 6px; border: 1px solid #f1f5f9; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); overflow: hidden; display: flex; flex-direction: column; min-height: 0; padding-bottom: 0.5rem; }
-                    .dark .customer-table-container { background-color: #1e293b; border-color: #334155; }
+                    .dark .customer-table-container { background-color: #0f172a; border-color: #334155; }
                     .customer-row-even { background-color: rgba(248, 250, 252, 0.5); transition: background-color 0.15s; }
-                    .dark .customer-row-even { background-color: rgba(30, 41, 59, 0.5); }
+                    .dark .customer-row-even { background-color: #0f172a; }
                     .customer-row-even:hover { background-color: rgba(238, 242, 255, 0.3) !important; }
-                    .dark .customer-row-even:hover { background-color: #334155 !important; }
+                    .dark .customer-row-even:hover { background-color: #1e293b !important; }
                     .customer-row-odd { background-color: white; transition: background-color 0.15s; }
-                    .dark .customer-row-odd { background-color: #1e293b; }
+                    .dark .customer-row-odd { background-color: #0f172a; }
                     .customer-row-odd:hover { background-color: rgba(238, 242, 255, 0.3) !important; }
-                    .dark .customer-row-odd:hover { background-color: #334155 !important; }
+                    .dark .customer-row-odd:hover { background-color: #1e293b !important; }
                     .customer-menu-icon { color: #9ca3af; }
                     .customer-menu-label { font-weight: 700; color: #374151; }
                     .customer-menu-label-bold { font-weight: 700; }
@@ -485,7 +492,7 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
       </style>
       <div
         ref={contentRef}
-        className="customer-table-container"
+        className="customer-table-container h-full w-full"
       >
         <Table
           key={tableHeight}
@@ -502,7 +509,7 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
           showSorterTooltip={false}
           tableLayout="auto"
           size="small"
-          scroll={{ x: "max-content" }}
+          scroll={{ y: tableHeight ? Math.max(0, Math.floor(tableHeight)) : undefined, x: 1200 }}
           sticky={true}
           className="premium-table-flat"
           rowClassName={(_, index) =>

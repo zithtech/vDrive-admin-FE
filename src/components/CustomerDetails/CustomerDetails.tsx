@@ -500,7 +500,7 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
     {
       label: (
         <Tooltip title="Basic Information">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0 0.5rem', fontSize: '11px', fontWeight: 'bold' }}>
+          <div className="dark:text-slate-200" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', padding: '0 0.5rem', fontSize: '11px', fontWeight: 'bold' }}>
             <UserOutlined /> Info
           </div>
         </Tooltip>
@@ -623,7 +623,7 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
         .cd-info-group { display: flex; flex-direction: column; gap: 0.5rem; }
 
         .cd-label { font-size: 7px; text-transform: uppercase; font-weight: 900; letter-spacing: 0.1em; color: #94a3b8; display: block; margin-bottom: 0.25rem; padding: 0 0.25rem; }
-        .dark .cd-label { color: #64748b; }
+        .dark .cd-label { color: #94a3b8; }
 
         .cd-info-box { background-color: rgba(248, 250, 252, 0.5); padding: 0.5rem; border-radius: 0.5rem; border: 1px solid #f8fafc; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s; }
         .dark .cd-info-box { background-color: rgba(30, 41, 59, 0.5); border-color: #334155; }
@@ -631,13 +631,13 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
         .dark .cd-info-box:hover { background-color: #334155; }
 
         .cd-info-icon-wrapper { width: 1.5rem; height: 1.5rem; border-radius: 0.375rem; background-color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); color: #94a3b8; transition: color 0.3s; font-size: 10px; }
-        .dark .cd-info-icon-wrapper { background-color: #475569; color: #cbd5e1; }
+        .dark .cd-info-icon-wrapper { background-color: #475569; color: #f1f5f9; }
         .cd-info-box:hover .cd-info-icon-wrapper.blue { color: #3b82f6; }
         .cd-info-box:hover .cd-info-icon-wrapper.emerald { color: #10b981; }
         .cd-info-box:hover .cd-info-icon-wrapper.indigo { color: #6366f1; }
 
-        .cd-info-text { font-size: 11px !impoertant; font-weight: 700; color: #334155; letter-spacing: -0.025em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .dark .cd-info-text { color: #e2e8f0; }
+        .cd-info-text { font-size: 11px !important; font-weight: 700; color: #334155; letter-spacing: -0.025em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .dark .cd-info-text { color: #f1f5f9; }
 
         .cd-info-text.mono { font-family: monospace; font-size: 11px !important; font-weight: 900; }
         .cd-info-text.upper { text-transform: uppercase; font-size: 11px !important; letter-spacing: 0.05em; }
@@ -698,6 +698,7 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
         .cd-btn-primary.emerald:hover { background-color: #047857 !important; }
 
         .cd-btn-primary.rose {  background-color: white !important; border: 1px solid red !important; color: red !important; }
+        .dark .cd-btn-primary.rose { background-color: transparent !important; }
         .cd-btn-primary.rose:hover { background-color: red !important; color: white !important; }
 
         .cd-btn-danger-text { color: red !important; background: transparent !important; }
@@ -706,8 +707,9 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
         .cd-btn-danger-dashed { border: 1px dashed #fecdd3 !important; color: red !important; background: transparent !important; }
         .cd-btn-danger-dashed:hover { background-color: red !important; color: white !important; }
 
-        .cd-btn-warning { border: 1px solid #red !important; color: #red !important; background-color: white !important; }
-        .cd-btn-warning:hover { background-color: #e7f8ff !important; }
+        .cd-btn-warning { border: 1px solid #f97316 !important; color: #ea580c !important; background-color: white !important; }
+        .dark .cd-btn-warning { background-color: transparent !important; color: #fb923c !important; border-color: #fb923c !important; }
+        .cd-btn-warning:hover { background-color: #f97316 !important; color: white !important; }
       `}</style>
 
       <Drawer

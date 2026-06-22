@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Checkbox, Button, Card, Input, Space, message, Select } from "antd";
+import { Table, Checkbox, Button, Card, Input, Space, message, Select, Modal } from "antd";
 import { SaveOutlined, ReloadOutlined, PlusOutlined } from "@ant-design/icons";
 import axiosIns from "../../api/axios";
 
@@ -88,6 +88,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
   // New role inputs
   const [newRoleName, setNewRoleName] = useState("");
   const [newRoleDesc, setNewRoleDesc] = useState("");
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const fetchRoles = async () => {
     try {
@@ -217,6 +218,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
         message.success("New role created! Configure its permissions below.");
         setNewRoleName("");
         setNewRoleDesc("");
+        setIsCreateModalOpen(false);
         fetchRoles();
         setSelectedRoleId(response.data.data.id);
       } else {
@@ -250,6 +252,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
       message.success("New role created in local configuration! Set permissions below.");
       setNewRoleName("");
       setNewRoleDesc("");
+      setIsCreateModalOpen(false);
       setSelectedRoleId(nextId);
     }
   };
@@ -435,6 +438,14 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
 
         <Space size="middle">
           <Button
+            type="dashed"
+            icon={<PlusOutlined />}
+            onClick={() => setIsCreateModalOpen(true)}
+            className="rounded-xl font-bold border-blue-300 text-blue-600 hover:bg-blue-50"
+          >
+            New Role
+          </Button>
+          <Button
             icon={<ReloadOutlined />}
             onClick={() => selectedRoleId && fetchRolePermissions(selectedRoleId)}
             className="rounded-xl font-semibold border-slate-200"
@@ -446,7 +457,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
             icon={<SaveOutlined />}
             loading={loading}
             onClick={handleSavePermissions}
-            className="rounded-xl font-bold bg-indigo-600 border-none shadow-md hover:opacity-90"
+            className="rounded-xl font-bold bg-blue-600 border-none shadow-md hover:opacity-90"
             disabled={selectedRole?.is_system}
           >
             Save Permissions
@@ -479,7 +490,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
                   onClick={() => setSelectedRoleId(r.id)}
                   className={`w-full text-left px-4 py-3 rounded-xl transition-all font-semibold ${
                     selectedRoleId === r.id
-                      ? "bg-indigo-50 text-indigo-700 border border-indigo-100/50"
+                      ? "bg-blue-50 text-blue-700 border border-blue-100/50"
                       : "text-slate-600 hover:bg-slate-50 border border-transparent"
                   }`}
                 >
@@ -489,7 +500,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
                       System Role
                     </span>
                   ) : (
-                    <span className="text-[9px] font-bold text-indigo-500 uppercase tracking-wider block">
+                    <span className="text-[9px] font-bold text-blue-500 uppercase tracking-wider block">
                       Customizable
                     </span>
                   )}
@@ -498,36 +509,6 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
             </div>
           </Card>
 
-          <Card
-            size="small"
-            title="Create Custom Role"
-            className="rounded-2xl border-slate-100 shadow-none flex-shrink-0"
-          >
-            <Space direction="vertical" className="w-full">
-              <Input
-                placeholder="Role Name (e.g. support_lead)"
-                value={newRoleName}
-                onChange={(e) => setNewRoleName(e.target.value)}
-                className="rounded-lg"
-              />
-              <Input.TextArea
-                placeholder="Description of authority..."
-                value={newRoleDesc}
-                onChange={(e) => setNewRoleDesc(e.target.value)}
-                rows={2}
-                className="rounded-lg"
-              />
-              <Button
-                type="dashed"
-                block
-                icon={<PlusOutlined />}
-                onClick={handleCreateRole}
-                className="rounded-xl font-bold border-indigo-300 text-indigo-600"
-              >
-                Create Role
-              </Button>
-            </Space>
-          </Card>
         </div>
 
         {/* Permission Grid Matrix Table */}
@@ -535,7 +516,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
           {selectedRole && (
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50 border border-slate-100/50 p-4 rounded-2xl mb-4 shadow-sm flex-shrink-0">
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] text-indigo-500 font-bold uppercase tracking-wider">
+                <span className="text-[10px] text-blue-500 font-bold uppercase tracking-wider">
                   Role Configuration
                 </span>
                 <strong className="text-base text-slate-800 capitalize">
@@ -583,6 +564,46 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
           />
         </div>
       </div>
+      <Modal
+        title={
+          <div className="flex flex-col">
+            <span className="text-lg font-black text-slate-800">Create Custom Role</span>
+            <span className="text-xs text-slate-400 font-medium">Define a new role before setting permissions</span>
+          </div>
+        }
+        open={isCreateModalOpen}
+        onCancel={() => {
+          setIsCreateModalOpen(false);
+          setNewRoleName("");
+          setNewRoleDesc("");
+        }}
+        onOk={handleCreateRole}
+        okText="Create Role"
+        okButtonProps={{ className: "bg-blue-600 font-bold rounded-xl border-none shadow-md" }}
+        cancelButtonProps={{ className: "rounded-xl font-semibold" }}
+      >
+        <Space direction="vertical" className="w-full mt-4 gap-4">
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Role Name</label>
+            <Input
+              placeholder="e.g. support_lead"
+              value={newRoleName}
+              onChange={(e) => setNewRoleName(e.target.value)}
+              className="rounded-lg py-2"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Description</label>
+            <Input.TextArea
+              placeholder="Description of authority and responsibilities..."
+              value={newRoleDesc}
+              onChange={(e) => setNewRoleDesc(e.target.value)}
+              rows={3}
+              className="rounded-lg"
+            />
+          </div>
+        </Space>
+      </Modal>
     </Card>
   );
 };

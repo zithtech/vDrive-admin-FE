@@ -9,7 +9,7 @@ import {
   MinusCircleOutlined,
   StopOutlined,
 } from "@ant-design/icons";
-import { Button, Select, DatePicker, Input, Spin } from "antd";
+import { Button, Select, DatePicker, Spin } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "../store";
 import { fetchCustomers } from "../store/slices/customerSlice";
@@ -131,27 +131,24 @@ const Customers = () => {
     filters.updated_at ||
     filters.created_at;
 
-  const ViewItem = ({ icon, label, count, isActive, onClick, activeColorClass = "text-blue-500", bgActiveColorClass = "bg-blue-50/80 dark:bg-blue-900/30", badgeColorClass = "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400" }: any) => (
+  const ViewItem = ({ icon, label, count, isActive, onClick, activeColorClass = "text-blue-600 dark:text-blue-400", bgActiveColorClass = "bg-blue-50/80 dark:bg-blue-500/10", badgeColorClass = "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300" }: any) => (
     <div
       onClick={onClick}
-      className={`flex items-center justify-between px-3 py-2 rounded-[10px] cursor-pointer transition-all ${isActive
-        ? `${bgActiveColorClass} text-slate-800 dark:text-slate-100 font-bold`
-        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium"
+      className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${isActive
+        ? `${bgActiveColorClass} ${activeColorClass} font-bold`
+        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
         }`}
     >
-      <div className="flex items-center gap-2.5">
-        <span className={`text-[15px] ${isActive ? activeColorClass : "text-slate-400"}`}>{icon}</span>
-        <span className="text-[13px] tracking-tight">{label}</span>
+      <div className="flex items-center gap-2 text-xs">
+        <span className="text-xs">{icon}</span>
+        <span>{label}</span>
       </div>
-      {isActive ? (
-        <div className={`px-2 py-0.5 rounded-md text-[10px] font-black min-w-[20px] text-center ${badgeColorClass}`}>
-          {count}
-        </div>
-      ) : (
-        <div className="text-[11px] font-bold text-slate-400 mr-1">
-          {count}
-        </div>
-      )}
+      <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${isActive
+        ? badgeColorClass
+        : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+        }`}>
+        {count}
+      </span>
     </div>
   );
 
@@ -180,6 +177,35 @@ const Customers = () => {
 
   return (
     <>
+      <style>
+        {`
+          .premium-select-sidebar.ant-select .ant-select-selector,
+          .premium-range-picker-sidebar.ant-picker {
+            border-radius: 8px !important;
+            border-color: #cbd5e1 !important;
+          }
+          .dark .premium-select-sidebar.ant-select,
+          .dark .premium-select-sidebar.ant-select .ant-select-selector,
+          .dark .premium-select-sidebar.ant-select-multiple .ant-select-selector,
+          .dark .premium-select-sidebar .ant-select-selector,
+          .dark .premium-range-picker-sidebar.ant-picker {
+            border-color: #334155 !important;
+            background-color: #0f172a !important;
+            background: #0f172a !important;
+            color: #f1f5f9 !important;
+          }
+          .dark .premium-range-picker-sidebar.ant-picker .ant-picker-input > input,
+          .dark .premium-range-picker-sidebar.ant-picker .ant-picker-separator {
+            color: #f1f5f9 !important;
+          }
+          .dark .premium-select-sidebar.ant-select .ant-select-selection-item {
+            color: #f1f5f9 !important;
+          }
+          .dark .premium-select-sidebar.ant-select .ant-select-selection-placeholder {
+            color: #64748b !important;
+          }
+        `}
+      </style>
       <div className="flex h-full w-full overflow-hidden bg-white dark:bg-slate-900">
         {/* LEFT SIDEBAR */}
         <div className="w-[220px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col flex-shrink-0">
@@ -190,8 +216,8 @@ const Customers = () => {
                 <Users size={16} strokeWidth={2.5} />
               </div>
               <div className="flex flex-col justify-center mt-0.5">
-                <h2 className="font-black text-sm uppercase tracking-wider leading-none m-0">ACCOUNTS</h2>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">Customers Mgmt</p>
+                <span className="font-extrabold text-slate-800 dark:text-slate-200 tracking-tight text-xs uppercase leading-none">ACCOUNTS</span>
+                <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">Customers Mgmt</span>
               </div>
             </div>
           </div>
@@ -199,9 +225,9 @@ const Customers = () => {
           <div className="flex-1 overflow-y-auto overflow-x-hidden">
             {/* VIEWS */}
             <div className="px-4 pt-6 pb-6 border-b border-slate-200 dark:border-slate-800/50">
-              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-2 mb-5">
+              <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase px-2 mb-0.5 block">
                 Views
-              </p>
+              </span>
               <div className="flex flex-col gap-1">
                 <ViewItem
                   icon={<TeamOutlined />}
@@ -219,9 +245,9 @@ const Customers = () => {
                   count={activeCustomers.length}
                   isActive={currentView === "active"}
                   onClick={() => setCurrentView("active")}
-                  activeColorClass="text-emerald-500"
-                  bgActiveColorClass="bg-emerald-50/80 dark:bg-emerald-900/30"
-                  badgeColorClass="bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400"
+                  activeColorClass="text-emerald-600 dark:text-emerald-400"
+                  bgActiveColorClass="bg-emerald-50/80 dark:bg-emerald-500/10"
+                  badgeColorClass="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
                 />
                 <ViewItem
                   icon={<MinusCircleOutlined />}
@@ -229,9 +255,9 @@ const Customers = () => {
                   count={inactiveCustomers.length}
                   isActive={currentView === "inactive"}
                   onClick={() => setCurrentView("inactive")}
-                  activeColorClass="text-amber-500"
-                  bgActiveColorClass="bg-amber-50/80 dark:bg-amber-900/30"
-                  badgeColorClass="bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400"
+                  activeColorClass="text-amber-600 dark:text-amber-400"
+                  bgActiveColorClass="bg-amber-50/80 dark:bg-amber-500/10"
+                  badgeColorClass="bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300"
                 />
                 <ViewItem
                   icon={<StopOutlined />}
@@ -239,27 +265,27 @@ const Customers = () => {
                   count={restrictedCustomers.length}
                   isActive={currentView === "restricted"}
                   onClick={() => setCurrentView("restricted")}
-                  activeColorClass="text-rose-500"
-                  bgActiveColorClass="bg-rose-50/80 dark:bg-rose-900/30"
-                  badgeColorClass="bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400"
+                  activeColorClass="text-rose-600 dark:text-rose-400"
+                  bgActiveColorClass="bg-rose-50/80 dark:bg-rose-500/10"
+                  badgeColorClass="bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300"
                 />
               </div>
             </div>
 
             {/* FILTERS */}
             <div className="px-4 py-4">
-              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-2 mb-6">
+              <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase px-2 block mb-3">
                 Filters
-              </p>
+              </span>
               <div className="flex flex-col gap-3 px-2">
-                <div>
-                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1 uppercase tracking-wide">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
                     Status
                   </span>
                   <Select
                     mode="multiple"
                     placeholder="Select status..."
-                    className="w-full premium-select-inline"
+                    className="w-full text-xs premium-select-sidebar"
                     options={STATUSES.map((s) => ({ label: s.toUpperCase(), value: s }))}
                     value={filters.status}
                     onChange={(val) => applyFilters({ status: val as CustomerStatus[] })}
@@ -267,24 +293,24 @@ const Customers = () => {
                   />
                 </div>
 
-                <div>
-                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1 uppercase tracking-wide">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
                     Updated Date
                   </span>
                   <DatePicker
                     placeholder="Select Date"
-                    className="w-full premium-datepicker-inline"
+                    className="w-full text-xs premium-range-picker-sidebar"
                     onChange={(date) => applyFilters({ updated_at: date ? date.toDate() : null })}
                   />
                 </div>
 
-                <div>
-                  <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 block mb-1 uppercase tracking-wide">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
                     Created Date
                   </span>
                   <DatePicker
                     placeholder="Select Date"
-                    className="w-full premium-datepicker-inline"
+                    className="w-full text-xs premium-range-picker-sidebar"
                     onChange={(date) => applyFilters({ created_at: date ? date.toDate() : null })}
                   />
                 </div>
@@ -294,7 +320,7 @@ const Customers = () => {
                     type="text"
                     danger
                     icon={<CloseCircleOutlined />}
-                    className="text-[11px] font-black uppercase tracking-widest w-full hover:bg-rose-50 rounded-xl mt-2"
+                    className="text-[9px] font-bold uppercase tracking-wider w-full hover:bg-rose-50 rounded-xl mt-2"
                     onClick={() =>
                       setFilters({ status: [], updated_at: null, created_at: null })
                     }
@@ -344,8 +370,8 @@ const Customers = () => {
             </div>
           </div>
 
-          {/* Scrollable Main Content */}
-          <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 dark:bg-[#0f172a] flex flex-col gap-6">
+          {/* Constrained Main Content */}
+          <div className="flex-1 overflow-hidden p-6 bg-slate-50/50 dark:bg-[#0f172a] flex flex-col gap-6">
             <CustomerStats customers={customersArray} loading={loading} />
 
             {loading && displayedData.length === 0 ? (
