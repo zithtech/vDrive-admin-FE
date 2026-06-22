@@ -1,26 +1,26 @@
 import React from "react";
-import { UserOutlined, CheckCircleOutlined, StopOutlined, RiseOutlined } from "@ant-design/icons";
-import type { Customer } from "../../pages/Customers";
+import { ShieldCheck, UserCheck, KeySquare, Clock } from "lucide-react";
+import type { AdminUser } from "../../store/slices/adminSlice";
 import dayjs from "dayjs";
 
 // Beautiful SVG Sparkline helper component matching the mockup designs
 const Sparkline: React.FC<{ color: string }> = ({ color }) => {
   let strokeColor = "#3b82f6";
-  let gradientId = "blue-grad-customer";
+  let gradientId = "blue-grad-admin";
   let stopColor = "#3b82f6";
 
   if (color === "green") {
     strokeColor = "#10b981";
-    gradientId = "green-grad-customer";
+    gradientId = "green-grad-admin";
     stopColor = "#10b981";
+  } else if (color === "purple") {
+    strokeColor = "#8b5cf6";
+    gradientId = "purple-grad-admin";
+    stopColor = "#8b5cf6";
   } else if (color === "orange") {
     strokeColor = "#f59e0b";
-    gradientId = "orange-grad-customer";
+    gradientId = "orange-grad-admin";
     stopColor = "#f59e0b";
-  } else if (color === "red") {
-    strokeColor = "#ef4444";
-    gradientId = "red-grad-customer";
-    stopColor = "#ef4444";
   }
 
   return (
@@ -45,57 +45,55 @@ const Sparkline: React.FC<{ color: string }> = ({ color }) => {
   );
 };
 
-interface CustomerStatsProps {
-  customers: Customer[];
+interface AdminStatsProps {
+  admins: AdminUser[];
   loading: boolean;
 }
 
-const CustomerStats: React.FC<CustomerStatsProps> = ({ customers }) => {
-  const total = customers.length;
-  const active = customers.filter((c) => c.status === "active").length;
-  const suspended = customers.filter(
-    (c) => c.status === "suspended" || c.status === "blocked",
-  ).length;
+const AdminStats: React.FC<AdminStatsProps> = ({ admins }) => {
+  const total = admins.length;
+  const superAdmins = admins.filter((a) => a.role === "super_admin").length;
+  const standardAdmins = admins.filter((a) => a.role !== "super_admin").length;
 
   const lastMonth = dayjs().subtract(30, "days");
-  const newThisMonth = customers.filter((c) => dayjs(c.created_at).isAfter(lastMonth)).length;
+  const newThisMonth = admins.filter((a) => dayjs(a.created_at).isAfter(lastMonth)).length;
 
   const stats = [
     {
-      title: "Total User",
+      title: "Total Admins",
       value: total,
       label: "records",
-      icon: <UserOutlined />,
+      icon: <ShieldCheck size={14} strokeWidth={3} />,
       iconColor: "text-blue-500 dark:text-blue-400",
       iconBg: "bg-blue-50 dark:bg-blue-500/10",
       sparklineColor: "blue",
     },
     {
-      title: "Active Users",
-      value: active,
-      label: "verified",
-      icon: <CheckCircleOutlined />,
+      title: "Super Admins",
+      value: superAdmins,
+      label: "system",
+      icon: <KeySquare size={14} strokeWidth={3} />,
+      iconColor: "text-purple-500 dark:text-purple-400",
+      iconBg: "bg-purple-50 dark:bg-purple-500/10",
+      sparklineColor: "purple",
+    },
+    {
+      title: "Platform Admins",
+      value: standardAdmins,
+      label: "active",
+      icon: <UserCheck size={14} strokeWidth={3} />,
       iconColor: "text-emerald-500 dark:text-emerald-400",
       iconBg: "bg-emerald-50 dark:bg-emerald-500/10",
       sparklineColor: "green",
     },
     {
-      title: "New Members",
+      title: "New Additions",
       value: newThisMonth,
       label: "this month",
-      icon: <RiseOutlined />,
+      icon: <Clock size={14} strokeWidth={3} />,
       iconColor: "text-amber-500 dark:text-amber-400",
       iconBg: "bg-amber-50 dark:bg-amber-500/10",
       sparklineColor: "orange",
-    },
-    {
-      title: "Restricted",
-      value: suspended,
-      label: "blocked",
-      icon: <StopOutlined />,
-      iconColor: "text-rose-500 dark:text-rose-400",
-      iconBg: "bg-rose-50 dark:bg-rose-500/10",
-      sparklineColor: "red",
     },
   ];
 
@@ -104,7 +102,7 @@ const CustomerStats: React.FC<CustomerStatsProps> = ({ customers }) => {
       {stats.map((card, idx) => (
         <div
           key={idx}
-          className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all"
+          className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all rounded-sm"
         >
           <div className="flex items-center gap-2 mb-3">
             <div className={`w-7 h-7 rounded-lg ${card.iconBg} ${card.iconColor} flex items-center justify-center text-sm flex-shrink-0`}>
@@ -133,4 +131,4 @@ const CustomerStats: React.FC<CustomerStatsProps> = ({ customers }) => {
   );
 };
 
-export default CustomerStats;
+export default AdminStats;

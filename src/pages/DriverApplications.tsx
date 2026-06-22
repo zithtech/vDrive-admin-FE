@@ -137,11 +137,10 @@ const DriverApplications = () => {
   const ViewItem = ({ icon, label, count, isActive, onClick, activeColorClass = "text-blue-500", bgActiveColorClass = "bg-blue-50/80 dark:bg-blue-900/30", badgeColorClass = "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400" }: any) => (
     <div
       onClick={onClick}
-      className={`flex items-center justify-between px-3 py-2 rounded-[10px] cursor-pointer transition-all ${
-        isActive
+      className={`flex items-center justify-between px-3 py-2 rounded-[10px] cursor-pointer transition-all ${isActive
           ? `${bgActiveColorClass} text-slate-800 dark:text-slate-100 font-bold`
           : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium"
-      }`}
+        }`}
     >
       <div className="flex items-center gap-2.5">
         <span className={`text-[15px] ${isActive ? activeColorClass : "text-slate-400"}`}>{icon}</span>
@@ -321,7 +320,7 @@ const DriverApplications = () => {
                 </span>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2 bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 px-3 py-1.5 rounded-full border border-orange-100 dark:border-orange-500/20">
                 <div className="w-2 h-2 rounded-full bg-orange-500"></div>

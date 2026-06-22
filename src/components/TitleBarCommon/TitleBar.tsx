@@ -20,36 +20,46 @@ const TitleBar: React.FC<TitleBarProps> = ({
   className,
 }) => {
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-slate-900">
-      <div className="flex justify-between items-center py-4 px-6 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
-        <div className="flex items-center gap-4">
-          {icon && (
-            <div className={`flex items-center justify-center w-10 h-10 ${iconBgColor} rounded-xl`}>
-              <div className="text-white text-xl flex items-center justify-center">{icon}</div>
-            </div>
-          )}
-          <div className="flex flex-col gap-0.5">
-            <h1 className="font-black text-xl text-slate-800 dark:text-slate-100 tracking-tight leading-none">
-              {title}
-            </h1>
-            {description && (
-              <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wide">
-                {description}
-              </p>
+    <>
+      <style>
+        {`
+          .titlebar-container { width: 100%; height: 100%; display: flex; flex-direction: column; background-color: white; min-width: 0; min-height: 0; }
+          .dark .titlebar-container { background-color: #0f172a; }
+          .titlebar-header { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 1rem; background-color: white; border-bottom: 1px solid #e5e7eb; }
+          .dark .titlebar-header { background-color: #1e293b; border-color: #334155; }
+          .titlebar-title-section { display: flex; align-items: center; gap: 1rem; }
+          .titlebar-icon-wrapper { display: flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: 0.75rem; }
+          .titlebar-icon-inner { color: white; font-size: 1.25rem; line-height: 1.75rem; display: flex; align-items: center; justify-content: center; }
+          .titlebar-text-group { display: flex; flex-direction: column; gap: 0.125rem; }
+          .titlebar-title { font-weight: 900; font-size: 1rem; line-height: 1; color: #1e293b; letter-spacing: -0.025em; margin: 0; }
+          .dark .titlebar-title { color: #f1f5f9; }
+          .titlebar-description { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: Capitalize; letter-spacing: 0.025em; margin: 0; }
+          .dark .titlebar-description { color: #64748b; }
+          .titlebar-extra-content { display: flex; align-items: center; gap: 0.75rem; }
+          .titlebar-content { width: 100%; flex-grow: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; padding: 5px; min-width: 0; min-height: 0; }
+        `}
+      </style>
+      <div className="titlebar-container">
+        <div className="titlebar-header">
+          <div className="titlebar-title-section">
+            {icon && (
+              <div className={`titlebar-icon-wrapper ${iconBgColor}`}>
+                <div className="titlebar-icon-inner">{icon}</div>
+              </div>
             )}
+            <div className="titlebar-text-group">
+              <h1 className="titlebar-title">{title}</h1>
+              {description && <p className="titlebar-description">{description}</p>}
+            </div>
           </div>
-        </div>
 
-        <div className="flex items-center space-x-3 ">{extraContent}</div>
+          <div className="titlebar-extra-content">{extraContent}</div>
+        </div>
+        <div className={className || "titlebar-content"}>
+          {children}
+        </div>
       </div>
-      <div
-        className={
-          className?.length ? className : "w-full h-full relative overflow-hidden px-4 py-2 "
-        }
-      >
-        {children}
-      </div>
-    </div>
+    </>
   );
 };
 
