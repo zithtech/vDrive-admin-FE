@@ -26,8 +26,14 @@ interface LocationConfigurationProps {
   setArea: (area: string) => void;
   pincode: string;
   setPincode: (pincode: string) => void;
-  globalPrice: number;
-  setGlobalPrice: (globalPrice: number) => void;
+  perKmPrice: number;
+  setPerKmPrice: (v: number) => void;
+  perHourPrice: number;
+  setPerHourPrice: (v: number) => void;
+  minimumFare: number;
+  setMinimumFare: (v: number) => void;
+  oneWayReturnPct: number;
+  setOneWayReturnPct: (v: number) => void;
 }
 
 const LocationConfiguration = ({
@@ -41,8 +47,14 @@ const LocationConfiguration = ({
   setArea,
   pincode,
   setPincode,
-  globalPrice,
-  setGlobalPrice,
+  perKmPrice,
+  setPerKmPrice,
+  perHourPrice,
+  setPerHourPrice,
+  minimumFare,
+  setMinimumFare,
+  oneWayReturnPct,
+  setOneWayReturnPct,
 }: LocationConfigurationProps) => {
   const dispatch = useAppDispatch();
   const {
@@ -550,12 +562,63 @@ const LocationConfiguration = ({
             <Input value={pincode} onChange={handlePincodeChange} />
           </div>
           <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">Global Price</span>
+            <span className="text-sm font-medium mb-1">Price per KM</span>
             <InputNumber
-              value={globalPrice}
-              onChange={(e) => setGlobalPrice(e || 0)}
+              min={0}
+              precision={2}
+              value={perKmPrice}
+              onChange={(e) => setPerKmPrice(e || 0)}
+              prefix="₹"
+              addonAfter="/km"
               className="w-full"
             />
+            <span className="text-xs text-gray-500 mt-1">Base distance rate (from 0 km)</span>
+          </div>
+        </div>
+
+        <div className="w-full grid grid-cols-2 gap-4">
+          <div className="w-full flex flex-col">
+            <span className="text-sm font-medium mb-1">Price per Hour</span>
+            <InputNumber
+              min={0}
+              precision={2}
+              value={perHourPrice}
+              onChange={(e) => setPerHourPrice(e || 0)}
+              prefix="₹"
+              addonAfter="/hr"
+              className="w-full"
+            />
+            <span className="text-xs text-gray-500 mt-1">Charged on trip duration</span>
+          </div>
+          <div className="w-full flex flex-col">
+            <span className="text-sm font-medium mb-1">Minimum Fare</span>
+            <InputNumber
+              min={0}
+              precision={2}
+              value={minimumFare}
+              onChange={(e) => setMinimumFare(e || 0)}
+              prefix="₹"
+              className="w-full"
+            />
+            <span className="text-xs text-gray-500 mt-1">Fare floor for short trips</span>
+          </div>
+        </div>
+
+        <div className="w-full grid grid-cols-2 gap-4">
+          <div className="w-full flex flex-col">
+            <span className="text-sm font-medium mb-1">One-way Return %</span>
+            <InputNumber
+              min={0}
+              max={100}
+              precision={2}
+              value={oneWayReturnPct}
+              onChange={(e) => setOneWayReturnPct(e || 0)}
+              addonAfter="%"
+              className="w-full"
+            />
+            <span className="text-xs text-gray-500 mt-1">
+              Added to one-way trips (driver's return). Round trips: none.
+            </span>
           </div>
         </div>
       </div>

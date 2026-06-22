@@ -20,10 +20,10 @@ interface PricingPreviewProps {
   hotspotEnabled: boolean;
   hotspotId: string;
   multiplier: number;
-  globalPrice: number;
-  extraKmStep: number;
-  extraKmPrice: number;
-  extraKmStartMultiplier: number;
+  perKmPrice: number;
+  perHourPrice: number;
+  minimumFare: number;
+  oneWayReturnPct: number;
   extraKmCheckpoints: UiCheckpoint[];
 }
 
@@ -37,9 +37,10 @@ const PricingPreview = ({
   hotspotEnabled,
   hotspotId,
   multiplier,
-  extraKmStep,
-  extraKmPrice,
-  extraKmStartMultiplier,
+  perKmPrice,
+  perHourPrice,
+  minimumFare,
+  oneWayReturnPct,
   extraKmCheckpoints,
 }: PricingPreviewProps) => {
   const dispatch = useAppDispatch();
@@ -65,11 +66,30 @@ const PricingPreview = ({
     "elite-driver": <Tag color="blue">Elite Driver</Tag>,
   };
 
-  // For each slot: base → hotspot → taxes
-  const getBreakdown = (slot: TimeSlot) => {
-    const priceAfterHotspot = hotspotEnabled ? slot.price * multiplier + hotspotFare : slot.price;
-    return computeTaxBreakdown(priceAfterHotspot, taxes);
+  // Indicative tax on a slot's per-km rate (after surge)
+  const getRateBreakdown = (slot: TimeSlot) => {
+    const rateAfterSurge = hotspotEnabled ? slot.perKmRate * multiplier : slot.perKmRate;
+    return computeTaxBreakdown(rateAfterSurge, taxes);
   };
+
+  // Extra-KM distance bands: 0-km row = zone Price per KM, then each breakpoint
+  const sortedCheckpoints = [...extraKmCheckpoints].sort((a, b) => a.from_km - b.from_km);
+  const firstBreak = sortedCheckpoints.length > 0 ? sortedCheckpoints[0].from_km : null;
+  const bandRows = [
+    {
+      key: "base",
+      kmRange: firstBreak !== null ? `0–${firstBreak} km` : `0 km and beyond`,
+      rate: `₹${Number(perKmPrice).toFixed(2)} / km`,
+    },
+    ...sortedCheckpoints.map((c, i) => {
+      const next = sortedCheckpoints[i + 1];
+      return {
+        key: c.uid,
+        kmRange: next ? `${c.from_km}–${next.from_km} km` : `${c.from_km} km and beyond`,
+        rate: `₹${Number(c.price).toFixed(2)} / km`,
+      };
+    }),
+  ];
 
   return (
     <Card size="small" className="w-full">
@@ -93,28 +113,41 @@ const PricingPreview = ({
               </span>
             </div>
           </div>
-          <div className="flex flex-col gap-1 sm:items-end">
-            <span className="text-sm font-medium text-gray-700">Total configuration</span>
-            <div className="flex gap-2 flex-wrap justify-end text-xs">
-              {Object.entries(timeSlots).map(([userType, slots]) => (
-                <span
-                  key={userType}
-                  className="px-2 py-[2px] rounded-sm border border-violet-300 bg-violet-50 text-violet-700"
-                >
-                  <span className="capitalize">{userType.replace("-", " ")}</span>
-                  <span className="mx-1">:</span>
-                  <span className="font-medium">{slots.length}</span>
-                </span>
-              ))}
-            </div>
+        </div>
+
+        {/* Zone rate summary */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col">
+            <span className="text-[11px] text-gray-500 uppercase">Price / KM</span>
+            <span className="font-semibold text-green-700">₹{Number(perKmPrice).toFixed(2)}</span>
           </div>
+          <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col">
+            <span className="text-[11px] text-gray-500 uppercase">Price / Hour</span>
+            <span className="font-semibold text-green-700">₹{Number(perHourPrice).toFixed(2)}</span>
+          </div>
+          <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col">
+            <span className="text-[11px] text-gray-500 uppercase">Minimum Fare</span>
+            <span className="font-semibold text-green-700">₹{Number(minimumFare).toFixed(2)}</span>
+          </div>
+          <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col">
+            <span className="text-[11px] text-gray-500 uppercase">One-way Return</span>
+            <span className="font-semibold text-green-700">
+              {Number(oneWayReturnPct).toFixed(0)}%
+            </span>
+          </div>
+        </div>
+
+        {/* Formula reminder */}
+        <div className="p-2 bg-[#EEF5FF] rounded-md text-xs text-gray-600">
+          fare = (distance × ₹/km) + (hours × ₹/hr) + one-way return → × surge + flat hotspot fare,
+          floored at minimum fare, then taxes.
         </div>
 
         {/* Slots grid */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <BsClock className="text-[18px] text-[#0080FF]" />
-            <span className="font-semibold">Time Slots Summary</span>
+            <span className="font-semibold">Time Slot Rates</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {Object.entries(timeSlots).map(([userType, slots]) => (
@@ -123,10 +156,10 @@ const PricingPreview = ({
                   {userTypeTags[userType as UserType]}
                 </div>
                 {slots.map((slot: TimeSlot) => {
-                  const priceAfterHotspot = hotspotEnabled
-                    ? slot.price * multiplier + hotspotFare
-                    : slot.price;
-                  const breakdown = getBreakdown(slot);
+                  const rateAfterSurge = hotspotEnabled
+                    ? slot.perKmRate * multiplier
+                    : slot.perKmRate;
+                  const breakdown = getRateBreakdown(slot);
 
                   return (
                     <div key={slot.id} className="p-2 bg-[#F8F9FA] rounded-md flex flex-col gap-1">
@@ -136,14 +169,17 @@ const PricingPreview = ({
                           ? `${slot.timeRange[0].format("h:mm A")} - ${slot.timeRange[1].format("h:mm A")}`
                           : "No time set"}
                       </span>
-                      <span className="text-[12px] text-gray-600">Base: ₹{slot.price}</span>
+                      <span className="text-[12px] text-gray-600">
+                        Rate: ₹{slot.perKmRate}/km &middot; ₹{slot.perHourRate}/hr
+                      </span>
                       {hotspotEnabled && selectedHotspot && (
                         <span className="text-[12px] text-blue-600">
-                          After hotspot: ₹{priceAfterHotspot.toFixed(2)}
+                          After surge ×{multiplier}: ₹{rateAfterSurge.toFixed(2)}/km
                         </span>
                       )}
-                      {/* Full multi-tax breakdown */}
+                      {/* Indicative per-km tax breakdown */}
                       <Divider style={{ margin: "4px 0" }} />
+                      <span className="text-[11px] text-gray-400">indicative tax / km</span>
                       <TaxBreakdownDisplay breakdown={breakdown} />
                     </div>
                   );
@@ -162,8 +198,8 @@ const PricingPreview = ({
             </div>
             <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col gap-1">
               <Tag color="blue">{selectedHotspot.hotspot_name}</Tag>
-              <div className="text-sm">Fare: +₹{hotspotFare.toFixed(2)}</div>
-              <div className="text-sm">Multiplier: {multiplier}x</div>
+              <div className="text-sm">Surge: ×{multiplier} on fare</div>
+              <div className="text-sm">Flat fare: +₹{hotspotFare.toFixed(2)} per ride</div>
             </div>
           </div>
         )}
@@ -172,49 +208,20 @@ const PricingPreview = ({
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <NodeIndexOutlined className="text-[18px] text-[#0080FF]" />
-            <span className="font-semibold">Extra KM Configuration</span>
+            <span className="font-semibold">Distance Rate Bands</span>
           </div>
           <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col gap-2">
-            <div className="flex gap-4 text-sm">
-              <span>
-                Step: <strong>{extraKmStep} km</strong>
-              </span>
-              <span>
-                Base price: <strong>₹{Number(extraKmPrice).toFixed(2)}</strong>
-              </span>
-              <span>
-                Start multiplier: <strong>×{Number(extraKmStartMultiplier).toFixed(2)}</strong>
-              </span>
-            </div>
             <Table
               size="small"
               pagination={false}
-              dataSource={[
-                {
-                  key: 0,
-                  kmRange: `0–${extraKmStep} km`,
-                  multiplier: `×${Number(extraKmStartMultiplier).toFixed(2)}`,
-                  price: `₹${(extraKmPrice * extraKmStartMultiplier).toFixed(2)}`,
-                },
-                ...extraKmCheckpoints.map((c, i) => ({
-                  key: c.uid,
-                  kmRange: `${extraKmStep * (i + 1)}–${extraKmStep * (i + 2)} km`,
-                  multiplier: `×${Number(c.multiplier).toFixed(2)}`,
-                  price: `₹${(extraKmPrice * c.multiplier).toFixed(2)}`,
-                })),
-              ]}
+              rowKey="key"
+              dataSource={bandRows}
               columns={[
                 { title: "KM Range", dataIndex: "kmRange", key: "kmRange" },
                 {
-                  title: "Multiplier",
-                  dataIndex: "multiplier",
-                  key: "multiplier",
-                  render: (v: string) => <span className="text-[#0080FF] font-semibold">{v}</span>,
-                },
-                {
-                  title: "₹ / Step",
-                  dataIndex: "price",
-                  key: "price",
+                  title: "Rate",
+                  dataIndex: "rate",
+                  key: "rate",
                   render: (v: string) => <span className="text-green-600 font-semibold">{v}</span>,
                 },
               ]}
