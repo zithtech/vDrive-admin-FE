@@ -117,7 +117,7 @@ const TaxBreakdownDisplay = ({
         </span>
       </div>
       <span style={{ fontSize: 13, color: "#16a34a", fontWeight: 700 }}>
-        Final: ₹{breakdown.totalPrice.toFixed(2)}
+        ≈ ₹{breakdown.totalPrice.toFixed(2)} / km incl. tax
       </span>
     </div>
   );

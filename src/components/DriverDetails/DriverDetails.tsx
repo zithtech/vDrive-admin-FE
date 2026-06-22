@@ -85,7 +85,11 @@ export const getMediaUrl = (path: any) => {
 
   const baseUrl = import.meta.env.VITE_MEDIA_URL || "http://localhost:5006";
 
-  if (path.includes("s3.eu-north-1.amazonaws.com")) {
+  if (path.includes("/api/media/proxy")) {
+    return path.startsWith("http") ? path : `${baseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
+  }
+
+  if (path.includes("amazonaws.com")) {
     return `${baseUrl}/api/media/proxy?url=${encodeURIComponent(path)}`;
   }
 
@@ -719,7 +723,12 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
           </Button>
         </div>
       )}
-      {driver?.documents?.map((doc: any) => (
+      {driver?.documents?.map((originalDoc: any) => {
+        const doc = { ...originalDoc };
+        if (typeof doc.document_url === "string" && doc.document_url.startsWith("{")) {
+          try { doc.document_url = JSON.parse(doc.document_url); } catch (e) {}
+        }
+        return (
         <div key={doc?.document_id} className="content-card p-2 document-preview-card">
           <div className="flex justify-between items-start mb-4">
             <div className="flex items-center gap-3">
@@ -908,7 +917,8 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
             )}
           </div>
         </div>
-      ))}
+      );
+    })}
     </div>
   );
 

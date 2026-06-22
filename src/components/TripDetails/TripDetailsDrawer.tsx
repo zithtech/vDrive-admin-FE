@@ -57,21 +57,21 @@ const TripDetailsDrawer: React.FC<Props> = ({
       }}
     >
       {/* ─── Immersive Header ─────────────────────────────────────────── */}
-      <div className="relative overflow-hidden pt-12 pb-8 px-8 bg-white border-b border-gray-100">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/5 rounded-full -translate-y-24 translate-x-24" />
+      <div className="relative overflow-hidden pt-3 pb-2 px-4 bg-white border-b border-gray-100">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/5 rounded-full -translate-y-12 translate-x-12" />
 
         <div className="flex justify-between items-center relative z-10">
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="relative w-14 h-14 bg-indigo-50 border-2 border-white flex items-center justify-center rounded-2xl text-indigo-600 text-xl">
+              <div className="relative w-8 h-8 bg-indigo-50 border border-white flex items-center justify-center text-indigo-600 text-sm">
                 <IoCarOutline />
               </div>
             </div>
             <div>
-              <Title level={4} className="!m-0 !mb-0.5 font-extrabold text-gray-800 tracking-tight">
+              <Title level={5} className="!m-0 !mb-0 font-extrabold text-violet-600 tracking-tight">
                 {trip?.trip_code}
               </Title>
-              <Text className="text-gray-400 font-bold text-[9px] uppercase tracking-widest block">
+              <Text className="text-gray-400 font-bold text-[8px] uppercase tracking-widest block leading-none">
                 Transactional Audit
               </Text>
             </div>
@@ -96,8 +96,8 @@ const TripDetailsDrawer: React.FC<Props> = ({
                       console.log("[Drawer] Assign Driver button clicked");
                       onAssignDriverClick();
                     }}
-                    className={`rounded-xl h-9 px-4 font-bold flex items-center gap-2 border-none shadow-sm transition-all text-[11px]
-                      ${isDriverAssigned(trip) ? "bg-indigo-100 text-indigo-600 hover:bg-indigo-200" : "bg-indigo-600 text-white hover:bg-indigo-700"}`}
+                    className={`rounded-none h-9 px-4 font-bold flex items-center gap-2 border-none shadow-sm transition-all text-[11px]
+                      ${isDriverAssigned(trip) ? "bg-blue-100 text-blue-600 hover:bg-blue-200" : "bg-blue-600 text-white hover:bg-blue-700"}`}
                   >
                     <UserAddOutlined className="text-sm" />
                     {isDriverAssigned(trip) ? "Reassign" : "Assign"}

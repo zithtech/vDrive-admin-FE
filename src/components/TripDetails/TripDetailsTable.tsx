@@ -48,6 +48,8 @@ import { useHasPermission } from "../../hooks/usePermission";
 interface Props {
   data: TripDetailsType[];
   isSuperAdmin?: boolean;
+  pagination?: false;
+  loading?: boolean;
 }
 
 type Driver = {
@@ -85,7 +87,7 @@ const titleMap = {
   TRIGGER_DRIVER: "Trigger Broadcast Alert",
 };
 
-const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
+const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, pagination, loading }) => {
   const dispatch = useDispatch();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -459,10 +461,10 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
     <div className="flex gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500 items-stretch">
       {/* Left Column: Trip Context */}
       <div className="w-80 shrink-0 flex flex-col">
-        <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm h-full flex flex-col justify-between">
+        <div className="bg-white rounded-none p-5 border border-gray-200 shadow-sm h-full flex flex-col justify-between">
           <div>
             <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-6 flex items-center gap-2">
-              <IoCarOutline className="text-indigo-500" /> Trip Context
+              <IoCarOutline className="text-blue-500" /> Trip Context
             </p>
 
             <div className="relative pl-6 space-y-8 before:content-[''] before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gradient-to-b before:from-emerald-500 before:via-gray-100 before:to-rose-500">
@@ -488,7 +490,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
             </div>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-dashed border-gray-100 space-y-4 bg-slate-50/50 -mx-6 -mb-6 p-6 rounded-b-3xl">
+          <div className="mt-8 pt-5 border-t border-dashed border-gray-200 space-y-4 bg-slate-50/50 -mx-5 -mb-5 p-5 rounded-none">
             <div className="flex justify-between items-center">
               <span className="text-[11px] text-gray-400 font-bold uppercase tracking-tight">
                 Est. Distance
@@ -501,7 +503,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
               <span className="text-[11px] text-gray-400 font-bold uppercase tracking-tight">
                 Gross Revenue
               </span>
-              <span className="text-base font-black text-indigo-600 tabular-nums">
+              <span className="text-base font-black text-blue-600 tabular-nums">
                 ₹{trip?.total_fare}
               </span>
             </div>
@@ -512,12 +514,12 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
       {/* Right Column: Driver Selection */}
       <div className="flex-grow flex flex-col">
         {/* Radius Header */}
-        <div className="bg-gray-50/50 border border-gray-100 rounded-3xl p-5 mb-5 shrink-0">
+        <div className="bg-gray-50/50 border border-gray-200 rounded-none p-4 mb-4 shrink-0">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-[11px] font-black uppercase tracking-widest text-indigo-400 flex items-center gap-2">
+            <p className="text-[11px] font-black uppercase tracking-widest text-blue-400 flex items-center gap-2">
               <RadarChartOutlined /> Search Proximity
             </p>
-            <div className="bg-indigo-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-sm">
+            <div className="bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-none shadow-sm uppercase tracking-widest">
               Scanning: {searchRadius >= 1000 ? `${searchRadius / 1000}km` : `${searchRadius}m`}
             </div>
           </div>
@@ -529,11 +531,11 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
                   e.preventDefault();
                   setSearchRadius(r);
                 }}
-                className={`flex-1 px-4 py-2 rounded-2xl text-[10px] font-black transition-all border duration-300
+                className={`flex-1 px-4 py-2 rounded-none text-[10px] font-black transition-all border duration-300
                     ${
                       searchRadius === r
-                        ? "bg-indigo-500 border-indigo-500 !text-white transform scale-105"
-                        : "bg-white border-gray-100 text-gray-400 hover:border-indigo-300 hover:text-indigo-500"
+                        ? "bg-blue-600 border-blue-600 text-white transform scale-100 shadow-sm"
+                        : "bg-white border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600"
                     }`}
               >
                 {r >= 1000 ? `${r / 1000}km` : `${r}m`}
@@ -543,43 +545,39 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
         </div>
 
         {/* Driver List Area */}
-        <div className="h-[480px] bg-white/30 rounded-[2.5rem] border-2 border-dashed border-gray-100 p-4 flex flex-col">
+        <div className="h-[480px] bg-white rounded-none border border-gray-200 p-0 flex flex-col">
           <div className="flex-grow overflow-y-auto pr-2 space-y-4 custom-driver-scrollbar">
             {driverLoading ? (
               <div className="h-full flex flex-col items-center justify-center text-center py-10">
                 <div className="relative mb-6">
-                  <div className="absolute inset-0 bg-indigo-500/20 blur-2xl animate-pulse rounded-full" />
+                  <div className="absolute inset-0 bg-blue-500/20 blur-2xl animate-pulse rounded-full" />
                   <Spin size="large" className="relative" />
                 </div>
-                <p className="text-[11px] text-indigo-400 font-bold uppercase tracking-[0.2em] animate-pulse">
+                <p className="text-[11px] text-blue-400 font-bold uppercase tracking-[0.2em] animate-pulse">
                   Filtering Elite Partners...
                 </p>
               </div>
             ) : drivers.length > 0 ? (
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-0">
                 {drivers.map((driver) => (
                   <div
                     key={driver.id}
                     onClick={() => handleDriverChange(driver.id)}
-                    className={`group py-2.5 px-4 rounded-3xl border-2 cursor-pointer transition-all duration-300
+                    className={`group py-3 px-4 rounded-none border-b border-gray-100 cursor-pointer transition-all duration-300 last:border-b-0
                           ${
                             selectedDriver?.id === driver.id
-                              ? "border-indigo-600 bg-indigo-50/50 shadow-xl shadow-indigo-100/50 transform scale-[1.02]"
-                              : "border-gray-50 bg-white hover:border-indigo-200 hover:shadow-md"
+                              ? "border-l-4 border-l-blue-600 bg-blue-50/30"
+                              : "border-l-4 border-l-transparent bg-white hover:bg-slate-50"
                           }`}
                   >
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-4">
                         <Avatar
                           shape="square"
-                          size={48}
-                          className={`rounded-2xl border-2 border-white shadow-sm transition-colors duration-300 ${selectedDriver?.id === driver.id ? "bg-indigo-600" : "bg-slate-100"}`}
+                          size={40}
+                          className={`rounded-none border border-gray-200 transition-colors duration-300 ${selectedDriver?.id === driver.id ? "bg-blue-600 text-white" : "bg-slate-50 text-slate-400"}`}
                           icon={
-                            <UserOutlined
-                              className={
-                                selectedDriver?.id === driver.id ? "text-white" : "text-slate-400"
-                              }
-                            />
+                            <UserOutlined />
                           }
                         />
                         <div>
@@ -594,16 +592,16 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
 
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                          <div className="px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-[9px] font-black shadow-sm ring-1 ring-emerald-100 whitespace-nowrap">
+                          <div className="px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-none border border-emerald-100 text-[9px] font-black uppercase whitespace-nowrap">
                             ETA: {driver.etaMinutes} MINS
                           </div>
-                          <div className="px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-black shadow-sm ring-1 ring-indigo-100 text-transform uppercase whitespace-nowrap">
+                          <div className="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-none border border-blue-100 text-[9px] font-black uppercase whitespace-nowrap">
                             {driver.distanceKm} KM AWAY
                           </div>
                         </div>
                         <div
-                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-500
-                              ${selectedDriver?.id === driver.id ? "border-indigo-600 bg-indigo-600 text-white rotate-[360deg]" : "border-slate-100"}`}
+                          className={`w-5 h-5 rounded-none border-2 flex items-center justify-center shrink-0 transition-all duration-300
+                              ${selectedDriver?.id === driver.id ? "border-blue-600 bg-blue-600 text-white" : "border-slate-200"}`}
                         >
                           {selectedDriver?.id === driver.id && (
                             <CheckOutlined className="text-xs" />
@@ -616,17 +614,17 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
               </div>
             ) : (
               <div className="h-full flex flex-col items-center justify-center text-center py-10">
-                <div className="w-16 h-16 bg-white rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-                  <UserDeleteOutlined className="text-2xl text-slate-200" />
+                <div className="w-12 h-12 bg-white border border-gray-200 rounded-none flex items-center justify-center mx-auto mb-4 shadow-sm">
+                  <UserDeleteOutlined className="text-xl text-slate-300" />
                 </div>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-6">
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">
                   No partners discovered in vicinity
                 </p>
                 <Button
                   type="primary"
                   size="large"
                   icon={<VerticalAlignTopOutlined className="rotate-180" />}
-                  className="!bg-indigo-500 hover:!bg-indigo-600 bg-slate-800 h-12 font-black px-10 rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all"
+                  className="!bg-blue-600 hover:!bg-blue-700 bg-slate-800 h-10 text-[11px] font-black uppercase tracking-widest px-8 rounded-none border-none transition-all shadow-sm"
                   onClick={(e) => {
                     e.preventDefault();
                     const nextRadii = [500, 1000, 2000, 5000, 10000, 20000, 50000];
@@ -651,17 +649,17 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
   const TriggerBroadcastContent = (
     <div className="text-center py-2 animate-in fade-in zoom-in-95 duration-500">
       {/* 📍 Detailed Route Card */}
-      <div className="bg-white rounded-[2.5rem] p-6 border border-slate-100 shadow-sm mb-8 text-left relative overflow-hidden group">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full translate-x-16 -translate-y-16 opacity-50 group-hover:scale-110 transition-transform duration-700" />
+      <div className="bg-white rounded-none p-6 border border-slate-200 shadow-sm mb-8 text-left relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-none translate-x-16 -translate-y-16 opacity-50 group-hover:scale-110 transition-transform duration-700" />
 
         <div className="relative z-10">
           <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
-            <EnvironmentOutlined className="text-indigo-500" /> Route Logistics
+            <EnvironmentOutlined className="text-blue-500" /> Route Logistics
           </p>
 
           <div className="relative pl-6 space-y-6 before:content-[''] before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-0.5 before:bg-gradient-to-b before:from-emerald-500 before:via-slate-100 before:to-rose-500">
             <div className="relative">
-              <div className="absolute -left-[23px] top-1 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-4 ring-emerald-50 shadow-sm" />
+              <div className="absolute -left-[23px] top-1 w-3.5 h-3.5 rounded-none bg-emerald-500 ring-4 ring-emerald-50 shadow-sm" />
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight mb-0.5">
                 Pick up
               </p>
@@ -671,7 +669,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
             </div>
 
             <div className="relative">
-              <div className="absolute -left-[23px] top-1 w-3.5 h-3.5 rounded-full bg-rose-500 ring-4 ring-rose-50 shadow-sm" />
+              <div className="absolute -left-[23px] top-1 w-3.5 h-3.5 rounded-none bg-rose-500 ring-4 ring-rose-50 shadow-sm" />
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight mb-0.5">
                 Drop off
               </p>
@@ -686,7 +684,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
               <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest leading-none mb-1">
                 Gross Revenue
               </p>
-              <p className="text-xl font-black text-indigo-600 tabular-nums italic">
+              <p className="text-xl font-black text-blue-600 tabular-nums italic">
                 ₹{trip?.total_fare}
               </p>
             </div>
@@ -702,7 +700,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
 
       {/* Settings Bar */}
       <div className="flex gap-5 mb-8 text-left">
-        <div className="flex-[1.5] bg-white p-5 rounded-[2rem] border border-slate-100 shadow-sm group hover:border-indigo-200 transition-colors">
+        <div className="flex-[1.5] bg-white p-5 rounded-none border border-slate-200 shadow-sm group hover:border-blue-200 transition-colors">
           <div className="flex justify-between items-start mb-3">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
               <RadarChartOutlined className="text-amber-500 text-xs" /> Radius scan
@@ -726,28 +724,28 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
             ))}
           </Select>
         </div>
-        <div className="flex-1 bg-indigo-50/50 border border-indigo-100 p-5 rounded-[2rem] flex flex-col items-center justify-center text-center">
-          <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-            <CloudSyncOutlined className="text-indigo-500 text-xs" /> Active Protocol
+        <div className="flex-1 bg-blue-50/50 border border-blue-100 p-5 rounded-none flex flex-col items-center justify-center text-center">
+          <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <CloudSyncOutlined className="text-blue-500 text-xs" /> Active Protocol
           </p>
-          <p className="text-[12px] font-black text-indigo-900 italic font-mono tracking-tight">
+          <p className="text-[12px] font-black text-blue-900 italic font-mono tracking-tight">
             NEW_TRIP_BROADCAST
           </p>
         </div>
       </div>
 
-      <div className="bg-indigo-600/5 p-5 rounded-[2.5rem] border border-indigo-100/50 flex items-start gap-5 text-left group hover:bg-white transition-all duration-300">
-        <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0 border border-indigo-100">
+      <div className="bg-blue-600/5 p-5 rounded-none border border-blue-100/50 flex items-start gap-5 text-left group hover:bg-white transition-all duration-300">
+        <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-none flex items-center justify-center shrink-0 border border-blue-100">
           <EyeOutlined className="text-lg" />
         </div>
         <div>
-          <p className="text-xs font-black text-indigo-900 italic tracking-tight mb-1.5 uppercase">
+          <p className="text-xs font-black text-blue-900 italic tracking-tight mb-1.5 uppercase">
             Network Procedure
           </p>
-          <p className="text-[10px] text-indigo-500/80 leading-relaxed font-bold italic">
+          <p className="text-[10px] text-blue-500/80 leading-relaxed font-bold italic">
             Initiating this protocol will emit real-time ride alerts to discovered partners.
             Partners have a{" "}
-            <span className="text-indigo-600 underline underline-offset-4">
+            <span className="text-blue-600 underline underline-offset-4">
               15-second response window
             </span>{" "}
             to secure the trip.
@@ -822,7 +820,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
 
   const AdjustFareContent = (
     <div className="animate-in fade-in zoom-in-95 duration-500 px-2 pb-2">
-      <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 mb-6 flex justify-between items-center shadow-inner">
+      <div className="bg-slate-50 rounded-none p-4 border border-slate-200 mb-6 flex justify-between items-center shadow-sm">
         <div>
           <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">
             Current Fare
@@ -845,24 +843,24 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
         <Input
           type="number"
           size="large"
-          prefix={<span className="text-indigo-600 font-black italic mr-2 text-xl">₹</span>}
+          prefix={<span className="text-blue-600 font-black italic mr-2 text-xl">₹</span>}
           placeholder="0.00"
           value={adjustedFare}
           onChange={(e) => setAdjustedFare(e.target.value)}
-          className="rounded-[1.25rem] h-14 text-xl font-black italic border-2 border-slate-100 focus:border-indigo-600 focus:ring-indigo-100 transition-all shadow-sm"
+          className="rounded-none h-14 text-xl font-black italic border-2 border-slate-200 focus:border-blue-600 focus:ring-blue-100 transition-all shadow-sm"
         />
       </div>
 
       {adjustedFare && (
-        <div className="bg-indigo-50 rounded-2xl p-4 border border-indigo-100 flex items-center gap-4 animate-in slide-in-from-top-2">
-          <div className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-100/50">
+        <div className="bg-blue-50 rounded-none p-4 border border-blue-100 flex items-center gap-4 animate-in slide-in-from-top-2">
+          <div className="w-10 h-10 bg-blue-600 text-white rounded-none flex items-center justify-center shrink-0 shadow-sm shadow-blue-100">
             <DollarOutlined className="text-lg" />
           </div>
           <div>
-            <p className="text-[10px] text-indigo-400 font-black uppercase tracking-widest mb-0.5">
+            <p className="text-[10px] text-blue-400 font-black uppercase tracking-widest mb-0.5">
               Finalized Total
             </p>
-            <p className="text-xl font-black text-indigo-600 tabular-nums italic">
+            <p className="text-xl font-black text-blue-600 tabular-nums italic">
               ₹{adjustedFareNumber}
             </p>
           </div>
@@ -900,8 +898,8 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
   const CancelTripContent = (
     <div className="text-sm">
       {actionTrip?.trip_status === "LIVE" && (
-        <div className="mb-4 p-2.5 bg-red-50 border border-red-100 rounded-xl flex items-center gap-2.5 animate-pulse">
-          <div className="w-6 h-6 bg-red-100 text-red-600 rounded-full flex items-center justify-center shrink-0">
+        <div className="mb-4 p-2.5 bg-red-50 border border-red-100 rounded-none flex items-center gap-2.5 animate-pulse">
+          <div className="w-6 h-6 bg-red-100 text-red-600 rounded-none flex items-center justify-center shrink-0">
             <StopOutlined className="text-xs" />
           </div>
           <p className="text-[10px] text-red-700 font-bold leading-tight">
@@ -912,7 +910,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
       )}
       {cancelStep === 0 ? (
         <div className="py-2 text-center">
-          <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3">
+          <div className="w-12 h-12 bg-red-50 text-red-500 rounded-none border border-red-100 flex items-center justify-center mx-auto mb-3">
             <StopOutlined style={{ fontSize: 24 }} />
           </div>
           <p className="font-bold text-gray-900 text-sm">Terminate Trip Session</p>
@@ -935,7 +933,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
                 key={r.value}
                 checked={cancelReason === r.value}
                 onChange={() => setCancelReason(r.value)}
-                className={`text-[10px] m-0 px-3 py-2 border rounded-xl transition-all text-center flex items-center justify-center h-10 font-medium
+                className={`text-[10px] m-0 px-3 py-2 border rounded-none transition-all text-center flex items-center justify-center h-10 font-medium
                   ${
                     cancelReason === r.value
                       ? "bg-red-600 text-white border-red-600 shadow-md transform scale-[1.02]"
@@ -957,7 +955,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
                 placeholder="Internal notes for tracking this cancellation..."
                 value={cancelNotes}
                 onChange={(e) => setCancelNotes(e.target.value)}
-                className="text-xs rounded-2xl border-gray-100 focus:border-red-300 focus:ring-red-200"
+                className="text-xs rounded-none border-gray-200 focus:border-red-300 focus:ring-red-200"
               />
             </div>
           )}
@@ -1093,19 +1091,62 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
   // ============================================
 
   return (
-    <div className="flex-grow overflow-hidden h-full">
+    <>
+      <style>{`
+        /* Compact premium table flat styles */
+        .premium-table-compact .ant-table-thead > tr > th {
+          background: #f8fafc !important;
+          color: #64748b !important;
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          font-size: 10px !important;
+          letter-spacing: 0.05em !important;
+          border-bottom: 1px solid #e2e8f0 !important;
+          padding: 8px 12px !important;
+        }
+        .premium-table-compact .ant-table-tbody > tr > td {
+          padding: 8px 12px !important;
+          border-bottom: 1px solid #f1f5f9 !important;
+          background: #ffffff !important;
+        }
+        .premium-table-compact .ant-table-tbody > tr:hover > td {
+          background: #f8fafc !important;
+        }
+        .premium-table-compact .ant-table-cell-row-hover {
+          background: #f8fafc !important;
+        }
+        .premium-table-compact .ant-table {
+          background: transparent !important;
+        }
+
+        /* Dark mode overrides for compact table */
+        .dark .premium-table-compact .ant-table-thead > tr > th {
+          background: #1e293b !important;
+          color: #94a3b8 !important;
+          border-bottom: 1px solid #334155 !important;
+        }
+        .dark .premium-table-compact .ant-table-tbody > tr > td {
+          background: #0f172a !important;
+          border-bottom: 1px solid #1e293b !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .premium-table-compact .ant-table-tbody > tr:hover > td {
+          background: #1e293b !important;
+        }
+        .dark .premium-table-compact .ant-table-cell-row-hover {
+          background: #1e293b !important;
+        }
+      `}</style>
+      <div className="w-full flex-grow flex flex-col">
       <Table
         columns={columns}
         dataSource={data}
         rowKey="trip_id"
-        pagination={{
-          pageSize: 6,
-          className: "!mb-0 !mt-4",
-          size: "small",
-        }}
-        scroll={{ x: "max-content", y: "calc(100vh - 425px)" }}
-        sticky
-        className="premium-table-container"
+        pagination={pagination}
+        loading={loading}
+        scroll={{ x: "max-content", y: "calc(100vh - 310px)" }}
+        size="small"
+        className="premium-table-compact flex-grow"
       />
 
       {/* Drawer */}
@@ -1209,7 +1250,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
               cancelReason === "OTHER" &&
               !cancelNotes.trim()),
           loading: driverLoading,
-          className: `!h-11 !px-8 !rounded-2xl !font-black !italic !text-xs !tracking-tight !shadow-lg !transition-all !duration-300 !transform !hover:scale-[1.03] !active:scale-95 !border-none
+          className: `!h-11 !px-8 !rounded-none !font-black !italic !text-xs !tracking-tight !shadow-lg !transition-all !duration-300 !transform !hover:scale-[1.03] !active:scale-95 !border-none
             ${
               (activeAction === "ASSIGN_DRIVER" && !selectedDriver) ||
               (activeAction === "ADJUST_FARE" && !adjustedFare) ||
@@ -1220,7 +1261,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
                 !cancelNotes.trim())
                 ? "!bg-slate-100 !text-slate-400 !shadow-none !cursor-not-allowed hover:!scale-100"
                 : activeAction === "ASSIGN_DRIVER"
-                  ? "!bg-indigo-500 hover:!bg-indigo-600"
+                  ? "!bg-blue-600 hover:!bg-blue-700"
                   : activeAction === "TRIGGER_DRIVER"
                     ? "!bg-amber-500 hover:!bg-amber-600"
                     : activeAction === "CANCEL_TRIP"
@@ -1230,7 +1271,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
         }}
         cancelButtonProps={{
           className:
-            "!h-11 !px-6 !rounded-2xl !font-bold !text-xs !border-none !bg-slate-100 !text-slate-500 hover:!bg-slate-200 !hover:text-slate-600 !transition-all !duration-300",
+            "!h-11 !px-6 !rounded-none !font-bold !text-xs !border-none !bg-slate-100 !text-slate-500 hover:!bg-slate-200 !hover:text-slate-600 !transition-all !duration-300",
         }}
         okText={
           activeAction === "CANCEL_TRIP"
@@ -1247,7 +1288,8 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false }) => {
         {activeAction === "CANCEL_TRIP" && CancelTripContent}
         {activeAction === "TRIGGER_DRIVER" && TriggerBroadcastContent}
       </Modal>
-    </div>
+      </div>
+    </>
   );
 };
 

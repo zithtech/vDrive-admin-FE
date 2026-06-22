@@ -105,11 +105,14 @@ const HotspotConfiguration = ({
                     </Tag>
                   </div>
                   <span className="text-sm text-gray-600">
-                    Fare: ₹{Number(selectedHotspot.fare).toFixed(2)}
+                    Flat fare: ₹{Number(selectedHotspot.fare).toFixed(2)} / ride
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    One-time surcharge added to the ride total
                   </span>
                 </div>
                 <div className="w-full sm:w-1/2 flex gap-6">
-                  <span className="text-sm font-medium mb-1">Multiplier:</span>
+                  <span className="text-sm font-medium mb-1">Surge ×:</span>
                   <div className="flex items-center flex-col">
                     <div>
                       <InputNumber

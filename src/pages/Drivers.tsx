@@ -1,16 +1,16 @@
 import { useState, useEffect, useMemo } from "react";
 import { IoMdRefresh } from "react-icons/io";
+import { Users } from "lucide-react";
 import {
   CarOutlined,
-  FilterOutlined,
   CloseCircleOutlined,
   ExclamationCircleOutlined,
   EnvironmentOutlined,
+  SearchOutlined,
 } from "@ant-design/icons";
-import { Button, Select, DatePicker, Divider, Slider, Input, Spin, Tabs } from "antd";
+import { Select, DatePicker,  Slider, Spin } from "antd";
 import DriverTable from "../components/DriverTable/DriverTable";
 import dayjs from "dayjs";
-import TitleBar from "../components/TitleBarCommon/TitleBar";
 import DriverStats from "../components/Drivers/DriverStats";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchDrivers } from "../store/slices/driverSlice";
@@ -38,6 +38,8 @@ const Drivers = () => {
     rating: [0, 5],
     joined_at: null,
   });
+
+  const [currentView, setCurrentView] = useState<"all" | "active" | "restricted">("all");
 
   useEffect(() => {
     dispatch(fetchDrivers());
@@ -141,249 +143,262 @@ const Drivers = () => {
     filters.rating[1] < 5;
 
   const TableSection = ({
-    title,
     data,
-    icon,
-    colorClass,
-    bgColorClass,
-    borderColorClass,
-    count,
     flexClass = "flex-1",
     extraClasses = "",
   }: any) => (
     <div
-      className={`${flexClass} flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden ${extraClasses}`}
+      className={`${flexClass} flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden ${extraClasses}`}
     >
-      <div
-        className={`px-6 py-4 border-b border-slate-50 dark:border-slate-700 flex items-center justify-between bg-gradient-to-r ${bgColorClass} to-white dark:to-slate-800`}
-      >
-        <div className="flex items-center gap-3">
-          <div
-            className={`w-8 h-8 rounded-xl ${colorClass} flex items-center justify-center text-white text-xs shadow-sm`}
-          >
-            {icon}
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 m-0 tracking-tight leading-none">
-              {title}
-            </h3>
-            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-medium m-0 mt-1 uppercase tracking-wider">
-              Management & Overview
-            </p>
-          </div>
-        </div>
-        <div
-          className={`px-3 py-1 rounded-full ${borderColorClass} border text-[11px] font-black tracking-tighter`}
-        >
-          {count} {count === 1 ? "DRIVER" : "DRIVERS"}
-        </div>
-      </div>
       <div className="flex-grow overflow-hidden">
         <DriverTable data={data} />
       </div>
     </div>
   );
 
-  return (
-    <TitleBar
-      title="Driver Management"
-      description="Manage drivers, view details, and perform administrative actions."
-      icon={
-        <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-blue-500 rounded-2xl flex items-center justify-center">
-          <CarOutlined className="text-white" />
-        </div>
-      }
-      iconBgColor="bg-blue-600"
-      extraContent={
-        <div className="flex items-center gap-3">
-          <Button
-            icon={<IoMdRefresh />}
-            loading={loading}
-            type="primary"
-            className="rounded-xl h-11 px-6 font-bold !bg-gradient-to-br !from-indigo-600 !to-blue-500 border-none"
-            onClick={() => dispatch(fetchDrivers())}
-          >
-            Refresh Data
-          </Button>
-        </div>
-      }
+  const ViewItem = ({ icon, label, count, isActive, onClick }: any) => (
+    <div
+      onClick={onClick}
+      className={`flex items-center justify-between px-3 py-2 rounded-[10px] cursor-pointer transition-all ${
+        isActive
+          ? "bg-blue-50/80 dark:bg-blue-900/30 text-slate-800 dark:text-slate-100 font-bold"
+          : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium"
+      }`}
     >
-      <div className="w-full h-full flex flex-col gap-6 bg-slate-50/50 dark:bg-slate-900/50 p-6 overflow-hidden">
-        <DriverStats drivers={DATA} loading={loading} />
+      <div className="flex items-center gap-2.5">
+        <span className={`text-[15px] ${isActive ? "text-blue-500" : "text-slate-400"}`}>{icon}</span>
+        <span className="text-[13px] tracking-tight">{label}</span>
+      </div>
+      {isActive ? (
+        <div className="px-2 py-0.5 rounded-md text-[10px] font-black min-w-[20px] text-center bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
+          {count}
+        </div>
+      ) : (
+        <div className="text-[11px] font-bold text-slate-400 mr-1">
+          {count}
+        </div>
+      )}
+    </div>
+  );
 
-        {/* Inline Filter Bar */}
-        <div className="bg-white dark:bg-slate-800 p-2 px-4 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 flex-grow flex-wrap">
-            <div className="flex items-center gap-2">
-              <FilterOutlined className="text-slate-900 dark:text-slate-100" />
-              <span className="text-[11px] font-black uppercase tracking-widest text-slate-900 dark:text-slate-100">
-                Filters
-              </span>
+  return (
+    <div className="flex flex-row h-full w-full bg-[#f8f9fa] dark:bg-[#0b0f19] overflow-hidden">
+      {/* SIDEBAR */}
+      <div className="w-[260px] flex-shrink-0 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
+        {/* Sidebar Header */}
+        <div className="p-6 pb-4">
+          <div className="flex items-center gap-4 text-slate-800 dark:text-slate-100">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+              <Users size={24} strokeWidth={2.5} />
             </div>
-            <Divider type="vertical" className="h-6 border-slate-100 dark:border-slate-700" />
+            <div className="flex flex-col justify-center mt-0.5">
+              <h2 className="font-black text-lg uppercase tracking-wider leading-none m-0 ">DRIVERS</h2>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1.5">Manage Fleet</p>
+            </div>
+          </div>
+        </div>
 
-            <Input
-              placeholder="Search driver..."
-              style={{ maxWidth: 200 }}
-              className="premium-input-inline"
-              value={filters.search}
-              onChange={(e) => applyFilters({ search: e.target.value })}
-              allowClear
-            />
-
-            <Select
-              mode="multiple"
-              placeholder="Status"
-              style={{ minWidth: 180 }}
-              className="premium-select-inline"
-              value={filters.status}
-              onChange={(val) => applyFilters({ status: val })}
-              options={STATUSES.map((s) => ({ label: s.toUpperCase(), value: s }))}
-              maxTagCount="responsive"
-            />
-
-            <Select
-              mode="multiple"
-              placeholder="Plan"
-              style={{ minWidth: 160 }}
-              className="premium-select-inline"
-              value={filters.plan}
-              onChange={(val) => applyFilters({ plan: val })}
-              options={planOptions}
-              maxTagCount="responsive"
-            />
-
-            <div className="flex items-center gap-2" style={{ minWidth: 160 }}>
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-slate-100 whitespace-nowrap">
-                Rating
-              </span>
-              <Slider
-                range
-                min={0}
-                max={5}
-                step={0.1}
-                value={filters.rating}
-                onChange={(val) => applyFilters({ rating: val as [number, number] })}
-                style={{ width: 120 }}
-                tooltip={{ formatter: (v) => `${v}★` }}
+        <div className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
+          {/* VIEWS SECTION */}
+          <div>
+            <div className="flex items-center gap-2 mb-3 px-2">
+              <span className="text-[11px] font-black tracking-widest uppercase text-slate-600 dark:text-slate-400">VIEWS</span>
+            </div>
+            
+            <div className="space-y-1">
+              <ViewItem
+                icon={<EnvironmentOutlined />}
+                label="All Drivers"
+                count={allFleetDrivers.length}
+                isActive={currentView === "all"}
+                onClick={() => setCurrentView("all")}
+              />
+              <ViewItem
+                icon={<CarOutlined />}
+                label="Active"
+                count={activeDrivers.length}
+                isActive={currentView === "active"}
+                onClick={() => setCurrentView("active")}
+              />
+              <ViewItem
+                icon={<ExclamationCircleOutlined />}
+                label="Restricted"
+                count={restrictedDrivers.length}
+                isActive={currentView === "restricted"}
+                onClick={() => setCurrentView("restricted")}
               />
             </div>
-
-            <DatePicker
-              placeholder="Joined At"
-              className="premium-datepicker-inline"
-              onChange={(date) => applyFilters({ joined_at: date ? date.toDate() : null })}
-            />
           </div>
 
-          {hasActiveFilters && (
-            <Button
+          {/* FILTERS SECTION */}
+          <div>
+            <div className="flex items-center gap-2 mb-3 px-2">
+              <span className="text-[11px] font-black tracking-widest uppercase text-slate-600 dark:text-slate-400">FILTERS</span>
+            </div>
+            
+            <div className="space-y-4 px-2">
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Status</label>
+                <Select
+                  mode="multiple"
+                  placeholder="Select status..."
+                  className="w-full custom-select-compact"
+                  options={STATUSES.map((s) => ({ label: s.toUpperCase(), value: s }))}
+                  value={filters.status}
+                  onChange={(val) => applyFilters({ status: val })}
+                  maxTagCount="responsive"
+                />
+              </div>
+              
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Plan</label>
+                <Select
+                  mode="multiple"
+                  placeholder="Filter by plan..."
+                  className="w-full custom-select-compact"
+                  options={planOptions}
+                  value={filters.plan}
+                  onChange={(val) => applyFilters({ plan: val })}
+                  maxTagCount="responsive"
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Joined Date</label>
+                <DatePicker
+                  placeholder="Select Date"
+                  className="w-full"
+                  onChange={(date) => applyFilters({ joined_at: date ? date.toDate() : null })}
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Rating</label>
+                <Slider
+                  range
+                  min={0}
+                  max={5}
+                  step={0.1}
+                  value={filters.rating}
+                  onChange={(val) => applyFilters({ rating: val as [number, number] })}
+                  tooltip={{ formatter: (v) => `${v}★` }}
+                  className="mx-2"
+                />
+              </div>
+
+              {hasActiveFilters && (
+                <button
+                  onClick={() => setFilters({ search: "", status: [], plan: [], rating: [0, 5], joined_at: null })}
+                  className="w-full h-[36px] flex items-center justify-center rounded-lg text-[11px] font-black uppercase tracking-widest text-rose-500 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 transition-all mt-4"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* RIGHT MAIN CONTENT */}
+      <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0b0f19]">
+        {/* Top Navbar */}
+        <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 shadow-sm z-0 flex-shrink-0">
+          <div className="relative flex-1 max-w-3xl flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
+            <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
+            <input
               type="text"
-              danger
-              icon={<CloseCircleOutlined />}
-              className="text-[10px] font-black uppercase tracking-widest px-4 hover:bg-rose-50 rounded-xl"
-              onClick={() =>
-                setFilters({ search: "", status: [], plan: [], rating: [0, 5], joined_at: null })
-              }
+              placeholder="Search drivers by name or ID..."
+              className="w-full pl-10 pr-4 py-2 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
+              value={filters.search}
+              onChange={(e) => applyFilters({ search: e.target.value })}
+            />
+            <div className="absolute right-3">
+              <span className="text-[11px] font-bold text-slate-400 border border-slate-200 dark:border-slate-600 rounded-[4px] px-1.5 py-[1px] bg-slate-50/50 dark:bg-slate-800 tracking-wide">
+                ⌘K
+              </span>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-100 dark:border-emerald-500/20">
+              <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+              <span className="text-[11px] font-black tracking-widest uppercase">
+                {activeDrivers.length} ACTIVE
+              </span>
+            </div>
+            <div className="flex items-center gap-2 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 px-3 py-1.5 rounded-full border border-indigo-100 dark:border-indigo-500/20">
+              <span className="text-[11px] font-black tracking-widest uppercase">
+                {DATA.length} TOTAL
+              </span>
+            </div>
+
+            <button
+              onClick={() => dispatch(fetchDrivers())}
+              className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all"
             >
-              Clear Filters
-            </Button>
-          )}
+              <IoMdRefresh className={`text-lg ${loading ? 'animate-spin' : ''}`} />
+            </button>
+          </div>
         </div>
 
-        <div className="flex-grow overflow-hidden flex flex-col pb-4">
+        {/* Scrollable Main Content */}
+        <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-slate-900 flex flex-col gap-6">
+          <DriverStats drivers={DATA} loading={loading} />
+          
           {loading && DATA.length === 0 ? (
-            <div className="flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700">
+            <div className="flex-1 flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
               <Spin size="large" />
             </div>
           ) : error ? (
-            <div className="flex items-center justify-center p-20 bg-rose-50 rounded-3xl border border-rose-100 text-rose-500 font-bold">
+            <div className="flex items-center justify-center p-20 bg-rose-50 rounded-sm border border-rose-100 text-rose-500 font-bold shadow-sm">
               {error}
             </div>
           ) : (
-            <Tabs
-              defaultActiveKey="all"
-              className="premium-driver-tabs"
-              items={[
-                {
-                  key: "all",
-                  label: (
-                    <div className="flex items-center gap-2 px-1">
-                      <EnvironmentOutlined />
-                      <span>All Drivers</span>
-                      <div className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-black min-w-[20px] text-center">
-                        {allFleetDrivers.length}
-                      </div>
-                    </div>
-                  ),
-                  children: (
-                    <TableSection
-                      title="Fleet Overview"
-                      icon={<EnvironmentOutlined />}
-                      data={allFleetDrivers}
-                      count={allFleetDrivers.length}
-                      flexClass="h-[calc(100vh-480px)]"
-                      colorClass="bg-indigo-600"
-                      bgColorClass="from-indigo-50 dark:from-indigo-900/30"
-                      borderColorClass="border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 bg-indigo-100/50 dark:bg-indigo-900/30 font-black"
-                    />
-                  ),
-                },
-                {
-                  key: "active",
-                  label: (
-                    <div className="flex items-center gap-2 px-1">
-                      <CarOutlined />
-                      <span>Active Drivers</span>
-                      <div className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-black min-w-[20px] text-center">
-                        {activeDrivers.length}
-                      </div>
-                    </div>
-                  ),
-                  children: (
-                    <TableSection
-                      title="Verified & Active"
-                      icon={<CarOutlined />}
-                      data={activeDrivers}
-                      count={activeDrivers.length}
-                      flexClass="h-[calc(100vh-480px)]"
-                      extraClasses=""
-                      colorClass="bg-emerald-500 shadow-lg shadow-emerald-500/40"
-                      bgColorClass="from-emerald-50 dark:from-emerald-900/30 via-emerald-50/10 dark:via-emerald-900/10"
-                      borderColorClass="border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-100/50 dark:bg-emerald-900/30 font-black"
-                    />
-                  ),
-                },
-                {
-                  key: "restricted",
-                  label: (
-                    <div className="flex items-center gap-2 px-1">
-                      <ExclamationCircleOutlined />
-                      <span>Restricted & Rejected</span>
-                      <div className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-[10px] font-black min-w-[20px] text-center">
-                        {restrictedDrivers.length}
-                      </div>
-                    </div>
-                  ),
-                  children: (
-                    <TableSection
-                      title="Suspended / Blocked / Rejected"
-                      icon={<CloseCircleOutlined />}
-                      data={restrictedDrivers}
-                      count={restrictedDrivers.length}
-                      flexClass="h-[calc(100vh-480px)]"
-                      colorClass="bg-slate-400"
-                      bgColorClass="from-slate-50 dark:from-slate-800/50"
-                      borderColorClass="border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 font-black"
-                    />
-                  ),
-                },
-              ]}
-            />
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              {currentView === "all" && (
+                <TableSection
+                  title="Fleet Overview"
+                  icon={<EnvironmentOutlined />}
+                  data={allFleetDrivers}
+                  count={allFleetDrivers.length}
+                  flexClass="flex-1 h-full"
+                  extraClasses="border-none rounded-none !min-h-0"
+                  colorClass="bg-indigo-600"
+                  bgColorClass="from-indigo-50 dark:from-indigo-900/30"
+                  borderColorClass="border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 bg-indigo-100/50 dark:bg-indigo-900/30 font-black"
+                />
+              )}
+              {currentView === "active" && (
+                <TableSection
+                  title="Verified & Active"
+                  icon={<CarOutlined />}
+                  data={activeDrivers}
+                  count={activeDrivers.length}
+                  flexClass="flex-1 h-full"
+                  extraClasses="border-none rounded-none !min-h-0"
+                  colorClass="bg-emerald-500 shadow-lg shadow-emerald-500/40"
+                  bgColorClass="from-emerald-50 dark:from-emerald-900/30 via-emerald-50/10 dark:via-emerald-900/10"
+                  borderColorClass="border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-100/50 dark:bg-emerald-900/30 font-black"
+                />
+              )}
+              {currentView === "restricted" && (
+                <TableSection
+                  title="Suspended / Blocked / Rejected"
+                  icon={<CloseCircleOutlined />}
+                  data={restrictedDrivers}
+                  count={restrictedDrivers.length}
+                  flexClass="flex-1 h-full"
+                  extraClasses="border-none rounded-none !min-h-0"
+                  colorClass="bg-slate-400"
+                  bgColorClass="from-slate-50 dark:from-slate-800/50"
+                  borderColorClass="border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 font-black"
+                />
+              )}
+            </div>
           )}
         </div>
       </div>
-    </TitleBar>
+    </div>
   );
 };
 

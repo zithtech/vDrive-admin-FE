@@ -6,9 +6,8 @@ import {
   FileExclamationOutlined,
   CloseCircleOutlined,
   SearchOutlined,
-  FileProtectOutlined,
 } from "@ant-design/icons";
-import { Button, Select, DatePicker, Input, Spin } from "antd";
+import { Button, Select, DatePicker, Spin } from "antd";
 import DriverTable from "../components/DriverTable/DriverTable";
 import dayjs from "dayjs";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
@@ -139,8 +138,8 @@ const DriverApplications = () => {
     <div
       onClick={onClick}
       className={`flex items-center justify-between px-3 py-2 rounded-[10px] cursor-pointer transition-all ${isActive
-        ? `${bgActiveColorClass} text-slate-800 dark:text-slate-100 font-bold`
-        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium"
+          ? `${bgActiveColorClass} text-slate-800 dark:text-slate-100 font-bold`
+          : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium"
         }`}
     >
       <div className="flex items-center gap-2.5">
@@ -181,7 +180,7 @@ const DriverApplications = () => {
 
   return (
     <>
-      <div className="flex h-full w-full overflow-hidden bg-white dark:bg-slate-900">
+      <div className="flex h-[calc(100vh-64px)] w-full overflow-hidden bg-white dark:bg-slate-900">
         {/* LEFT SIDEBAR */}
         <div className="w-[220px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col flex-shrink-0">
           {/* Sidebar Header */}
