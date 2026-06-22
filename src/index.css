@@ -397,6 +397,46 @@ p {
   color: #cbd5e1 !important;
 }
 
+/* Custom Select Component Overrides */
+.custom-select-compact .ant-select-selector {
+  border-radius: 8px !important;
+  border-color: #e2e8f0 !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+.dark .custom-select-compact .ant-select-selector {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+/* Global Dark Mode overrides for Ant Inputs */
+.dark .ant-select-selector {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+.dark .ant-select-selection-placeholder {
+  color: #64748b !important;
+}
+.dark .ant-picker {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+}
+.dark .ant-picker-input > input {
+  color: #f1f5f9 !important;
+}
+.dark .ant-picker-input > input::placeholder {
+  color: #64748b !important;
+}
+.dark .ant-picker-suffix,
+.dark .ant-picker-clear {
+  color: #64748b !important;
+}
+.dark .ant-picker-clear {
+  background-color: #1e293b !important;
+}
+
 /* Ant Select Dropdown Dark Mode Overrides */
 .dark .ant-select-dropdown {
   background-color: #1e293b !important;

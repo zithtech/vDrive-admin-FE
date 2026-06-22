@@ -63,7 +63,7 @@ const DriverMetricsColumn: React.FC<DriverMetricsColumnProps> = ({ stats }) => {
     stats.totalDrivers > 0 ? Math.round((stats.activeDrivers / stats.totalDrivers) * 100) : 0;
 
   return (
-    <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-sm flex flex-col h-105 overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-sm flex flex-col h-full overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 dark:border-slate-700">
         <div className="flex items-center gap-2">
@@ -79,8 +79,8 @@ const DriverMetricsColumn: React.FC<DriverMetricsColumnProps> = ({ stats }) => {
       </div>
 
       {/* Content Grid */}
-      <div className="flex-1 p-3.5 bg-gray-50/20 dark:bg-slate-900/50 overflow-y-auto custom-scrollbar">
-        <div className="grid grid-cols-2 gap-3 mb-4">
+      <div className="flex-1 p-3 flex flex-col justify-between bg-gray-50/20 dark:bg-slate-900/50 overflow-hidden">
+        <div className="grid grid-cols-2 gap-2.5">
           <MiniMetricCard
             title="Available"
             value={stats.availableDrivers}
@@ -115,7 +115,7 @@ const DriverMetricsColumn: React.FC<DriverMetricsColumnProps> = ({ stats }) => {
           />
         </div>
 
-        <div className="flex items-center gap-3 my-4">
+        <div className="flex items-center gap-3 my-2">
           <div className="h-px bg-gray-100 dark:bg-slate-700 flex-1"></div>
           <span className="text-[10px] font-bold text-gray-300 dark:text-gray-500 uppercase tracking-widest">
             Fleet Health
@@ -124,22 +124,22 @@ const DriverMetricsColumn: React.FC<DriverMetricsColumnProps> = ({ stats }) => {
         </div>
 
         {/* Fleet Progress Section */}
-        <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-4 shadow-sm/5">
+        <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-2xl p-3 shadow-sm/5">
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col items-center">
               <Progress
                 type="circle"
                 percent={availabilityPercent}
-                size={70}
+                size={64}
                 strokeColor={{ "0%": "#10b981", "100%": "#34d399" }}
                 strokeWidth={10}
                 format={(percent) => (
-                  <span className="text-[13px] font-bold text-gray-900 dark:text-white">
+                  <span className="text-[12px] font-bold text-gray-900 dark:text-white">
                     {percent}%
                   </span>
                 )}
               />
-              <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-3 uppercase tracking-wider">
+              <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 mt-2 uppercase tracking-wider">
                 Availability
               </span>
             </div>
@@ -147,30 +147,30 @@ const DriverMetricsColumn: React.FC<DriverMetricsColumnProps> = ({ stats }) => {
               <Progress
                 type="circle"
                 percent={activePercent}
-                size={70}
+                size={64}
                 strokeColor={{ "0%": "#3b82f6", "100%": "#60a5fa" }}
                 strokeWidth={10}
                 format={(percent) => (
-                  <span className="text-[13px] font-bold text-gray-900 dark:text-white">
+                  <span className="text-[12px] font-bold text-gray-900 dark:text-white">
                     {percent}%
                   </span>
                 )}
               />
-              <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 mt-3 uppercase tracking-wider">
+              <span className="text-[9px] font-bold text-gray-400 dark:text-gray-500 mt-2 uppercase tracking-wider">
                 Active Fleet
               </span>
             </div>
           </div>
         </div>
 
-        <div className="mt-5 p-3 bg-blue-50/50 dark:bg-blue-900/20 rounded-xl border border-blue-100/50 dark:border-blue-800/50 flex items-center justify-between">
+        <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-2">
-            <Users size={14} className="text-blue-500" />
-            <span className="text-[11px] font-bold text-blue-900 dark:text-blue-200">
+            <Users size={14} className="text-gray-400 dark:text-gray-500" />
+            <span className="text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
               Total Drivers
             </span>
           </div>
-          <span className="text-[13px] font-black text-blue-600 dark:text-blue-400">
+          <span className="text-[13px] font-black text-gray-900 dark:text-white">
             {stats.totalDrivers}
           </span>
         </div>

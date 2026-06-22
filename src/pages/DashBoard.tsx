@@ -1,4 +1,4 @@
-import { FiActivity } from "react-icons/fi";
+
 import { Typography } from "antd";
 import DashboardCard from "../components/DashBoard/DashBoardCard";
 import DriverMetricsColumn from "../components/DashBoard/DriverMetricsColumn";
@@ -116,27 +116,6 @@ const Dashboard = () => {
 
   return (
     <div className="flex flex-col h-full overflow-hidden p-3 gap-4 bg-gray-50/50 dark:bg-slate-900 transition-colors duration-300">
-      <div className="flex items-center justify-between shrink-0">
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center justify-center w-10 h-10 bg-blue-500 rounded-xl shadow-lg shadow-blue-500/20">
-            <FiActivity className="text-white text-2xl" />
-          </div>
-          <div>
-            <Typography.Title
-              level={4}
-              className="!m-0 text-lg sm:text-xl font-extrabold text-gray-900 dark:text-white tracking-tight"
-            >
-              Dashboard
-            </Typography.Title>
-            <Typography.Text className="block text-xs sm:text-sm text-gray-400 dark:text-gray-400 font-medium font-outfit uppercase tracking-widest text-[9px]">
-              Live operational metrics and insights
-            </Typography.Text>
-          </div>
-        </div>
-
-
-      </div>
-
       <div className="shrink-0">
         <DashboardCard stats={stats} />
       </div>
@@ -159,7 +138,7 @@ const Dashboard = () => {
         <div className="lg:col-span-3 flex flex-col min-h-0">
           <TripManagement stats={stats} trips={trips} />
         </div>
-        <div className="lg:col-span-4 flex flex-col min-h-0 gap-4 h-105">
+        <div className="lg:col-span-4 flex flex-col min-h-0 gap-4">
           <OnboardingMetrics stats={stats} />
           <ActivityFeed />
         </div>

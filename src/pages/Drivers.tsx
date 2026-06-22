@@ -159,7 +159,7 @@ const Drivers = () => {
   const ViewItem = ({ icon, label, count, isActive, onClick }: any) => (
     <div
       onClick={onClick}
-      className={`flex items-center justify-between px-3 py-2 rounded-[10px] cursor-pointer transition-all ${
+      className={`flex items-center justify-between px-3 py-1.5 rounded-[10px] cursor-pointer transition-all ${
         isActive
           ? "bg-blue-50/80 dark:bg-blue-900/30 text-slate-800 dark:text-slate-100 font-bold"
           : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium"
@@ -184,28 +184,32 @@ const Drivers = () => {
   return (
     <div className="flex flex-row h-full w-full bg-[#f8f9fa] dark:bg-[#0b0f19] overflow-hidden">
       {/* SIDEBAR */}
-      <div className="w-[260px] flex-shrink-0 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
+      <div className="w-[240px] flex-shrink-0 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
         {/* Sidebar Header */}
-        <div className="p-6 pb-4">
-          <div className="flex items-center gap-4 text-slate-800 dark:text-slate-100">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-              <Users size={24} strokeWidth={2.5} />
+        <div className="p-6 border-b border-slate-100 dark:border-slate-700/50">
+          <div className="flex items-center gap-3 text-slate-800 dark:text-slate-100">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+              <Users size={20} strokeWidth={2.5} />
             </div>
-            <div className="flex flex-col justify-center mt-0.5">
-              <h2 className="font-black text-lg uppercase tracking-wider leading-none m-0 ">DRIVERS</h2>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1.5">Manage Fleet</p>
+            <div>
+              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider m-0">
+                DRIVERS
+              </h2>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5 m-0">
+                Manage Fleet
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
           {/* VIEWS SECTION */}
           <div>
             <div className="flex items-center gap-2 mb-3 px-2">
               <span className="text-[11px] font-black tracking-widest uppercase text-slate-600 dark:text-slate-400">VIEWS</span>
             </div>
             
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               <ViewItem
                 icon={<EnvironmentOutlined />}
                 label="All Drivers"
@@ -236,9 +240,9 @@ const Drivers = () => {
               <span className="text-[11px] font-black tracking-widest uppercase text-slate-600 dark:text-slate-400">FILTERS</span>
             </div>
             
-            <div className="space-y-4 px-2">
+            <div className="space-y-2 px-2">
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Status</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Status</label>
                 <Select
                   mode="multiple"
                   placeholder="Select status..."
@@ -251,7 +255,7 @@ const Drivers = () => {
               </div>
               
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Plan</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Plan</label>
                 <Select
                   mode="multiple"
                   placeholder="Filter by plan..."
@@ -264,7 +268,7 @@ const Drivers = () => {
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Joined Date</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Joined Date</label>
                 <DatePicker
                   placeholder="Select Date"
                   className="w-full"
@@ -273,7 +277,7 @@ const Drivers = () => {
               </div>
 
               <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Rating</label>
+                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Rating</label>
                 <Slider
                   range
                   min={0}
@@ -302,7 +306,7 @@ const Drivers = () => {
       {/* RIGHT MAIN CONTENT */}
       <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0b0f19]">
         {/* Top Navbar */}
-        <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 shadow-sm z-0 flex-shrink-0">
+        <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 z-0 flex-shrink-0">
           <div className="relative flex-1 max-w-3xl flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
             <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
             <input

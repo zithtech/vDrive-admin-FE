@@ -759,12 +759,7 @@ const PromotionsPage: React.FC = () => {
       </Drawer>
 
       <style>{`
-        .custom-select-compact .ant-select-selector {
-          border-radius: 8px !important;
-          border-color: #e2e8f0 !important;
-          font-size: 11px !important;
-          font-weight: 600 !important;
-        }
+        /* custom-select-compact has been moved to index.css for global dark mode support */
         .ant-form-item-label label {
           font-weight: 700 !important;
           color: #64748b !important;

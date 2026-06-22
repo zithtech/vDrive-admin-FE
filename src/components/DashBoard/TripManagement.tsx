@@ -82,7 +82,7 @@ const TripManagement: React.FC<TripManagementProps> = ({ stats, trips }) => {
   );
 
   return (
-    <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-sm flex flex-col h-105 overflow-hidden">
+    <div className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-sm flex flex-col h-full overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100 dark:border-slate-700">
         <div className="flex items-center gap-2">

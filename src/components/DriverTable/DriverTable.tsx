@@ -445,25 +445,30 @@ const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
           
           /* BULLETPROOF DARK MODE OVERRIDES */
           html.dark .premium-table-flat .ant-table-thead > tr > th {
-            background: #0f172a !important;
-            border-bottom: 1px solid #1e293b !important;
-            color: #64748b !important;
+            background: #1e293b !important;
+            border-bottom: 1px solid #334155 !important;
+            border-top: 1px solid #334155 !important;
+            color: #94a3b8 !important;
+          }
+          html.dark .premium-table-flat .ant-table-thead > tr > th::before {
+            background-color: #334155 !important;
           }
           html.dark .premium-table-flat .ant-table-cell-fix-left,
           html.dark .premium-table-flat .ant-table-cell-fix-right {
-            background: #0f172a !important;
+            background: #1e293b !important;
           }
           html.dark .premium-table-flat .ant-table-row > td {
-            border-bottom: 1px solid #1e293b !important;
+            background: #1e293b !important;
+            border-bottom: 1px solid #334155 !important;
           }
           html.dark .premium-table-flat .ant-table-row:hover > td,
           html.dark .premium-table-flat .ant-table-row:hover > .ant-table-cell-fix-left,
           html.dark .premium-table-flat .ant-table-row:hover > .ant-table-cell-fix-right {
-            background: #1e293b !important;
+            background: #334155 !important;
           }
           html.dark .premium-table-flat .ant-table-thead > tr > .ant-table-cell-fix-left,
           html.dark .premium-table-flat .ant-table-thead > tr > .ant-table-cell-fix-right {
-            background: #0f172a !important;
+            background: #1e293b !important;
           }
           
           /* Visual Table Box */
@@ -486,8 +491,8 @@ const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
             height: 100%;
           }
           html.dark .premium-table-flat .ant-table-container {
-            border-color: #1e293b;
-            background: #0f172a;
+            border-color: #334155;
+            background: #1e293b;
           }
 
           /* PAGINATION OUTSIDE BOX */

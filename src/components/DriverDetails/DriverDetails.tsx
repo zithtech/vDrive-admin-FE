@@ -301,14 +301,14 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
       <Drawer
         title="Driver Details"
         placement="right"
-        width={720}
+        width={480}
         onClose={onClose}
         open={open}
         closable={true}
         destroyOnClose={true}
         className="driver-details-drawer"
       >
-        <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-gray-50 dark:bg-slate-900">
+        <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-white dark:bg-slate-900">
           <div className="bg-white dark:bg-slate-800 p-12 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700">
             <UserOutlined style={{ fontSize: 64, color: "#cbd5e1", marginBottom: 24 }} />
             <Title level={3} className="text-gray-400 dark:text-slate-500">
@@ -729,42 +729,41 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
           try { doc.document_url = JSON.parse(doc.document_url); } catch (e) {}
         }
         return (
-        <div key={doc?.document_id} className="content-card p-2 document-preview-card">
-          <div className="flex justify-between items-start mb-4">
+        <div key={doc?.document_id} className="content-card p-4">
+          <div className="flex justify-between items-start mb-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <div className="w-8 h-8 rounded bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-500 border border-slate-200 dark:border-slate-700">
                 <FileTextOutlined />
               </div>
               <div>
-                <Title level={5} className="m-0 text-gray-800 dark:text-slate-100">
+                <Title level={5} className="m-0 text-slate-800 dark:text-slate-100 text-sm font-semibold">
                   {capitalize(doc?.document_type?.replace(/_/g, " "))} Document
                 </Title>
                 {!doc?.document_type?.toLowerCase().includes("selfie") &&
                   !doc?.document_type?.toLowerCase().includes("police") && (
-                    <Text type="secondary" className="text-[10px] font-mono tracking-wider">
-                      #{doc?.extracted_data?.extracted_number || doc?.document_number || "N/A"}
+                    <Text type="secondary" className="text-[10px] tracking-wider block mt-0.5">
+                      ID: {doc?.extracted_data?.extracted_number || doc?.document_number || "N/A"}
                     </Text>
                   )}
               </div>
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <Tag color={getStatusColor(doc?.license_status)} className="status-badge m-0">
+            <div className="flex flex-col items-end gap-1">
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-widest ${doc?.license_status === 'verified' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400' : doc?.license_status === 'rejected' ? 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400'}`}>
                 {capitalize(doc?.license_status)}
-              </Tag>
+              </span>
               <Button
                 type="link"
                 size="small"
-                icon={<HistoryOutlined />}
                 onClick={() => handleShowHistory(doc.document_id || doc.id, doc.document_type)}
-                className="text-[10px] h-auto p-0 flex items-center gap-1 opacity-70 hover:opacity-100"
+                className="text-[10px] h-auto p-0 opacity-70 hover:opacity-100"
               >
-                View History
+                History
               </Button>
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
-            <div className="flex items-center gap-3">
+          <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-700 flex justify-between items-center flex-wrap gap-3">
+            <div className="flex items-center gap-2">
               {doc?.document_url ? (
                 <>
                   {typeof doc.document_url === "object" &&
@@ -773,8 +772,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
                     <>
                       {doc.document_url.front && (
                         <Button
-                          type="primary"
-                          ghost
+                          size="small"
                           icon={<EyeOutlined />}
                           onClick={() => {
                             setPreviewDoc({
@@ -783,15 +781,14 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
                             });
                             setIsPreviewModalOpen(true);
                           }}
-                          className="font-semibold rounded-lg dark:!text-blue-400 dark:!border-blue-500 dark:hover:!text-blue-300 dark:hover:!border-blue-400"
+                          className="text-[11px] rounded-sm"
                         >
-                          View Front
+                          Front
                         </Button>
                       )}
                       {doc.document_url.back && (
                         <Button
-                          type="primary"
-                          ghost
+                          size="small"
                           icon={<EyeOutlined />}
                           onClick={() => {
                             setPreviewDoc({
@@ -800,16 +797,15 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
                             });
                             setIsPreviewModalOpen(true);
                           }}
-                          className="font-semibold rounded-lg dark:!text-blue-400 dark:!border-blue-500 dark:hover:!text-blue-300 dark:hover:!border-blue-400"
+                          className="text-[11px] rounded-sm"
                         >
-                          View Back
+                          Back
                         </Button>
                       )}
                     </>
                   ) : (
                     <Button
-                      type="primary"
-                      ghost
+                      size="small"
                       icon={<EyeOutlined />}
                       onClick={() => {
                         setPreviewDoc({
@@ -822,21 +818,21 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
                         });
                         setIsPreviewModalOpen(true);
                       }}
-                      className="font-semibold rounded-lg dark:!text-blue-400 dark:!border-blue-500 dark:hover:!text-blue-300 dark:hover:!border-blue-400"
+                      className="text-[11px] rounded-sm"
                     >
-                      View Document
+                      View
                     </Button>
                   )}
                 </>
               ) : (
-                <Text type="secondary" className="text-[12px] italic">
-                  No document file
+                <Text type="secondary" className="text-[11px] italic">
+                  No file
                 </Text>
               )}
 
               {doc?.document_url && (
                 <Button
-                  type="default"
+                  size="small"
                   icon={<DownloadOutlined />}
                   onClick={() => {
                     if (typeof doc?.document_url === "object" && doc.document_url !== null) {
@@ -855,67 +851,56 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
                       );
                     }
                   }}
-                  className="rounded-lg font-semibold dark:!bg-slate-700 dark:!text-slate-200 dark:!border-slate-600 dark:hover:!bg-slate-600 dark:hover:!text-white dark:hover:!border-slate-500"
-                >
-                  Download
-                </Button>
+                  className="text-[11px] rounded-sm"
+                />
               )}
             </div>
-            <div>
-              {(doc?.document_type?.toLowerCase().includes("license") ||
-                doc?.document_type?.toLowerCase().includes("dl")) && (
-                <div className="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 whitespace-nowrap shrink-0">
-                  <CalendarOutlined className="text-red-400" />
-                  <div className="flex items-center gap-2">
-                    <Text
-                      type="secondary"
-                      className="text-[10px] uppercase font-bold tracking-tighter whitespace-nowrap"
-                    >
-                      Expiry:
-                    </Text>
-                    <Text strong className="text-[12px] whitespace-nowrap">
-                      {doc?.extracted_data?.extracted_expiry
-                        ? doc.extracted_data.extracted_expiry
-                        : doc?.expiry_date
-                          ? dayjs(doc.expiry_date).format("MMM D, YYYY")
-                          : "N/A"}
-                    </Text>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
 
-          <div className="flex justify-end items-center pt-3 mt-4 border-t border-gray-100 gap-3">
-            {doc?.license_status !== "verified" && (
-              <>
-                <Button
-                  danger
-                  ghost
-                  icon={<CloseCircleOutlined />}
-                  loading={loadingAction === `reject-${doc.document_id || doc.id}`}
-                  onClick={() =>
-                    setRejectModalDoc({
-                      id: doc.document_id || doc.id,
-                      type: doc.document_type || doc.type,
-                    })
-                  }
-                  className="rounded-xl px-6"
-                >
-                  Reject
-                </Button>
-                <Button
-                  type="primary"
-                  icon={<CheckCircleOutlined />}
-                  className="bg-green-600 hover:bg-green-700 border-none shadow-sm rounded-xl px-6"
-                  loading={loadingAction === `approve-${doc.document_id || doc.id}`}
-                  onClick={() => handleDocumentApprove(doc.document_id || doc.id)}
-                >
-                  Approve
-                </Button>
-              </>
+            {(doc?.document_type?.toLowerCase().includes("license") ||
+              doc?.document_type?.toLowerCase().includes("dl")) && (
+              <div className="flex items-center gap-1.5 text-[11px]">
+                <CalendarOutlined className="text-slate-400" />
+                <Text type="secondary" className="uppercase font-bold tracking-tighter">
+                  Exp:
+                </Text>
+                <Text strong>
+                  {doc?.extracted_data?.extracted_expiry
+                    ? doc.extracted_data.extracted_expiry
+                    : doc?.expiry_date
+                      ? dayjs(doc.expiry_date).format("MMM D, YYYY")
+                      : "N/A"}
+                </Text>
+              </div>
             )}
           </div>
+          
+          {doc?.license_status !== "verified" && (
+            <div className="flex justify-end items-center pt-3 mt-3 border-t border-slate-100 dark:border-slate-700 gap-2">
+              <Button
+                danger
+                size="small"
+                loading={loadingAction === `reject-${doc.document_id || doc.id}`}
+                onClick={() =>
+                  setRejectModalDoc({
+                    id: doc.document_id || doc.id,
+                    type: doc.document_type || doc.type,
+                  })
+                }
+                className="rounded-sm text-[11px] px-3"
+              >
+                Reject
+              </Button>
+              <Button
+                type="primary"
+                size="small"
+                loading={loadingAction === `approve-${doc.document_id || doc.id}`}
+                onClick={() => handleDocumentApprove(doc.document_id || doc.id)}
+                className="bg-emerald-600 hover:bg-emerald-700 border-none rounded-sm text-[11px] px-3"
+              >
+                Approve
+              </Button>
+            </div>
+          )}
         </div>
       );
     })}
@@ -925,10 +910,10 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
   const performance = (
     <div className="space-y-6">
       <div className="content-card p-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6 gap-2">
           <Title
-            level={4}
-            className="m-0 flex items-center gap-2 text-gray-800 dark:text-slate-100"
+            level={5}
+            className="m-0 flex items-center gap-2 text-slate-800 dark:text-slate-100 font-bold whitespace-nowrap"
           >
             <BarChartOutlined className="text-blue-500" /> Performance Analytics
           </Title>
@@ -937,7 +922,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
             onChange={(e) => setPerfPeriod(e.target.value)}
             buttonStyle="solid"
             size="small"
-            className="period-toggle"
+            className="period-toggle flex-shrink-0 flex flex-nowrap whitespace-nowrap"
           >
             <Radio.Button value="Today">Today</Radio.Button>
             <Radio.Button value="Week">Week</Radio.Button>
@@ -978,75 +963,63 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="stat-box perf-metric-card bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800/30 flex items-center gap-3 p-4">
-                <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
-                  <WalletOutlined className="text-emerald-600 dark:text-emerald-400 text-lg" />
+              <div className="stat-box flex items-center gap-3 p-3">
+                <div className="w-8 h-8 rounded bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 flex items-center justify-center shrink-0">
+                  <WalletOutlined className="text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <div>
-                  <Text
-                    type="secondary"
-                    className="info-label text-[10px] text-emerald-600 dark:text-emerald-400"
-                  >
+                  <Text type="secondary" className="info-label text-[10px]">
                     Earnings
                   </Text>
-                  <div className="text-xl font-bold text-emerald-800 dark:text-emerald-100 mt-0.5 perf-stat-value">
+                  <div className="text-lg font-bold text-slate-800 dark:text-slate-100 mt-0.5 leading-tight">
                     ₹{(dynamicMetrics?.totalEarnings || 0).toLocaleString("en-IN")}
                   </div>
                 </div>
               </div>
 
-              <div className="stat-box perf-metric-card bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/30 flex items-center gap-3 p-4">
-                <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
-                  <ClockCircleOutlined className="text-blue-600 dark:text-blue-400 text-lg" />
+              <div className="stat-box flex items-center gap-3 p-3">
+                <div className="w-8 h-8 rounded bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30 flex items-center justify-center shrink-0">
+                  <ClockCircleOutlined className="text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <Text
-                    type="secondary"
-                    className="info-label text-[10px] text-blue-600 dark:text-blue-400"
-                  >
+                  <Text type="secondary" className="info-label text-[10px]">
                     Online Time
                   </Text>
-                  <div className="text-xl font-bold text-blue-800 dark:text-blue-100 mt-0.5 perf-stat-value">
+                  <div className="text-lg font-bold text-slate-800 dark:text-slate-100 mt-0.5 leading-tight">
                     {((dynamicMetrics?.onlineMinutes || 0) / 60).toFixed(1)}h
                   </div>
                 </div>
               </div>
 
-              <div className="stat-box perf-metric-card bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800/30 flex items-center gap-3 p-4">
-                <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
-                  <UserOutlined className="text-amber-600 dark:text-amber-400 text-lg" />
+              <div className="stat-box flex items-center gap-3 p-3">
+                <div className="w-8 h-8 rounded bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30 flex items-center justify-center shrink-0">
+                  <UserOutlined className="text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>
-                  <Text
-                    type="secondary"
-                    className="info-label text-[10px] text-amber-600 dark:text-amber-400"
-                  >
+                  <Text type="secondary" className="info-label text-[10px]">
                     Rating
                   </Text>
-                  <div className="text-xl font-bold text-amber-800 dark:text-amber-100 mt-0.5 flex items-center gap-1 perf-stat-value">
+                  <div className="text-lg font-bold text-slate-800 dark:text-slate-100 mt-0.5 flex items-center gap-1 leading-tight">
                     {Number(dynamicMetrics?.rating || driver?.rating || 0).toFixed(1)}
                     <Rate
                       disabled
                       allowHalf
                       value={Number(dynamicMetrics?.rating || driver?.rating || 0)}
-                      style={{ fontSize: 12, marginLeft: 4 }}
+                      style={{ fontSize: 10, marginLeft: 2 }}
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="stat-box perf-metric-card bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-800/30 flex items-center gap-3 p-4">
-                <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
-                  <CheckCircleOutlined className="text-purple-600 dark:text-purple-400 text-lg" />
+              <div className="stat-box flex items-center gap-3 p-3">
+                <div className="w-8 h-8 rounded bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800/30 flex items-center justify-center shrink-0">
+                  <CheckCircleOutlined className="text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <Text
-                    type="secondary"
-                    className="info-label text-[10px] text-purple-600 dark:text-purple-400"
-                  >
+                  <Text type="secondary" className="info-label text-[10px]">
                     Acceptance
                   </Text>
-                  <div className="text-xl font-bold text-purple-800 dark:text-purple-100 mt-0.5 perf-stat-value">
+                  <div className="text-lg font-bold text-slate-800 dark:text-slate-100 mt-0.5 leading-tight">
                     {dynamicMetrics?.acceptanceRate || 0}%
                   </div>
                 </div>
@@ -1246,19 +1219,19 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
   const activity = (
     <div className="space-y-6">
       <div className="content-card p-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6 gap-2">
           <Title
-            level={4}
-            className="m-0 flex items-center gap-2 text-gray-800 dark:text-slate-100"
+            level={5}
+            className="m-0 flex items-center gap-2 text-slate-800 dark:text-slate-100 font-bold whitespace-nowrap flex-shrink-0"
           >
             <LineChartOutlined className="text-blue-500" /> Ride Activity
           </Title>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <Select
               size="small"
               value={historyStatus}
               onChange={setHistoryStatus}
-              className="w-32"
+              className="w-24"
               options={[
                 { label: "All Status", value: "all" },
                 { label: "Completed", value: "Completed" },
@@ -1270,7 +1243,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
               onChange={(e) => setHistoryPeriod(e.target.value)}
               buttonStyle="solid"
               size="small"
-              className="period-toggle"
+              className="period-toggle flex flex-nowrap whitespace-nowrap flex-shrink-0"
             >
               <Radio.Button value="Today">Today</Radio.Button>
               <Radio.Button value="Week">Week</Radio.Button>
@@ -1287,33 +1260,27 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
           <div className="space-y-6">
             {/* Activity Summary Header */}
             <div className="grid grid-cols-3 gap-3 mb-2">
-              <div className="bg-gray-50 dark:bg-slate-800/50 p-3 rounded-xl border border-gray-100 dark:border-slate-700">
-                <Text type="secondary" className="text-[10px] uppercase font-bold block">
+              <div className="stat-box p-3 border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800">
+                <Text type="secondary" className="text-[10px] font-bold block">
                   Total Trips
                 </Text>
-                <Text className="text-lg font-bold text-gray-800 dark:text-slate-100">
+                <Text className="text-lg font-bold text-slate-800 dark:text-slate-100">
                   {historyMetrics?.totalTrips || 0}
                 </Text>
               </div>
-              <div className="bg-emerald-50/50 dark:bg-emerald-900/20 p-3 rounded-xl border border-emerald-100 dark:border-emerald-800/30">
-                <Text
-                  type="secondary"
-                  className="text-[10px] uppercase font-bold block text-emerald-600 dark:text-emerald-400"
-                >
+              <div className="stat-box p-3 border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800">
+                <Text type="secondary" className="text-[10px] font-bold block">
                   Earnings
                 </Text>
-                <Text className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
+                <Text className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
                   ₹{(historyMetrics?.totalEarnings || 0).toLocaleString()}
                 </Text>
               </div>
-              <div className="bg-blue-50/50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800/30">
-                <Text
-                  type="secondary"
-                  className="text-[10px] uppercase font-bold block text-blue-600 dark:text-blue-400"
-                >
+              <div className="stat-box p-3 border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-800">
+                <Text type="secondary" className="text-[10px] font-bold block">
                   Success Rate
                 </Text>
-                <Text className="text-lg font-bold text-blue-700 dark:text-blue-300">
+                <Text className="text-lg font-bold text-blue-600 dark:text-blue-400">
                   {historyMetrics?.completionRate || 0}%
                 </Text>
               </div>
@@ -1542,7 +1509,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
       <Drawer
         title={null}
         placement="right"
-        width={720}
+        width={480}
         onClose={onClose}
         open={open}
         closable={false}
@@ -1557,93 +1524,84 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
           },
         }}
       >
-        <div className="flex-shrink-0">
-          <div className="driver-details-header">
-            <div className="flex items-center justify-between relative z-10">
-              <div className="flex items-center gap-6">
-                <div className="driver-avatar-wrapper overflow-hidden rounded-full border-4 border-white/20 shadow-xl group cursor-pointer">
-                  <Image
-                    width={100}
-                    height={100}
-                    src={getMediaUrl(driver?.profilePicUrl || driver?.profile_pic_url)}
-                    className="object-cover rounded-full"
-                    rootClassName="rounded-full"
-                    style={{
-                      objectFit: "cover",
-                      borderRadius: "50%",
-                      aspectRatio: "1/1",
-                    }}
-                    preview={{
-                      mask: (
-                        <div className="text-[10px] font-bold rounded-full flex items-center justify-center h-full w-full">
-                          PREVIEW
-                        </div>
-                      ),
-                    }}
-                    fallback="https://ui-avatars.com/api/?name=${encodeURIComponent(driver?.full_name || 'Driver')}&background=6366f1&color=fff"
-                  />
+        <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 flex-shrink-0 z-10">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700 shrink-0">
+              <Image
+                width={48}
+                height={48}
+                src={getMediaUrl(driver?.profilePicUrl || driver?.profile_pic_url)}
+                className="object-cover w-full h-full"
+                preview={{
+                  mask: (
+                    <div className="text-[10px] font-bold rounded-full flex items-center justify-center h-full w-full">
+                      PREVIEW
+                    </div>
+                  ),
+                }}
+                fallback={`https://ui-avatars.com/api/?name=${encodeURIComponent(driver?.full_name || 'Driver')}&background=6366f1&color=fff`}
+              />
+            </div>
+            <div className="flex flex-col justify-center">
+              <h2 className="font-bold text-lg text-slate-800 dark:text-slate-100 tracking-tight m-0 leading-tight">
+                {driver?.first_name || driver?.last_name
+                  ? `${driver.first_name || ""} ${driver.last_name || ""}`.trim()
+                  : driver?.full_name || "N/A"}
+              </h2>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 text-[11px] font-bold tracking-wider uppercase m-0">
+                  <SafetyCertificateOutlined className="text-blue-500 text-xs" />
+                  ID: 
+                  <Text
+                    className="text-slate-500 dark:text-slate-400 font-bold m-0 p-0"
+                    style={{ maxWidth: 90, fontSize: '11px' }}
+                    ellipsis={{ tooltip: true }}
+                    copyable={{ text: String(driver?.driverId || driver?.driver_id || driver?.id || "N/A") }}
+                  >
+                    {driver?.driverId || driver?.driver_id || driver?.id || "N/A"}
+                  </Text>
                 </div>
-                <div className="text-white">
-                  <div className="text-3xl font-extrabold tracking-tight">
-                    {driver?.first_name || driver?.last_name
-                      ? `${driver.first_name || ""} ${driver.last_name || ""}`.trim()
-                      : driver?.full_name || "N/A"}
-                  </div>
-                  <p className="m-0 text-blue-100/80 text-sm font-medium mt-1 flex items-center gap-2">
-                    <SafetyCertificateOutlined className="text-blue-300" />
-                    DRIVER ID: {driver?.driverId || driver?.driver_id || driver?.id || "N/A"}
-                  </p>
-                  <div className="mt-3 flex gap-2">
-                    {driver?.availability?.online ? (
-                      <Tag
-                        color="#4ade80"
-                        className="m-0 border-none px-3 font-bold rounded-full text-green-900 shadow-sm"
-                      >
-                        <SyncOutlined spin className="mr-1" /> ONLINE
-                      </Tag>
-                    ) : (
-                      <Tag
-                        color="#94a3b8"
-                        className="m-0 border-none px-3 font-bold rounded-full text-white shadow-sm"
-                      >
-                        OFFLINE
-                      </Tag>
-                    )}
-                    <Tag
-                      color="#6366f1"
-                      className="m-0 border-none px-3 font-bold rounded-full text-white shadow-sm uppercase"
-                    >
-                      {driver?.role || "Normal"}
-                    </Tag>
-                  </div>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Dropdown
-                  menu={{ items: getStatusMenuItems() }}
-                  trigger={["click"]}
-                  placement="bottomRight"
-                >
-                  <Button
-                    type="primary"
-                    shape="circle"
-                    icon={<SettingOutlined />}
-                    className="bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md"
-                  />
-                </Dropdown>
-                <Button
-                  type="primary"
-                  shape="circle"
-                  icon={<CloseOutlined />}
-                  onClick={onClose}
-                  className="bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-md"
-                />
+                {driver?.availability?.online ? (
+                  <span className="flex items-center gap-1 text-[9px] font-black tracking-widest px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-500/20">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                    ONLINE
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-black tracking-widest px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                    OFFLINE
+                  </span>
+                )}
+                <span className="text-[9px] font-black tracking-widest px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 uppercase">
+                  {driver?.role || "Normal"}
+                </span>
               </div>
             </div>
           </div>
+          
+          <div className="flex items-center gap-1">
+            <Dropdown
+              menu={{ items: getStatusMenuItems() }}
+              trigger={["click"]}
+              placement="bottomRight"
+            >
+              <Button
+                type="text"
+                shape="circle"
+                icon={<SettingOutlined className="text-slate-500" />}
+                className="hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center"
+              />
+            </Dropdown>
+            <Button
+              type="text"
+              shape="circle"
+              icon={<CloseOutlined className="text-slate-500" />}
+              onClick={onClose}
+              className="hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center"
+            />
+          </div>
         </div>
 
-        <div className="flex-1 py-6 overflow-y-auto custom-scrollbar bg-slate-50 dark:bg-[#0f172a]">
+        <div className="flex-1 py-6 overflow-y-auto custom-scrollbar bg-white dark:bg-[#0f172a]">
           {(driver?.status === "blocked" || driver?.status === "suspended") && (
             <div className="mx-6 mb-6">
               <div
@@ -1679,7 +1637,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
             </div>
           )}
 
-          <div className="custom-navigation mb-8">
+          <div className="custom-navigation mb-4">
             {segments.map(({ key }) => (
               <div
                 key={key}
