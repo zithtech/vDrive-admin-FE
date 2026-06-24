@@ -356,7 +356,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
       title: "Module Name",
       dataIndex: "module",
       key: "module",
-      render: (text: string) => <strong className="capitalize text-slate-700">{text}</strong>,
+      render: (text: string) => <strong className="capitalize text-slate-700 dark:text-slate-200">{text}</strong>,
     },
     {
       title: renderHeaderCheckbox("read", "Read (View)"),
@@ -410,8 +410,10 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
     };
   });
 
-  const alertBannerHeight = selectedRole?.is_system ? 60 : 0;
-  const tableScrollHeight = height ? height - 300 - alertBannerHeight : 350;
+  // We use CSS Flexbox now to grow the table dynamically instead of hard-coded height formulas
+  // so that it fills exactly the available space without leaving gaps at the bottom.
+  // We just pass a dummy string to trigger Antd's scrollable table structure.
+  const tableScrollHeight = "100%";
 
   return (
     <Card
@@ -428,9 +430,38 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
         },
       }}
     >
+      <style>
+        {`
+          .matrix-table-flex.ant-table-wrapper,
+          .matrix-table-flex .ant-spin-nested-loading,
+          .matrix-table-flex .ant-spin-container,
+          .matrix-table-flex .ant-table,
+          .matrix-table-flex .ant-table-container {
+              display: flex;
+              flex-direction: column;
+              flex-grow: 1;
+              min-height: 0;
+              min-width: 0;
+          }
+          .matrix-table-flex .ant-table {
+              background: transparent !important;
+          }
+          .matrix-table-flex .ant-table-body,
+          .matrix-table-flex .ant-table-content {
+              flex-grow: 1;
+              min-height: 0;
+              min-width: 0;
+              overflow: auto !important;
+              max-height: none !important;
+          }
+          .matrix-table-flex .ant-table-header {
+              flex-shrink: 0;
+          }
+        `}
+      </style>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 flex-shrink-0">
         <div>
-          <h2 className="text-xl font-black text-slate-800">Dynamic Role Customizer</h2>
+          <h2 className="text-xl font-black text-slate-800 dark:text-slate-100">Dynamic Role Customizer</h2>
           <p className="text-slate-400 text-sm">
             Select any role, configure access rules across modules, and save changes.
           </p>
@@ -441,14 +472,14 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
             type="dashed"
             icon={<PlusOutlined />}
             onClick={() => setIsCreateModalOpen(true)}
-            className="rounded-xl font-bold border-blue-300 text-blue-600 hover:bg-blue-50"
+            className="rounded-xl font-bold border-blue-300 text-blue-600 hover:bg-blue-50 dark:border-blue-700 dark:text-blue-400 dark:hover:bg-blue-900/30"
           >
             New Role
           </Button>
           <Button
             icon={<ReloadOutlined />}
             onClick={() => selectedRoleId && fetchRolePermissions(selectedRoleId)}
-            className="rounded-xl font-semibold border-slate-200"
+            className="rounded-xl font-semibold border-slate-200 dark:border-slate-700 dark:text-slate-300"
           >
             Reset
           </Button>
@@ -490,8 +521,8 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
                   onClick={() => setSelectedRoleId(r.id)}
                   className={`w-full text-left px-4 py-3 rounded-xl transition-all font-semibold ${
                     selectedRoleId === r.id
-                      ? "bg-blue-50 text-blue-700 border border-blue-100/50"
-                      : "text-slate-600 hover:bg-slate-50 border border-transparent"
+                      ? "bg-blue-50 text-blue-700 border border-blue-100/50 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-800"
+                      : "text-slate-600 hover:bg-slate-50 border border-transparent dark:text-slate-400 dark:hover:bg-slate-800/50"
                   }`}
                 >
                   <div className="truncate capitalize">{r.name.replace(/_/g, " ")}</div>
@@ -514,20 +545,20 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
         {/* Permission Grid Matrix Table */}
         <div className="lg:col-span-3 flex flex-col h-full min-h-0 overflow-hidden">
           {selectedRole && (
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50 border border-slate-100/50 p-4 rounded-2xl mb-4 shadow-sm flex-shrink-0">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50 border border-slate-100/50 p-4 rounded-2xl mb-4 shadow-sm flex-shrink-0 dark:bg-slate-800/50 dark:border-slate-700/50">
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] text-blue-500 font-bold uppercase tracking-wider">
+                <span className="text-[10px] text-blue-500 font-bold uppercase tracking-wider dark:text-blue-400">
                   Role Configuration
                 </span>
-                <strong className="text-base text-slate-800 capitalize">
+                <strong className="text-base text-slate-800 capitalize dark:text-slate-100">
                   {selectedRole.name.replace(/_/g, " ")}
                 </strong>
-                <span className="text-xs text-slate-400 font-medium">
+                <span className="text-xs text-slate-400 font-medium dark:text-slate-500">
                   {selectedRole.description || "No description provided"}
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">
                   Role Type
                 </span>
                 <Select
@@ -546,7 +577,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
           )}
 
           {selectedRole?.is_system && (
-            <div className="bg-amber-50 border border-amber-200/50 text-amber-800 p-4 rounded-2xl mb-4 text-xs font-semibold flex-shrink-0">
+            <div className="bg-amber-50 border border-amber-200/50 text-amber-800 p-4 rounded-2xl mb-4 text-xs font-semibold flex-shrink-0 dark:bg-amber-900/20 dark:border-amber-800/50 dark:text-amber-300">
               ⚠️ Note: <strong>{selectedRole.name.toUpperCase()}</strong> is currently a
               platform-locked system role. Change it to "Customizable" above to edit its
               permissions.
@@ -558,7 +589,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
             dataSource={tableData}
             pagination={false}
             loading={loading}
-            className="border border-slate-100 rounded-2xl overflow-hidden shadow-none flex-grow"
+            className="matrix-table-flex border border-slate-100 rounded-2xl overflow-hidden shadow-none flex-grow dark:border-slate-700/50"
             scroll={{ y: tableScrollHeight }}
             size="small"
           />
@@ -567,8 +598,8 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
       <Modal
         title={
           <div className="flex flex-col">
-            <span className="text-lg font-black text-slate-800">Create Custom Role</span>
-            <span className="text-xs text-slate-400 font-medium">Define a new role before setting permissions</span>
+            <span className="text-lg font-black text-slate-800 dark:text-slate-100">Create Custom Role</span>
+            <span className="text-xs text-slate-400 font-medium dark:text-slate-500">Define a new role before setting permissions</span>
           </div>
         }
         open={isCreateModalOpen}
@@ -584,7 +615,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
       >
         <Space direction="vertical" className="w-full mt-4 gap-4">
           <div>
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Role Name</label>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1 dark:text-slate-400">Role Name</label>
             <Input
               placeholder="e.g. support_lead"
               value={newRoleName}
@@ -593,7 +624,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
             />
           </div>
           <div>
-            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1">Description</label>
+            <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-1 dark:text-slate-400">Description</label>
             <Input.TextArea
               placeholder="Description of authority and responsibilities..."
               value={newRoleDesc}

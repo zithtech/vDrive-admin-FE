@@ -3,47 +3,6 @@ import { ShieldCheck, UserCheck, KeySquare, Clock } from "lucide-react";
 import type { AdminUser } from "../../store/slices/adminSlice";
 import dayjs from "dayjs";
 
-// Beautiful SVG Sparkline helper component matching the mockup designs
-const Sparkline: React.FC<{ color: string }> = ({ color }) => {
-  let strokeColor = "#3b82f6";
-  let gradientId = "blue-grad-admin";
-  let stopColor = "#3b82f6";
-
-  if (color === "green") {
-    strokeColor = "#10b981";
-    gradientId = "green-grad-admin";
-    stopColor = "#10b981";
-  } else if (color === "purple") {
-    strokeColor = "#8b5cf6";
-    gradientId = "purple-grad-admin";
-    stopColor = "#8b5cf6";
-  } else if (color === "orange") {
-    strokeColor = "#f59e0b";
-    gradientId = "orange-grad-admin";
-    stopColor = "#f59e0b";
-  }
-
-  return (
-    <svg className="w-20 h-6 opacity-70" viewBox="0 0 100 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={stopColor} stopOpacity="0.2" />
-          <stop offset="100%" stopColor={stopColor} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M0 25 C15 20, 30 28, 50 16 C70 4, 85 8, 100 2 L100 30 L0 30 Z"
-        fill={`url(#${gradientId})`}
-      />
-      <path
-        d="M0 25 C15 20, 30 28, 50 16 C70 4, 85 8, 100 2"
-        stroke={strokeColor}
-        strokeWidth="1.25"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-};
 
 interface AdminStatsProps {
   admins: AdminUser[];
@@ -64,36 +23,36 @@ const AdminStats: React.FC<AdminStatsProps> = ({ admins }) => {
       value: total,
       label: "records",
       icon: <ShieldCheck size={14} strokeWidth={3} />,
+      bgIcon: <ShieldCheck size={100} strokeWidth={1.5} />,
       iconColor: "text-blue-500 dark:text-blue-400",
       iconBg: "bg-blue-50 dark:bg-blue-500/10",
-      sparklineColor: "blue",
     },
     {
       title: "Super Admins",
       value: superAdmins,
       label: "system",
       icon: <KeySquare size={14} strokeWidth={3} />,
+      bgIcon: <KeySquare size={100} strokeWidth={1.5} />,
       iconColor: "text-purple-500 dark:text-purple-400",
       iconBg: "bg-purple-50 dark:bg-purple-500/10",
-      sparklineColor: "purple",
     },
     {
       title: "Platform Admins",
       value: standardAdmins,
       label: "active",
       icon: <UserCheck size={14} strokeWidth={3} />,
+      bgIcon: <UserCheck size={100} strokeWidth={1.5} />,
       iconColor: "text-emerald-500 dark:text-emerald-400",
       iconBg: "bg-emerald-50 dark:bg-emerald-500/10",
-      sparklineColor: "green",
     },
     {
       title: "New Additions",
       value: newThisMonth,
       label: "this month",
       icon: <Clock size={14} strokeWidth={3} />,
+      bgIcon: <Clock size={100} strokeWidth={1.5} />,
       iconColor: "text-amber-500 dark:text-amber-400",
       iconBg: "bg-amber-50 dark:bg-amber-500/10",
-      sparklineColor: "orange",
     },
   ];
 
@@ -121,9 +80,9 @@ const AdminStats: React.FC<AdminStatsProps> = ({ admins }) => {
             </span>
           </div>
 
-          {/* Bottom Right Sparkline */}
-          <div className="absolute bottom-0 right-0 pointer-events-none">
-            <Sparkline color={card.sparklineColor} />
+          {/* Background Icon */}
+          <div className={`absolute -bottom-6 -right-6 opacity-[0.06] pointer-events-none ${card.iconColor}`}>
+            {card.bgIcon}
           </div>
         </div>
       ))}

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { logger } from "../../utils/logger";
+import { useGetHeight } from "../../utilities/customheightWidth";
 
 import {
   Table,
@@ -35,6 +36,7 @@ import {
   UserDeleteOutlined,
   VerticalAlignTopOutlined,
   CloudSyncOutlined,
+  CopyOutlined,
 } from "@ant-design/icons";
 
 import { adjustFareUI, assignDriverUI, type TripDetailsType } from "../../store/slices/tripSlice";
@@ -88,6 +90,8 @@ const titleMap = {
 };
 
 const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, pagination, loading }) => {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const tableHeight = useGetHeight(contentRef);
   const dispatch = useDispatch();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -240,20 +244,37 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
       dataIndex: "trip_code",
       width: 140,
       render: (_, r) => (
-        <Tooltip title="View Detailed Trip Analytics">
-          <div
-            onClick={(e) => {
-              e.stopPropagation();
-              setActionTrip(r);
-              setDrawerOpen(true);
-            }}
-            className="group cursor-pointer flex items-center gap-2"
-          >
-            <div className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full font-mono text-[11px] font-extrabold tracking-tight border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
-              {r.trip_code}
+        <div className="flex items-center gap-2 group/copy">
+          <Tooltip title="View Detailed Trip Analytics">
+            <div
+              onClick={(e) => {
+                e.stopPropagation();
+                setActionTrip(r);
+                setDrawerOpen(true);
+              }}
+              className="group cursor-pointer flex items-center gap-2"
+            >
+              <div className="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg font-mono text-[11px] font-extrabold tracking-tight border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
+                {r.trip_code}
+              </div>
             </div>
-          </div>
-        </Tooltip>
+          </Tooltip>
+          <Tooltip title="Copy ID">
+            <CopyOutlined
+              className="text-slate-400 hover:text-indigo-600 cursor-pointer opacity-0 group-hover/copy:opacity-100 transition-opacity"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigator.clipboard.writeText(r.trip_code || "");
+                notification.success({
+                  message: "Copied!",
+                  description: "Trip Code copied to clipboard",
+                  placement: "topRight",
+                  duration: 2,
+                });
+              }}
+            />
+          </Tooltip>
+        </div>
       ),
     },
     {
@@ -357,22 +378,22 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
         const getStatusColor = () => {
           switch (r.trip_status) {
             case "LIVE":
-              return "from-emerald-500 to-teal-400 shadow-emerald-200";
+              return "bg-emerald-50 text-emerald-500";
             case "COMPLETED":
-              return "from-indigo-600 to-blue-500 shadow-blue-200 text-white";
+              return "bg-indigo-50 text-indigo-500";
             case "ASSIGNED":
-              return "from-blue-600 to-cyan-400 shadow-blue-200 text-white";
+              return "bg-blue-50 text-blue-500";
             case "REQUESTED":
-              return "from-amber-400 to-orange-300 shadow-amber-200";
+              return "bg-amber-50 text-amber-500";
             case "CANCELLED":
-              return "from-rose-500 to-pink-500 shadow-rose-200 text-white";
+              return "bg-red-50 text-red-500";
             default:
-              return "from-slate-400 to-slate-500 shadow-slate-200 text-white";
+              return "bg-slate-50 text-slate-500";
           }
         };
         return (
           <div
-            className={`inline-flex bg-gradient-to-r ${getStatusColor()} px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest text-white shadow-lg`}
+            className={`inline-flex ${getStatusColor()} px-2.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider`}
           >
             {r.trip_status}
           </div>
@@ -406,8 +427,9 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
       ),
     },
     {
-      title: "",
+      title: "Actions",
       width: 80,
+      fixed: 'right',
       render: (_, r) => (
         <div className="flex items-center justify-end gap-1">
           <Tooltip title="Deep Dive">
@@ -532,11 +554,10 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
                   setSearchRadius(r);
                 }}
                 className={`flex-1 px-4 py-2 rounded-none text-[10px] font-black transition-all border duration-300
-                    ${
-                      searchRadius === r
-                        ? "bg-blue-600 border-blue-600 text-white transform scale-100 shadow-sm"
-                        : "bg-white border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600"
-                    }`}
+                    ${searchRadius === r
+                    ? "bg-blue-600 border-blue-600 text-white transform scale-100 shadow-sm"
+                    : "bg-white border-gray-200 text-gray-500 hover:border-blue-300 hover:text-blue-600"
+                  }`}
               >
                 {r >= 1000 ? `${r / 1000}km` : `${r}m`}
               </button>
@@ -564,11 +585,10 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
                     key={driver.id}
                     onClick={() => handleDriverChange(driver.id)}
                     className={`group py-3 px-4 rounded-none border-b border-gray-100 cursor-pointer transition-all duration-300 last:border-b-0
-                          ${
-                            selectedDriver?.id === driver.id
-                              ? "border-l-4 border-l-blue-600 bg-blue-50/30"
-                              : "border-l-4 border-l-transparent bg-white hover:bg-slate-50"
-                          }`}
+                          ${selectedDriver?.id === driver.id
+                        ? "border-l-4 border-l-blue-600 bg-blue-50/30"
+                        : "border-l-4 border-l-transparent bg-white hover:bg-slate-50"
+                      }`}
                   >
                     <div className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-4">
@@ -934,10 +954,9 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
                 checked={cancelReason === r.value}
                 onChange={() => setCancelReason(r.value)}
                 className={`text-[10px] m-0 px-3 py-2 border rounded-none transition-all text-center flex items-center justify-center h-10 font-medium
-                  ${
-                    cancelReason === r.value
-                      ? "bg-red-600 text-white border-red-600 shadow-md transform scale-[1.02]"
-                      : "bg-gray-50 text-gray-600 border-gray-100 hover:border-red-200 hover:bg-red-50/30"
+                  ${cancelReason === r.value
+                    ? "bg-red-600 text-white border-red-600 shadow-md transform scale-[1.02]"
+                    : "bg-gray-50 text-gray-600 border-gray-100 hover:border-red-200 hover:bg-red-50/30"
                   }`}
               >
                 {r.label}
@@ -1104,7 +1123,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
           border-bottom: 1px solid #e2e8f0 !important;
           padding: 8px 12px !important;
         }
-        .premium-table-compact .ant-table-tbody > tr > td {
+        .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
           padding: 8px 12px !important;
           border-bottom: 1px solid #f1f5f9 !important;
           background: #ffffff !important;
@@ -1125,7 +1144,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
           color: #94a3b8 !important;
           border-bottom: 1px solid #334155 !important;
         }
-        .dark .premium-table-compact .ant-table-tbody > tr > td {
+        .dark .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
           background: #0f172a !important;
           border-bottom: 1px solid #1e293b !important;
           color: #cbd5e1 !important;
@@ -1136,129 +1155,148 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
         .dark .premium-table-compact .ant-table-cell-row-hover {
           background: #1e293b !important;
         }
+
+        /* Flex constraints to push scrollbar to the bottom */
+        .premium-table-compact.ant-table-wrapper,
+        .premium-table-compact .ant-spin-nested-loading,
+        .premium-table-compact .ant-spin-container,
+        .premium-table-compact .ant-table,
+        .premium-table-compact .ant-table-container {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            min-height: 0;
+            min-width: 0;
+        }
+        .premium-table-compact .ant-table-body,
+        .premium-table-compact .ant-table-content {
+            flex-grow: 1;
+            min-height: 0;
+            min-width: 0;
+            overflow: auto !important;
+        }
       `}</style>
-      <div className="w-full flex-grow flex flex-col">
-      <Table
-        columns={columns}
-        dataSource={data}
-        rowKey="trip_id"
-        pagination={pagination}
-        loading={loading}
-        scroll={{ x: "max-content", y: "calc(100vh - 310px)" }}
-        size="small"
-        className="premium-table-compact flex-grow"
-      />
+      <div ref={contentRef} className="w-full flex-grow flex flex-col overflow-hidden min-h-0 min-w-0">
+        <Table
+          columns={columns}
+          dataSource={data}
+          rowKey="trip_id"
+          pagination={pagination}
+          loading={loading}
+          scroll={{ y: Math.floor(tableHeight || 0), x: 1200 }}
+          size="small"
+          className="premium-table-compact flex-grow"
+        />
 
-      {/* Drawer */}
-      <TripDetailsDrawer
-        open={drawerOpen}
-        trip={trip}
-        onClose={() => {
-          setDrawerOpen(false);
-          setActionTrip(null);
-          // ✅ Removed: setActiveAction(null) - Don't close modal when drawer closes
-        }}
-        canUpdateTrip={hasUpdateAccess}
-        activeAction={activeAction}
-        onAssignDriverClick={() => {
-          console.log("[DrawerCallback] Setting activeAction to ASSIGN_DRIVER");
-          setActiveAction("ASSIGN_DRIVER");
-        }}
-        onAdjustFareClick={() => {
-          console.log("[DrawerCallback] Setting activeAction to ADJUST_FARE");
-          setActiveAction("ADJUST_FARE");
-        }}
-        onCancelTripClick={() => {
-          console.log("[DrawerCallback] Setting activeAction to CANCEL_TRIP");
-          setActiveAction("CANCEL_TRIP");
-        }}
-        onTriggerDriversClick={() => {
-          console.log("[DrawerCallback] Setting activeAction to TRIGGER_DRIVER");
-          setActiveAction("TRIGGER_DRIVER");
-        }}
-        isTripCompleted={isActionRestricted}
-        isDriverAssigned={isDriverAssigned}
-      />
+        {/* Drawer */}
+        <TripDetailsDrawer
+          open={drawerOpen}
+          trip={trip}
+          onClose={() => {
+            setDrawerOpen(false);
+            setActionTrip(null);
+            // ✅ Removed: setActiveAction(null) - Don't close modal when drawer closes
+          }}
+          canUpdateTrip={hasUpdateAccess}
+          activeAction={activeAction}
+          onAssignDriverClick={() => {
+            console.log("[DrawerCallback] Setting activeAction to ASSIGN_DRIVER");
+            setActiveAction("ASSIGN_DRIVER");
+          }}
+          onAdjustFareClick={() => {
+            console.log("[DrawerCallback] Setting activeAction to ADJUST_FARE");
+            setActiveAction("ADJUST_FARE");
+          }}
+          onCancelTripClick={() => {
+            console.log("[DrawerCallback] Setting activeAction to CANCEL_TRIP");
+            setActiveAction("CANCEL_TRIP");
+          }}
+          onTriggerDriversClick={() => {
+            console.log("[DrawerCallback] Setting activeAction to TRIGGER_DRIVER");
+            setActiveAction("TRIGGER_DRIVER");
+          }}
+          isTripCompleted={isActionRestricted}
+          isDriverAssigned={isDriverAssigned}
+        />
 
-      {/* Modal Overhaul */}
-      <Modal
-        open={activeAction !== null}
-        width={
-          activeAction === "ASSIGN_DRIVER"
-            ? 1100
-            : activeAction === "TRIGGER_DRIVER"
-              ? 850
-              : activeAction === "ADJUST_FARE"
-                ? 480
-                : 500
-        }
-        centered
-        onCancel={() => {
-          console.log(`[Modal] Cancelled action: ${activeAction}`);
-          setActiveAction(null);
-          setSelectedDriver(null);
-          setAdjustedFare("");
-          setSearchRadius(500);
-          setCancelStep(0);
-          setCancelReason(null);
-          setCancelNotes("");
-        }}
-        onOk={handleModalOk}
-        styles={{
-          mask: { backdropFilter: "blur(4px)", backgroundColor: "rgba(0,0,0,0.4)" },
-          header: { marginBottom: "24px", borderBottom: "none" },
-          body: { padding: "12px 0" },
-        }}
-        style={{ borderRadius: "2.5rem", overflow: "hidden" }}
-        title={
-          <div className="flex items-center gap-3">
-            <div
-              className={`w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-lg
+        {/* Modal Overhaul */}
+        <Modal
+          open={activeAction !== null}
+          width={
+            activeAction === "ASSIGN_DRIVER"
+              ? 1100
+              : activeAction === "TRIGGER_DRIVER"
+                ? 850
+                : activeAction === "ADJUST_FARE"
+                  ? 480
+                  : 500
+          }
+          centered
+          onCancel={() => {
+            console.log(`[Modal] Cancelled action: ${activeAction}`);
+            setActiveAction(null);
+            setSelectedDriver(null);
+            setAdjustedFare("");
+            setSearchRadius(500);
+            setCancelStep(0);
+            setCancelReason(null);
+            setCancelNotes("");
+          }}
+          onOk={handleModalOk}
+          styles={{
+            mask: { backdropFilter: "blur(4px)", backgroundColor: "rgba(0,0,0,0.4)" },
+            header: { marginBottom: "24px", borderBottom: "none" },
+            body: { padding: "12px 0" },
+          }}
+          style={{ borderRadius: "2.5rem", overflow: "hidden" }}
+          title={
+            <div className="flex items-center gap-3">
+              <div
+                className={`w-8 h-8 rounded-xl flex items-center justify-center text-white shadow-lg
                ${activeAction === "ASSIGN_DRIVER" ? "bg-indigo-600" : activeAction === "TRIGGER_DRIVER" ? "bg-amber-500" : "bg-slate-800"}`}
-            >
-              {activeAction === "ASSIGN_DRIVER" ? (
-                <UserAddOutlined />
-              ) : activeAction === "TRIGGER_DRIVER" ? (
-                <BellOutlined />
-              ) : (
-                <DollarOutlined />
-              )}
+              >
+                {activeAction === "ASSIGN_DRIVER" ? (
+                  <UserAddOutlined />
+                ) : activeAction === "TRIGGER_DRIVER" ? (
+                  <BellOutlined />
+                ) : (
+                  <DollarOutlined />
+                )}
+              </div>
+              <div>
+                <p className="text-sm font-black text-slate-800 leading-none">
+                  {activeAction === "ASSIGN_DRIVER"
+                    ? trip?.driver_name
+                      ? "Reassign Partner"
+                      : "Assign Partner"
+                    : activeAction
+                      ? titleMap[activeAction]
+                      : ""}
+                </p>
+                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                  Platform Operations Protocol
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-black text-slate-800 leading-none">
-                {activeAction === "ASSIGN_DRIVER"
-                  ? trip?.driver_name
-                    ? "Reassign Partner"
-                    : "Assign Partner"
-                  : activeAction
-                    ? titleMap[activeAction]
-                    : ""}
-              </p>
-              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                Platform Operations Protocol
-              </p>
-            </div>
-          </div>
-        }
-        okButtonProps={{
-          disabled:
-            (activeAction === "ASSIGN_DRIVER" && !selectedDriver) ||
-            (activeAction === "ADJUST_FARE" && !adjustedFare) ||
-            (activeAction === "CANCEL_TRIP" && cancelStep === 1 && !cancelReason) ||
-            (activeAction === "CANCEL_TRIP" &&
-              cancelStep === 1 &&
-              cancelReason === "OTHER" &&
-              !cancelNotes.trim()),
-          loading: driverLoading,
-          className: `!h-11 !px-8 !rounded-none !font-black !italic !text-xs !tracking-tight !shadow-lg !transition-all !duration-300 !transform !hover:scale-[1.03] !active:scale-95 !border-none
-            ${
+          }
+          okButtonProps={{
+            disabled:
               (activeAction === "ASSIGN_DRIVER" && !selectedDriver) ||
               (activeAction === "ADJUST_FARE" && !adjustedFare) ||
               (activeAction === "CANCEL_TRIP" && cancelStep === 1 && !cancelReason) ||
               (activeAction === "CANCEL_TRIP" &&
                 cancelStep === 1 &&
                 cancelReason === "OTHER" &&
-                !cancelNotes.trim())
+                !cancelNotes.trim()),
+            loading: driverLoading,
+            className: `!h-11 !px-8 !rounded-none !font-black !italic !text-xs !tracking-tight !shadow-lg !transition-all !duration-300 !transform !hover:scale-[1.03] !active:scale-95 !border-none
+            ${(activeAction === "ASSIGN_DRIVER" && !selectedDriver) ||
+                (activeAction === "ADJUST_FARE" && !adjustedFare) ||
+                (activeAction === "CANCEL_TRIP" && cancelStep === 1 && !cancelReason) ||
+                (activeAction === "CANCEL_TRIP" &&
+                  cancelStep === 1 &&
+                  cancelReason === "OTHER" &&
+                  !cancelNotes.trim())
                 ? "!bg-slate-100 !text-slate-400 !shadow-none !cursor-not-allowed hover:!scale-100"
                 : activeAction === "ASSIGN_DRIVER"
                   ? "!bg-blue-600 hover:!bg-blue-700"
@@ -1267,27 +1305,27 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
                     : activeAction === "CANCEL_TRIP"
                       ? "!bg-rose-600 !text-white hover:!bg-rose-700"
                       : "!bg-slate-900 hover:!bg-slate-800"
-            }`,
-        }}
-        cancelButtonProps={{
-          className:
-            "!h-11 !px-6 !rounded-none !font-bold !text-xs !border-none !bg-slate-100 !text-slate-500 hover:!bg-slate-200 !hover:text-slate-600 !transition-all !duration-300",
-        }}
-        okText={
-          activeAction === "CANCEL_TRIP"
-            ? cancelStep === 0
-              ? "Confirm Termination"
-              : "End Trip Session"
-            : activeAction
-              ? okTextMap[activeAction]
-              : "OK"
-        }
-      >
-        {activeAction === "ASSIGN_DRIVER" && AssignDriverContent}
-        {activeAction === "ADJUST_FARE" && AdjustFareContent}
-        {activeAction === "CANCEL_TRIP" && CancelTripContent}
-        {activeAction === "TRIGGER_DRIVER" && TriggerBroadcastContent}
-      </Modal>
+              }`,
+          }}
+          cancelButtonProps={{
+            className:
+              "!h-11 !px-6 !rounded-none !font-bold !text-xs !border-none !bg-slate-100 !text-slate-500 hover:!bg-slate-200 !hover:text-slate-600 !transition-all !duration-300",
+          }}
+          okText={
+            activeAction === "CANCEL_TRIP"
+              ? cancelStep === 0
+                ? "Confirm Termination"
+                : "End Trip Session"
+              : activeAction
+                ? okTextMap[activeAction]
+                : "OK"
+          }
+        >
+          {activeAction === "ASSIGN_DRIVER" && AssignDriverContent}
+          {activeAction === "ADJUST_FARE" && AdjustFareContent}
+          {activeAction === "CANCEL_TRIP" && CancelTripContent}
+          {activeAction === "TRIGGER_DRIVER" && TriggerBroadcastContent}
+        </Modal>
       </div>
     </>
   );

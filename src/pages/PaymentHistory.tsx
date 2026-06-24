@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Table, Button, Tag } from "antd";
-import { Download, Search, FileText } from "lucide-react";
+import { Download, Search, FileText, CheckCircle2, Clock, XCircle, IndianRupee } from "lucide-react";
 import axios from "../api/axios";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
@@ -10,6 +10,7 @@ const PaymentHistory = () => {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
 
   useEffect(() => {
     fetchPayments();
@@ -68,11 +69,22 @@ const PaymentHistory = () => {
   };
 
   const filteredPayments = payments.filter(
-    (p: any) =>
-      p.driver_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.driver_phone?.includes(searchTerm) ||
-      p.transaction_id?.toLowerCase().includes(searchTerm.toLowerCase()),
+    (p: any) => {
+      const matchesSearch = p.driver_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.driver_phone?.includes(searchTerm) ||
+        p.transaction_id?.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === "ALL" || p.payment_status === statusFilter;
+      return matchesSearch && matchesStatus;
+    }
   );
+
+  const stats = useMemo(() => {
+    const totalAmount = payments.reduce((sum, p: any) => sum + Number(p.amount || 0), 0);
+    const successCount = payments.filter((p: any) => p.payment_status === "SUCCESS").length;
+    const pendingCount = payments.filter((p: any) => p.payment_status === "PENDING").length;
+    const failedCount = payments.filter((p: any) => p.payment_status === "FAILED").length;
+    return { totalAmount, successCount, pendingCount, failedCount };
+  }, [payments]);
 
   const columns = [
     {
@@ -150,62 +162,240 @@ const PaymentHistory = () => {
   ];
 
   return (
-    <div className="flex flex-col h-full w-full bg-[#f8f9fa] dark:bg-[#0b0f19] overflow-hidden">
+    <div className="w-full h-full flex flex-col bg-[#f8f9fa] dark:bg-[#0b0f19] overflow-hidden">
       {/* Top Navbar */}
-      <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 shadow-sm z-0">
-        <div className="flex items-center gap-3 w-48 shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-            <FileText size={20} />
+      <div className="bg-white dark:bg-slate-800 h-12 px-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4 z-0 flex-shrink-0">
+        {/* Title & Description */}
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+            <FileText size={16} strokeWidth={2.5} />
           </div>
-          <div>
-            <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider leading-none">
-              Payments
-            </h2>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1 leading-none">
-              History
-            </p>
-          </div>
+          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Payments</h1>
+          <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0">History</p>
         </div>
 
-        <div className="relative flex-1 max-w-3xl flex items-center bg-gray-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
-          <Search className="absolute left-3 text-slate-400" size={16} />
+        <div className="relative flex-1 max-w-xl mx-auto flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all h-9">
+          <Search className="absolute left-3 text-slate-400 text-[16px]" />
           <input
             type="text"
             placeholder="Search payments by name, phone or ID..."
-            className="w-full pl-10 pr-4 py-2 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
+            className="w-full pl-10 pr-4 py-1.5 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400 border-none shadow-none focus:ring-0"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        
-        <div className="flex items-center gap-4 shrink-0">
-          <Button
-            type="primary"
-            icon={<Download size={16} />}
+
+        <div className="flex items-center gap-3 shrink-0">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            {filteredPayments.length} results
+          </span>
+
+          <button
             onClick={handleExportAll}
-            className="bg-emerald-600 hover:bg-emerald-700 border-none rounded-lg font-bold h-10 px-4"
+            className="h-9 rounded-lg font-bold text-xs uppercase tracking-wider border-none bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm flex items-center justify-center px-4 gap-1.5 hover:scale-[1.01] transition-all"
           >
-            Export Report
-          </Button>
-          <div className="flex items-center gap-2 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 px-3 py-1.5 rounded-full border border-indigo-100 dark:border-indigo-500/20">
-            <span className="text-[11px] font-black tracking-widest uppercase">
-              {filteredPayments.length} TRANSACTIONS
-            </span>
-          </div>
+            <Download size={16} /> Export Report
+          </button>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none shadow-sm h-full overflow-hidden flex flex-col">
-          <Table
-            columns={columns}
-            dataSource={filteredPayments}
-            rowKey="id"
-            loading={loading}
-            pagination={{ pageSize: 15 }}
-            className="custom-table flex-1 overflow-y-auto"
-            scroll={{ y: 'max-content' }}
-          />
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* SIDEBAR */}
+        <div className="w-[220px] flex-shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
+          <div className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
+            {/* Sidenav views section */}
+            <div className="flex flex-col gap-1">
+              <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase px-2 mb-0.5">
+                Views
+              </span>
+
+              <div
+                onClick={() => setStatusFilter("ALL")}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "ALL"
+                    ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  }`}
+              >
+                <div className="flex items-center gap-2 text-xs">
+                  <FileText size={14} />
+                  <span>All Payments</span>
+                </div>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "ALL"
+                    ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 font-bold"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
+                  {payments.length}
+                </span>
+              </div>
+
+              <div
+                onClick={() => setStatusFilter("SUCCESS")}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "SUCCESS"
+                    ? "bg-emerald-50/80 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  }`}
+              >
+                <div className="flex items-center gap-2 text-xs">
+                  <CheckCircle2 size={14} className="text-emerald-500" />
+                  <span>Success</span>
+                </div>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "SUCCESS"
+                    ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
+                  {stats.successCount}
+                </span>
+              </div>
+
+              <div
+                onClick={() => setStatusFilter("PENDING")}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "PENDING"
+                    ? "bg-amber-50/80 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  }`}
+              >
+                <div className="flex items-center gap-2 text-xs">
+                  <Clock size={14} className="text-amber-500" />
+                  <span>Pending</span>
+                </div>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "PENDING"
+                    ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
+                  {stats.pendingCount}
+                </span>
+              </div>
+
+              <div
+                onClick={() => setStatusFilter("FAILED")}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "FAILED"
+                    ? "bg-rose-50/80 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold"
+                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  }`}
+              >
+                <div className="flex items-center gap-2 text-xs">
+                  <XCircle size={14} className="text-rose-500" />
+                  <span>Failed</span>
+                </div>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "FAILED"
+                    ? "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 font-bold"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
+                  {stats.failedCount}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ─── Right Content Area ─────────────────────────────────────── */}
+        <div className="flex-grow flex flex-col min-w-0 relative h-full">
+          <div className="flex-grow flex flex-col p-6 overflow-y-auto custom-scrollbar gap-5 pb-20">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-4 gap-4 mb-6">
+              {/* 1. Total Payments */}
+              <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 flex items-center justify-center text-base bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 z-10">
+                      <FileText size={14} />
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">TOTAL PAYMENTS</p>
+                  </div>
+                </div>
+                <div className="flex items-end justify-between mt-2 z-10">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{payments.length}</h3>
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-indigo-600 dark:text-indigo-400">
+                    <FileText size={100} />
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Total Amount */}
+              <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 flex items-center justify-center text-base bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 z-10">
+                      <IndianRupee size={14} />
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">TOTAL AMOUNT</p>
+                  </div>
+                </div>
+                <div className="flex items-end justify-between mt-2 z-10">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">₹{stats.totalAmount.toLocaleString()}</h3>
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-emerald-600 dark:text-emerald-400">
+                    <IndianRupee size={100} />
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Successful */}
+              <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 flex items-center justify-center text-base bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 z-10">
+                      <CheckCircle2 size={14} />
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">SUCCESSFUL</p>
+                  </div>
+                </div>
+                <div className="flex items-end justify-between mt-2 z-10">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{stats.successCount}</h3>
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-indigo-600 dark:text-indigo-400">
+                    <CheckCircle2 size={100} />
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Failed/Pending */}
+              <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 flex items-center justify-center text-base bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 z-10">
+                      <XCircle size={14} />
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">FAILED & PENDING</p>
+                  </div>
+                </div>
+                <div className="flex items-end justify-between mt-2 z-10">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{stats.failedCount + stats.pendingCount}</h3>
+                    </div>
+                  </div>
+                  <div className="absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-rose-600 dark:text-rose-400">
+                    <XCircle size={100} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col flex-1 min-h-0 rounded-none">
+              <Table
+                columns={columns}
+                dataSource={filteredPayments}
+                rowKey="id"
+                loading={loading}
+                pagination={{ pageSize: 15 }}
+                className="custom-table flex-1 overflow-y-auto"
+                scroll={{ y: 'max-content' }}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

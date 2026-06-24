@@ -14,47 +14,6 @@ import axiosIns from "../api/axios";
 
 const { Text } = Typography;
 
-// Dynamic Sparkline helper
-const Sparkline: React.FC<{ color: string }> = ({ color }) => {
-  let strokeColor = "#3b82f6";
-  let gradientId = "blue-grad-analytics";
-  let stopColor = "#3b82f6";
-
-  if (color === "green") {
-    strokeColor = "#10b981";
-    gradientId = "green-grad-analytics";
-    stopColor = "#10b981";
-  } else if (color === "orange") {
-    strokeColor = "#f59e0b";
-    gradientId = "orange-grad-analytics";
-    stopColor = "#f59e0b";
-  } else if (color === "red") {
-    strokeColor = "#ef4444";
-    gradientId = "red-grad-analytics";
-    stopColor = "#ef4444";
-  }
-
-  return (
-    <svg className="w-20 h-6 opacity-70" viewBox="0 0 100 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={stopColor} stopOpacity="0.2" />
-          <stop offset="100%" stopColor={stopColor} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M0 25 C15 20, 30 28, 50 16 C70 4, 85 8, 100 2 L100 30 L0 30 Z"
-        fill={`url(#${gradientId})`}
-      />
-      <path
-        d="M0 25 C15 20, 30 28, 50 16 C70 4, 85 8, 100 2"
-        stroke={strokeColor}
-        strokeWidth="1.25"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-};
 
 const CATEGORY_META: Record<string, { label: string; color: string; icon: string }> = {
   payment: { label: "Payment", color: "#faad14", icon: "💰" },
@@ -168,27 +127,57 @@ const SupportAnalytics: React.FC = () => {
         : 100;
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-slate-900">
-      <div className="w-full h-full flex flex-col md:flex-row bg-slate-50/50 dark:bg-slate-950/25 overflow-hidden">
-        {/* ─── Left Sidebar Panel ─────────────────────────────────────── */}
-        <div className="w-full md:w-64 flex-shrink-0 bg-white dark:bg-slate-900 border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-800/80 flex flex-col p-4 gap-4 overflow-y-auto custom-scrollbar">
-          {/* Header Title / Context */}
-          <div className="flex items-center gap-2.5 px-1">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
-              <PieChartOutlined className="text-base" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-slate-800 dark:text-slate-200 tracking-tight text-xs uppercase leading-none">
-                Support Analytics
-              </span>
-              <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">
-                Real-time overview
-              </span>
-            </div>
+    <div className="flex flex-col h-full w-full overflow-hidden bg-white dark:bg-slate-900">
+      {/* Top Navbar */}
+      <div className="bg-white dark:bg-slate-800 h-12 px-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4 z-0 flex-shrink-0 w-full">
+        {/* Title & Description */}
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+                <PieChartOutlined className="text-base" />
+              </div>
+                        <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Support Analytics</h1>
+          <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0">Real-time overview</p>
+        </div>
+
+        <div className="relative flex-1 max-w-xl mx-auto flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all h-9">
+          <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
+          <input
+            type="text"
+            placeholder="Search issue category..."
+            className="w-full pl-10 pr-4 py-1.5 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <div className="absolute right-3">
+            <span className="text-[11px] font-bold text-slate-400 border border-slate-200 dark:border-slate-600 rounded-[4px] px-1.5 py-[1px] bg-slate-50/50 dark:bg-slate-800 tracking-wide">
+              ⌘K
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-100 dark:border-emerald-500/20">
+            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+            <span className="text-[11px] font-black tracking-widest uppercase">
+              {filteredCategories.length} CATEGORIES
+            </span>
           </div>
 
+          <button
+            onClick={() => fetchStats()}
+            className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all shrink-0"
+          >
+            <ReloadOutlined className={`text-lg ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-1 min-h-0 overflow-hidden bg-slate-50/50 dark:bg-slate-950/25">
+        {/* ─── Left Sidebar Panel ─────────────────────────────────────── */}
+        <div className="w-[220px] flex-shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col overflow-y-auto custom-scrollbar">
           {/* Sidenav views section */}
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 pt-6 px-4">
             <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase px-2 mb-0.5">
               Views
             </span>
@@ -260,60 +249,13 @@ const SupportAnalytics: React.FC = () => {
             </div>
           </div>
 
-          <div className="h-[1px] bg-slate-100 dark:bg-slate-800/80" />
 
-          {/* Filters section */}
-          <div className="flex flex-col gap-3">
-            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase px-2">
-              Filters
-            </span>
-
-            {/* Filter: Date Range */}
-            <div className="flex flex-col gap-1 px-2">
-              <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
-                Timeframe
-              </span>
-              <DatePicker.RangePicker
-                value={dateRange}
-                onChange={setDateRange}
-                className="w-full text-xs premium-range-picker-sidebar"
-                placeholder={["Start", "End"]}
-              />
-            </div>
-          </div>
         </div>
 
         {/* ─── Right Content Area ─────────────────────────────────────── */}
         <div className="flex-grow flex flex-col min-w-0 relative h-full">
           <div className="flex-grow flex flex-col p-6 overflow-y-auto custom-scrollbar gap-5 pb-20">
-            {/* Top Bar: Search Input & Results Count */}
-            <div className="flex items-center justify-between gap-4 px-0 py-0.5 md:flex-nowrap flex-wrap border-b border-slate-100 dark:border-slate-800 pb-4">
-              <div className="flex items-center gap-3 flex-grow flex-shrink-0">
-                <Input
-                  placeholder="Search issue category..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  allowClear
-                  prefix={<SearchOutlined className="text-slate-400 text-xs" />}
-                  className="w-48 text-xs rounded-xl border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 h-9"
-                />
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  {filteredCategories.length} categories
-                </span>
-              </div>
 
-              <div className="flex items-center gap-2 text-xs">
-                <Button
-                  icon={<ReloadOutlined className={loading ? "animate-spin" : ""} />}
-                  onClick={fetchStats}
-                  className="rounded-full h-8 w-8 flex items-center justify-center border-slate-200 dark:border-slate-800 text-slate-400 hover:text-blue-600 transition-all bg-white dark:bg-slate-900"
-                />
-                <span className="text-blue-600 dark:text-blue-400 font-extrabold uppercase tracking-wider">
-                  {mainTab === "ALL" ? "All Issues" : mainTab === "OPEN" ? "Open Tickets" : "Resolved"}
-                </span>
-              </div>
-            </div>
 
             {/* Row 1: Key Metrics */}
             <Row gutter={[16, 16]}>
@@ -335,8 +277,8 @@ const SupportAnalytics: React.FC = () => {
                       tickets
                     </span>
                   </div>
-                  <div className="absolute bottom-0 right-0 pointer-events-none">
-                    <Sparkline color="blue" />
+                  <div className="absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none text-blue-600 dark:text-blue-400">
+                    <CustomerServiceOutlined />
                   </div>
                 </div>
               </Col>
@@ -359,8 +301,8 @@ const SupportAnalytics: React.FC = () => {
                       active
                     </span>
                   </div>
-                  <div className="absolute bottom-0 right-0 pointer-events-none">
-                    <Sparkline color="orange" />
+                  <div className="absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none text-amber-500 dark:text-amber-400">
+                    <AlertOutlined />
                   </div>
                 </div>
               </Col>
@@ -383,8 +325,8 @@ const SupportAnalytics: React.FC = () => {
                       closed
                     </span>
                   </div>
-                  <div className="absolute bottom-0 right-0 pointer-events-none">
-                    <Sparkline color="green" />
+                  <div className="absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none text-emerald-600 dark:text-emerald-400">
+                    <CheckCircleOutlined />
                   </div>
                 </div>
               </Col>
@@ -407,12 +349,27 @@ const SupportAnalytics: React.FC = () => {
                       response time
                     </span>
                   </div>
-                  <div className="absolute bottom-0 right-0 pointer-events-none">
-                    <Sparkline color="red" />
+                  <div className="absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none text-rose-600 dark:text-rose-400">
+                    <ThunderboltOutlined />
                   </div>
                 </div>
               </Col>
             </Row>
+
+            {/* Filters Toolbar */}
+            <div className="flex items-center gap-4 py-3 border-y border-slate-100 dark:border-slate-800/80 mb-2 mt-2 bg-slate-50/50 dark:bg-slate-900/50 px-4 rounded-none">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Timeframe:
+                </span>
+                <DatePicker.RangePicker
+                  value={dateRange}
+                  onChange={setDateRange}
+                  className="w-64 text-xs premium-range-picker-sidebar"
+                  placeholder={["Start Date", "End Date"]}
+                />
+              </div>
+            </div>
 
             {/* Row 2: Today + Category Breakdown */}
             <Row gutter={[16, 16]}>

@@ -3,47 +3,6 @@ import { UserOutlined, CheckCircleOutlined, StopOutlined, RiseOutlined } from "@
 import type { Customer } from "../../pages/Customers";
 import dayjs from "dayjs";
 
-// Beautiful SVG Sparkline helper component matching the mockup designs
-const Sparkline: React.FC<{ color: string }> = ({ color }) => {
-  let strokeColor = "#3b82f6";
-  let gradientId = "blue-grad-customer";
-  let stopColor = "#3b82f6";
-
-  if (color === "green") {
-    strokeColor = "#10b981";
-    gradientId = "green-grad-customer";
-    stopColor = "#10b981";
-  } else if (color === "orange") {
-    strokeColor = "#f59e0b";
-    gradientId = "orange-grad-customer";
-    stopColor = "#f59e0b";
-  } else if (color === "red") {
-    strokeColor = "#ef4444";
-    gradientId = "red-grad-customer";
-    stopColor = "#ef4444";
-  }
-
-  return (
-    <svg className="w-20 h-6 opacity-70" viewBox="0 0 100 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={stopColor} stopOpacity="0.2" />
-          <stop offset="100%" stopColor={stopColor} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M0 25 C15 20, 30 28, 50 16 C70 4, 85 8, 100 2 L100 30 L0 30 Z"
-        fill={`url(#${gradientId})`}
-      />
-      <path
-        d="M0 25 C15 20, 30 28, 50 16 C70 4, 85 8, 100 2"
-        stroke={strokeColor}
-        strokeWidth="1.25"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-};
 
 interface CustomerStatsProps {
   customers: Customer[];
@@ -104,7 +63,7 @@ const CustomerStats: React.FC<CustomerStatsProps> = ({ customers }) => {
       {stats.map((card, idx) => (
         <div
           key={idx}
-          className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all"
+          className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all rounded-[10px]"
         >
           <div className="flex items-center gap-2 mb-3">
             <div className={`w-7 h-7 rounded-lg ${card.iconBg} ${card.iconColor} flex items-center justify-center text-sm flex-shrink-0`}>
@@ -123,9 +82,9 @@ const CustomerStats: React.FC<CustomerStatsProps> = ({ customers }) => {
             </span>
           </div>
 
-          {/* Bottom Right Sparkline */}
-          <div className="absolute bottom-0 right-0 pointer-events-none">
-            <Sparkline color={card.sparklineColor} />
+          {/* Background Icon */}
+          <div className={`absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none ${card.iconColor}`}>
+            {card.icon}
           </div>
         </div>
       ))}
