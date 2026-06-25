@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, notification, Drawer, Typography, Select, Input, DatePicker, Pagination } from "antd";
+import { Button, notification, Drawer, Typography, Select, DatePicker, Pagination } from "antd";
 import {
   PlusOutlined,
   ReloadOutlined,
@@ -390,9 +390,9 @@ const TaxPage: React.FC = () => {
         {/* Title & Description */}
         <div className="flex items-center gap-4 flex-shrink-0">
           <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-                <SafetyCertificateOutlined className="text-base" />
-              </div>
-                        <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Tax Config</h1>
+            <SafetyCertificateOutlined className="text-base" />
+          </div>
+          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Tax Config</h1>
           <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0">Levy configurations</p>
         </div>
@@ -431,9 +431,9 @@ const TaxPage: React.FC = () => {
           {hasCreateAccess && (
             <Button
               type="primary"
-              icon={<PlusOutlined />}
+              icon={<PlusOutlined className="text-lg" />}
               onClick={handleAddClick}
-              className="px-4 h-10 rounded-lg font-bold text-xs uppercase tracking-wider border-none !bg-blue-600 hover:!bg-blue-700 !text-white shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.01] transition-all"
+              className="px-4 h-10 rounded-lg font-bold text-xs uppercase tracking-wider border-none !bg-blue-600 hover:!bg-blue-700 text-white shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.01] transition-all"
             >
               Create Tax Rule
             </Button>
@@ -556,7 +556,7 @@ const TaxPage: React.FC = () => {
 
         {/* ─── Right Content Area ─────────────────────────────────────── */}
         <div className="flex-grow flex flex-col min-w-0 relative h-full">
-          <div className="flex-grow flex flex-col p-6 overflow-y-auto custom-scrollbar gap-5 pb-20">
+          <div className="flex-grow flex flex-col p-3 overflow-hidden gap-2 pb-20">
 
 
 
@@ -565,35 +565,40 @@ const TaxPage: React.FC = () => {
               {stats.map((card, idx) => (
                 <div
                   key={idx}
-                  className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all"
+                  className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden"
                 >
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className={`w-7 h-7 rounded-lg ${card.iconBg} ${card.iconColor} flex items-center justify-center text-sm flex-shrink-0`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 h-8 flex items-center justify-center text-base ${card.iconBg} ${card.iconColor} z-10 rounded-lg`}>
+                        {card.icon}
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                        {card.title}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-end justify-between mt-2 z-10">
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-1.5">
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                          {card.value}
+                        </h3>
+                        <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                          {card.label}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Background Icon */}
+                    <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none ${card.iconColor}`}>
                       {card.icon}
                     </div>
-                    <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-450 tracking-wide uppercase leading-none">
-                      {card.title}
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-1 mt-auto">
-                    <span className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">
-                      {card.value}
-                    </span>
-                    <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                      {card.label}
-                    </span>
-                  </div>
-
-                  {/* Background Icon */}
-                  <div className={`absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none ${card.iconColor}`}>
-                    {card.icon}
                   </div>
                 </div>
               ))}
             </div>
 
             {/* Horizontal Filters Toolbar */}
-            <div className="flex items-center gap-4 py-3 border-y border-slate-100 dark:border-slate-800/80 mb-2 mt-2 bg-slate-50/50 dark:bg-slate-900/50 px-4 rounded-none">
+            <div className="bg-white dark:bg-[#0f172a] shadow-sm flex items-center gap-4 py-1 border-y border-slate-100 dark:border-slate-800/80 mb-2 mt-2 bg-slate-50/50 dark:bg-[#0f172a] px-4 rounded-none dark-theme-select-override">
               <div className="flex items-center gap-3">
                 <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Status:
@@ -603,7 +608,7 @@ const TaxPage: React.FC = () => {
                   value={statusFilter}
                   onChange={setStatusFilter}
                   allowClear
-                  className="w-40 text-xs premium-select-sidebar"
+                  className="w-40 text-xs premium-select-sidebar custom-driver-select"
                   options={[
                     { value: "ACTIVE", label: "Active" },
                     { value: "INACTIVE", label: "Inactive" },
@@ -627,7 +632,7 @@ const TaxPage: React.FC = () => {
             </div>
 
             {/* Table Container */}
-            <div className="flex-grow min-h-0">
+            <div className="flex-grow min-h-0 flex flex-col h-full overflow-hidden">
               <TaxTable
                 data={paginatedData}
                 loading={isLoading}
@@ -680,11 +685,37 @@ const TaxPage: React.FC = () => {
           border-color: #cbd5e1 !important;
           height: 34px !important;
         }
-        .dark .premium-select-sidebar.ant-select .ant-select-selector {
+        .dark .dark-theme-select-override .custom-driver-select{
           border-color: #334155 !important;
           background-color: #0f172a !important;
           color: #f1f5f9 !important;
         }
+        .dark .dark-theme-select-override .custom-driver-select .ant-select-selector,
+        .dark .dark-theme-select-override .ant-select-selector {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-item {
+          color: #f1f5f9 !important;
+          background-color: #1e293b !important;
+          border-color: #334155 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-placeholder {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-arrow {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-clear {
+          background-color: transparent !important;
+          color: #64748b !important;
+        }
+
         .premium-range-picker-sidebar.ant-picker {
           border-radius: 8px !important;
           border-color: #cbd5e1 !important;

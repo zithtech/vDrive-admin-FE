@@ -9,7 +9,7 @@ interface ApplicationStatsProps {
 
 const StatCard = ({ title, value, icon, bgIcon, trend, bg }: any) => {
   return (
-    <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] rounded-[10px] shadow-sm relative overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0 ${bg}`}>
@@ -37,7 +37,7 @@ const StatCard = ({ title, value, icon, bgIcon, trend, bg }: any) => {
       </div>
 
       {/* Background Icon */}
-      <div className="absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none">
+      <div className="absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none">
         {bgIcon}
       </div>
     </div>

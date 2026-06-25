@@ -34,11 +34,14 @@ import { useHasPermission } from "../../hooks/usePermission";
 interface DriverTableProps {
   data: Driver[];
   onViewDetails?: (driver: Driver) => void;
+  currentPage?: number;
+  pageSize?: number;
+  onPageChange?: (page: number, size: number) => void;
 }
 
 
 
-const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
+const DriverTable = ({ data, onViewDetails, currentPage, pageSize, onPageChange }: DriverTableProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const tableHeight = useGetHeight(contentRef);
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
@@ -455,10 +458,20 @@ const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
           }
           html.dark .premium-table-flat .ant-table-row > td {
             border-bottom: 1px solid #1e293b !important;
+            background: #0f172a !important;
           }
           html.dark .premium-table-flat .ant-table-row:hover > td,
           html.dark .premium-table-flat .ant-table-row:hover > .ant-table-cell-fix-left,
           html.dark .premium-table-flat .ant-table-row:hover > .ant-table-cell-fix-right {
+            background: #1e293b !important;
+          }
+          html.dark .premium-table-flat .ant-table-tbody > tr > td.ant-table-column-sort {
+            background: #0f172a !important;
+          }
+          html.dark .premium-table-flat .ant-table-row:hover > td.ant-table-column-sort {
+            background: #1e293b !important;
+          }
+          html.dark .premium-table-flat .ant-table-thead > tr > th.ant-table-column-has-sorters:hover {
             background: #1e293b !important;
           }
           html.dark .premium-table-flat .ant-table-thead > tr > .ant-table-cell-fix-left,
@@ -490,20 +503,8 @@ const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
             background: #0f172a;
           }
 
-          /* PAGINATION OUTSIDE BOX */
           .premium-pagination {
-            display: flex !important;
-            align-items: center !important;
-            width: 100% !important;
-            padding: 16px 8px !important;
-            margin: 0 !important;
-            margin-top: auto !important;
-            background: transparent !important;
-            border-top: none !important;
-          }
-          .premium-pagination .ant-pagination-total-text {
-            margin-right: auto !important;
-            color: #64748b !important;
+            display: none !important;
           }
         `}
       </style>
@@ -520,22 +521,21 @@ const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
           columns={columns}
           dataSource={data}
           rowKey={(record) => record.driver_id || record.id || ""}
-          pagination={{
-            position: ["bottomRight"],
-            showTotal: (total, range) => (
-              <span className="text-slate-500 font-medium text-[13px]">
-                Showing <strong className="text-slate-700 dark:text-slate-200">{range[0]}-{range[1]}</strong> of <strong className="text-slate-700 dark:text-slate-200">{total}</strong>
-              </span>
-            ),
-            showSizeChanger: true,
-            pageSizeOptions: ['15', '30', '50'],
-            defaultPageSize: 15,
-            className: "premium-pagination",
-          }}
+          pagination={
+            currentPage && pageSize && onPageChange
+              ? {
+                  current: currentPage,
+                  pageSize: pageSize,
+                  total: data.length,
+                  position: ["none"],
+                  onChange: onPageChange,
+                }
+              : false
+          }
           showSorterTooltip={false}
           tableLayout="fixed"
           size="small"
-          scroll={{ y: Math.floor(tableHeight || 0), x: 1200 }}
+          scroll={{ y: Math.floor(tableHeight ? tableHeight - 120 : 0), x: 1200 }}
           className="premium-table-flat"
           onRow={(record) => ({
             onClick: (event) => {

@@ -245,7 +245,7 @@ const Deductions = () => {
           />
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             {filteredData.length} results
@@ -253,9 +253,9 @@ const Deductions = () => {
 
           <Button
             type="primary"
-            icon={<IoMdRefresh />}
+            icon={<IoMdRefresh className="text-lg" />}
             onClick={() => { }}
-            className="h-9 rounded-lg font-bold text-xs uppercase tracking-wider border-none !bg-blue-600 hover:!bg-blue-700 text-white shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.01] transition-all"
+            className="px-4 h-10 rounded-lg font-bold text-xs uppercase tracking-wider border-none !bg-blue-600 hover:!bg-blue-700 text-white shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.01] transition-all"
           >
             Refresh Data
           </Button>
@@ -275,8 +275,8 @@ const Deductions = () => {
               <div
                 onClick={() => setMainTab("ALL")}
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainTab === "ALL"
-                    ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
                   }`}
               >
                 <div className="flex items-center gap-2 text-xs">
@@ -288,8 +288,8 @@ const Deductions = () => {
               <div
                 onClick={() => setMainTab("COMMISSION")}
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainTab === "COMMISSION"
-                    ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
                   }`}
               >
                 <div className="flex items-center gap-2 text-xs">
@@ -301,8 +301,8 @@ const Deductions = () => {
               <div
                 onClick={() => setMainTab("PENALTY")}
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainTab === "PENALTY"
-                    ? "bg-rose-50/80 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  ? "bg-rose-50/80 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
                   }`}
               >
                 <div className="flex items-center gap-2 text-xs">
@@ -316,41 +316,46 @@ const Deductions = () => {
 
         {/* ─── Right Content Area ─────────────────────────────────────── */}
         <div className="flex-grow flex flex-col min-w-0 relative h-full">
-          <div className="flex-grow flex flex-col p-6 overflow-y-auto custom-scrollbar gap-5 pb-20">
+          <div className="flex-grow flex flex-col p-3 overflow-hidden custom-scrollbar gap-2 pb-20">
             {/* Status Cards Grid Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-0">
               {stats.map((card, idx) => (
                 <div
                   key={idx}
-                  className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all"
+                  className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden"
                 >
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className={`w-7 h-7 rounded-lg ${card.iconBg} ${card.iconColor} flex items-center justify-center text-sm flex-shrink-0`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 h-8 flex items-center justify-center text-base ${card.iconBg} ${card.iconColor} z-10 rounded-lg`}>
+                        {card.icon}
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                        {card.title}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-end justify-between mt-2 z-10">
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-1.5">
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                          {card.value}
+                        </h3>
+                        <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                          {card.label}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Background Icon */}
+                    <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none ${card.iconColor}`}>
                       {card.icon}
                     </div>
-                    <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-450 tracking-wide uppercase leading-none">
-                      {card.title}
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-1 mt-auto">
-                    <span className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">
-                      {card.value}
-                    </span>
-                    <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                      {card.label}
-                    </span>
-                  </div>
-
-                  {/* Background Icon */}
-                  <div className={`absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none ${card.iconColor}`}>
-                    {card.icon}
                   </div>
                 </div>
               ))}
             </div>
 
             {/* FILTERS TOOLBAR */}
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm flex-shrink-0">
+            <div className="bg-white dark:bg-slate-800 py-1 px-2 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm flex-shrink-0 dark-theme-select-override">
               <div className="flex items-center gap-2 flex-1 min-w-[220px]">
                 <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
                   Status:
@@ -360,7 +365,7 @@ const Deductions = () => {
                   value={statusFilter}
                   onChange={setStatusFilter}
                   allowClear
-                  className="flex-1 text-xs premium-select-sidebar min-w-0"
+                  className="flex-1 text-xs premium-select-sidebar custom-driver-select min-w-0"
                   options={[
                     { value: "Success", label: "Success" },
                     { value: "Failed", label: "Failed" },
@@ -378,7 +383,7 @@ const Deductions = () => {
                 <DatePicker.RangePicker
                   value={dateRange}
                   onChange={setDateRange}
-                  className="flex-1 text-xs premium-range-picker-sidebar min-w-0"
+                  className="flex-1 text-xs premium-range-picker-sidebar custom-picker-compact min-w-0"
                   placeholder={["Start", "End"]}
                 />
               </div>
@@ -399,7 +404,7 @@ const Deductions = () => {
             </div>
 
             {/* Table Container */}
-            <div className="flex-grow min-h-0 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 overflow-hidden shadow-sm">
+            <div className="flex-grow min-h-0 bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 overflow-hidden shadow-sm flex flex-col h-full">
               <DeductionTable data={paginatedData} />
             </div>
           </div>
@@ -427,28 +432,61 @@ const Deductions = () => {
       </div>
 
       <style>{`
-        /* Sidebar input styling overrides */
-        .premium-select-sidebar.ant-select .ant-select-selector {
+        /* Filter input styling overrides to match dark mode search bar */
+        .custom-driver-select .ant-select-selector {
           border-radius: 8px !important;
           border-color: #cbd5e1 !important;
           height: 34px !important;
         }
-        .dark .premium-select-sidebar.ant-select .ant-select-selector {
+
+        .dark .dark-theme-select-override .custom-driver-select {
           border-color: #334155 !important;
           background-color: #0f172a !important;
           color: #f1f5f9 !important;
         }
-        .premium-range-picker-sidebar.ant-picker {
+        
+        .dark .dark-theme-select-override .ant-select-selector,
+        html.dark .dark-theme-select-override .ant-select-selector {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-item,
+        html.dark .dark-theme-select-override .ant-select-selection-item {
+          color: #f1f5f9 !important;
+          background-color: #1e293b !important;
+          border-color: #334155 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-placeholder,
+        html.dark .dark-theme-select-override .ant-select-selection-placeholder {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-arrow,
+        html.dark .dark-theme-select-override .ant-select-arrow {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-clear,
+        html.dark .dark-theme-select-override .ant-select-clear {
+          background-color: transparent !important;
+          color: #64748b !important;
+        }
+
+        /* Picker compact styling */
+        .custom-picker-compact.ant-picker {
           border-radius: 8px !important;
           border-color: #cbd5e1 !important;
           padding: 4px 8px !important;
           height: 34px !important;
         }
-        .dark .premium-range-picker-sidebar.ant-picker {
+        .dark .custom-picker-compact.ant-picker {
           border-color: #334155 !important;
           background-color: #0f172a !important;
         }
-        .dark .premium-range-picker-sidebar.ant-picker .ant-picker-input > input {
+        .dark .custom-picker-compact.ant-picker .ant-picker-input > input {
           color: #f1f5f9 !important;
         }
 

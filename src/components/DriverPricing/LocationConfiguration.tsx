@@ -444,23 +444,24 @@ const LocationConfiguration = ({
   }, [debouncedCountrySearch, debouncedStateSearch, debouncedCitySearch, debouncedAreaSearch]);
 
   return (
-    <Card className="w-full" size="small">
-      <div className="w-full flex flex-col gap-4">
+    <Card className="w-full bg-white dark:!bg-[#0f172a] border border-slate-200 dark:!border-slate-800" size="small">
+      <div className="w-full flex flex-col gap-3">
         <div className="flex items-center justify-between w-full">
           <div className="w-full flex items-center gap-1">
             <div>
-              <MdOutlineLocationOn className="text-[25px] text-[#0080FF]" />
+              <MdOutlineLocationOn className="text-[25px] text-blue-500 dark:text-blue-400" />
             </div>
             <div>
-              <span className="text-[20px] font-semibold p-0 m-0">Location Configuration</span>
+              <span className="text-[20px] font-semibold p-0 m-0 text-slate-800 dark:text-slate-100">Location Configuration</span>
             </div>
           </div>
           <div className=""></div>
         </div>
         <div className="w-full grid grid-cols-2 gap-4">
           <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">Country</span>
+            <span className="text-xs font-medium mb-1 text-slate-700 dark:text-slate-300">Country</span>
             <AutoComplete
+              size="small"
               value={countrySearch}
               onSearch={handleCountrySearch}
               onSelect={(value, option) => {
@@ -474,13 +475,14 @@ const LocationConfiguration = ({
                 if (!country) setCountrySearch("");
               }}
               options={countryOptions}
-              placeholder="Search and select country"
-              notFoundContent={isLoadingCountries ? "Loading..." : "No countries found"}
+              placeholder="Search country"
+              notFoundContent={isLoadingCountries ? "Loading..." : "No countries"}
             />
           </div>
           <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">State</span>
+            <span className="text-xs font-medium mb-1 text-slate-700 dark:text-slate-300">State</span>
             <AutoComplete
+              size="small"
               value={stateSearch}
               onSearch={handleStateSearch}
               onSelect={(value, option) => {
@@ -493,16 +495,17 @@ const LocationConfiguration = ({
                 if (!state) setStateSearch("");
               }}
               options={stateOptions}
-              placeholder="Search and select state"
-              notFoundContent={isLoadingStates ? "Loading..." : "No states found"}
+              placeholder="Search state"
+              notFoundContent={isLoadingStates ? "Loading..." : "No states"}
             />
           </div>
         </div>
 
         <div className="w-full grid grid-cols-2 gap-4">
           <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">District</span>
+            <span className="text-xs font-medium mb-1 text-slate-700 dark:text-slate-300">District</span>
             <AutoComplete
+              size="small"
               value={districtSearch}
               onSearch={handleCitySearch}
               onSelect={(value, option) => {
@@ -514,13 +517,14 @@ const LocationConfiguration = ({
                 if (!district) setDistrictSearch("");
               }}
               options={cityOptions}
-              placeholder="Search and select district"
-              notFoundContent={isLoadingCities ? "Loading..." : "No districts found"}
+              placeholder="Search district"
+              notFoundContent={isLoadingCities ? "Loading..." : "No districts"}
             />
           </div>
           <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">Area</span>
+            <span className="text-xs font-medium mb-1 text-slate-700 dark:text-slate-300">Area</span>
             <AutoComplete
+              size="small"
               value={areaSearchValue}
               allowClear
               onSearch={handleAreaSearch}
@@ -529,16 +533,17 @@ const LocationConfiguration = ({
                 if (!area) setAreaSearchValue("");
               }}
               options={areaOptions}
-              placeholder="Search or create area"
-              notFoundContent={isLoadingAreas ? "Loading..." : "No areas found"}
+              placeholder="Search or create"
+              notFoundContent={isLoadingAreas ? "Loading..." : "No areas"}
               popupRender={(menu) => (
                 <>
                   {menu}
                   {areaSearchValue && !isLoadingAreas && areaOptions.length === 0 && (
                     <>
-                      <Divider style={{ margin: "8px 0" }} />
-                      <Space style={{ padding: "0 8px 4px" }}>
+                      <Divider style={{ margin: "4px 0" }} />
+                      <Space style={{ padding: "0 4px 2px" }}>
                         <Button
+                          size="small"
                           type="text"
                           icon={<PlusOutlined />}
                           onMouseDown={(e) => e.preventDefault()}
@@ -558,12 +563,13 @@ const LocationConfiguration = ({
 
         <div className="w-full grid grid-cols-2 gap-4">
           <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">Pincode</span>
-            <Input value={pincode} onChange={handlePincodeChange} />
+            <span className="text-xs font-medium mb-1 text-slate-700 dark:text-slate-300">Pincode</span>
+            <Input size="small" value={pincode} onChange={handlePincodeChange} />
           </div>
           <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">Price per KM</span>
+            <span className="text-xs font-medium mb-1 text-slate-700 dark:text-slate-300">Price per KM</span>
             <InputNumber
+              size="small"
               min={0}
               precision={2}
               value={perKmPrice}
@@ -572,27 +578,28 @@ const LocationConfiguration = ({
               addonAfter="/km"
               className="w-full"
             />
-            <span className="text-xs text-gray-500 mt-1">Base distance rate (from 0 km)</span>
+            <span className="text-[10px] leading-tight text-slate-500 dark:text-slate-400 mt-0.5">Base dist. rate (0km+)</span>
           </div>
         </div>
 
-        <div className="w-full grid grid-cols-2 gap-4">
+        <div className="w-full grid grid-cols-3 gap-3">
           <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">Price per Hour</span>
+            <span className="text-xs font-medium mb-1 text-slate-700 dark:text-slate-300">Price / Hr</span>
             <InputNumber
+              size="small"
               min={0}
               precision={2}
               value={perHourPrice}
               onChange={(e) => setPerHourPrice(e || 0)}
               prefix="₹"
-              addonAfter="/hr"
               className="w-full"
             />
-            <span className="text-xs text-gray-500 mt-1">Charged on trip duration</span>
+            <span className="text-[10px] leading-tight text-slate-500 dark:text-slate-400 mt-0.5">On trip duration</span>
           </div>
           <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">Minimum Fare</span>
+            <span className="text-xs font-medium mb-1 text-slate-700 dark:text-slate-300">Min Fare</span>
             <InputNumber
+              size="small"
               min={0}
               precision={2}
               value={minimumFare}
@@ -600,14 +607,12 @@ const LocationConfiguration = ({
               prefix="₹"
               className="w-full"
             />
-            <span className="text-xs text-gray-500 mt-1">Fare floor for short trips</span>
+            <span className="text-[10px] leading-tight text-slate-500 dark:text-slate-400 mt-0.5">Fare Floor for short trips</span>
           </div>
-        </div>
-
-        <div className="w-full grid grid-cols-2 gap-4">
           <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">One-way Return %</span>
+            <span className="text-xs font-medium mb-1 text-slate-700 dark:text-slate-300">one-way Return</span>
             <InputNumber
+              size="small"
               min={0}
               max={100}
               precision={2}
@@ -616,9 +621,7 @@ const LocationConfiguration = ({
               addonAfter="%"
               className="w-full"
             />
-            <span className="text-xs text-gray-500 mt-1">
-              Added to one-way trips (driver's return). Round trips: none.
-            </span>
+            <span className="text-[10px] leading-tight text-slate-500 dark:text-slate-400 mt-0.5"> Added to one-way trips (driver's return). Round trips: none.</span>
           </div>
         </div>
       </div>
@@ -662,7 +665,7 @@ const LocationConfiguration = ({
               onChange={handleCreateZipcodeChange}
               maxLength={10}
             />
-            <span className="text-xs text-gray-500">Only numbers and hyphens are allowed.</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">Only numbers and hyphens are allowed.</span>
           </div>
         </Space>
       </Modal>

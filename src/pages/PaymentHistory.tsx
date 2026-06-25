@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Table, Button, Tag } from "antd";
+import { Table, Button, Tag, Pagination } from "antd";
 import { Download, Search, FileText, CheckCircle2, Clock, XCircle, IndianRupee } from "lucide-react";
 import axios from "../api/axios";
 import { jsPDF } from "jspdf";
@@ -11,6 +11,8 @@ const PaymentHistory = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(15);
 
   useEffect(() => {
     fetchPayments();
@@ -76,6 +78,15 @@ const PaymentHistory = () => {
       const matchesStatus = statusFilter === "ALL" || p.payment_status === statusFilter;
       return matchesSearch && matchesStatus;
     }
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
+  const displayedPayments = filteredPayments.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
   );
 
   const stats = useMemo(() => {
@@ -186,18 +197,20 @@ const PaymentHistory = () => {
           />
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             {filteredPayments.length} results
           </span>
 
-          <button
+          <Button
+            type="primary"
+            icon={<Download className="text-lg" />}
             onClick={handleExportAll}
-            className="h-9 rounded-lg font-bold text-xs uppercase tracking-wider border-none bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm flex items-center justify-center px-4 gap-1.5 hover:scale-[1.01] transition-all"
+            className="px-4 h-10 rounded-lg font-bold text-xs uppercase tracking-wider border-none !bg-blue-600 hover:!bg-blue-700 text-white shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.01] transition-all"
           >
-            <Download size={16} /> Export Report
-          </button>
+            Export Report
+          </Button>
         </div>
       </div>
 
@@ -214,8 +227,8 @@ const PaymentHistory = () => {
               <div
                 onClick={() => setStatusFilter("ALL")}
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "ALL"
-                    ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
                   }`}
               >
                 <div className="flex items-center gap-2 text-xs">
@@ -223,8 +236,8 @@ const PaymentHistory = () => {
                   <span>All Payments</span>
                 </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "ALL"
-                    ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 font-bold"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 font-bold"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                   }`}>
                   {payments.length}
                 </span>
@@ -233,8 +246,8 @@ const PaymentHistory = () => {
               <div
                 onClick={() => setStatusFilter("SUCCESS")}
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "SUCCESS"
-                    ? "bg-emerald-50/80 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  ? "bg-emerald-50/80 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
                   }`}
               >
                 <div className="flex items-center gap-2 text-xs">
@@ -242,8 +255,8 @@ const PaymentHistory = () => {
                   <span>Success</span>
                 </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "SUCCESS"
-                    ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                   }`}>
                   {stats.successCount}
                 </span>
@@ -252,8 +265,8 @@ const PaymentHistory = () => {
               <div
                 onClick={() => setStatusFilter("PENDING")}
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "PENDING"
-                    ? "bg-amber-50/80 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  ? "bg-amber-50/80 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
                   }`}
               >
                 <div className="flex items-center gap-2 text-xs">
@@ -261,8 +274,8 @@ const PaymentHistory = () => {
                   <span>Pending</span>
                 </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "PENDING"
-                    ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                   }`}>
                   {stats.pendingCount}
                 </span>
@@ -271,8 +284,8 @@ const PaymentHistory = () => {
               <div
                 onClick={() => setStatusFilter("FAILED")}
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "FAILED"
-                    ? "bg-rose-50/80 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  ? "bg-rose-50/80 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
                   }`}
               >
                 <div className="flex items-center gap-2 text-xs">
@@ -280,8 +293,8 @@ const PaymentHistory = () => {
                   <span>Failed</span>
                 </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "FAILED"
-                    ? "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 font-bold"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  ? "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 font-bold"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                   }`}>
                   {stats.failedCount}
                 </span>
@@ -292,9 +305,9 @@ const PaymentHistory = () => {
 
         {/* ─── Right Content Area ─────────────────────────────────────── */}
         <div className="flex-grow flex flex-col min-w-0 relative h-full">
-          <div className="flex-grow flex flex-col p-6 overflow-y-auto custom-scrollbar gap-5 pb-20">
+          <div className="flex-grow flex flex-col p-3 overflow-y-auto custom-scrollbar gap-2 pb-20">
             {/* Stats Cards */}
-            <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-4 gap-4 mb-1">
               {/* 1. Total Payments */}
               <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden">
                 <div className="flex items-center justify-between">
@@ -384,20 +397,85 @@ const PaymentHistory = () => {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col flex-1 min-h-0 rounded-none">
+            <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden flex flex-col flex-1 min-h-0 rounded-none dark-theme-table-override pb-1">
               <Table
                 columns={columns}
-                dataSource={filteredPayments}
+                dataSource={displayedPayments}
                 rowKey="id"
                 loading={loading}
-                pagination={{ pageSize: 15 }}
+                pagination={false}
                 className="custom-table flex-1 overflow-y-auto"
                 scroll={{ y: 'max-content' }}
+              />
+            </div>
+            
+            {/* Sticky Pagination Footer */}
+            <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-805 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+                Showing {filteredPayments.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
+                {Math.min(currentPage * pageSize, filteredPayments.length)} of {filteredPayments.length} payments
+              </span>
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={filteredPayments.length}
+                onChange={(page, size) => {
+                  setCurrentPage(page);
+                  setPageSize(size);
+                }}
+                showSizeChanger
+                pageSizeOptions={[10, 15, 20, 50, 100]}
+                size="small"
               />
             </div>
           </div>
         </div>
       </div>
+      <style>{`
+        /* Dark Mode overrides for Antd Table */
+        .dark .dark-theme-table-override .ant-table {
+          background-color: transparent !important;
+        }
+        .dark .dark-theme-table-override .ant-table-thead > tr > th {
+          background-color: transparent !important;
+          color: #94a3b8 !important;
+          border-bottom: 1px solid #334155 !important;
+        }
+        .dark .dark-theme-table-override .ant-table-tbody > tr > td {
+          border-bottom: 1px solid #334155 !important;
+          background-color: transparent !important;
+        }
+        .dark .dark-theme-table-override .ant-table-tbody > tr.ant-table-row:hover > td {
+          background-color: #1e293b !important;
+        }
+        .dark .dark-theme-table-override .ant-table-placeholder {
+          background-color: transparent !important;
+        }
+        .dark .dark-theme-table-override .ant-table-placeholder:hover > td {
+          background-color: transparent !important;
+        }
+        .dark .dark-theme-table-override .ant-table-placeholder > td.ant-table-cell {
+          background-color: transparent !important;
+          border-bottom: 1px solid #334155 !important;
+        }
+        .dark .dark-theme-table-override .ant-empty-description {
+          color: #94a3b8 !important;
+        }
+        .dark .dark-theme-table-override .ant-pagination-item {
+          background-color: transparent !important;
+          border-color: #334155 !important;
+        }
+        .dark .dark-theme-table-override .ant-pagination-item a {
+          color: #94a3b8 !important;
+        }
+        .dark .dark-theme-table-override .ant-pagination-item-active {
+          background-color: #3b82f6 !important;
+          border-color: #3b82f6 !important;
+        }
+        .dark .dark-theme-table-override .ant-pagination-item-active a {
+          color: #ffffff !important;
+        }
+      `}</style>
     </div>
   );
 };

@@ -314,13 +314,13 @@ const Customers = () => {
           </div>
 
           {/* RIGHT MAIN CONTENT */}
-          <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0b0f19]">
+          <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0b0f19] relative h-full">
             {/* Constrained Main Content */}
-            <div className="flex-1 overflow-hidden p-6 bg-slate-50/50 dark:bg-[#0f172a] flex flex-col gap-6">
+            <div className="flex-1 overflow-hidden p-4 bg-slate-50/50 dark:bg-[#0f172a] flex flex-col gap-2 pb-20">
               <CustomerStats customers={customersArray} loading={loading} />
 
               {/* FILTERS TOOLBAR */}
-              <div className="bg-white dark:bg-slate-800 p-4 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm flex-shrink-0">
+              <div className="bg-white dark:bg-slate-800 py-1 px-2 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm flex-shrink-0">
                 <div className="flex items-center gap-2 flex-1 min-w-[220px]">
                   <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
                     Status:
@@ -389,10 +389,11 @@ const Customers = () => {
             </div>
 
             {/* Sticky Pagination Footer */}
-            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10 flex-shrink-0">
-              <div className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
-                Showing <span className="font-bold text-slate-800 dark:text-slate-200">{displayedData.length === 0 ? 0 : (currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, displayedData.length)}</span> of <span className="font-bold text-slate-800 dark:text-slate-200">{displayedData.length}</span> customers
-              </div>
+            <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-805 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+                Showing {displayedData.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
+                {Math.min(currentPage * pageSize, displayedData.length)} of {displayedData.length} customers
+              </span>
               <Pagination
                 current={currentPage}
                 pageSize={pageSize}

@@ -72,27 +72,27 @@ const ExtraKmConfiguration = ({
       title: "Rate",
       dataIndex: "rate",
       key: "rate",
-      render: (v: string) => <span className="text-green-600 font-semibold">{v}</span>,
+      render: (v: string) => <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{v}</span>,
     },
   ];
 
   return (
-    <Card size="small">
-      <div className="w-full flex flex-col gap-4">
+    <Card size="small" className="w-full bg-white dark:!bg-[#0f172a] border border-slate-200 dark:!border-slate-800">
+      <div className="w-full flex flex-col gap-3">
         {/* Header */}
         <div className="flex items-center gap-2">
-          <NodeIndexOutlined className="text-[20px] text-[#0080FF]" />
-          <span className="text-[19px] font-semibold p-0 m-0">Extra KM Configuration</span>
+          <NodeIndexOutlined className="text-[20px] text-blue-500 dark:text-blue-400" />
+          <span className="text-[19px] font-semibold p-0 m-0 text-slate-800 dark:text-slate-100">Extra KM Configuration</span>
         </div>
 
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-slate-500 dark:text-slate-400">
           The base "Price per KM" applies from 0 km. Add breakpoints to charge a different ₹/km
           beyond a chosen distance.
         </span>
 
         {/* Read-only base (from 0 km) row */}
-        <div className="flex items-center gap-2 p-2 bg-[#EEF5FF] rounded-md">
-          <span className="text-xs text-gray-600 whitespace-nowrap min-w-[110px]">
+        <div className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-500/10 rounded-md border border-blue-100 dark:border-blue-500/20">
+          <span className="text-xs text-blue-700 dark:text-blue-300 whitespace-nowrap min-w-[110px] font-medium">
             From 0 km (base)
           </span>
           <InputNumber
@@ -107,12 +107,12 @@ const ExtraKmConfiguration = ({
 
         {/* Breakpoints */}
         <div className="flex flex-col gap-2">
-          <span className="text-sm font-medium">Distance breakpoints</span>
+          <span className="text-sm font-medium text-slate-800 dark:text-slate-200">Distance breakpoints</span>
 
           {sorted.map((c) => (
             <div key={c.uid} className="flex items-center gap-2">
-              <div className="flex-1 flex items-center gap-2 p-2 bg-[#F8F9FA] rounded-md">
-                <span className="text-xs text-gray-500 whitespace-nowrap">From</span>
+              <div className="flex-1 flex items-center gap-2 p-2 bg-slate-50 dark:bg-slate-800/50 rounded-md border border-slate-100 dark:border-slate-700/50">
+                <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">From</span>
                 <InputNumber
                   min={0.1}
                   step={1}
@@ -123,7 +123,7 @@ const ExtraKmConfiguration = ({
                   className="w-full"
                   size="small"
                 />
-                <span className="text-xs text-gray-500 whitespace-nowrap">→</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">→</span>
                 <InputNumber
                   min={0}
                   precision={2}
@@ -152,14 +152,14 @@ const ExtraKmConfiguration = ({
 
         {/* Preview table */}
         <div className="flex flex-col gap-1">
-          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Preview</span>
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Preview</span>
           <Table<PreviewRow>
             dataSource={previewRows}
             columns={previewColumns}
             rowKey="key"
             size="small"
             pagination={false}
-            className="w-full"
+            className="w-full dark-theme-table-override"
           />
         </div>
       </div>

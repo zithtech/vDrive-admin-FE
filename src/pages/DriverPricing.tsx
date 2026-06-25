@@ -308,9 +308,9 @@ const DriverPricing = () => {
     }
   };
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full bg-[#f8f9fa] dark:bg-[#0b0f19]">
       <div className="h-full flex justify-center px-0">
-        <div className="w-full flex flex-col h-screen overflow-hidden">
+        <div className="w-full flex flex-col h-full overflow-hidden">
           <div className="flex-1 min-h-0 overflow-hidden">
             <TitleBar
               className="w-full flex-1 min-h-0 flex flex-col gap-2"
@@ -319,9 +319,10 @@ const DriverPricing = () => {
               extraContent={
                 <div>
                   <Button
-                    icon={<EyeOutlined />}
+                    icon={<EyeOutlined className="text-lg" />}
                     type="primary"
                     onClick={() => setIsDrawerOpen(true)}
+                    className="px-4 h-10 rounded-lg font-bold text-xs uppercase tracking-wider border-none !bg-blue-600 hover:!bg-blue-700 text-white shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.01] transition-all"
                   >
                     Pricing Preview
                   </Button>
@@ -406,7 +407,7 @@ const DriverPricing = () => {
 
           <div className="shrink-0">
             {activeTab === "configuration" ? (
-              <Card className="w-full rounded-none border-t">
+              <Card className="w-full rounded-none border-t border-slate-200 dark:!border-slate-800 bg-white dark:!bg-[#0f172555] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
                 <div className="flex flex-col sm:flex-row justify-end gap-2">
                   <Button
                     className="w-full sm:w-auto"

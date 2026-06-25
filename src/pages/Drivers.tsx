@@ -8,7 +8,7 @@ import {
   EnvironmentOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { Select, DatePicker,  Slider, Spin } from "antd";
+import { Select, DatePicker, Slider, Spin, Pagination } from "antd";
 import DriverTable from "../components/DriverTable/DriverTable";
 import dayjs from "dayjs";
 import DriverStats from "../components/Drivers/DriverStats";
@@ -40,6 +40,8 @@ const Drivers = () => {
   });
 
   const [currentView, setCurrentView] = useState<"all" | "active" | "restricted">("all");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(15);
 
   useEffect(() => {
     dispatch(fetchDrivers());
@@ -110,6 +112,7 @@ const Drivers = () => {
       );
     }
 
+    setCurrentPage(1);
     setFilteredData(tempData);
   }, [DATA, filters]);
 
@@ -128,6 +131,7 @@ const Drivers = () => {
   }, [filteredData]);
 
   const applyFilters = (values: Partial<Filters>) => {
+    setCurrentPage(1);
     setFilters((prev) => ({
       ...prev,
       ...values,
@@ -148,10 +152,18 @@ const Drivers = () => {
     extraClasses = "",
   }: any) => (
     <div
-      className={`${flexClass} flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden ${extraClasses}`}
+      className={`${flexClass} flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden pb-1 ${extraClasses}`}
     >
-      <div className="flex-grow overflow-hidden">
-        <DriverTable data={data} />
+      <div className="flex-grow min-h-0 overflow-hidden">
+        <DriverTable
+          data={data}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          onPageChange={(page, size) => {
+            setCurrentPage(page);
+            setPageSize(size);
+          }}
+        />
       </div>
     </div>
   );
@@ -186,9 +198,9 @@ const Drivers = () => {
         {/* Title & Description */}
         <div className="flex items-center gap-4 flex-shrink-0">
           <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-                <Users size={16} strokeWidth={2.5} />
-              </div>
-                        <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Drivers</h1>
+            <Users size={16} strokeWidth={2.5} />
+          </div>
+          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Drivers</h1>
           <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0 hidden lg:block">View and manage fleet drivers</p>
         </div>
@@ -242,7 +254,7 @@ const Drivers = () => {
               <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase px-2 mb-0.5 block">
                 Views
               </span>
-              
+
               <div className="space-y-1">
                 <ViewItem
                   icon={<EnvironmentOutlined />}
@@ -281,134 +293,223 @@ const Drivers = () => {
         </div>
 
         {/* RIGHT MAIN CONTENT */}
-        <div className="flex-1 flex flex-col min-w-0 bg-slate-50/50 dark:bg-[#0f172a]">
+        <div className="flex-1 flex flex-col min-w-0 bg-slate-50/50 dark:bg-[#0f172a] relative">
           {/* Scrollable Main Content */}
-          <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6">
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 pb-20">
             <DriverStats drivers={DATA} loading={loading} />
-          
-          {/* HORIZONTAL FILTERS BAR */}
-          <div className="bg-white dark:bg-slate-800 p-3 border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm rounded-none">
-            <div className="flex items-center gap-2 px-3 border-r border-slate-200 dark:border-slate-700 text-slate-400 shrink-0">
-              <Filter size={16} className="text-indigo-500" />
-              <span className="text-[11px] font-black uppercase tracking-widest">FILTERS</span>
+
+            {/* HORIZONTAL FILTERS BAR */}
+            <div className="bg-white dark:bg-slate-800 p-3 border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm rounded-none">
+              <div className="flex items-center gap-2 px-3 border-r border-slate-200 dark:border-slate-700 text-slate-400 shrink-0">
+                <Filter size={16} className="text-indigo-500" />
+                <span className="text-[11px] font-black uppercase tracking-widest">FILTERS</span>
+              </div>
+
+              <div className="flex-1 flex flex-wrap items-center gap-4 dark-theme-select-override">
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status:</span>
+                  <Select
+                    mode="multiple"
+                    placeholder="All Statuses"
+                    className="w-48 custom-driver-select"
+                    options={STATUSES.map((s) => ({ label: s.toUpperCase(), value: s }))}
+                    value={filters.status}
+                    onChange={(val) => applyFilters({ status: val })}
+                    maxTagCount="responsive"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Plan:</span>
+                  <Select
+                    mode="multiple"
+                    placeholder="All Plans"
+                    className="w-48 custom-driver-select"
+                    options={planOptions}
+                    value={filters.plan}
+                    onChange={(val) => applyFilters({ plan: val })}
+                    maxTagCount="responsive"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Joined:</span>
+                  <DatePicker
+                    placeholder="Select Date"
+                    className="w-36 custom-picker-compact"
+                    value={filters.joined_at ? dayjs(filters.joined_at) : null}
+                    onChange={(date) => applyFilters({ joined_at: date ? date.toDate() : null })}
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0 flex-1 min-w-[150px] max-w-[250px]">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rating:</span>
+                  <Slider
+                    range
+                    min={0}
+                    max={5}
+                    step={0.1}
+                    value={filters.rating}
+                    onChange={(val: any) => applyFilters({ rating: val })}
+                    tooltip={{ formatter: (v) => `${v}★` }}
+                    className="flex-1 m-0"
+                  />
+                </div>
+
+                {hasActiveFilters && (
+                  <button
+                    onClick={() => setFilters({ search: "", status: [], plan: [], rating: [0, 5], joined_at: null })}
+                    className="ml-auto px-3 py-1.5 rounded text-[11px] font-black uppercase tracking-widest text-rose-500 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 transition-all"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
             </div>
 
-            <div className="flex-1 flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status:</span>
-                <Select
-                  mode="multiple"
-                  placeholder="All Statuses"
-                  className="w-48 custom-select-compact"
-                  options={STATUSES.map((s) => ({ label: s.toUpperCase(), value: s }))}
-                  value={filters.status}
-                  onChange={(val) => applyFilters({ status: val })}
-                  maxTagCount="responsive"
-                />
+            {loading && DATA.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
+                <Spin size="large" />
               </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Plan:</span>
-                <Select
-                  mode="multiple"
-                  placeholder="All Plans"
-                  className="w-48 custom-select-compact"
-                  options={planOptions}
-                  value={filters.plan}
-                  onChange={(val) => applyFilters({ plan: val })}
-                  maxTagCount="responsive"
-                />
+            ) : error ? (
+              <div className="flex items-center justify-center p-20 bg-rose-50 rounded-sm border border-rose-100 text-rose-500 font-bold shadow-sm">
+                {error}
               </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Joined:</span>
-                <DatePicker
-                  placeholder="Select Date"
-                  className="w-36"
-                  value={filters.joined_at ? dayjs(filters.joined_at) : null}
-                  onChange={(date) => applyFilters({ joined_at: date ? date.toDate() : null })}
-                />
+            ) : (
+              <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                {currentView === "all" && (
+                  <TableSection
+                    title="Fleet Overview"
+                    icon={<EnvironmentOutlined />}
+                    data={allFleetDrivers}
+                    count={allFleetDrivers.length}
+                    flexClass="flex-1 h-full"
+                    extraClasses="border-none rounded-none !min-h-0"
+                    colorClass="bg-indigo-600"
+                    bgColorClass="from-indigo-50 dark:from-indigo-900/30"
+                    borderColorClass="border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 bg-indigo-100/50 dark:bg-indigo-900/30 font-black"
+                  />
+                )}
+                {currentView === "active" && (
+                  <TableSection
+                    title="Verified & Active"
+                    icon={<CarOutlined />}
+                    data={activeDrivers}
+                    count={activeDrivers.length}
+                    flexClass="flex-1 h-full"
+                    extraClasses="border-none rounded-none !min-h-0"
+                    colorClass="bg-emerald-500 shadow-lg shadow-emerald-500/40"
+                    bgColorClass="from-emerald-50 dark:from-emerald-900/30 via-emerald-50/10 dark:via-emerald-900/10"
+                    borderColorClass="border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-100/50 dark:bg-emerald-900/30 font-black"
+                  />
+                )}
+                {currentView === "restricted" && (
+                  <TableSection
+                    title="Suspended / Blocked / Rejected"
+                    icon={<CloseCircleOutlined />}
+                    data={restrictedDrivers}
+                    count={restrictedDrivers.length}
+                    flexClass="flex-1 h-full"
+                    extraClasses="border-none rounded-none !min-h-0"
+                    colorClass="bg-slate-400"
+                    bgColorClass="from-slate-50 dark:from-slate-800/50"
+                    borderColorClass="border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 font-black"
+                  />
+                )}
               </div>
-
-              <div className="flex items-center gap-2 shrink-0 flex-1 min-w-[150px] max-w-[250px]">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rating:</span>
-                <Slider
-                  range
-                  min={0}
-                  max={5}
-                  step={0.1}
-                  value={filters.rating}
-                  onChange={(val) => applyFilters({ rating: val as [number, number] })}
-                  tooltip={{ formatter: (v) => `${v}★` }}
-                  className="flex-1 m-0"
-                />
-              </div>
-
-              {hasActiveFilters && (
-                <button
-                  onClick={() => setFilters({ search: "", status: [], plan: [], rating: [0, 5], joined_at: null })}
-                  className="ml-auto px-3 py-1.5 rounded text-[11px] font-black uppercase tracking-widest text-rose-500 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 transition-all"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
+            )}
           </div>
 
-          {loading && DATA.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
-              <Spin size="large" />
-            </div>
-          ) : error ? (
-            <div className="flex items-center justify-center p-20 bg-rose-50 rounded-sm border border-rose-100 text-rose-500 font-bold shadow-sm">
-              {error}
-            </div>
-          ) : (
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-              {currentView === "all" && (
-                <TableSection
-                  title="Fleet Overview"
-                  icon={<EnvironmentOutlined />}
-                  data={allFleetDrivers}
-                  count={allFleetDrivers.length}
-                  flexClass="flex-1 h-full"
-                  extraClasses="border-none rounded-none !min-h-0"
-                  colorClass="bg-indigo-600"
-                  bgColorClass="from-indigo-50 dark:from-indigo-900/30"
-                  borderColorClass="border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 bg-indigo-100/50 dark:bg-indigo-900/30 font-black"
+          {/* Sticky Pagination Footer */}
+          {(() => {
+            const currentViewData = currentView === "all" ? allFleetDrivers : currentView === "active" ? activeDrivers : restrictedDrivers;
+            return (
+              <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-805 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+                  Showing {currentViewData.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
+                  {Math.min(currentPage * pageSize, currentViewData.length)} of {currentViewData.length} drivers
+                </span>
+                <Pagination
+                  current={currentPage}
+                  pageSize={pageSize}
+                  total={currentViewData.length}
+                  onChange={(page, size) => {
+                    setCurrentPage(page);
+                    setPageSize(size);
+                  }}
+                  showSizeChanger
+                  pageSizeOptions={[10, 15, 20, 50, 100]}
+                  size="small"
                 />
-              )}
-              {currentView === "active" && (
-                <TableSection
-                  title="Verified & Active"
-                  icon={<CarOutlined />}
-                  data={activeDrivers}
-                  count={activeDrivers.length}
-                  flexClass="flex-1 h-full"
-                  extraClasses="border-none rounded-none !min-h-0"
-                  colorClass="bg-emerald-500 shadow-lg shadow-emerald-500/40"
-                  bgColorClass="from-emerald-50 dark:from-emerald-900/30 via-emerald-50/10 dark:via-emerald-900/10"
-                  borderColorClass="border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-100/50 dark:bg-emerald-900/30 font-black"
-                />
-              )}
-              {currentView === "restricted" && (
-                <TableSection
-                  title="Suspended / Blocked / Rejected"
-                  icon={<CloseCircleOutlined />}
-                  data={restrictedDrivers}
-                  count={restrictedDrivers.length}
-                  flexClass="flex-1 h-full"
-                  extraClasses="border-none rounded-none !min-h-0"
-                  colorClass="bg-slate-400"
-                  bgColorClass="from-slate-50 dark:from-slate-800/50"
-                  borderColorClass="border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 font-black"
-                />
-              )}
-            </div>
-          )}
+              </div>
+            );
+          })()}
         </div>
+
+        <style>{`
+        /* Filter input styling overrides to match dark mode search bar */
+        .custom-driver-select .ant-select-selector {
+          border-radius: 8px !important;
+        }
+
+         .dark .dark-theme-select-override .custom-driver-select {
+           border-color: #334155 !important;
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selector,
+        html.dark .dark-theme-select-override .ant-select-selector {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-item,
+        html.dark .dark-theme-select-override .ant-select-selection-item {
+          color: #f1f5f9 !important;
+          background-color: #1e293b !important;
+          border-color: #334155 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-placeholder,
+        html.dark .dark-theme-select-override .ant-select-selection-placeholder {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-arrow,
+        html.dark .dark-theme-select-override .ant-select-arrow {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-clear,
+        html.dark .dark-theme-select-override .ant-select-clear {
+          background-color: transparent !important;
+          color: #64748b !important;
+        }
+
+        .custom-picker-compact.ant-picker {
+          border-radius: 8px !important;
+        }
+        .dark .custom-picker-compact.ant-picker {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+        }
+        .dark .custom-picker-compact.ant-picker .ant-picker-input > input {
+          color: #f1f5f9 !important;
+        }
+        .dark .custom-picker-compact.ant-picker .ant-picker-input > input::placeholder {
+          color: #64748b !important;
+        }
+        .dark .custom-picker-compact.ant-picker .ant-picker-suffix {
+          color: #94a3b8 !important;
+        }
+        .dark .custom-picker-compact.ant-picker .ant-picker-clear {
+          background-color: transparent !important;
+          color: #94a3b8 !important;
+        }
+      `}</style>
       </div>
-    </div>
     </div>
   );
 };

@@ -99,13 +99,18 @@ const TripInvoiceList: React.FC<{
         ))}
       </div>
 
-      <div className="flex justify-center mt-4">
+      <div className="flex items-center justify-between mt-4 px-4 py-3 bg-gray-50 dark:bg-slate-800/50 rounded-lg border border-gray-200 dark:border-slate-700">
+        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+          Showing {completedTrips.length > 0 ? (page - 1) * pageSize + 1 : 0}–
+          {Math.min(page * pageSize, completedTrips.length)} of {completedTrips.length} invoices
+        </span>
         <Pagination
           current={page}
           pageSize={pageSize}
           total={completedTrips.length}
           onChange={(p) => setPage(p)}
           showSizeChanger={false}
+          size="small"
         />
       </div>
     </div>

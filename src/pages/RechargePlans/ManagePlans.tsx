@@ -5,7 +5,6 @@ import {
   Trash2,
   X,
   Zap,
-  ChevronDown,
   Users,
   Edit3,
   Power,
@@ -19,7 +18,7 @@ import {
 
 import axios from "../../api/axios";
 import { messageApi, modalApi, notificationApi } from "../../utilities/antdStaticHolder";
-import { Select, Drawer, Button, Avatar, Tag } from "antd";
+import { Select, Drawer, Button, Avatar, Tag, Pagination } from "antd";
 
 /* ================= TYPES ================= */
 
@@ -46,6 +45,8 @@ const ManagePlans: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(15);
 
   const [activeSubscriptions, setActiveSubscriptions] = useState<any[]>([]);
   const [, setLoadingActiveSubs] = useState(false);
@@ -429,6 +430,15 @@ const ManagePlans: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
+  const displayedPlans = filteredPlans.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   return (
     <div className="w-full h-full flex flex-col bg-[#f8f9fa] dark:bg-[#0b0f19] overflow-hidden">
       {/* Top Navbar */}
@@ -454,18 +464,20 @@ const ManagePlans: React.FC = () => {
           />
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             {filteredPlans.length} results
           </span>
 
-          <button
+          <Button
+            type="primary"
+            icon={<Plus className="text-lg" />}
             onClick={() => handleOpenModal()}
-            className="h-9 rounded-lg font-bold text-xs uppercase tracking-wider border-none bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm flex items-center justify-center px-4 gap-1.5 hover:scale-[1.01] transition-all"
+            className="px-4 h-10 rounded-lg font-bold text-xs uppercase tracking-wider border-none !bg-blue-600 hover:!bg-blue-700 text-white shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.01] transition-all"
           >
-            <Plus size={16} /> Create Plan
-          </button>
+            Create Plan
+          </Button>
         </div>
       </div>
 
@@ -482,8 +494,8 @@ const ManagePlans: React.FC = () => {
               <div
                 onClick={() => setStatusFilter("all")}
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "all"
-                    ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
                   }`}
               >
                 <div className="flex items-center gap-2 text-xs">
@@ -491,8 +503,8 @@ const ManagePlans: React.FC = () => {
                   <span>All</span>
                 </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "all"
-                    ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 font-bold"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 font-bold"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                   }`}>
                   {plans.length}
                 </span>
@@ -501,8 +513,8 @@ const ManagePlans: React.FC = () => {
               <div
                 onClick={() => setStatusFilter("active")}
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "active"
-                    ? "bg-emerald-50/80 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  ? "bg-emerald-50/80 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
                   }`}
               >
                 <div className="flex items-center gap-2 text-xs">
@@ -510,8 +522,8 @@ const ManagePlans: React.FC = () => {
                   <span>Active</span>
                 </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "active"
-                    ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                   }`}>
                   {plans.filter(p => p.isActive).length}
                 </span>
@@ -520,8 +532,8 @@ const ManagePlans: React.FC = () => {
               <div
                 onClick={() => setStatusFilter("inactive")}
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "inactive"
-                    ? "bg-amber-50/80 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  ? "bg-amber-50/80 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
                   }`}
               >
                 <div className="flex items-center gap-2 text-xs">
@@ -529,8 +541,8 @@ const ManagePlans: React.FC = () => {
                   <span>Inactive</span>
                 </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "inactive"
-                    ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                   }`}>
                   {plans.filter(p => !p.isActive).length}
                 </span>
@@ -541,109 +553,137 @@ const ManagePlans: React.FC = () => {
 
         {/* ─── Right Content Area ─────────────────────────────────────── */}
         <div className="flex-grow flex flex-col min-w-0 relative h-full">
-          <div className="flex-grow flex flex-col p-6 overflow-y-auto custom-scrollbar gap-5 pb-20">
+          <div className="flex-grow flex flex-col p-3 overflow-y-auto custom-scrollbar gap-2 pb-20">
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-0">
               {/* 1. Total Plans */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-sm flex-shrink-0">
-                    <Zap size={14} />
+              <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 flex items-center justify-center text-base bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 z-10 rounded-lg`}>
+                      <Zap size={14} />
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                      TOTAL PLANS
+                    </p>
                   </div>
-                  <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-450 tracking-wide uppercase leading-none">
-                    TOTAL PLANS
-                  </span>
                 </div>
-                <div className="flex items-baseline gap-1 mt-auto">
-                  <span className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">
-                    {plans.length}
-                  </span>
-                  <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                    PLANS
-                  </span>
-                </div>
-                <div className="absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none text-indigo-600 dark:text-indigo-400">
-                  <Zap size={100} />
+                <div className="flex items-end justify-between mt-2 z-10">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                        {plans.length}
+                      </h3>
+                      <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                        PLANS
+                      </span>
+                    </div>
+                  </div>
+                  {/* Background Icon */}
+                  <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-indigo-600 dark:text-indigo-400`}>
+                    <Zap size={100} />
+                  </div>
                 </div>
               </div>
 
               {/* 2. Active Plans */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400 flex items-center justify-center text-sm flex-shrink-0">
-                    <CheckCircle2 size={14} />
+              <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 flex items-center justify-center text-base bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400 z-10 rounded-lg`}>
+                      <CheckCircle2 size={14} />
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                      ACTIVE PLANS
+                    </p>
                   </div>
-                  <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-450 tracking-wide uppercase leading-none">
-                    ACTIVE PLANS
-                  </span>
                 </div>
-                <div className="flex items-baseline gap-1 mt-auto">
-                  <span className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">
-                    {plans.filter(p => p.isActive).length}
-                  </span>
-                  <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                    LIVE
-                  </span>
-                </div>
-                <div className="absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none text-amber-600 dark:text-amber-400">
-                  <CheckCircle2 size={100} />
+                <div className="flex items-end justify-between mt-2 z-10">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                        {plans.filter(p => p.isActive).length}
+                      </h3>
+                      <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                        LIVE
+                      </span>
+                    </div>
+                  </div>
+                  {/* Background Icon */}
+                  <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-amber-600 dark:text-amber-400`}>
+                    <CheckCircle2 size={100} />
+                  </div>
                 </div>
               </div>
 
               {/* 3. Inactive Plans */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400 flex items-center justify-center text-sm flex-shrink-0">
-                    <Power size={14} />
+              <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 flex items-center justify-center text-base bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400 z-10 rounded-lg`}>
+                      <Power size={14} />
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                      INACTIVE PLANS
+                    </p>
                   </div>
-                  <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-450 tracking-wide uppercase leading-none">
-                    INACTIVE PLANS
-                  </span>
                 </div>
-                <div className="flex items-baseline gap-1 mt-auto">
-                  <span className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">
-                    {plans.filter(p => !p.isActive).length}
-                  </span>
-                  <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                    DISABLED
-                  </span>
-                </div>
-                <div className="absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none text-amber-500 dark:text-amber-400">
-                  <Power size={100} />
+                <div className="flex items-end justify-between mt-2 z-10">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                        {plans.filter(p => !p.isActive).length}
+                      </h3>
+                      <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                        DISABLED
+                      </span>
+                    </div>
+                  </div>
+                  {/* Background Icon */}
+                  <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-amber-500 dark:text-amber-400`}>
+                    <Power size={100} />
+                  </div>
                 </div>
               </div>
 
               {/* 4. Total Subs */}
-              <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400 flex items-center justify-center text-sm flex-shrink-0">
-                    <Users size={14} />
+              <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 flex items-center justify-center text-base bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400 z-10 rounded-lg`}>
+                      <Users size={14} />
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                      TOTAL SUBS
+                    </p>
                   </div>
-                  <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-450 tracking-wide uppercase leading-none">
-                    TOTAL SUBS
-                  </span>
                 </div>
-                <div className="flex items-baseline gap-1 mt-auto">
-                  <span className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">
-                    {activeSubscriptions.length}
-                  </span>
-                  <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                    ACTIVE
-                  </span>
-                </div>
-                <div className="absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none text-rose-600 dark:text-rose-400">
-                  <Users size={100} />
+                <div className="flex items-end justify-between mt-2 z-10">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                        {activeSubscriptions.length}
+                      </h3>
+                      <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                        ACTIVE
+                      </span>
+                    </div>
+                  </div>
+                  {/* Background Icon */}
+                  <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-rose-600 dark:text-rose-400`}>
+                    <Users size={100} />
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* FILTERS TOOLBAR */}
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm flex-shrink-0 mb-6">
+            <div className="bg-white dark:bg-slate-800 py-1 px-3 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm flex-shrink-0 mb-1">
               <div className="flex items-center gap-2 flex-1 min-w-[220px]">
                 <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
                   Created Date:
                 </span>
-                <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 h-8 flex-1">
+                <div className="flex items-center bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 h-8 flex-1">
                   <input type="text" placeholder="Start" className="w-20 bg-transparent text-xs outline-none text-slate-600 dark:text-slate-300" disabled />
                   <span className="text-slate-400 mx-2">→</span>
                   <input type="text" placeholder="End" className="w-20 bg-transparent text-xs outline-none text-slate-600 dark:text-slate-300" disabled />
@@ -653,7 +693,7 @@ const ManagePlans: React.FC = () => {
             </div>
 
             {/* List View Container */}
-            <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden rounded-none">
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden rounded-none">
               {/* List Header */}
               <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-100 dark:border-slate-700/50">
                 <div className="col-span-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">PLAN NAME</div>
@@ -668,10 +708,10 @@ const ManagePlans: React.FC = () => {
               <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
                 {loading ? (
                   <div className="p-8 text-center text-slate-400">Loading templates...</div>
-                ) : filteredPlans.length > 0 ? (
-                  filteredPlans.map((plan) => {
+                ) : displayedPlans.length > 0 ? (
+                  displayedPlans.map((plan) => {
                     return (
-                      <div key={plan.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                      <div key={plan.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
                         {/* Name & Desc */}
                         <div className="col-span-3 flex items-start gap-3">
                           <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 shrink-0 mt-0.5">
@@ -757,23 +797,24 @@ const ManagePlans: React.FC = () => {
               </div>
             </div>
 
-            {/* Pagination */}
-            <div className="mt-4 flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
-              <span>SHOWING 1-{filteredPlans.length > 0 ? filteredPlans.length : 0} OF {filteredPlans.length} PLANS</span>
-              <div className="flex items-center gap-3">
-                <button className="text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50" disabled>
-                  <ChevronDown className="rotate-90" size={16} />
-                </button>
-                <div className="px-3 py-1 border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                  1
-                </div>
-                <button className="text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50" disabled>
-                  <ChevronDown className="-rotate-90" size={16} />
-                </button>
-                <div className="flex items-center gap-1 border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-slate-800 px-3 py-1 ml-2">
-                  10 / page <ChevronDown size={14} className="ml-1" />
-                </div>
-              </div>
+            {/* Sticky Pagination Footer */}
+            <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-805 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+                Showing {filteredPlans.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
+                {Math.min(currentPage * pageSize, filteredPlans.length)} of {filteredPlans.length} plans
+              </span>
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={filteredPlans.length}
+                onChange={(page, size) => {
+                  setCurrentPage(page);
+                  setPageSize(size);
+                }}
+                showSizeChanger
+                pageSizeOptions={[10, 15, 20, 50, 100]}
+                size="small"
+              />
             </div>
 
           </div>
@@ -952,7 +993,7 @@ const ManagePlans: React.FC = () => {
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               Pricing (₹)
             </label>
-            <div className="grid grid-cols-3 gap-3 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-600 shadow-sm">
+            <div className="grid grid-cols-3 gap-2 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-600 shadow-sm">
               <div className="space-y-1.5">
                 <span className="text-[10px] font-bold text-slate-400 block ml-1 uppercase">
                   Daily
@@ -1199,7 +1240,7 @@ const ManagePlans: React.FC = () => {
                           };
 
                           return (
-                            <div key={field} className="flex items-start gap-3 w-full">
+                            <div key={field} className="flex items-start gap-2 w-full">
                               <span className="text-[10px] font-bold text-slate-400 w-28 shrink-0 uppercase tracking-wider pt-0.5">
                                 {field.replace(/_/g, " ")}:
                               </span>
@@ -1237,7 +1278,7 @@ const ManagePlans: React.FC = () => {
                   )}
 
                   {item.action === "TOGGLE_STATUS" && (
-                    <div className="flex items-center gap-3 mt-1 text-xs">
+                    <div className="flex items-center gap-2 mt-1 text-xs">
                       <span className="text-slate-500 dark:text-slate-400 font-medium w-28 shrink-0">
                         Status change:
                       </span>

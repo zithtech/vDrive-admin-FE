@@ -14,7 +14,7 @@ import {
 import SubscriptionDrawer from "../../components/RechargePlan/SubscriptionDrawer";
 import axios from "../../api/axios";
 import { messageApi } from "../../utilities/antdStaticHolder";
-import { Select, Spin } from "antd";
+import { Select, Spin, Pagination } from "antd";
 import { getMediaUrl } from "../../components/DriverDetails/DriverDetails";
 
 
@@ -42,6 +42,8 @@ const Subscriptions: React.FC = () => {
   const [isDriverHistoryOpen, setIsDriverHistoryOpen] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState<any>(null);
   const [notifyingSubscribers, setNotifyingSubscribers] = useState(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(15);
 
 
   useEffect(() => {
@@ -201,6 +203,35 @@ const Subscriptions: React.FC = () => {
 
   /* ---- Handlers ---- */
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [subSearchTerm, subFilter, billingCycleFilter, remainingDaysFilter, subscriptionTab]);
+
+  const filteredSubscriptions = (subscriptionTab === "ACTIVE" ? activeSubscriptions : expiredSubscriptions).filter((s) => {
+    const matchesSearch =
+      s.driverName?.toLowerCase().includes(subSearchTerm.toLowerCase()) ||
+      s.driverPhone?.toLowerCase().includes(subSearchTerm.toLowerCase());
+    const matchesFilter =
+      subFilter === "ALL" ||
+      (s.planName && s.planName.toUpperCase().includes(subFilter));
+    const matchesBilling =
+      billingCycleFilter === "ALL" ||
+      (s.billingCycle && s.billingCycle.toUpperCase() === billingCycleFilter);
+    const daysLeft = Math.ceil(
+      (new Date(s.expiryDate).getTime() - new Date().getTime()) /
+      (1000 * 60 * 60 * 24),
+    );
+    const matchesDaysLeft =
+      remainingDaysFilter === "" ||
+      daysLeft === parseInt(remainingDaysFilter, 10);
+    return matchesSearch && matchesFilter && matchesBilling && matchesDaysLeft;
+  });
+
+  const displayedSubscriptions = filteredSubscriptions.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   return (
     <div className="w-full h-full flex flex-col bg-[#f8f9fa] dark:bg-[#0b0f19] overflow-hidden">
       {/* Top Navbar */}
@@ -226,7 +257,7 @@ const Subscriptions: React.FC = () => {
           />
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             {subscriptionTab === "ACTIVE" ? activeSubscriptions.length : expiredSubscriptions.length} results
@@ -247,8 +278,8 @@ const Subscriptions: React.FC = () => {
               <div
                 onClick={() => setSubscriptionTab("ACTIVE")}
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${subscriptionTab === "ACTIVE"
-                    ? "bg-emerald-50/80 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  ? "bg-emerald-50/80 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
                   }`}
               >
                 <div className="flex items-center gap-2 text-xs">
@@ -256,8 +287,8 @@ const Subscriptions: React.FC = () => {
                   <span>Active Subs</span>
                 </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${subscriptionTab === "ACTIVE"
-                    ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                   }`}>
                   {activeSubscriptions.length}
                 </span>
@@ -266,8 +297,8 @@ const Subscriptions: React.FC = () => {
               <div
                 onClick={() => setSubscriptionTab("EXPIRED")}
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${subscriptionTab === "EXPIRED"
-                    ? "bg-rose-50/80 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  ? "bg-rose-50/80 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
                   }`}
               >
                 <div className="flex items-center gap-2 text-xs">
@@ -275,8 +306,8 @@ const Subscriptions: React.FC = () => {
                   <span>Expired Subs</span>
                 </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${subscriptionTab === "EXPIRED"
-                    ? "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 font-bold"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  ? "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300 font-bold"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                   }`}>
                   {expiredSubscriptions.length}
                 </span>
@@ -287,9 +318,9 @@ const Subscriptions: React.FC = () => {
 
         {/* ─── Right Content Area ─────────────────────────────────────── */}
         <div className="flex-grow flex flex-col min-w-0 relative h-full">
-          <div className="flex-grow flex flex-col p-6 overflow-y-auto custom-scrollbar gap-5 pb-20">
+          <div className="flex-grow flex flex-col p-3 overflow-y-auto custom-scrollbar gap-2 pb-20">
             {/* Stats Cards */}
-            <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-4 gap-4 mb-1">
               {/* 1. Total Subs */}
               <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden">
                 <div className="flex items-center justify-between">
@@ -384,7 +415,7 @@ const Subscriptions: React.FC = () => {
             </div>
 
             {/* REAL-TIME REVENUE */}
-            <div className="bg-white dark:bg-slate-800 p-4 mb-6 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-6 rounded-none">
+            <div className="bg-white dark:bg-slate-800 p-4 mb-1 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-6 rounded-none">
               <div className="flex items-center gap-2 border-r border-slate-200 dark:border-slate-700 pr-6 shrink-0">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                 <span className="text-[11px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400">REAL-TIME REVENUE</span>
@@ -434,7 +465,7 @@ const Subscriptions: React.FC = () => {
             </div>
 
             {/* HORIZONTAL FILTERS BAR */}
-            <div className="bg-white dark:bg-slate-800 p-3 mb-6 border border-slate-200 dark:border-slate-700 flex items-center gap-4 shadow-sm rounded-none">
+            <div className="bg-white dark:bg-[#0f172a] p-3 mb-1 border border-slate-200 dark:border-slate-700 flex items-center gap-4 shadow-sm rounded-none dark-theme-select-override">
               <div className="flex items-center gap-2 px-3 border-r border-slate-200 dark:border-slate-700 text-slate-400 shrink-0">
                 <Zap size={16} className="text-indigo-500" />
                 <span className="text-[11px] font-black uppercase tracking-widest">FILTERS</span>
@@ -446,7 +477,7 @@ const Subscriptions: React.FC = () => {
                   <Select
                     value={subFilter}
                     onChange={setSubFilter}
-                    className="w-32 premium-select-sidebar"
+                    className="w-32 premium-select-sidebar custom-driver-select"
                     options={[
                       { value: "ALL", label: "All Plans" },
                       { value: "BASIC", label: "Basic" },
@@ -461,7 +492,7 @@ const Subscriptions: React.FC = () => {
                   <Select
                     value={billingCycleFilter}
                     onChange={setBillingCycleFilter}
-                    className="w-32 premium-select-sidebar"
+                    className="w-32 premium-select-sidebar custom-driver-select"
                     options={[
                       { value: "ALL", label: "All Cycles" },
                       { value: "DAILY", label: "Daily" },
@@ -478,7 +509,7 @@ const Subscriptions: React.FC = () => {
                     placeholder="e.g. 1"
                     value={remainingDaysFilter}
                     onChange={(e) => setRemainingDaysFilter(e.target.value)}
-                    className="w-20 h-8 px-2 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                    className="w-20 h-8 px-2 rounded border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-[#0f172a] text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
                     min="0"
                   />
                 </div>
@@ -498,12 +529,12 @@ const Subscriptions: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 overflow-hidden rounded-none shadow-sm">
-              <div className="px-5 py-4 border-b border-gray-50 dark:border-slate-800 flex justify-end items-center bg-white dark:bg-slate-800">
+            <div className="bg-white dark:bg-[#0f172a] border border-gray-100 dark:border-slate-700 overflow-hidden rounded-none shadow-sm">
+              <div className="px-5 py-4 border-b border-gray-50 dark:border-slate-800 flex justify-end items-center bg-white dark:bg-[#0f172a]">
                 <button
                   onClick={handleNotifyExpiring}
                   disabled={notifyingSubscribers}
-                  className="flex items-center gap-2 px-4 h-[32px] rounded-lg text-[12px] font-bold bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all active:scale-95 disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 h-[32px] rounded-lg text-[12px] font-bold bg-white dark:bg-[#0f172a] text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800 transition-all active:scale-95 disabled:opacity-50"
                 >
                   {notifyingSubscribers ? (
                     <Spin size="small" />
@@ -556,49 +587,8 @@ const Subscriptions: React.FC = () => {
                           </td>
                         </tr>
                       ))
-                    ) : (subscriptionTab === "ACTIVE"
-                      ? activeSubscriptions
-                      : expiredSubscriptions
-                    ).filter((s) => {
-                      const matchesSearch =
-                        s.driverName?.toLowerCase().includes(subSearchTerm.toLowerCase()) ||
-                        s.driverPhone?.toLowerCase().includes(subSearchTerm.toLowerCase());
-                      const matchesFilter =
-                        subFilter === "ALL" ||
-                        (s.planName && s.planName.toUpperCase().includes(subFilter));
-                      const matchesBilling =
-                        billingCycleFilter === "ALL" ||
-                        (s.billingCycle && s.billingCycle.toUpperCase() === billingCycleFilter);
-                      const daysLeft = Math.ceil(
-                        (new Date(s.expiryDate).getTime() - new Date().getTime()) /
-                        (1000 * 60 * 60 * 24),
-                      );
-                      const matchesDaysLeft =
-                        remainingDaysFilter === "" ||
-                        daysLeft === parseInt(remainingDaysFilter, 10);
-                      return matchesSearch && matchesFilter && matchesBilling && matchesDaysLeft;
-                    }).length > 0 ? (
-                      (subscriptionTab === "ACTIVE" ? activeSubscriptions : expiredSubscriptions)
-                        .filter((s) => {
-                          const matchesSearch =
-                            s.driverName?.toLowerCase().includes(subSearchTerm.toLowerCase()) ||
-                            s.driverPhone?.toLowerCase().includes(subSearchTerm.toLowerCase());
-                          const matchesFilter =
-                            subFilter === "ALL" ||
-                            (s.planName && s.planName.toUpperCase().includes(subFilter));
-                          const matchesBilling =
-                            billingCycleFilter === "ALL" ||
-                            (s.billingCycle && s.billingCycle.toUpperCase() === billingCycleFilter);
-                          const daysLeft = Math.ceil(
-                            (new Date(s.expiryDate).getTime() - new Date().getTime()) /
-                            (1000 * 60 * 60 * 24),
-                          );
-                          const matchesDaysLeft =
-                            remainingDaysFilter === "" ||
-                            daysLeft === parseInt(remainingDaysFilter, 10);
-                          return matchesSearch && matchesFilter && matchesBilling && matchesDaysLeft;
-                        })
-                        .map((sub: any) => {
+                    ) : filteredSubscriptions.length > 0 ? (
+                      displayedSubscriptions.map((sub: any) => {
                           const daysLeft = Math.ceil(
                             (new Date(sub.expiryDate).getTime() - new Date().getTime()) /
                             (1000 * 60 * 60 * 24),
@@ -653,7 +643,7 @@ const Subscriptions: React.FC = () => {
                           return (
                             <React.Fragment key={sub.id}>
                               <tr
-                                className={`group bg-white dark:bg-slate-800 hover:bg-indigo-50/30 dark:hover:bg-slate-700/50 transition-colors cursor-pointer border-b border-gray-50 dark:border-slate-700/50`}
+                                className={`group bg-white dark:bg-transparent hover:bg-indigo-50/30 dark:hover:bg-slate-800 transition-colors cursor-pointer border-b border-gray-50 dark:border-slate-700/50`}
                                 onClick={() => fetchDriverHistory(sub)}
                               >
                                 <td className="px-6 py-4">
@@ -749,7 +739,7 @@ const Subscriptions: React.FC = () => {
                                 </td>
                                 <td className="px-6 py-4 w-64">
                                   <div className="flex flex-col gap-2.5 w-full pr-4">
-                                    <div className="flex items-center gap-3 w-full">
+                                    <div className="flex items-center gap-2 w-full">
                                       <span className="text-[12px] font-black text-slate-800 dark:text-white whitespace-nowrap">
                                         {sub.startDate
                                           ? new Date(sub.startDate).toLocaleDateString("en-US", {
@@ -803,9 +793,9 @@ const Subscriptions: React.FC = () => {
                         })
                     ) : (
                       <tr>
-                        <td colSpan={8} className="px-6 py-20 text-center bg-white dark:bg-slate-800">
+                        <td colSpan={8} className="px-6 py-20 text-center bg-white dark:bg-[#0f172a]">
                           <div className="flex flex-col items-center gap-3">
-                            <div className="p-3 bg-white dark:bg-slate-800 rounded-full text-slate-200 border border-slate-100 dark:border-slate-700">
+                            <div className="p-3 bg-white dark:bg-[#0f172a] rounded-full text-slate-200 border border-slate-100 dark:border-slate-700">
                               <Zap size={32} />
                             </div>
                             <p className="text-slate-400 text-xs font-medium">
@@ -821,6 +811,26 @@ const Subscriptions: React.FC = () => {
                 </table>
               </div>
             </div>
+
+            {/* Sticky Pagination Footer */}
+            <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-805 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+                Showing {filteredSubscriptions.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
+                {Math.min(currentPage * pageSize, filteredSubscriptions.length)} of {filteredSubscriptions.length} subscriptions
+              </span>
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={filteredSubscriptions.length}
+                onChange={(page, size) => {
+                  setCurrentPage(page);
+                  setPageSize(size);
+                }}
+                showSizeChanger
+                pageSizeOptions={[10, 15, 20, 50, 100]}
+                size="small"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -829,6 +839,49 @@ const Subscriptions: React.FC = () => {
         onClose={() => setIsDriverHistoryOpen(false)}
         driver={selectedDriver}
       />
+      <style>{`
+        .custom-driver-select .ant-select-selector {
+          border-radius: 8px !important;
+          border-color: #cbd5e1 !important;
+          height: 34px !important;
+        }
+
+        .dark .dark-theme-select-override .custom-driver-select {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selector,
+        html.dark .dark-theme-select-override .ant-select-selector {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-item,
+        html.dark .dark-theme-select-override .ant-select-selection-item {
+          color: #f1f5f9 !important;
+          background-color: #1e293b !important;
+          border-color: #334155 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-placeholder,
+        html.dark .dark-theme-select-override .ant-select-selection-placeholder {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-arrow,
+        html.dark .dark-theme-select-override .ant-select-arrow {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-clear,
+        html.dark .dark-theme-select-override .ant-select-clear {
+          background-color: transparent !important;
+          color: #64748b !important;
+        }
+      `}</style>
     </div>
   );
 };

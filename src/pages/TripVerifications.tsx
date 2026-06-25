@@ -395,7 +395,8 @@ const TripVerifications: React.FC = () => {
 
         <div className="relative flex-1 max-w-xl mx-auto flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all h-9">
           <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
-          <Input
+          <input
+            type="text"
             placeholder="Search driver or trip ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -497,42 +498,47 @@ const TripVerifications: React.FC = () => {
 
         {/* ─── Right Content Area ─────────────────────────────────────── */}
         <div className="flex-grow flex flex-col min-w-0 relative h-full">
-          <div className="flex-grow flex flex-col p-6 overflow-y-auto custom-scrollbar gap-5 pb-20">
+          <div className="flex-grow flex flex-col p-3 overflow-y-auto custom-scrollbar gap-2 pb-20">
 
             {/* Status Cards Grid Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-0">
               {stats.map((card, idx) => (
                 <div
                   key={idx}
-                  className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all"
+                  className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden"
                 >
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className={`w-7 h-7 rounded-lg ${card.iconBg} ${card.iconColor} flex items-center justify-center text-sm flex-shrink-0`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 h-8 flex items-center justify-center text-base ${card.iconBg} ${card.iconColor} z-10 rounded-lg`}>
+                        {card.icon}
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                        {card.title}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-end justify-between mt-2 z-10">
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-1.5">
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                          {card.value}
+                        </h3>
+                        <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                          {card.label}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Background Icon */}
+                    <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none ${card.iconColor}`}>
                       {card.icon}
                     </div>
-                    <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-450 tracking-wide uppercase leading-none">
-                      {card.title}
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-1 mt-auto">
-                    <span className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">
-                      {card.value}
-                    </span>
-                    <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                      {card.label}
-                    </span>
-                  </div>
-
-                  {/* Background Icon */}
-                  <div className={`absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none ${card.iconColor}`}>
-                    {card.icon}
                   </div>
                 </div>
               ))}
             </div>
 
             {/* FILTERS TOOLBAR */}
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm flex-shrink-0">
+            <div className="bg-white dark:bg-slate-800 py-1 px-2 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm flex-shrink-0 dark-theme-select-override">
               <div className="flex items-center gap-2 flex-1 min-w-[220px]">
                 <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
                   Selfie Status:
@@ -542,7 +548,7 @@ const TripVerifications: React.FC = () => {
                   value={selfieFilter}
                   onChange={setSelfieFilter}
                   allowClear
-                  className="flex-1 text-xs premium-select-sidebar min-w-0"
+                  className="flex-1 text-xs premium-select-sidebar custom-driver-select min-w-0"
                   options={[
                     { value: "APPROVED", label: "Approved" },
                     { value: "REJECTED", label: "Rejected" },
@@ -560,7 +566,7 @@ const TripVerifications: React.FC = () => {
                   value={carFilter}
                   onChange={setCarFilter}
                   allowClear
-                  className="flex-1 text-xs premium-select-sidebar min-w-0"
+                  className="flex-1 text-xs premium-select-sidebar custom-driver-select min-w-0"
                   options={[
                     { value: "APPROVED", label: "Approved" },
                     { value: "REJECTED", label: "Rejected" },
@@ -880,10 +886,10 @@ const TripVerifications: React.FC = () => {
               key: "event_type",
               render: (type: string) => (
                 <span className={`px-2 py-0.5 rounded-md font-bold text-[9px] uppercase tracking-wider border-none inline-block ${type === "initial_submission"
-                    ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
-                    : type === "reupload"
-                      ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
-                      : "bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400"
+                  ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+                  : type === "reupload"
+                    ? "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
+                    : "bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400"
                   }`}>
                   {type?.replace("_", " ")}
                 </span>
@@ -930,14 +936,14 @@ const TripVerifications: React.FC = () => {
                 <div>
                   <div className="flex gap-1.5 mb-1">
                     <span className={`px-2 py-0.5 rounded-md font-bold text-[9px] uppercase tracking-wider border-none inline-block ${record.selfie_status === "approved" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400" :
-                        record.selfie_status === "rejected" ? "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400" :
-                          "bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-350"
+                      record.selfie_status === "rejected" ? "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400" :
+                        "bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-350"
                       }`}>
                       S: {record.selfie_status}
                     </span>
                     <span className={`px-2 py-0.5 rounded-md font-bold text-[9px] uppercase tracking-wider border-none inline-block ${record.car_image_status === "approved" ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400" :
-                        record.car_image_status === "rejected" ? "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400" :
-                          "bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-350"
+                      record.car_image_status === "rejected" ? "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400" :
+                        "bg-slate-50 text-slate-700 dark:bg-slate-800 dark:text-slate-350"
                       }`}>
                       C: {record.car_image_status}
                     </span>
@@ -966,16 +972,68 @@ const TripVerifications: React.FC = () => {
       </Modal>
 
       <style>{`
-        /* Sidebar input styling overrides */
-        .premium-select-sidebar.ant-select .ant-select-selector {
+        /* Filter input styling overrides to match dark mode search bar */
+        .custom-driver-select .ant-select-selector {
           border-radius: 8px !important;
           border-color: #cbd5e1 !important;
           height: 34px !important;
         }
-        .dark .premium-select-sidebar.ant-select .ant-select-selector {
+
+        .dark .dark-theme-select-override .custom-driver-select {
           border-color: #334155 !important;
           background-color: #0f172a !important;
           color: #f1f5f9 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selector,
+        html.dark .dark-theme-select-override .ant-select-selector {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-item,
+        html.dark .dark-theme-select-override .ant-select-selection-item {
+          color: #f1f5f9 !important;
+          background-color: #1e293b !important;
+          border-color: #334155 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-placeholder,
+        html.dark .dark-theme-select-override .ant-select-selection-placeholder {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-arrow,
+        html.dark .dark-theme-select-override .ant-select-arrow {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-clear,
+        html.dark .dark-theme-select-override .ant-select-clear {
+          background-color: transparent !important;
+          color: #64748b !important;
+        }
+
+        /* Table dark mode overrides */
+        .dark .premium-table-compact .ant-table {
+          background-color: transparent !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .premium-table-compact .ant-table-thead > tr > th {
+          background-color: #0f172a !important;
+          border-bottom: 1px solid #334155 !important;
+          color: #94a3b8 !important;
+        }
+        .dark .premium-table-compact .ant-table-tbody > tr > td {
+          border-bottom: 1px solid #1e293b !important;
+        }
+        .dark .premium-table-compact .ant-table-tbody > tr.ant-table-row:hover > td {
+          background-color: #1e293b !important;
+        }
+        .dark .premium-table-compact .ant-table-placeholder {
+          background-color: transparent !important;
+          border-color: #334155 !important;
         }
 
         /* Pagination sharp border-radius and style overrides */

@@ -49,7 +49,7 @@ const DriverMetricsColumn: React.FC<DriverMetricsColumnProps> = ({ stats }) => {
             </span>
           )}
         </div>
-        <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${iconBgColor}`}>
+        <div className={`w-5 h-5 rounded-[4px] flex items-center justify-center ${iconBgColor}`}>
           <Icon size={14} className={iconColor} />
         </div>
       </div>
@@ -80,7 +80,7 @@ const DriverMetricsColumn: React.FC<DriverMetricsColumnProps> = ({ stats }) => {
 
       {/* Content Grid */}
       <div className="flex-1 p-3.5 bg-gray-50/20 dark:bg-slate-900/50 overflow-y-auto custom-scrollbar">
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-2 gap-2 mb-4">
           <MiniMetricCard
             title="Available"
             value={stats.availableDrivers}
@@ -115,7 +115,7 @@ const DriverMetricsColumn: React.FC<DriverMetricsColumnProps> = ({ stats }) => {
           />
         </div>
 
-        <div className="flex items-center gap-3 my-4">
+        <div className="flex items-center gap-2 my-4">
           <div className="h-px bg-gray-100 dark:bg-slate-700 flex-1"></div>
           <span className="text-[10px] font-bold text-gray-300 dark:text-gray-500 uppercase tracking-widest">
             Fleet Health

@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Button, Table, Space, Card, Tag, Modal, Pagination, Tooltip, Dropdown } from "antd";
+import { Button, Table, Space, Tag, Modal, Pagination, Tooltip, Dropdown, Select } from "antd";
 import { DownloadOutlined, EyeOutlined, EditOutlined, LoadingOutlined, EllipsisOutlined } from "@ant-design/icons";
-import { Search, IndianRupee, MapPin, Filter, Layers, Navigation } from "lucide-react";
+import { Search, IndianRupee, MapPin, Filter, Layers } from "lucide-react";
 import { IoAdd } from "react-icons/io5";
-import TitleBar from "../components/TitleBarCommon/TitleBar";
+// import TitleBar from "../components/TitleBarCommon/TitleBar";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchPricingFareRules, setPage, setPageSize } from "../store/slices/pricingFareRulesSlice";
@@ -55,10 +55,28 @@ const PricingAndFareRules: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewFilter, setViewFilter] = useState("all");
 
+  const [countryFilter, setCountryFilter] = useState<string | null>(null);
+  const [stateFilter, setStateFilter] = useState<string | null>(null);
+  const [districtFilter, setDistrictFilter] = useState<string | null>(null);
+  const [areaFilter, setAreaFilter] = useState<string | null>(null);
+
   const filteredRules = useMemo(() => {
     let filtered = fareRules || [];
     if (viewFilter === "hotspot") filtered = filtered.filter((r) => r.is_hotspot);
     if (viewFilter === "standard") filtered = filtered.filter((r) => !r.is_hotspot);
+
+    if (countryFilter) {
+      filtered = filtered.filter((r) => (r.country_name || "India") === countryFilter);
+    }
+    if (stateFilter) {
+      filtered = filtered.filter((r) => r.state_name === stateFilter);
+    }
+    if (districtFilter) {
+      filtered = filtered.filter((r) => r.district_name === districtFilter);
+    }
+    if (areaFilter) {
+      filtered = filtered.filter((r) => r.area_name === areaFilter);
+    }
 
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
@@ -70,7 +88,19 @@ const PricingAndFareRules: React.FC = () => {
       );
     }
     return filtered;
-  }, [fareRules, viewFilter, searchTerm]);
+  }, [fareRules, viewFilter, searchTerm, countryFilter, stateFilter, districtFilter, areaFilter]);
+
+  // Compute unique filter options
+  const filterOptions = useMemo(() => {
+    if (!fareRules) return { countries: [], states: [], districts: [], areas: [] };
+
+    const countries = Array.from(new Set(fareRules.map((r) => r.country_name || "India"))).filter(Boolean).map(c => ({ value: c, label: c }));
+    const states = Array.from(new Set(fareRules.map((r) => r.state_name))).filter(Boolean).map(s => ({ value: s, label: s }));
+    const districts = Array.from(new Set(fareRules.map((r) => r.district_name))).filter(Boolean).map(d => ({ value: d, label: d }));
+    const areas = Array.from(new Set(fareRules.map((r) => r.area_name))).filter(Boolean).map(a => ({ value: a, label: a }));
+
+    return { countries, states, districts, areas };
+  }, [fareRules]);
 
   // Fetch data on mount
   useEffect(() => {
@@ -318,17 +348,46 @@ const PricingAndFareRules: React.FC = () => {
                     .dark .pricing-action-ellipsis:hover { color: #f1f5f9; }
                     .pricing-menu-icon { color: #9ca3af; }
                     .pricing-menu-label { font-weight: 700; color: #374151; }
+                    .dark .pricing-menu-label { color: #f1f5f9; }
                     .pricing-menu-label-bold { font-weight: 700; color: #1e293b; }
                     .dark .pricing-menu-label-bold { color: #f1f5f9; }
+                    .premium-select-sidebar.ant-select .ant-select-selector,
+                    .premium-range-picker-sidebar.ant-picker {
+                      border-radius: 8px !important;
+                      border-color: #cbd5e1 !important;
+                    }
+                    .dark .premium-select-sidebar.ant-select,
+                    .dark .premium-select-sidebar.ant-select .ant-select-selector,
+                    .dark .premium-select-sidebar.ant-select-multiple .ant-select-selector,
+                    .dark .premium-select-sidebar .ant-select-selector,
+                    .dark .premium-range-picker-sidebar.ant-picker {
+                      border-color: #334155 !important;
+                      background-color: #0f172a !important;
+                      background: #0f172a !important;
+                      color: #f1f5f9 !important;
+                    }
+                    .dark .premium-range-picker-sidebar.ant-picker .ant-picker-input > input,
+                    .dark .premium-range-picker-sidebar.ant-picker .ant-picker-separator {
+                      color: #f1f5f9 !important;
+                    }
+                    .dark .premium-select-sidebar.ant-select .ant-select-selection-item {
+                      color: #f1f5f9 !important;
+                    }
+                    .dark .premium-select-sidebar.ant-select .ant-select-selection-placeholder {
+                      color: #64748b !important;
+                    }
         `}
       </style>
 
       {/* Top Navbar */}
       <div className="bg-white dark:bg-slate-800 h-12 px-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4 z-0 flex-shrink-0">
         <div className="flex items-center gap-4 flex-shrink-0">
-          <h1 className="text-[15px] font-bold text-slate-800 dark:text-slate-100 m-0 leading-none">Pricing Rules</h1>
+          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+            <IndianRupee size={16} strokeWidth={2.5} />
+          </div>
+          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Pricing Rules</h1>
           <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
-          <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400 m-0 hidden lg:block">Fare Management</p>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0 hidden lg:block">Fare Management</p>
         </div>
 
         <div className="relative flex-1 max-w-xl mx-auto flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all h-9">
@@ -342,7 +401,7 @@ const PricingAndFareRules: React.FC = () => {
           />
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             {total} rules
@@ -356,12 +415,14 @@ const PricingAndFareRules: React.FC = () => {
               Excel
             </Button>
             {canCreatePricing && (
-              <button
+              <Button
+                type="primary"
+                icon={<IoAdd className="text-lg" />}
                 onClick={() => navigate("/PricingAndFareRules/pricing")}
-                className="h-8 rounded-lg font-bold text-xs uppercase tracking-wider border-none bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm flex items-center justify-center px-4 gap-1.5 hover:scale-[1.01] transition-all"
+                className="px-4 h-10 rounded-lg font-bold text-xs uppercase tracking-wider border-none !bg-blue-600 hover:!bg-blue-700 text-white shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.01] transition-all"
               >
-                <IoAdd size={16} /> Add Pricing
-              </button>
+                Add Pricing
+              </Button>
             )}
           </Space>
         </div>
@@ -422,7 +483,7 @@ const PricingAndFareRules: React.FC = () => {
 
         {/* ─── Right Content Area ─────────────────────────────────────── */}
         <div className="flex-grow flex flex-col min-w-0 relative h-full">
-          <div className="flex-grow flex flex-col p-6 overflow-y-auto custom-scrollbar gap-5 pb-20">
+          <div className="flex-grow flex flex-col p-3 overflow-y-auto custom-scrollbar gap-2 pb-20">
             {/* HORIZONTAL FILTERS BAR */}
             <div className="bg-white dark:bg-slate-800 p-3 border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm rounded-none">
               <div className="flex items-center gap-2 px-3 border-r border-slate-200 dark:border-slate-700 text-slate-400 shrink-0">
@@ -431,7 +492,73 @@ const PricingAndFareRules: React.FC = () => {
               </div>
 
               <div className="flex-1 flex flex-wrap items-center gap-4">
-                <span className="text-[11px] text-slate-500 font-medium">Use the search bar above to filter results.</span>
+                <div className="flex items-center gap-2 flex-1 min-w-[150px]">
+                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
+                    Country:
+                  </span>
+                  <Select
+                    placeholder="All"
+                    value={countryFilter}
+                    onChange={setCountryFilter}
+                    allowClear
+                    className="flex-1 text-xs premium-select-sidebar min-w-0"
+                    options={filterOptions.countries}
+                  />
+                </div>
+                <div className="flex items-center gap-2 flex-1 min-w-[150px]">
+                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
+                    State:
+                  </span>
+                  <Select
+                    placeholder="All"
+                    value={stateFilter}
+                    onChange={setStateFilter}
+                    allowClear
+                    className="flex-1 text-xs premium-select-sidebar min-w-0"
+                    options={filterOptions.states}
+                  />
+                </div>
+                <div className="flex items-center gap-2 flex-1 min-w-[150px]">
+                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
+                    District:
+                  </span>
+                  <Select
+                    placeholder="All"
+                    value={districtFilter}
+                    onChange={setDistrictFilter}
+                    allowClear
+                    className="flex-1 text-xs premium-select-sidebar min-w-0"
+                    options={filterOptions.districts}
+                  />
+                </div>
+                <div className="flex items-center gap-2 flex-1 min-w-[150px]">
+                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
+                    Area:
+                  </span>
+                  <Select
+                    placeholder="All"
+                    value={areaFilter}
+                    onChange={setAreaFilter}
+                    allowClear
+                    className="flex-1 text-xs premium-select-sidebar min-w-0"
+                    options={filterOptions.areas}
+                  />
+                </div>
+                {(countryFilter || stateFilter || districtFilter || areaFilter) && (
+                  <Button
+                    type="text"
+                    danger
+                    className="text-[11px] font-bold uppercase tracking-wider"
+                    onClick={() => {
+                      setCountryFilter(null);
+                      setStateFilter(null);
+                      setDistrictFilter(null);
+                      setAreaFilter(null);
+                    }}
+                  >
+                    Clear Filters
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -459,23 +586,25 @@ const PricingAndFareRules: React.FC = () => {
               </div>
             </div>
 
-            {/* Sticky Pagination Footer */}
-            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10 flex-shrink-0 -mx-6 -mb-6 mt-auto">
-              <div className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
-                Showing <span className="font-bold text-slate-800 dark:text-slate-200">{total === 0 ? 0 : (currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, total)}</span> of <span className="font-bold text-slate-800 dark:text-slate-200">{total}</span> items
-              </div>
-              <Pagination
-                current={currentPage}
-                pageSize={pageSize}
-                total={total}
-                onChange={(page, size) => {
-                  handleTableChange({ current: page, pageSize: size });
-                }}
-                showSizeChanger
-                pageSizeOptions={["10", "20", "50", "100"]}
-                size="small"
-              />
-            </div>
+          </div>
+
+          {/* Sticky Bottom Pagination Bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-805 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+              Showing {total > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
+              {Math.min(currentPage * pageSize, total)} of {total} rules
+            </span>
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={total}
+              onChange={(page, size) => {
+                handleTableChange({ current: page, pageSize: size });
+              }}
+              showSizeChanger
+              pageSizeOptions={["10", "20", "50", "100"]}
+              size="small"
+            />
           </div>
         </div>
       </div>

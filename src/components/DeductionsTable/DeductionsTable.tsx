@@ -80,9 +80,9 @@ const DeductionTable: React.FC<DeductionTableProps> = ({ data, loading = false }
       const recordValue = record[dataIndex];
       return recordValue
         ? recordValue
-            .toString()
-            .toLowerCase()
-            .includes((value as string).toLowerCase())
+          .toString()
+          .toLowerCase()
+          .includes((value as string).toLowerCase())
         : false;
     },
     render: (text) =>
@@ -310,12 +310,12 @@ const DeductionTable: React.FC<DeductionTableProps> = ({ data, loading = false }
           border-bottom: 1px solid #e2e8f0 !important;
           padding: 8px 12px !important;
         }
-        .premium-table-compact .ant-table-tbody > tr > td {
+        .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
           padding: 8px 12px !important;
           border-bottom: 1px solid #f1f5f9 !important;
           background: #ffffff !important;
         }
-        .premium-table-compact .ant-table-tbody > tr:hover > td {
+        .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row):hover > td {
           background: #f8fafc !important;
         }
         .premium-table-compact .ant-table-cell-row-hover {
@@ -331,19 +331,19 @@ const DeductionTable: React.FC<DeductionTableProps> = ({ data, loading = false }
           color: #94a3b8 !important;
           border-bottom: 1px solid #334155 !important;
         }
-        .dark .premium-table-compact .ant-table-tbody > tr > td {
+        .dark .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
           background: #0f172a !important;
           border-bottom: 1px solid #1e293b !important;
           color: #cbd5e1 !important;
         }
-        .dark .premium-table-compact .ant-table-tbody > tr:hover > td {
+        .dark .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row):hover > td {
           background: #1e293b !important;
         }
         .dark .premium-table-compact .ant-table-cell-row-hover {
           background: #1e293b !important;
         }
       `}</style>
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 shadow-sm overflow-hidden pb-1">
+      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 shadow-sm overflow-hidden pb-1 flex flex-col flex-1 min-h-0 h-full">
         <Table
           columns={columns}
           dataSource={data}
@@ -351,7 +351,7 @@ const DeductionTable: React.FC<DeductionTableProps> = ({ data, loading = false }
           rowKey="id"
           pagination={false}
           className="premium-table-compact"
-          scroll={{ x: 800 }}
+          scroll={{ x: 1000, y: 'calc(100vh - 430px)' }}
           size="small"
         />
       </div>

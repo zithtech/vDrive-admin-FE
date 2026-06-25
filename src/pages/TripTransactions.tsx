@@ -11,10 +11,10 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
   StopOutlined,
-  HistoryOutlined,
   UserAddOutlined,
   PlayCircleOutlined,
 } from "@ant-design/icons";
+import { Activity } from "lucide-react";
 import dayjs from "dayjs";
 
 
@@ -170,9 +170,12 @@ const TripTransactions: React.FC = () => {
       {/* Top Navbar */}
       <div className="bg-white dark:bg-slate-800 h-12 px-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4 z-10 flex-shrink-0">
         <div className="flex items-center gap-4 flex-shrink-0">
-          <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100 m-0 leading-none">Trip Transaction Activity</h1>
+          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+            <Activity size={16} strokeWidth={2.5} />
+          </div>
+          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Trip Transaction Activity</h1>
           <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
-          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0">A chronological source of truth for every event, status change, and administrative action associated with this trip.</p>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0 hidden md:block">A chronological source of truth for every event, status change, and administrative action associated with this trip.</p>
         </div>
       </div>
 
@@ -181,14 +184,14 @@ const TripTransactions: React.FC = () => {
           {/* ─── Premium Search Surface (Sticky) ────────────────────────── */}
           <div className="sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 pt-2 pb-2 -mt-2">
             <div className="relative max-w-2xl mx-auto">
-              <div className="relative bg-white border border-gray-200 dark:border-slate-700 shadow-sm p-3 sm:p-2 rounded-lg">
+              <div className="relative bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 shadow-sm p-3 sm:p-2 rounded-lg">
                 <div className="flex flex-col sm:flex-row gap-4 items-center">
                   <div className="flex-grow w-full relative group">
-                    <SearchOutlined className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-400 text-lg transition-transform group-focus-within:scale-110" />
+                    <SearchOutlined className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-400 text-lg transition-transform group-focus-within:scale-110 z-10" />
                     <Input
                       size="large"
                       placeholder="Enter Trip ID (e.g. VDT-00343)"
-                      className="!pl-12 !h-10 !rounded-none !bg-gray-50 dark:!bg-slate-900 !border-none !text-gray-700 dark:text-slate-200 dark:!text-slate-100 !font-bold !text-base placeholder:text-gray-300 dark:text-slate-500 dark:text-slate-400 dark:placeholder:text-slate-500 dark:text-slate-400 focus:!bg-white dark:focus:!bg-slate-800 focus:!shadow-inner transition-all"
+                      className="!pl-12 !h-10 !rounded-md !bg-gray-50 dark:!bg-[#0f172a] !border-none !text-gray-700 dark:!text-slate-100 !font-bold !text-base placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:!bg-white dark:focus:!bg-[#0f172a] focus:!shadow-inner transition-all"
                       value={searchId}
                       onChange={(e) => setSearchId(e.target.value)}
                       onPressEnter={handleSearch}

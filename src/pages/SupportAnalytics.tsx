@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, Row, Col, Typography, Spin, Progress, Space, DatePicker, Input, Button } from "antd";
+import { Card, Row, Col, Typography, Spin, Progress, Space, DatePicker } from "antd";
 import {
   CustomerServiceOutlined,
   ClockCircleOutlined,
@@ -133,9 +133,9 @@ const SupportAnalytics: React.FC = () => {
         {/* Title & Description */}
         <div className="flex items-center gap-4 flex-shrink-0">
           <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-                <PieChartOutlined className="text-base" />
-              </div>
-                        <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Support Analytics</h1>
+            <PieChartOutlined className="text-base" />
+          </div>
+          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Support Analytics</h1>
           <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0">Real-time overview</p>
         </div>
@@ -254,110 +254,138 @@ const SupportAnalytics: React.FC = () => {
 
         {/* ─── Right Content Area ─────────────────────────────────────── */}
         <div className="flex-grow flex flex-col min-w-0 relative h-full">
-          <div className="flex-grow flex flex-col p-6 overflow-y-auto custom-scrollbar gap-5 pb-20">
+          <div className="flex-grow flex flex-col p-3 overflow-y-auto custom-scrollbar gap-2 pb-20">
 
 
             {/* Row 1: Key Metrics */}
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={12} lg={6}>
-                <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all rounded-none min-h-[100px]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs flex-shrink-0">
+                <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden ">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 h-8 flex items-center justify-center text-base bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 z-10 rounded-lg`}>
+                        <CustomerServiceOutlined />
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                        Total Tickets
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-end justify-between mt-2 z-10">
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-1.5">
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                          {currentTotal}
+                        </h3>
+                        <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                          tickets
+                        </span>
+                      </div>
+                    </div>
+                    {/* Background Icon */}
+                    <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-blue-600 dark:text-blue-400`}>
                       <CustomerServiceOutlined />
                     </div>
-                    <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-450 tracking-wide uppercase leading-none">
-                      Total Tickets
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-1 mt-auto">
-                    <span className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">
-                      {currentTotal}
-                    </span>
-                    <span className="text-[9px] text-slate-405 dark:text-slate-500 font-bold uppercase tracking-wider">
-                      tickets
-                    </span>
-                  </div>
-                  <div className="absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none text-blue-600 dark:text-blue-400">
-                    <CustomerServiceOutlined />
                   </div>
                 </div>
               </Col>
 
               <Col xs={24} sm={12} lg={6}>
-                <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all rounded-none min-h-[100px]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400 flex items-center justify-center text-xs flex-shrink-0">
+                <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden ">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 h-8 flex items-center justify-center text-base bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400 z-10 rounded-lg`}>
+                        <AlertOutlined />
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                        Open Now
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-end justify-between mt-2 z-10">
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-1.5">
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                          {currentOpen}
+                        </h3>
+                        <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                          active
+                        </span>
+                      </div>
+                    </div>
+                    {/* Background Icon */}
+                    <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-amber-500 dark:text-amber-400`}>
                       <AlertOutlined />
                     </div>
-                    <span className="text-[10px] font-extrabold text-slate-505 dark:text-slate-450 tracking-wide uppercase leading-none">
-                      Open Now
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-1 mt-auto">
-                    <span className="text-2xl font-extrabold text-amber-500 dark:text-amber-400 leading-none">
-                      {currentOpen}
-                    </span>
-                    <span className="text-[9px] text-slate-405 dark:text-slate-500 font-bold uppercase tracking-wider">
-                      active
-                    </span>
-                  </div>
-                  <div className="absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none text-amber-500 dark:text-amber-400">
-                    <AlertOutlined />
                   </div>
                 </div>
               </Col>
 
               <Col xs={24} sm={12} lg={6}>
-                <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all rounded-none min-h-[100px]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs flex-shrink-0">
+                <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden ">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 h-8 flex items-center justify-center text-base bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 z-10 rounded-lg`}>
+                        <CheckCircleOutlined />
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                        Resolved
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-end justify-between mt-2 z-10">
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-1.5">
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                          {currentResolved}
+                        </h3>
+                        <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                          closed
+                        </span>
+                      </div>
+                    </div>
+                    {/* Background Icon */}
+                    <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-emerald-600 dark:text-emerald-400`}>
                       <CheckCircleOutlined />
                     </div>
-                    <span className="text-[10px] font-extrabold text-slate-505 dark:text-slate-450 tracking-wide uppercase leading-none">
-                      Resolved
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-1 mt-auto">
-                    <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 leading-none">
-                      {currentResolved}
-                    </span>
-                    <span className="text-[9px] text-slate-405 dark:text-slate-500 font-bold uppercase tracking-wider">
-                      closed
-                    </span>
-                  </div>
-                  <div className="absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none text-emerald-600 dark:text-emerald-400">
-                    <CheckCircleOutlined />
                   </div>
                 </div>
               </Col>
 
               <Col xs={24} sm={12} lg={6}>
-                <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all rounded-none min-h-[100px]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400 flex items-center justify-center text-xs flex-shrink-0">
+                <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden ">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 h-8 flex items-center justify-center text-base bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400 z-10 rounded-lg`}>
+                        <ThunderboltOutlined />
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                        Avg Response
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-end justify-between mt-2 z-10">
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-1.5">
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                          {avg_response_minutes ? `${avg_response_minutes}m` : "N/A"}
+                        </h3>
+                        <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                          response time
+                        </span>
+                      </div>
+                    </div>
+                    {/* Background Icon */}
+                    <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-rose-600 dark:text-rose-400`}>
                       <ThunderboltOutlined />
                     </div>
-                    <span className="text-[10px] font-extrabold text-slate-550 dark:text-slate-450 tracking-wide uppercase leading-none">
-                      Avg Response
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-1 mt-auto">
-                    <span className="text-2xl font-extrabold text-rose-600 dark:text-rose-400 leading-none">
-                      {avg_response_minutes ? `${avg_response_minutes}m` : "N/A"}
-                    </span>
-                    <span className="text-[9px] text-slate-405 dark:text-slate-500 font-bold uppercase tracking-wider">
-                      response time
-                    </span>
-                  </div>
-                  <div className="absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none text-rose-600 dark:text-rose-400">
-                    <ThunderboltOutlined />
                   </div>
                 </div>
               </Col>
             </Row>
 
             {/* Filters Toolbar */}
-            <div className="flex items-center gap-4 py-3 border-y border-slate-100 dark:border-slate-800/80 mb-2 mt-2 bg-slate-50/50 dark:bg-slate-900/50 px-4 rounded-none">
+            <div className="flex items-center gap-4 py-1 px-2 border-y border-slate-100 dark:border-slate-800/80 mb-2 mt-2 bg-slate-50/50 dark:bg-slate-900/50 px-4 rounded-none">
               <div className="flex items-center gap-3">
                 <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                   Timeframe:
@@ -376,7 +404,7 @@ const SupportAnalytics: React.FC = () => {
               {/* Today's Summary Card */}
               <Col xs={24} lg={8}>
                 <Card
-                  className="border border-slate-100 dark:border-slate-850 shadow-sm h-full !bg-white dark:!bg-slate-900 rounded-none"
+                  className="border border-slate-100 dark:border-slate-800 shadow-sm h-full !bg-white dark:!bg-slate-900 rounded-none"
                   title={
                     <div className="flex items-center gap-2">
                       <ClockCircleOutlined className="text-blue-600 dark:text-blue-400 text-xs" />
@@ -395,7 +423,7 @@ const SupportAnalytics: React.FC = () => {
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <Text className="text-slate-550 dark:text-slate-400 font-bold text-xs">
+                      <Text className="text-slate-500 dark:text-slate-400 font-bold text-xs">
                         Active
                       </Text>
                       <span className="inline-flex px-2 py-0.5 text-[9px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 rounded-none">
@@ -403,7 +431,7 @@ const SupportAnalytics: React.FC = () => {
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <Text className="text-slate-555 dark:text-slate-400 font-bold text-xs">
+                      <Text className="text-slate-500 dark:text-slate-400 font-bold text-xs">
                         Resolved
                       </Text>
                       <span className="inline-flex px-2 py-0.5 text-[9px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 rounded-none">
@@ -427,7 +455,7 @@ const SupportAnalytics: React.FC = () => {
               {/* Category Breakdown Card */}
               <Col xs={24} lg={16}>
                 <Card
-                  className="border border-slate-100 dark:border-slate-850 shadow-sm h-full !bg-white dark:!bg-slate-900 rounded-none"
+                  className="border border-slate-100 dark:border-slate-800 shadow-sm h-full !bg-white dark:!bg-slate-900 rounded-none"
                   title={
                     <div className="flex items-center gap-2">
                       <PieChartOutlined className="text-blue-600 dark:text-blue-400 text-xs" />
@@ -446,12 +474,12 @@ const SupportAnalytics: React.FC = () => {
                       return (
                         <div
                           key={cat.category}
-                          className="flex items-center gap-3 p-3 rounded-none bg-slate-50/70 dark:bg-slate-850/50 border border-slate-100 dark:border-slate-800 hover:bg-slate-100/50 dark:hover:bg-slate-800/80 transition-colors"
+                          className="flex items-center gap-2 p-3 rounded-none bg-slate-50/70 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 hover:bg-slate-100/50 dark:hover:bg-slate-800/80 transition-colors"
                         >
                           <div className="text-2xl">{meta.icon}</div>
                           <div className="flex-grow">
                             <div className="flex justify-between items-center mb-1">
-                              <Text className="font-extrabold text-xs dark:text-slate-205">
+                              <Text className="font-extrabold text-xs dark:text-slate-200">
                                 {meta.label}
                               </Text>
                               <Text className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
@@ -466,7 +494,7 @@ const SupportAnalytics: React.FC = () => {
                               className="!mb-0"
                             />
                           </div>
-                          <Text className="text-[10px] font-black text-slate-550 dark:text-slate-400 min-w-[30px] text-right">
+                          <Text className="text-[10px] font-black text-slate-500 dark:text-slate-400 min-w-[30px] text-right">
                             {percent}%
                           </Text>
                         </div>

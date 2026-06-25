@@ -20,6 +20,7 @@ import {
   HistoryOutlined,
   ReloadOutlined,
 } from "@ant-design/icons";
+import { Headset } from "lucide-react";
 import axiosIns from "../api/axios";
 import { useSocket } from "../hooks/useSocket";
 import { useAppSelector } from "../store/hooks";
@@ -414,6 +415,9 @@ const SupportTickets: React.FC = () => {
       <div className="bg-white dark:bg-slate-800 h-12 px-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4 z-0 flex-shrink-0 w-full">
         {/* Title & Description */}
         <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+            <Headset size={16} strokeWidth={2.5} />
+          </div>
           <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Support Center</h1>
           <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0">Live Chat Queue</p>
@@ -473,8 +477,8 @@ const SupportTickets: React.FC = () => {
                       setSearchText("");
                     }}
                     className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-md text-xs font-extrabold transition-all duration-200 ${userTypeFilter === "drivers"
-                        ? "bg-white dark:bg-slate-800 text-blue-650 dark:text-blue-400 shadow-sm"
-                        : "text-slate-505 dark:text-slate-450 hover:text-slate-800 dark:hover:text-slate-200"
+                        ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                       }`}
                   >
                     <UserOutlined />
@@ -495,8 +499,8 @@ const SupportTickets: React.FC = () => {
                       setSearchText("");
                     }}
                     className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-md text-xs font-extrabold transition-all duration-200 ${userTypeFilter === "customers"
-                        ? "bg-white dark:bg-slate-800 text-blue-650 dark:text-blue-400 shadow-sm"
-                        : "text-slate-505 dark:text-slate-450 hover:text-slate-800 dark:hover:text-slate-200"
+                        ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                       }`}
                   >
                     <UserOutlined />
@@ -517,8 +521,8 @@ const SupportTickets: React.FC = () => {
                   <button
                     onClick={() => setStatusFilter("active")}
                     className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-md text-xs font-extrabold transition-all duration-200 ${statusFilter === "active"
-                        ? "bg-white dark:bg-slate-800 text-blue-650 dark:text-blue-400 shadow-sm"
-                        : "text-slate-505 dark:text-slate-450 hover:text-slate-800 dark:hover:text-slate-200"
+                        ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                       }`}
                   >
                     <ClockCircleOutlined />
@@ -533,8 +537,8 @@ const SupportTickets: React.FC = () => {
                   <button
                     onClick={() => setStatusFilter("resolved")}
                     className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-md text-xs font-extrabold transition-all duration-200 ${statusFilter === "resolved"
-                        ? "bg-white dark:bg-slate-800 text-blue-650 dark:text-blue-400 shadow-sm"
-                        : "text-slate-505 dark:text-slate-450 hover:text-slate-800 dark:hover:text-slate-200"
+                        ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                       }`}
                   >
                     <HistoryOutlined />
@@ -574,7 +578,7 @@ const SupportTickets: React.FC = () => {
                         setSelectedTicket(item);
                         setViewedTickets((prev) => new Set(prev).add(item.id));
                       }}
-                      className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 relative flex flex-col gap-3 ${isSelected
+                      className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 relative flex flex-col gap-2 ${isSelected
                           ? "bg-white dark:bg-slate-900 border-blue-500 shadow-md shadow-blue-500/5 ring-1 ring-blue-500/10"
                           : isUnread
                             ? "bg-white dark:bg-slate-900 border-blue-200 dark:border-blue-900/40 shadow-sm hover:border-blue-400"
@@ -593,10 +597,10 @@ const SupportTickets: React.FC = () => {
                             {initials}
                           </div>
                           <div className="flex flex-col min-w-0">
-                            <span className={`text-xs truncate block leading-tight ${isUnread ? "text-slate-900 dark:text-white font-black" : "text-slate-750 dark:text-slate-300 font-bold"}`}>
+                            <span className={`text-xs truncate block leading-tight ${isUnread ? "text-slate-900 dark:text-white font-black" : "text-slate-700 dark:text-slate-300 font-bold"}`}>
                               {item.subject}
                             </span>
-                            <span className="text-[10px] text-slate-450 dark:text-slate-450 mt-1 font-semibold">
+                            <span className="text-[10px] text-slate-400 dark:text-slate-400 mt-1 font-semibold">
                               {name || "Anonymous"}
                             </span>
                           </div>
@@ -643,7 +647,7 @@ const SupportTickets: React.FC = () => {
         </Sider>
 
         {/* ─── Chat Content Panel ──────────────────────────────────────── */}
-        <Content className="bg-white dark:bg-slate-905 flex flex-col flex-grow min-w-0">
+        <Content className="bg-white dark:bg-slate-900 flex flex-col flex-grow min-w-0">
           {selectedTicket ? (
             <>
               {/* Chat header */}
@@ -654,7 +658,7 @@ const SupportTickets: React.FC = () => {
                   </div>
                   <div>
                     <div className="flex items-center gap-2.5">
-                      <Title level={5} className="!mb-0 text-slate-850 dark:text-slate-150 font-extrabold text-sm tracking-tight leading-none">
+                      <Title level={5} className="!mb-0 text-slate-800 dark:text-slate-200 font-extrabold text-sm tracking-tight leading-none">
                         {selectedTicket.subject}
                       </Title>
                       <span className={`inline-flex px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${selectedTicket.status === "open"
@@ -728,7 +732,7 @@ const SupportTickets: React.FC = () => {
                         return (
                           <div key={msg.id} className="flex items-center justify-center my-3 relative">
                             <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                              <div className="w-full border-t border-slate-150 dark:border-slate-800/80" />
+                              <div className="w-full border-t border-slate-200 dark:border-slate-800/80" />
                             </div>
                             <div className="relative z-10">
                               <span className="px-3 py-0.5 text-[9px] font-black uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-slate-700/50 rounded-none">
@@ -763,7 +767,7 @@ const SupportTickets: React.FC = () => {
                             px-4 py-2.5 rounded-2xl shadow-sm text-sm leading-relaxed
                             ${isMe
                                   ? "bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-tr-none shadow-blue-500/5"
-                                  : "bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-150/40 dark:border-slate-700/50 rounded-tl-none"
+                                  : "bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/40 dark:border-slate-700/50 rounded-tl-none"
                                 }
                             ${isBot
                                   ? "bg-gradient-to-br from-indigo-50/30 to-violet-50/30 dark:from-indigo-950/10 dark:to-violet-950/10 border border-dashed border-indigo-200 dark:border-indigo-850/60"
@@ -838,10 +842,10 @@ const SupportTickets: React.FC = () => {
               </div>
 
               <div className="text-center max-w-sm">
-                <Title level={4} className="!text-slate-700 dark:!text-slate-350 font-extrabold tracking-tight mb-2">
+                <Title level={4} className="!text-slate-700 dark:!text-slate-300 font-extrabold tracking-tight mb-2">
                   Support Chat Desk
                 </Title>
-                <Text type="secondary" className="text-xs text-slate-450 dark:text-slate-500 block mb-6">
+                <Text type="secondary" className="text-xs text-slate-400 dark:text-slate-500 block mb-6">
                   Select a ticket from the live queue to begin assisting driver partners and customers.
                 </Text>
               </div>

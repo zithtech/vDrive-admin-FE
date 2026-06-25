@@ -84,7 +84,7 @@ const ResetPassword = () => {
             />
           </div>
           <div className="text-center">
-            <h1 className="text-2xl font-extrabold text-white tracking-tight font-outfit">
+            <h1 className="text-lg font-extrabold text-white tracking-tight font-outfit">
               Reset Password
             </h1>
             <p className="text-slate-400 text-xs mt-1 font-medium tracking-wide">
@@ -95,7 +95,7 @@ const ResetPassword = () => {
           </div>
         </header>
 
-        <fieldset className="flex flex-col gap-5 border-none p-0 m-0">
+        <fieldset className="flex flex-col gap-2 border-none p-0 m-0">
           {step === 1 && (
             <>
               <div className="glass-input-wrapper">

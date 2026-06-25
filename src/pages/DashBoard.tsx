@@ -124,7 +124,7 @@ const Dashboard = () => {
           <div>
             <Typography.Title
               level={4}
-              className="!m-0 text-lg sm:text-xl font-extrabold text-gray-900 dark:text-white tracking-tight"
+              className="!m-0 text-lg sm:text-lg font-extrabold text-gray-900 dark:text-white tracking-tight"
             >
               Dashboard
             </Typography.Title>
@@ -152,7 +152,7 @@ const Dashboard = () => {
       </div>
 
       {/* Main Dashboard Layout - 4 Column Top Grid with adjusted widths (3:2:3:2) */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-3 min-h-0 overflow-hidden text-sm">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-2 min-h-0 overflow-hidden text-sm">
         <div className="lg:col-span-3 flex flex-col min-h-0">
           <DriverMetricsColumn stats={stats} />
         </div>

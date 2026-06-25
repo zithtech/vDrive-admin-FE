@@ -254,7 +254,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
               }}
               className="group cursor-pointer flex items-center gap-2"
             >
-              <div className="bg-blue-50 text-blue-600 px-3 py-1 rounded-lg font-mono text-[11px] font-extrabold tracking-tight border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
+              <div className="bg-blue-50 dark:bg-indigo-500/10 text-blue-600 dark:text-indigo-400 px-3 py-1 rounded-lg font-mono text-[11px] font-extrabold tracking-tight border border-indigo-100 dark:border-indigo-500/20 group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-sm">
                 {r.trip_code}
               </div>
             </div>
@@ -291,10 +291,10 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
             icon={<UserOutlined />}
           />
           <div className="flex flex-col">
-            <span className="text-sm font-bold text-gray-800 tracking-tight leading-none">
+            <span className="text-sm font-bold text-gray-800 dark:text-gray-200 tracking-tight leading-none">
               {r.user_name}
             </span>
-            <span className="text-[10px] text-gray-400 font-medium tracking-wider mt-1 flex items-center gap-1">
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider mt-1 flex items-center gap-1">
               <GrPhone className="text-[9px]" /> {r.user_phone}
             </span>
           </div>
@@ -319,15 +319,15 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
             <div className="flex flex-col">
               {hasDriver ? (
                 <>
-                  <span className="text-sm font-bold text-gray-800 tracking-tight leading-none">
+                  <span className="text-sm font-bold text-gray-800 dark:text-gray-200 tracking-tight leading-none">
                     {r.driver_name}
                   </span>
-                  <span className="text-[10px] text-gray-400 font-medium tracking-wider mt-1 flex items-center gap-1">
+                  <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium tracking-wider mt-1 flex items-center gap-1">
                     <GrPhone className="text-[9px]" /> {r.driver_phone}
                   </span>
                 </>
               ) : (
-                <span className="text-xs font-medium text-gray-400 italic">Assign Pending...</span>
+                <span className="text-xs font-medium text-gray-400 dark:text-gray-500 italic">Assign Pending...</span>
               )}
             </div>
           </div>
@@ -344,23 +344,23 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
       render: (_, r) => (
         <div className="flex flex-col gap-1 py-1">
           <div className="flex items-center gap-2 group">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 ring-4 ring-emerald-50 flex-shrink-0" />
-            <span className="text-[11px] font-bold text-gray-700 truncate max-w-[400px] leading-none">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 ring-4 ring-emerald-50 dark:ring-emerald-500/20 flex-shrink-0" />
+            <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300 truncate max-w-[400px] leading-none">
               {r.pickup_address}
             </span>
           </div>
-          <div className="ml-0.5 w-0.5 h-3 bg-gray-100" />
+          <div className="ml-0.5 w-0.5 h-3 bg-gray-100 dark:bg-gray-800" />
           <div className="flex items-center gap-2 group">
-            <div className="w-1.5 h-1.5 rounded-full bg-rose-500 ring-4 ring-rose-50 flex-shrink-0" />
-            <span className="text-[11px] font-bold text-gray-700 truncate max-w-[400px] leading-none">
+            <div className="w-1.5 h-1.5 rounded-full bg-rose-500 ring-4 ring-rose-50 dark:ring-rose-500/20 flex-shrink-0" />
+            <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300 truncate max-w-[400px] leading-none">
               {r.drop_address}
             </span>
           </div>
           <div className="flex items-center gap-2 mt-1 pl-4">
-            <Tag className="m-0 border-gray-100 bg-gray-50 text-gray-500 text-[10px] font-bold rounded-lg px-2">
+            <Tag className="m-0 border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-bold rounded-lg px-2">
               {r.distance_km} KM
             </Tag>
-            <Tag className="m-0 border-indigo-100 bg-indigo-50 text-indigo-500 text-[10px] font-bold rounded-lg px-2">
+            <Tag className="m-0 border-indigo-100 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 dark:text-indigo-400 text-[10px] font-bold rounded-lg px-2">
               ~{r.trip_duration_minutes} MINS
             </Tag>
           </div>
@@ -378,17 +378,17 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
         const getStatusColor = () => {
           switch (r.trip_status) {
             case "LIVE":
-              return "bg-emerald-50 text-emerald-500";
+              return "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 dark:text-emerald-400";
             case "COMPLETED":
-              return "bg-indigo-50 text-indigo-500";
+              return "bg-indigo-50 dark:bg-indigo-500/10 text-indigo-500 dark:text-indigo-400";
             case "ASSIGNED":
-              return "bg-blue-50 text-blue-500";
+              return "bg-blue-50 dark:bg-blue-500/10 text-blue-500 dark:text-blue-400";
             case "REQUESTED":
-              return "bg-amber-50 text-amber-500";
+              return "bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400";
             case "CANCELLED":
-              return "bg-red-50 text-red-500";
+              return "bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400";
             default:
-              return "bg-slate-50 text-slate-500";
+              return "bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400";
           }
         };
         return (
@@ -408,7 +408,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
       ),
       width: 120,
       render: (_, r) => (
-        <div className="text-gray-800 font-extrabold text-sm tracking-tight">
+        <div className="text-gray-800 dark:text-gray-200 font-extrabold text-sm tracking-tight">
           ₹{Number(r.total_fare || 0).toLocaleString()}
         </div>
       ),
@@ -419,9 +419,9 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
           Service
         </span>
       ),
-      width: 120,
+      width: 150,
       render: (_, r) => (
-        <span className="bg-slate-50 text-slate-500 border border-slate-100 px-2.5 py-1 rounded-lg text-[10px] font-extrabold tracking-widest uppercase">
+        <span className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-700 px-2.5 py-1 rounded-lg text-[10px] font-extrabold tracking-widest uppercase">
           {r.service_type}
         </span>
       ),
@@ -719,7 +719,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
       </div>
 
       {/* Settings Bar */}
-      <div className="flex gap-5 mb-8 text-left">
+      <div className="flex gap-2 mb-8 text-left">
         <div className="flex-[1.5] bg-white p-5 rounded-none border border-slate-200 shadow-sm group hover:border-blue-200 transition-colors">
           <div className="flex justify-between items-start mb-3">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
@@ -754,7 +754,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
         </div>
       </div>
 
-      <div className="bg-blue-600/5 p-5 rounded-none border border-blue-100/50 flex items-start gap-5 text-left group hover:bg-white transition-all duration-300">
+      <div className="bg-blue-600/5 p-5 rounded-none border border-blue-100/50 flex items-start gap-2 text-left group hover:bg-white transition-all duration-300">
         <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-none flex items-center justify-center shrink-0 border border-blue-100">
           <EyeOutlined className="text-lg" />
         </div>

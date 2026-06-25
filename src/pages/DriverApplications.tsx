@@ -7,7 +7,7 @@ import {
   CloseCircleOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { Button, Select, DatePicker, Spin } from "antd";
+import { Button, Select, DatePicker, Spin, Pagination } from "antd";
 import DriverTable from "../components/DriverTable/DriverTable";
 import dayjs from "dayjs";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
@@ -49,6 +49,8 @@ const DriverApplications = () => {
   });
 
   const [currentView, setCurrentView] = useState<"pending" | "doc_rejected" | "rejected">("pending");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(15);
 
   useEffect(() => {
     dispatch(fetchDrivers());
@@ -99,6 +101,7 @@ const DriverApplications = () => {
       );
     }
 
+    setCurrentPage(1);
     setFilteredData(tempData);
   }, [DATA, filters]);
 
@@ -122,6 +125,7 @@ const DriverApplications = () => {
   }, [DATA, filteredData]);
 
   const applyFilters = (values: Partial<Filters>) => {
+    setCurrentPage(1);
     setFilters((prev) => ({
       ...prev,
       ...values,
@@ -163,11 +167,17 @@ const DriverApplications = () => {
     extraClasses = "",
   }: any) => (
     <div
-      className={`${flexClass} flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden ${extraClasses}`}
+      className={`${flexClass} flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden pb-1 ${extraClasses}`}
     >
-      <div className="flex-grow overflow-hidden">
+      <div className="flex-grow min-h-0 overflow-hidden">
         <DriverTable
           data={data}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          onPageChange={(page, size) => {
+            setCurrentPage(page);
+            setPageSize(size);
+          }}
           onViewDetails={(driver) => {
             setSelectedDriverForApproval(driver);
             setApprovalModalOpen(true);
@@ -185,9 +195,9 @@ const DriverApplications = () => {
           {/* Title & Description */}
           <div className="flex items-center gap-4 flex-shrink-0">
             <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-400 shrink-0">
-                  <ClipboardCheck size={16} strokeWidth={2.5} />
-                </div>
-                          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Driver Applications</h1>
+              <ClipboardCheck size={16} strokeWidth={2.5} />
+            </div>
+            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Driver Applications</h1>
             <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0">Review pending driver onboarding</p>
           </div>
@@ -272,13 +282,12 @@ const DriverApplications = () => {
           </div>
 
           {/* RIGHT MAIN CONTENT */}
-          <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0b0f19]">
-            {/* Scrollable Main Content */}
-            <div className="flex-1 overflow-y-auto p-6 bg-slate-50/50 dark:bg-[#0f172a] flex flex-col gap-6">
-              <ApplicationStats drivers={allTrackedApplications} loading={loading} />
+          <div className="flex-1 flex flex-col min-w-0 bg-slate-50/50 dark:bg-[#0f172a] relative">
+            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 pb-20">
+              <ApplicationStats drivers={DATA} loading={loading} />
 
               {/* FILTERS TOOLBAR */}
-              <div className="bg-white dark:bg-slate-800 p-4 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm flex-shrink-0">
+              <div className="bg-white dark:bg-slate-800 py-1 px-2 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm flex-shrink-0 dark-theme-select-override">
                 <div className="flex items-center gap-2 flex-1 min-w-[220px]">
                   <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
                     Status:
@@ -286,7 +295,7 @@ const DriverApplications = () => {
                   <Select
                     mode="multiple"
                     placeholder="Select status..."
-                    className="flex-1 text-xs premium-select-sidebar min-w-0"
+                    className="flex-1 text-xs custom-driver-select min-w-0"
                     options={STATUSES.map((s) => ({ label: s.toUpperCase(), value: s }))}
                     value={filters.status}
                     onChange={(val) => applyFilters({ status: val })}
@@ -301,7 +310,7 @@ const DriverApplications = () => {
                   <Select
                     mode="multiple"
                     placeholder="Filter step..."
-                    className="flex-1 text-xs premium-select-sidebar min-w-0"
+                    className="flex-1 text-xs custom-driver-select min-w-0"
                     options={ONBOARDING_STATUSES}
                     value={filters.onboarding_status}
                     onChange={(val) => applyFilters({ onboarding_status: val })}
@@ -315,7 +324,7 @@ const DriverApplications = () => {
                   </span>
                   <DatePicker
                     placeholder="Select Date"
-                    className="flex-1 text-xs premium-range-picker-sidebar min-w-0"
+                    className="flex-1 text-xs custom-picker-compact min-w-0"
                     onChange={(date) => applyFilters({ joined_at: date ? date.toDate() : null })}
                   />
                 </div>
@@ -369,6 +378,31 @@ const DriverApplications = () => {
                 </div>
               )}
             </div>
+
+            {/* Sticky Pagination Footer */}
+            {(() => {
+              const currentViewData = currentView === "pending" ? pendingApplications : currentView === "doc_rejected" ? docRejectedApplications : rejectedApplications;
+              return (
+                <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-805 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+                    Showing {currentViewData.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
+                    {Math.min(currentPage * pageSize, currentViewData.length)} of {currentViewData.length} applications
+                  </span>
+                  <Pagination
+                    current={currentPage}
+                    pageSize={pageSize}
+                    total={currentViewData.length}
+                    onChange={(page, size) => {
+                      setCurrentPage(page);
+                      setPageSize(size);
+                    }}
+                    showSizeChanger
+                    pageSizeOptions={[10, 15, 20, 50, 100]}
+                    size="small"
+                  />
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>
@@ -381,6 +415,57 @@ const DriverApplications = () => {
           setTimeout(() => setSelectedDriverForApproval(null), 300); // Clear after animation
         }}
       />
+      <style>{`
+        /* Filter input styling overrides to match dark mode search bar */
+        .custom-driver-select .ant-select-selector {
+          border-radius: 8px !important;
+        }
+
+         .dark .dark-theme-select-override .custom-driver-select {
+           border-color: #334155 !important;
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selector,
+        html.dark .dark-theme-select-override .ant-select-selector {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-item,
+        html.dark .dark-theme-select-override .ant-select-selection-item {
+          color: #f1f5f9 !important;
+          background-color: #1e293b !important;
+          border-color: #334155 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-placeholder,
+        html.dark .dark-theme-select-override .ant-select-selection-placeholder {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-arrow,
+        html.dark .dark-theme-select-override .ant-select-arrow {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-clear,
+        html.dark .dark-theme-select-override .ant-select-clear {
+          background-color: transparent !important;
+          color: #64748b !important;
+        }
+        
+        /* Picker compact styling */
+        .custom-picker-compact.ant-picker {
+          border-radius: 8px !important;
+        }
+        .dark .custom-picker-compact.ant-picker {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+        }
+      `}</style>
     </>
   );
 };

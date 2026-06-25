@@ -14,7 +14,7 @@ import {
   Power,
 } from "lucide-react";
 import axios from "../api/axios";
-import { Drawer, Select, Button, Input, DatePicker, Switch, Form, InputNumber } from "antd";
+import { Drawer, Select, Button, Input, DatePicker, Switch, Form, InputNumber, Pagination } from "antd";
 import { messageApi, modalApi, notificationApi } from "../utilities/antdStaticHolder";
 import dayjs from "dayjs";
 import { useAppSelector, useAppDispatch } from "../store/hooks";
@@ -55,6 +55,8 @@ const PromotionsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(15);
 
   const [form] = Form.useForm();
   const dispatch = useAppDispatch();
@@ -174,6 +176,14 @@ const PromotionsPage: React.FC = () => {
     });
   }, [promos, searchTerm, statusFilter]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
+  const displayedPromos = useMemo(() => {
+    return filteredPromos.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  }, [filteredPromos, currentPage, pageSize]);
+
   const stats = useMemo(() => {
     const totalDiscount = promos.reduce((sum, p) => sum + Number(p.total_discount || 0), 0);
     const active = promos.filter((p) => p.is_active).length;
@@ -205,18 +215,20 @@ const PromotionsPage: React.FC = () => {
           />
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             {filteredPromos.length} results
           </span>
 
-          <button
+          <Button
+            type="primary"
+            icon={<Plus className="text-lg" />}
             onClick={() => handleOpenDrawer()}
-            className="h-9 rounded-lg font-bold text-xs uppercase tracking-wider border-none bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm flex items-center justify-center px-4 gap-1.5 hover:scale-[1.01] transition-all"
+            className="px-4 h-10 rounded-lg font-bold text-xs uppercase tracking-wider border-none !bg-blue-600 hover:!bg-blue-700 text-white shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.01] transition-all"
           >
-            <Plus size={16} /> Create Offer
-          </button>
+            Create Offer
+          </Button>
         </div>
       </div>
 
@@ -233,8 +245,8 @@ const PromotionsPage: React.FC = () => {
               <div
                 onClick={() => setStatusFilter("all")}
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "all"
-                    ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
                   }`}
               >
                 <div className="flex items-center gap-2 text-xs">
@@ -242,8 +254,8 @@ const PromotionsPage: React.FC = () => {
                   <span>All</span>
                 </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "all"
-                    ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 font-bold"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 font-bold"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                   }`}>
                   {promos.length}
                 </span>
@@ -252,8 +264,8 @@ const PromotionsPage: React.FC = () => {
               <div
                 onClick={() => setStatusFilter("active")}
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "active"
-                    ? "bg-emerald-50/80 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  ? "bg-emerald-50/80 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
                   }`}
               >
                 <div className="flex items-center gap-2 text-xs">
@@ -261,8 +273,8 @@ const PromotionsPage: React.FC = () => {
                   <span>Active</span>
                 </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "active"
-                    ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                   }`}>
                   {stats.active}
                 </span>
@@ -271,8 +283,8 @@ const PromotionsPage: React.FC = () => {
               <div
                 onClick={() => setStatusFilter("inactive")}
                 className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "inactive"
-                    ? "bg-amber-50/80 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  ? "bg-amber-50/80 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
                   }`}
               >
                 <div className="flex items-center gap-2 text-xs">
@@ -280,8 +292,8 @@ const PromotionsPage: React.FC = () => {
                   <span>Inactive</span>
                 </div>
                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "inactive"
-                    ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                   }`}>
                   {promos.length - stats.active}
                 </span>
@@ -292,9 +304,9 @@ const PromotionsPage: React.FC = () => {
 
         {/* ─── Right Content Area ─────────────────────────────────────── */}
         <div className="flex-grow flex flex-col min-w-0 relative h-full">
-          <div className="flex-grow flex flex-col p-6 overflow-y-auto custom-scrollbar gap-5 pb-20">
+          <div className="flex-grow flex flex-col p-3 overflow-y-auto custom-scrollbar gap-2 pb-20">
             {/* Stats Cards */}
-            <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-4 gap-4 mb-1">
               {/* 1. Total Campaigns */}
               <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden">
                 <div className="flex items-center justify-between">
@@ -389,7 +401,7 @@ const PromotionsPage: React.FC = () => {
             </div>
 
             {/* HORIZONTAL FILTERS BAR */}
-            <div className="bg-white dark:bg-slate-800 p-3 mb-6 border border-slate-200 dark:border-slate-700 flex items-center gap-4 shadow-sm rounded-none">
+            <div className="bg-white dark:bg-[#0f172a] p-3 mb-1 border border-slate-200 dark:border-slate-700 flex items-center gap-4 shadow-sm rounded-none dark-theme-select-override">
               <div className="flex items-center gap-2 px-3 border-r border-slate-200 dark:border-slate-700 text-slate-400 shrink-0">
                 <Ticket size={16} className="text-indigo-500" />
                 <span className="text-[11px] font-black uppercase tracking-widest">FILTERS</span>
@@ -401,7 +413,7 @@ const PromotionsPage: React.FC = () => {
                   <Select
                     value={statusFilter}
                     onChange={setStatusFilter}
-                    className="w-32 premium-select-sidebar"
+                    className="w-32 premium-select-sidebar custom-driver-select"
                     options={[
                       { value: "all", label: "All Status" },
                       { value: "active", label: "Active" },
@@ -429,11 +441,11 @@ const PromotionsPage: React.FC = () => {
                 [1, 2, 3, 4, 5, 6].map((i) => (
                   <div
                     key={i}
-                    className="bg-white dark:bg-slate-800 h-28 border border-slate-200 dark:border-slate-700 animate-pulse shadow-sm"
+                    className="bg-white dark:bg-[#0f172a] h-28 border border-slate-200 dark:border-slate-700 animate-pulse shadow-sm"
                   />
                 ))
               ) : filteredPromos.length > 0 ? (
-                filteredPromos.map((promo) => {
+                displayedPromos.map((promo) => {
                   const isPercentage = promo.discount_type === "percentage";
                   const themeBg = isPercentage ? "bg-indigo-600" : "bg-emerald-600";
                   const textTheme = isPercentage ? "text-indigo-600" : "text-emerald-600";
@@ -441,7 +453,7 @@ const PromotionsPage: React.FC = () => {
                   return (
                     <div
                       key={promo.id}
-                      className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-all hover:border-indigo-300 dark:hover:border-indigo-500/50 flex flex-col group/card shadow-sm"
+                      className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 transition-all hover:border-indigo-300 dark:hover:border-indigo-500/50 flex flex-col group/card shadow-sm"
                     >
                       <div className="p-4 flex items-start gap-4 border-b border-slate-100 dark:border-slate-700">
                         <div
@@ -475,7 +487,7 @@ const PromotionsPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="p-3 flex items-center justify-between gap-2 bg-slate-50 dark:bg-slate-800/50">
+                      <div className="p-3 flex items-center justify-between gap-2 bg-slate-50 dark:bg-slate-950/50">
                         <div className="flex flex-col">
                           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                             Type
@@ -506,7 +518,7 @@ const PromotionsPage: React.FC = () => {
                       </div>
 
                       {/* Actions overlay on hover */}
-                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm px-2 py-1.5 border border-slate-200 dark:border-slate-700 shadow-sm z-10">
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover/card:opacity-100 transition-opacity bg-white/90 dark:bg-[#0f172a]/90 backdrop-blur-sm px-2 py-1.5 border border-slate-200 dark:border-slate-700 shadow-sm z-10">
                         <button
                           onClick={() => handleOpenDrawer(promo)}
                           className="p-1 text-slate-400 hover:text-indigo-600 transition-all"
@@ -545,6 +557,26 @@ const PromotionsPage: React.FC = () => {
                   </Button>
                 </div>
               )}
+            </div>
+
+            {/* Sticky Pagination Footer */}
+            <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-805 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+                Showing {filteredPromos.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
+                {Math.min(currentPage * pageSize, filteredPromos.length)} of {filteredPromos.length} offers
+              </span>
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={filteredPromos.length}
+                onChange={(page, size) => {
+                  setCurrentPage(page);
+                  setPageSize(size);
+                }}
+                showSizeChanger
+                pageSizeOptions={[10, 15, 20, 50, 100]}
+                size="small"
+              />
             </div>
           </div>
         </div>
@@ -806,6 +838,48 @@ const PromotionsPage: React.FC = () => {
         }
         .custom-switch-lg.ant-switch-checked {
           background-color: #4f46e5;
+        }
+
+        .custom-driver-select .ant-select-selector {
+          border-radius: 8px !important;
+          border-color: #cbd5e1 !important;
+          height: 34px !important;
+        }
+
+        .dark .dark-theme-select-override .custom-driver-select {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selector,
+        html.dark .dark-theme-select-override .ant-select-selector {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-item,
+        html.dark .dark-theme-select-override .ant-select-selection-item {
+          color: #f1f5f9 !important;
+          background-color: #1e293b !important;
+          border-color: #334155 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-placeholder,
+        html.dark .dark-theme-select-override .ant-select-selection-placeholder {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-arrow,
+        html.dark .dark-theme-select-override .ant-select-arrow {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-clear,
+        html.dark .dark-theme-select-override .ant-select-clear {
+          background-color: transparent !important;
+          color: #64748b !important;
         }
       `}</style>
     </div>

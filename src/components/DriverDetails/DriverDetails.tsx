@@ -763,7 +763,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
+          <div className="flex flex-col gap-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
             <div className="flex items-center gap-3">
               {doc?.document_url ? (
                 <>
@@ -978,7 +978,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="stat-box perf-metric-card bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800/30 flex items-center gap-3 p-4">
+              <div className="stat-box perf-metric-card bg-emerald-50 dark:bg-emerald-900/20 border-emerald-100 dark:border-emerald-800/30 flex items-center gap-2 p-4">
                 <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
                   <WalletOutlined className="text-emerald-600 dark:text-emerald-400 text-lg" />
                 </div>
@@ -995,7 +995,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
                 </div>
               </div>
 
-              <div className="stat-box perf-metric-card bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/30 flex items-center gap-3 p-4">
+              <div className="stat-box perf-metric-card bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800/30 flex items-center gap-2 p-4">
                 <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
                   <ClockCircleOutlined className="text-blue-600 dark:text-blue-400 text-lg" />
                 </div>
@@ -1012,7 +1012,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
                 </div>
               </div>
 
-              <div className="stat-box perf-metric-card bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800/30 flex items-center gap-3 p-4">
+              <div className="stat-box perf-metric-card bg-amber-50 dark:bg-amber-900/20 border-amber-100 dark:border-amber-800/30 flex items-center gap-2 p-4">
                 <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
                   <UserOutlined className="text-amber-600 dark:text-amber-400 text-lg" />
                 </div>
@@ -1035,7 +1035,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
                 </div>
               </div>
 
-              <div className="stat-box perf-metric-card bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-800/30 flex items-center gap-3 p-4">
+              <div className="stat-box perf-metric-card bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-800/30 flex items-center gap-2 p-4">
                 <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
                   <CheckCircleOutlined className="text-purple-600 dark:text-purple-400 text-lg" />
                 </div>
@@ -1086,7 +1086,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
               </div>
             </div>
 
-            <div className="content-card p-4 bg-gray-50 dark:bg-slate-800 flex items-center gap-3 shadow-none border-dashed dark:border-slate-700 mt-auto">
+            <div className="content-card p-4 bg-gray-50 dark:bg-slate-800 flex items-center gap-2 shadow-none border-dashed dark:border-slate-700 mt-auto">
               <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm">
                 <ClockCircleOutlined className="text-gray-400 dark:text-slate-500" />
               </div>
@@ -1286,7 +1286,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
         ) : (
           <div className="space-y-6">
             {/* Activity Summary Header */}
-            <div className="grid grid-cols-3 gap-3 mb-2">
+            <div className="grid grid-cols-3 gap-2 mb-2">
               <div className="bg-gray-50 dark:bg-slate-800/50 p-3 rounded-xl border border-gray-100 dark:border-slate-700">
                 <Text type="secondary" className="text-[10px] uppercase font-bold block">
                   Total Trips

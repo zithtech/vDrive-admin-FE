@@ -92,9 +92,9 @@ const PricingPreview = ({
   ];
 
   return (
-    <Card size="small" className="w-full">
+    <Card size="small" className="w-full bg-white dark:bg-transparent border-none">
       <div className="w-full flex flex-col gap-4">
-        <Typography.Title level={5} className="text-lg sm:text-xl">
+        <Typography.Title level={5} className="text-lg sm:text-xl !text-slate-800 dark:!text-slate-100 m-0">
           Pricing Preview
         </Typography.Title>
 
@@ -102,11 +102,11 @@ const PricingPreview = ({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex flex-col gap-2 sm:flex-1">
             <div className="flex items-center gap-2">
-              <MdOutlineLocationOn className="text-[20px] text-[#0080FF]" />
-              <span className="font-semibold">Location</span>
+              <MdOutlineLocationOn className="text-[20px] text-blue-500 dark:text-blue-400" />
+              <span className="font-semibold text-slate-800 dark:text-slate-200">Location</span>
             </div>
-            <div className="p-2 bg-[#F8F9FA] rounded-md">
-              <span className="text-sm break-all">
+            <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-md border border-slate-100 dark:border-slate-700/50">
+              <span className="text-sm break-all text-slate-700 dark:text-slate-300">
                 {[countryLabel, stateLabel, district, area, pincode]
                   .filter((x) => x && x.trim() !== "" && x.trim() !== "N/A")
                   .join(" - ")}
@@ -117,28 +117,28 @@ const PricingPreview = ({
 
         {/* Zone rate summary */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col">
-            <span className="text-[11px] text-gray-500 uppercase">Price / KM</span>
-            <span className="font-semibold text-green-700">₹{Number(perKmPrice).toFixed(2)}</span>
+          <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-md flex flex-col border border-slate-100 dark:border-slate-700/50">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Price / KM</span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">₹{Number(perKmPrice).toFixed(2)}</span>
           </div>
-          <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col">
-            <span className="text-[11px] text-gray-500 uppercase">Price / Hour</span>
-            <span className="font-semibold text-green-700">₹{Number(perHourPrice).toFixed(2)}</span>
+          <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-md flex flex-col border border-slate-100 dark:border-slate-700/50">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Price / Hour</span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">₹{Number(perHourPrice).toFixed(2)}</span>
           </div>
-          <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col">
-            <span className="text-[11px] text-gray-500 uppercase">Minimum Fare</span>
-            <span className="font-semibold text-green-700">₹{Number(minimumFare).toFixed(2)}</span>
+          <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-md flex flex-col border border-slate-100 dark:border-slate-700/50">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">Minimum Fare</span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">₹{Number(minimumFare).toFixed(2)}</span>
           </div>
-          <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col">
-            <span className="text-[11px] text-gray-500 uppercase">One-way Return</span>
-            <span className="font-semibold text-green-700">
+          <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-md flex flex-col border border-slate-100 dark:border-slate-700/50">
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-wider">One-way Return</span>
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">
               {Number(oneWayReturnPct).toFixed(0)}%
             </span>
           </div>
         </div>
 
         {/* Formula reminder */}
-        <div className="p-2 bg-[#EEF5FF] rounded-md text-xs text-gray-600">
+        <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-md text-xs text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-500/20">
           fare = (distance × ₹/km) + (hours × ₹/hr) + one-way return → × surge + flat hotspot fare,
           floored at minimum fare, then taxes.
         </div>
@@ -146,8 +146,8 @@ const PricingPreview = ({
         {/* Slots grid */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
-            <BsClock className="text-[18px] text-[#0080FF]" />
-            <span className="font-semibold">Time Slot Rates</span>
+            <BsClock className="text-[18px] text-blue-500 dark:text-blue-400" />
+            <span className="font-semibold text-slate-800 dark:text-slate-200">Time Slot Rates</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {Object.entries(timeSlots).map(([userType, slots]) => (
@@ -162,24 +162,24 @@ const PricingPreview = ({
                   const breakdown = getRateBreakdown(slot);
 
                   return (
-                    <div key={slot.id} className="p-2 bg-[#F8F9FA] rounded-md flex flex-col gap-1">
-                      <span className="capitalize font-medium">{slot.day}</span>
-                      <span className="text-[12px] text-gray-600">
+                    <div key={slot.id} className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-md flex flex-col gap-1 border border-slate-100 dark:border-slate-700/50">
+                      <span className="capitalize font-bold text-slate-700 dark:text-slate-300">{slot.day}</span>
+                      <span className="text-[12px] text-slate-600 dark:text-slate-400 font-medium">
                         {slot.timeRange
                           ? `${slot.timeRange[0].format("h:mm A")} - ${slot.timeRange[1].format("h:mm A")}`
                           : "No time set"}
                       </span>
-                      <span className="text-[12px] text-gray-600">
+                      <span className="text-[12px] text-slate-600 dark:text-slate-400 font-medium">
                         Rate: ₹{slot.perKmRate}/km &middot; ₹{slot.perHourRate}/hr
                       </span>
                       {hotspotEnabled && selectedHotspot && (
-                        <span className="text-[12px] text-blue-600">
+                        <span className="text-[12px] text-blue-600 dark:text-blue-400 font-medium">
                           After surge ×{multiplier}: ₹{rateAfterSurge.toFixed(2)}/km
                         </span>
                       )}
                       {/* Indicative per-km tax breakdown */}
-                      <Divider style={{ margin: "4px 0" }} />
-                      <span className="text-[11px] text-gray-400">indicative tax / km</span>
+                      <Divider className="my-1 border-slate-200 dark:border-slate-700" />
+                      <span className="text-[11px] text-slate-400 dark:text-slate-500 font-medium tracking-wide">indicative tax / km</span>
                       <TaxBreakdownDisplay breakdown={breakdown} />
                     </div>
                   );
@@ -193,13 +193,13 @@ const PricingPreview = ({
         {hotspotEnabled && selectedHotspot && (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <ThunderboltOutlined className="text-[18px] text-[#0080FF]" />
-              <span className="font-semibold">Hotspot Effect</span>
+              <ThunderboltOutlined className="text-[18px] text-blue-500 dark:text-blue-400" />
+              <span className="font-semibold text-slate-800 dark:text-slate-200">Hotspot Effect</span>
             </div>
-            <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col gap-1">
-              <Tag color="blue">{selectedHotspot.hotspot_name}</Tag>
-              <div className="text-sm">Surge: ×{multiplier} on fare</div>
-              <div className="text-sm">Flat fare: +₹{hotspotFare.toFixed(2)} per ride</div>
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-md flex flex-col gap-1 border border-slate-100 dark:border-slate-700/50">
+              <Tag color="blue" className="w-fit">{selectedHotspot.hotspot_name}</Tag>
+              <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">Surge: ×{multiplier} on fare</div>
+              <div className="text-sm text-slate-700 dark:text-slate-300 font-medium">Flat fare: +₹{hotspotFare.toFixed(2)} per ride</div>
             </div>
           </div>
         )}
@@ -207,22 +207,23 @@ const PricingPreview = ({
         {/* Extra KM section */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
-            <NodeIndexOutlined className="text-[18px] text-[#0080FF]" />
-            <span className="font-semibold">Distance Rate Bands</span>
+            <NodeIndexOutlined className="text-[18px] text-blue-500 dark:text-blue-400" />
+            <span className="font-semibold text-slate-800 dark:text-slate-200">Distance Rate Bands</span>
           </div>
-          <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col gap-2">
+          <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-md flex flex-col gap-2 border border-slate-100 dark:border-slate-700/50">
             <Table
               size="small"
               pagination={false}
               rowKey="key"
               dataSource={bandRows}
+              className="dark-theme-table-override"
               columns={[
                 { title: "KM Range", dataIndex: "kmRange", key: "kmRange" },
                 {
                   title: "Rate",
                   dataIndex: "rate",
                   key: "rate",
-                  render: (v: string) => <span className="text-green-600 font-semibold">{v}</span>,
+                  render: (v: string) => <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{v}</span>,
                 },
               ]}
             />

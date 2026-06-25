@@ -63,28 +63,33 @@ const CustomerStats: React.FC<CustomerStatsProps> = ({ customers }) => {
       {stats.map((card, idx) => (
         <div
           key={idx}
-          className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all rounded-[10px]"
+          className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden"
         >
-          <div className="flex items-center gap-2 mb-3">
-            <div className={`w-7 h-7 rounded-lg ${card.iconBg} ${card.iconColor} flex items-center justify-center text-sm flex-shrink-0`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className={`w-8 h-8 flex items-center justify-center text-base ${card.iconBg} ${card.iconColor} z-10 rounded-lg`}>
+                {card.icon}
+              </div>
+              <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                {card.title}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-end justify-between mt-2 z-10">
+            <div className="flex flex-col">
+              <div className="flex items-baseline gap-1.5">
+                <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                  {card.value.toLocaleString()}
+                </h3>
+                <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                  {card.label}
+                </span>
+              </div>
+            </div>
+            {/* Background Icon */}
+            <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none ${card.iconColor}`}>
               {card.icon}
             </div>
-            <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-450 tracking-wide uppercase leading-none">
-              {card.title}
-            </span>
-          </div>
-          <div className="flex items-baseline gap-1 mt-auto">
-            <span className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">
-              {card.value.toLocaleString()}
-            </span>
-            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-              {card.label}
-            </span>
-          </div>
-
-          {/* Background Icon */}
-          <div className={`absolute -bottom-6 -right-6 text-[100px] opacity-[0.06] pointer-events-none ${card.iconColor}`}>
-            {card.icon}
           </div>
         </div>
       ))}

@@ -46,17 +46,17 @@ const TimeSlotItem = ({
 
   return (
     <div
-      className={`w-full p-3 sm:p-4 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4
+      className={`w-full p-3 sm:p-4 flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-4
         items-start sm:items-center rounded-md
         ${
           hasCollision
-            ? "bg-red-50 border-2 border-red-300"
-            : "bg-[#F8F9FA] border-2 border-transparent"
+            ? "bg-red-50 dark:bg-red-900/20 border-2 border-red-300 dark:border-red-500/50"
+            : "bg-slate-50 dark:bg-slate-800/50 border-2 border-transparent dark:border-slate-700/50"
         }`}
     >
       {/* Slot label */}
       <div className="flex items-center gap-2 w-full sm:w-auto">
-        <span className="font-medium">Slot {index + 1}</span>
+        <span className="font-medium text-slate-800 dark:text-slate-200">Slot {index + 1}</span>
         {hasCollision && (
           <Tag color="error" className="text-xs">
             Time Collision!
@@ -65,9 +65,9 @@ const TimeSlotItem = ({
       </div>
 
       {/* Controls row */}
-      <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:flex-1 flex-wrap">
+      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:flex-1 flex-wrap">
         <div className="flex gap-2 items-center">
-          <span className="text-sm font-medium min-w-fit">Day:</span>
+          <span className="text-sm font-medium min-w-fit text-slate-700 dark:text-slate-300">Day:</span>
           <Select
             value={slot.day}
             options={dayOptions}
@@ -77,7 +77,7 @@ const TimeSlotItem = ({
           />
         </div>
         <div className="flex gap-2 items-center">
-          <span className="text-sm font-medium min-w-fit">Time:</span>
+          <span className="text-sm font-medium min-w-fit text-slate-700 dark:text-slate-300">Time:</span>
           <TimePicker.RangePicker
             value={slot.timeRange}
             format="h:mm A"
@@ -90,7 +90,7 @@ const TimeSlotItem = ({
           />
         </div>
         <div className="flex gap-2 items-center">
-          <span className="text-sm font-medium min-w-fit">₹/km:</span>
+          <span className="text-sm font-medium min-w-fit text-slate-700 dark:text-slate-300">₹/km:</span>
           <Input
             style={{ width: 100 }}
             value={slot.perKmRate}
@@ -101,7 +101,7 @@ const TimeSlotItem = ({
           />
         </div>
         <div className="flex gap-2 items-center">
-          <span className="text-sm font-medium min-w-fit">₹/hr:</span>
+          <span className="text-sm font-medium min-w-fit text-slate-700 dark:text-slate-300">₹/hr:</span>
           <Input
             style={{ width: 100 }}
             value={slot.perHourRate}
@@ -118,7 +118,7 @@ const TimeSlotItem = ({
         <div className="flex flex-col gap-1">
           {/* Rate vs zone ₹/km */}
           <div className="flex items-center gap-2">
-            <span className="font-bold text-green-600 text-sm">₹{slot.perKmRate || "0"}/km</span>
+            <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm">₹{slot.perKmRate || "0"}/km</span>
             <Badge
               status="success"
               count={`${
@@ -133,7 +133,7 @@ const TimeSlotItem = ({
 
           {/* Hotspot line */}
           {hotspotEnabled && (
-            <span className="text-xs text-blue-600">
+            <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
               After surge ×{multiplier}: ₹{rateAfterSurge.toFixed(2)}/km
               {hotspotFare > 0 && <> &middot; +₹{hotspotFare.toFixed(2)} flat/ride</>}
             </span>
