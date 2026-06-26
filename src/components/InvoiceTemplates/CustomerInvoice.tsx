@@ -46,14 +46,14 @@ const CustomerInvoice: React.FC<Props> = ({ isOpen, onClose, trip }) => {
 
         {/* Route */}
         <div className="bg-gray-50 p-4 rounded-xl mb-5">
-          <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-2 mb-3">
             <IoLocationOutline size={20} className="text-green-500" />
             <div>
               <p className="font-semibold text-gray-700">Pickup</p>
               <p className="text-gray-500 text-sm">{trip.pickup_address}</p>
             </div>
           </div>
-          <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center gap-2 mb-3">
             <IoLocationOutline size={20} className="text-red-500 rotate-180" />
             <div>
               <p className="font-semibold text-gray-700">Drop</p>

@@ -41,11 +41,11 @@ const actions = [
     border: "border-purple-100/50",
   },
   {
-    key: "manage-plans",
+    key: "recharge",
     icon: <Wallet size={18} className="text-amber-500" />,
-    title: "Manage Plans",
+    title: "Recharge",
     description: "Subscription Plans",
-    path: "/recharge-plans/manage",
+    path: "/RechargePlan",
     color: "from-amber-500/10 to-amber-500/5",
     border: "border-amber-100/50",
   },
@@ -59,7 +59,7 @@ const QuickActions: React.FC = () => {
       {/* Header */}
       <div className="flex items-center px-4 py-2 border-b border-gray-100 dark:border-slate-700 bg-gray-50/30 dark:bg-slate-900/50">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <div className="w-5 h-5 rounded-[4px] bg-blue-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
             <Zap size={12} className="text-white fill-white" />
           </div>
           <span className="font-bold text-gray-800 dark:text-gray-100 text-[11px] uppercase tracking-widest">
@@ -70,7 +70,7 @@ const QuickActions: React.FC = () => {
 
       {/* Content - Horizontal Row */}
       <div className="p-2 px-3 flex-1 flex items-center">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 w-full">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 w-full">
           {actions.map((item) => (
             <div
               key={item.key}

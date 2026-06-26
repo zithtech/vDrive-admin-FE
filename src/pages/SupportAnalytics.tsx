@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, Row, Col, Typography, Spin, Progress, Space, DatePicker, Input, Button } from "antd";
+import { Card, Row, Col, Typography, Spin, Progress, Space, DatePicker } from "antd";
 import {
   CustomerServiceOutlined,
   ClockCircleOutlined,
@@ -14,47 +14,6 @@ import axiosIns from "../api/axios";
 
 const { Text } = Typography;
 
-// Dynamic Sparkline helper
-const Sparkline: React.FC<{ color: string }> = ({ color }) => {
-  let strokeColor = "#3b82f6";
-  let gradientId = "blue-grad-analytics";
-  let stopColor = "#3b82f6";
-
-  if (color === "green") {
-    strokeColor = "#10b981";
-    gradientId = "green-grad-analytics";
-    stopColor = "#10b981";
-  } else if (color === "orange") {
-    strokeColor = "#f59e0b";
-    gradientId = "orange-grad-analytics";
-    stopColor = "#f59e0b";
-  } else if (color === "red") {
-    strokeColor = "#ef4444";
-    gradientId = "red-grad-analytics";
-    stopColor = "#ef4444";
-  }
-
-  return (
-    <svg className="w-20 h-6 opacity-70" viewBox="0 0 100 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={stopColor} stopOpacity="0.2" />
-          <stop offset="100%" stopColor={stopColor} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M0 25 C15 20, 30 28, 50 16 C70 4, 85 8, 100 2 L100 30 L0 30 Z"
-        fill={`url(#${gradientId})`}
-      />
-      <path
-        d="M0 25 C15 20, 30 28, 50 16 C70 4, 85 8, 100 2"
-        stroke={strokeColor}
-        strokeWidth="1.25"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-};
 
 const CATEGORY_META: Record<string, { label: string; color: string; icon: string }> = {
   payment: { label: "Payment", color: "#faad14", icon: "💰" },
@@ -168,27 +127,57 @@ const SupportAnalytics: React.FC = () => {
         : 100;
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-slate-900">
-      <div className="w-full h-full flex flex-col md:flex-row bg-slate-50/50 dark:bg-slate-950/25 overflow-hidden">
-        {/* ─── Left Sidebar Panel ─────────────────────────────────────── */}
-        <div className="w-full md:w-64 flex-shrink-0 bg-white dark:bg-slate-900 border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-800/80 flex flex-col p-4 gap-4 overflow-y-auto custom-scrollbar">
-          {/* Header Title / Context */}
-          <div className="flex items-center gap-2.5 px-1">
-            <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
-              <PieChartOutlined className="text-base" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-slate-800 dark:text-slate-200 tracking-tight text-xs uppercase leading-none">
-                Support Analytics
-              </span>
-              <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">
-                Real-time overview
-              </span>
-            </div>
+    <div className="flex flex-col h-full w-full overflow-hidden bg-white dark:bg-slate-900">
+      {/* Top Navbar */}
+      <div className="bg-white dark:bg-slate-800 h-12 px-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4 z-0 flex-shrink-0 w-full">
+        {/* Title & Description */}
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+            <PieChartOutlined className="text-base" />
+          </div>
+          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Support Analytics</h1>
+          <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0">Real-time overview</p>
+        </div>
+
+        <div className="relative flex-1 max-w-xl mx-auto flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all h-9">
+          <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
+          <input
+            type="text"
+            placeholder="Search issue category..."
+            className="w-full pl-10 pr-4 py-1.5 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <div className="absolute right-3">
+            <span className="text-[11px] font-bold text-slate-400 border border-slate-200 dark:border-slate-600 rounded-[4px] px-1.5 py-[1px] bg-slate-50/50 dark:bg-slate-800 tracking-wide">
+              ⌘K
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-100 dark:border-emerald-500/20">
+            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+            <span className="text-[11px] font-black tracking-widest uppercase">
+              {filteredCategories.length} CATEGORIES
+            </span>
           </div>
 
+          <button
+            onClick={() => fetchStats()}
+            className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all shrink-0"
+          >
+            <ReloadOutlined className={`text-lg ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-1 min-h-0 overflow-hidden bg-slate-50/50 dark:bg-slate-950/25">
+        {/* ─── Left Sidebar Panel ─────────────────────────────────────── */}
+        <div className="w-[220px] flex-shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col overflow-y-auto custom-scrollbar">
           {/* Sidenav views section */}
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 pt-6 px-4">
             <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase px-2 mb-0.5">
               Views
             </span>
@@ -260,166 +249,162 @@ const SupportAnalytics: React.FC = () => {
             </div>
           </div>
 
-          <div className="h-[1px] bg-slate-100 dark:bg-slate-800/80" />
 
-          {/* Filters section */}
-          <div className="flex flex-col gap-3">
-            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase px-2">
-              Filters
-            </span>
-
-            {/* Filter: Date Range */}
-            <div className="flex flex-col gap-1 px-2">
-              <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
-                Timeframe
-              </span>
-              <DatePicker.RangePicker
-                value={dateRange}
-                onChange={setDateRange}
-                className="w-full text-xs premium-range-picker-sidebar"
-                placeholder={["Start", "End"]}
-              />
-            </div>
-          </div>
         </div>
 
         {/* ─── Right Content Area ─────────────────────────────────────── */}
         <div className="flex-grow flex flex-col min-w-0 relative h-full">
-          <div className="flex-grow flex flex-col p-6 overflow-y-auto custom-scrollbar gap-5 pb-20">
-            {/* Top Bar: Search Input & Results Count */}
-            <div className="flex items-center justify-between gap-4 px-0 py-0.5 md:flex-nowrap flex-wrap border-b border-slate-100 dark:border-slate-800 pb-4">
-              <div className="flex items-center gap-3 flex-grow flex-shrink-0">
-                <Input
-                  placeholder="Search issue category..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  allowClear
-                  prefix={<SearchOutlined className="text-slate-400 text-xs" />}
-                  className="w-48 text-xs rounded-xl border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 h-9"
-                />
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  {filteredCategories.length} categories
-                </span>
-              </div>
+          <div className="flex-grow flex flex-col p-3 overflow-y-auto custom-scrollbar gap-2 pb-20">
 
-              <div className="flex items-center gap-2 text-xs">
-                <Button
-                  icon={<ReloadOutlined className={loading ? "animate-spin" : ""} />}
-                  onClick={fetchStats}
-                  className="rounded-full h-8 w-8 flex items-center justify-center border-slate-200 dark:border-slate-800 text-slate-400 hover:text-blue-600 transition-all bg-white dark:bg-slate-900"
-                />
-                <span className="text-blue-600 dark:text-blue-400 font-extrabold uppercase tracking-wider">
-                  {mainTab === "ALL" ? "All Issues" : mainTab === "OPEN" ? "Open Tickets" : "Resolved"}
-                </span>
-              </div>
-            </div>
 
             {/* Row 1: Key Metrics */}
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={12} lg={6}>
-                <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all rounded-none min-h-[100px]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xs flex-shrink-0">
+                <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden ">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 h-8 flex items-center justify-center text-base bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 z-10 rounded-lg`}>
+                        <CustomerServiceOutlined />
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                        Total Tickets
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-end justify-between mt-2 z-10">
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-1.5">
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                          {currentTotal}
+                        </h3>
+                        <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                          tickets
+                        </span>
+                      </div>
+                    </div>
+                    {/* Background Icon */}
+                    <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-blue-600 dark:text-blue-400`}>
                       <CustomerServiceOutlined />
                     </div>
-                    <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-450 tracking-wide uppercase leading-none">
-                      Total Tickets
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-1 mt-auto">
-                    <span className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">
-                      {currentTotal}
-                    </span>
-                    <span className="text-[9px] text-slate-405 dark:text-slate-500 font-bold uppercase tracking-wider">
-                      tickets
-                    </span>
-                  </div>
-                  <div className="absolute bottom-0 right-0 pointer-events-none">
-                    <Sparkline color="blue" />
                   </div>
                 </div>
               </Col>
 
               <Col xs={24} sm={12} lg={6}>
-                <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all rounded-none min-h-[100px]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 rounded-lg bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400 flex items-center justify-center text-xs flex-shrink-0">
+                <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden ">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 h-8 flex items-center justify-center text-base bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400 z-10 rounded-lg`}>
+                        <AlertOutlined />
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                        Open Now
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-end justify-between mt-2 z-10">
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-1.5">
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                          {currentOpen}
+                        </h3>
+                        <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                          active
+                        </span>
+                      </div>
+                    </div>
+                    {/* Background Icon */}
+                    <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-amber-500 dark:text-amber-400`}>
                       <AlertOutlined />
                     </div>
-                    <span className="text-[10px] font-extrabold text-slate-505 dark:text-slate-450 tracking-wide uppercase leading-none">
-                      Open Now
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-1 mt-auto">
-                    <span className="text-2xl font-extrabold text-amber-500 dark:text-amber-400 leading-none">
-                      {currentOpen}
-                    </span>
-                    <span className="text-[9px] text-slate-405 dark:text-slate-500 font-bold uppercase tracking-wider">
-                      active
-                    </span>
-                  </div>
-                  <div className="absolute bottom-0 right-0 pointer-events-none">
-                    <Sparkline color="orange" />
                   </div>
                 </div>
               </Col>
 
               <Col xs={24} sm={12} lg={6}>
-                <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all rounded-none min-h-[100px]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs flex-shrink-0">
+                <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden ">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 h-8 flex items-center justify-center text-base bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 z-10 rounded-lg`}>
+                        <CheckCircleOutlined />
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                        Resolved
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-end justify-between mt-2 z-10">
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-1.5">
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                          {currentResolved}
+                        </h3>
+                        <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                          closed
+                        </span>
+                      </div>
+                    </div>
+                    {/* Background Icon */}
+                    <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-emerald-600 dark:text-emerald-400`}>
                       <CheckCircleOutlined />
                     </div>
-                    <span className="text-[10px] font-extrabold text-slate-505 dark:text-slate-450 tracking-wide uppercase leading-none">
-                      Resolved
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-1 mt-auto">
-                    <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 leading-none">
-                      {currentResolved}
-                    </span>
-                    <span className="text-[9px] text-slate-405 dark:text-slate-500 font-bold uppercase tracking-wider">
-                      closed
-                    </span>
-                  </div>
-                  <div className="absolute bottom-0 right-0 pointer-events-none">
-                    <Sparkline color="green" />
                   </div>
                 </div>
               </Col>
 
               <Col xs={24} sm={12} lg={6}>
-                <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all rounded-none min-h-[100px]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-7 h-7 rounded-lg bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400 flex items-center justify-center text-xs flex-shrink-0">
+                <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden ">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 h-8 flex items-center justify-center text-base bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400 z-10 rounded-lg`}>
+                        <ThunderboltOutlined />
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                        Avg Response
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-end justify-between mt-2 z-10">
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-1.5">
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                          {avg_response_minutes ? `${avg_response_minutes}m` : "N/A"}
+                        </h3>
+                        <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                          response time
+                        </span>
+                      </div>
+                    </div>
+                    {/* Background Icon */}
+                    <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-rose-600 dark:text-rose-400`}>
                       <ThunderboltOutlined />
                     </div>
-                    <span className="text-[10px] font-extrabold text-slate-550 dark:text-slate-450 tracking-wide uppercase leading-none">
-                      Avg Response
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-1 mt-auto">
-                    <span className="text-2xl font-extrabold text-rose-600 dark:text-rose-400 leading-none">
-                      {avg_response_minutes ? `${avg_response_minutes}m` : "N/A"}
-                    </span>
-                    <span className="text-[9px] text-slate-405 dark:text-slate-500 font-bold uppercase tracking-wider">
-                      response time
-                    </span>
-                  </div>
-                  <div className="absolute bottom-0 right-0 pointer-events-none">
-                    <Sparkline color="red" />
                   </div>
                 </div>
               </Col>
             </Row>
+
+            {/* Filters Toolbar */}
+            <div className="flex items-center gap-4 py-1 px-2 border-y border-slate-100 dark:border-slate-800/80 mb-2 mt-2 bg-slate-50/50 dark:bg-slate-900/50 px-4 rounded-none">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Timeframe:
+                </span>
+                <DatePicker.RangePicker
+                  value={dateRange}
+                  onChange={setDateRange}
+                  className="w-64 text-xs premium-range-picker-sidebar"
+                  placeholder={["Start Date", "End Date"]}
+                />
+              </div>
+            </div>
 
             {/* Row 2: Today + Category Breakdown */}
             <Row gutter={[16, 16]}>
               {/* Today's Summary Card */}
               <Col xs={24} lg={8}>
                 <Card
-                  className="border border-slate-100 dark:border-slate-850 shadow-sm h-full !bg-white dark:!bg-slate-900 rounded-none"
+                  className="border border-slate-100 dark:border-slate-800 shadow-sm h-full !bg-white dark:!bg-slate-900 rounded-none"
                   title={
                     <div className="flex items-center gap-2">
                       <ClockCircleOutlined className="text-blue-600 dark:text-blue-400 text-xs" />
@@ -438,7 +423,7 @@ const SupportAnalytics: React.FC = () => {
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <Text className="text-slate-550 dark:text-slate-400 font-bold text-xs">
+                      <Text className="text-slate-500 dark:text-slate-400 font-bold text-xs">
                         Active
                       </Text>
                       <span className="inline-flex px-2 py-0.5 text-[9px] font-black uppercase tracking-wider bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 rounded-none">
@@ -446,7 +431,7 @@ const SupportAnalytics: React.FC = () => {
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <Text className="text-slate-555 dark:text-slate-400 font-bold text-xs">
+                      <Text className="text-slate-500 dark:text-slate-400 font-bold text-xs">
                         Resolved
                       </Text>
                       <span className="inline-flex px-2 py-0.5 text-[9px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 rounded-none">
@@ -470,7 +455,7 @@ const SupportAnalytics: React.FC = () => {
               {/* Category Breakdown Card */}
               <Col xs={24} lg={16}>
                 <Card
-                  className="border border-slate-100 dark:border-slate-850 shadow-sm h-full !bg-white dark:!bg-slate-900 rounded-none"
+                  className="border border-slate-100 dark:border-slate-800 shadow-sm h-full !bg-white dark:!bg-slate-900 rounded-none"
                   title={
                     <div className="flex items-center gap-2">
                       <PieChartOutlined className="text-blue-600 dark:text-blue-400 text-xs" />
@@ -489,12 +474,12 @@ const SupportAnalytics: React.FC = () => {
                       return (
                         <div
                           key={cat.category}
-                          className="flex items-center gap-3 p-3 rounded-none bg-slate-50/70 dark:bg-slate-850/50 border border-slate-100 dark:border-slate-800 hover:bg-slate-100/50 dark:hover:bg-slate-800/80 transition-colors"
+                          className="flex items-center gap-2 p-3 rounded-none bg-slate-50/70 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 hover:bg-slate-100/50 dark:hover:bg-slate-800/80 transition-colors"
                         >
                           <div className="text-2xl">{meta.icon}</div>
                           <div className="flex-grow">
                             <div className="flex justify-between items-center mb-1">
-                              <Text className="font-extrabold text-xs dark:text-slate-205">
+                              <Text className="font-extrabold text-xs dark:text-slate-200">
                                 {meta.label}
                               </Text>
                               <Text className="text-[10px] font-bold text-slate-400 dark:text-slate-500">
@@ -509,7 +494,7 @@ const SupportAnalytics: React.FC = () => {
                               className="!mb-0"
                             />
                           </div>
-                          <Text className="text-[10px] font-black text-slate-550 dark:text-slate-400 min-w-[30px] text-right">
+                          <Text className="text-[10px] font-black text-slate-500 dark:text-slate-400 min-w-[30px] text-right">
                             {percent}%
                           </Text>
                         </div>

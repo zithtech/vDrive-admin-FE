@@ -1,5 +1,5 @@
 // components/DriverTable/DriverTable.tsx
-import { useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Table,
@@ -28,16 +28,22 @@ import {
 } from "@ant-design/icons";
 
 import DriverDetails, { getMediaUrl } from "../DriverDetails/DriverDetails";
+import { useGetHeight } from "../../utilities/customheightWidth";
 import { useHasPermission } from "../../hooks/usePermission";
 
 interface DriverTableProps {
   data: Driver[];
   onViewDetails?: (driver: Driver) => void;
+  currentPage?: number;
+  pageSize?: number;
+  onPageChange?: (page: number, size: number) => void;
 }
 
 
 
-const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
+const DriverTable = ({ data, onViewDetails, currentPage, pageSize, onPageChange }: DriverTableProps) => {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const tableHeight = useGetHeight(contentRef);
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -166,8 +172,8 @@ const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
             src={getMediaUrl(record.profilePicUrl || record.profile_pic_url)}
             size={28}
             style={{
-              backgroundColor: "#eff6ff",
-              color: "#2563eb",
+              background: record.profilePicUrl || record.profile_pic_url ? undefined : "#e0e7ff",
+              color: "#4f46e5",
               fontWeight: 600,
               fontSize: "12px",
             }}
@@ -442,30 +448,35 @@ const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
           
           /* BULLETPROOF DARK MODE OVERRIDES */
           html.dark .premium-table-flat .ant-table-thead > tr > th {
-            background: #1e293b !important;
-            border-bottom: 1px solid #334155 !important;
-            border-top: 1px solid #334155 !important;
-            color: #94a3b8 !important;
-          }
-          html.dark .premium-table-flat .ant-table-thead > tr > th::before {
-            background-color: #334155 !important;
+            background: #0f172a !important;
+            border-bottom: 1px solid #1e293b !important;
+            color: #64748b !important;
           }
           html.dark .premium-table-flat .ant-table-cell-fix-left,
           html.dark .premium-table-flat .ant-table-cell-fix-right {
-            background: #1e293b !important;
+            background: #0f172a !important;
           }
           html.dark .premium-table-flat .ant-table-row > td {
-            background: #1e293b !important;
-            border-bottom: 1px solid #334155 !important;
+            border-bottom: 1px solid #1e293b !important;
+            background: #0f172a !important;
           }
           html.dark .premium-table-flat .ant-table-row:hover > td,
           html.dark .premium-table-flat .ant-table-row:hover > .ant-table-cell-fix-left,
           html.dark .premium-table-flat .ant-table-row:hover > .ant-table-cell-fix-right {
-            background: #334155 !important;
+            background: #1e293b !important;
+          }
+          html.dark .premium-table-flat .ant-table-tbody > tr > td.ant-table-column-sort {
+            background: #0f172a !important;
+          }
+          html.dark .premium-table-flat .ant-table-row:hover > td.ant-table-column-sort {
+            background: #1e293b !important;
+          }
+          html.dark .premium-table-flat .ant-table-thead > tr > th.ant-table-column-has-sorters:hover {
+            background: #1e293b !important;
           }
           html.dark .premium-table-flat .ant-table-thead > tr > .ant-table-cell-fix-left,
           html.dark .premium-table-flat .ant-table-thead > tr > .ant-table-cell-fix-right {
-            background: #1e293b !important;
+            background: #0f172a !important;
           }
           
           /* Visual Table Box */
@@ -488,29 +499,18 @@ const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
             height: 100%;
           }
           html.dark .premium-table-flat .ant-table-container {
-            border-color: #334155;
-            background: #1e293b;
+            border-color: #1e293b;
+            background: #0f172a;
           }
 
-          /* PAGINATION OUTSIDE BOX */
           .premium-pagination {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: flex-end !important;
-            padding: 16px 8px !important;
-            margin: 0 !important;
-            margin-top: auto !important;
-            background: transparent !important;
-            border-top: none !important;
-          }
-          .premium-pagination .ant-pagination-total-text {
-            margin-right: auto !important;
-            color: #64748b !important;
+            display: none !important;
           }
         `}
       </style>
-      <div className="h-full w-full flex flex-col">
+      <div ref={contentRef} className="h-full w-full flex flex-col">
         <Table
+          key={tableHeight}
           rowSelection={{
             type: 'checkbox',
             onChange: (selectedRowKeys) => {
@@ -521,11 +521,21 @@ const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
           columns={columns}
           dataSource={data}
           rowKey={(record) => record.driver_id || record.id || ""}
-          pagination={false}
+          pagination={
+            currentPage && pageSize && onPageChange
+              ? {
+                  current: currentPage,
+                  pageSize: pageSize,
+                  total: data.length,
+                  position: ["none"],
+                  onChange: onPageChange,
+                }
+              : false
+          }
           showSorterTooltip={false}
           tableLayout="fixed"
           size="small"
-          scroll={{ x: 1200 }}
+          scroll={{ y: Math.floor(tableHeight ? tableHeight - 120 : 0), x: 1200 }}
           className="premium-table-flat"
           onRow={(record) => ({
             onClick: (event) => {

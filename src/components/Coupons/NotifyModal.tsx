@@ -132,7 +132,7 @@ const NotifyModal: React.FC<NotifyModalProps> = ({ visible, onCancel, coupon, on
     >
       <div className="py-4">
         {!isAllowed && (
-          <div className="mb-4 bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-[1.5rem] text-xs flex items-start gap-3 shadow-sm">
+          <div className="mb-4 bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-[1.5rem] text-xs flex items-start gap-2 shadow-sm">
             <InfoCircleOutlined className="text-amber-500 text-base mt-0.5 shrink-0" />
             <div>
               <span className="font-bold block mb-0.5">View-Only Access</span>
@@ -187,7 +187,7 @@ const NotifyModal: React.FC<NotifyModalProps> = ({ visible, onCancel, coupon, on
             dropdownClassName="rounded-2xl overflow-hidden shadow-2xl border-slate-100"
           >
             <Option value="ALL">
-              <div className="flex items-center gap-3 py-1">
+              <div className="flex items-center gap-2 py-1">
                 <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
                   <TeamOutlined />
                 </div>
@@ -200,7 +200,7 @@ const NotifyModal: React.FC<NotifyModalProps> = ({ visible, onCancel, coupon, on
               </div>
             </Option>
             <Option value="TOP_RIDE">
-              <div className="flex items-center gap-3 py-1">
+              <div className="flex items-center gap-2 py-1">
                 <div className="w-8 h-8 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-500">
                   <RiseOutlined />
                 </div>
@@ -215,7 +215,7 @@ const NotifyModal: React.FC<NotifyModalProps> = ({ visible, onCancel, coupon, on
               </div>
             </Option>
             <Option value="LOW_RIDE">
-              <div className="flex items-center gap-3 py-1">
+              <div className="flex items-center gap-2 py-1">
                 <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
                   <FallOutlined />
                 </div>
@@ -228,7 +228,7 @@ const NotifyModal: React.FC<NotifyModalProps> = ({ visible, onCancel, coupon, on
               </div>
             </Option>
             <Option value="SPECIFIC">
-              <div className="flex items-center gap-3 py-1">
+              <div className="flex items-center gap-2 py-1">
                 <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500">
                   <UserOutlined />
                 </div>
@@ -275,7 +275,7 @@ const NotifyModal: React.FC<NotifyModalProps> = ({ visible, onCancel, coupon, on
                   user.full_name || `${user.first_name || ""} ${user.last_name || ""}`;
                 return (
                   <Option key={userId} value={userId}>
-                    <div className="flex items-center gap-3 py-1">
+                    <div className="flex items-center gap-2 py-1">
                       <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100">
                         <UserOutlined />
                       </div>

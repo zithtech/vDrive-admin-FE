@@ -151,7 +151,7 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
             icon={<SendOutlined />}
             loading={loading}
             onClick={handleSend}
-            className="!bg-gradient-to-r !from-indigo-600 !to-blue-500 border-none rounded-xl font-bold h-12 px-10 shadow-lg shadow-indigo-100 hover:scale-[1.02] transition-transform"
+            className="!bg-gradient-to-r !from-indigo-600 !to-blue-500 border-none rounded-xl font-bold h-12 px-10 shadow-lg shadow-indigo-100 !shadow-none hover:scale-[1.02] transition-transform"
           >
             Dispatch Now
           </Button>
@@ -162,7 +162,7 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
     >
       <div className="py-2">
         {!isAllowed && (
-          <div className="mb-4 bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-[1.5rem] text-xs flex items-start gap-3 shadow-sm">
+          <div className="mb-4 bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-[1.5rem] text-xs flex items-start gap-2 shadow-sm">
             <InfoCircleOutlined className="text-amber-500 text-base mt-0.5 shrink-0" />
             <div>
               <span className="font-bold block mb-0.5">View-Only Access</span>
@@ -199,7 +199,7 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
             dropdownClassName="rounded-2xl overflow-hidden shadow-2xl border-slate-100"
           >
             <Option value="ALL">
-              <div className="flex items-center gap-3 py-1">
+              <div className="flex items-center gap-2 py-1">
                 <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500 dark:text-blue-400">
                   <TeamOutlined />
                 </div>
@@ -214,7 +214,7 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
               </div>
             </Option>
             <Option value="TOP_RIDE">
-              <div className="flex items-center gap-3 py-1">
+              <div className="flex items-center gap-2 py-1">
                 <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-500 dark:text-emerald-400">
                   <RiseOutlined />
                 </div>
@@ -229,7 +229,7 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
               </div>
             </Option>
             <Option value="LOW_RIDE">
-              <div className="flex items-center gap-3 py-1">
+              <div className="flex items-center gap-2 py-1">
                 <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-500 dark:text-amber-400">
                   <FallOutlined />
                 </div>
@@ -244,7 +244,7 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
               </div>
             </Option>
             <Option value="SPECIFIC">
-              <div className="flex items-center gap-3 py-1">
+              <div className="flex items-center gap-2 py-1">
                 <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 dark:text-indigo-400">
                   <UserOutlined />
                 </div>
@@ -287,7 +287,7 @@ const NotificationNotifyModal: React.FC<NotificationNotifyModalProps> = ({
             >
               {currentAudience.map((user: any) => (
                 <Option key={user.id} value={user.id}>
-                  <div className="flex items-center gap-3 py-1">
+                  <div className="flex items-center gap-2 py-1">
                     <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 border border-slate-100 dark:border-slate-700">
                       <UserOutlined />
                     </div>

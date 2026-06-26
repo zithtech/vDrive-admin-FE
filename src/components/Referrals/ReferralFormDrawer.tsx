@@ -66,7 +66,7 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
         footer: { padding: "16px 24px" },
       }}
       footer={
-        <div className="flex justify-end gap-3 px-2">
+        <div className="flex justify-end gap-2 px-2">
           <Button
             onClick={onClose}
             className="rounded-full h-11 px-8 font-bold text-gray-400 hover:text-gray-600 border-gray-200 transition-all"
@@ -131,7 +131,7 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
         disabled={!isAllowed}
       >
         <div className="bg-white dark:bg-slate-800/50 p-4 rounded-[2rem] border border-gray-100 dark:border-slate-700 shadow-sm space-y-4 mx-4 mt-4">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-xl bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-500 dark:text-orange-400">
               <UserOutlined className="text-sm" />
             </div>
@@ -157,7 +157,7 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
         </div>
 
         <div className="bg-white dark:bg-slate-800/50 p-4 rounded-[2rem] border border-gray-100 dark:border-slate-700 shadow-sm space-y-4 mx-4">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center text-amber-500 dark:text-amber-400">
               <GiftOutlined className="text-sm" />
             </div>
@@ -203,7 +203,7 @@ const ReferralFormDrawer: React.FC<ReferralFormDrawerProps> = ({
         </div>
 
         <div className="bg-white dark:bg-slate-800/50 p-4 rounded-[2rem] border border-gray-100 dark:border-slate-700 shadow-sm space-y-4 mx-4">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500 dark:text-blue-400">
               <GiftOutlined className="text-sm" />
             </div>

@@ -714,7 +714,7 @@ const DriverApprovalModal: React.FC<DriverApprovalModalProps> = ({ driver, open,
       {/* Footer Action Bar */}
       <div className="border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50 p-4 px-6 rounded-b-lg">
         {isRejecting ? (
-          <div className="flex-1 flex items-center gap-3 w-full">
+          <div className="flex-1 flex items-center gap-2 w-full">
             <Select
               className="w-1/3"
               placeholder="Select Reason"

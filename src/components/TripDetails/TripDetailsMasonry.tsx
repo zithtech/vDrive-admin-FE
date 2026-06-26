@@ -464,7 +464,7 @@ const TripDetailsMasonry: React.FC<Props> = ({ trip }) => {
           <div className="h-[60vh] flex flex-col">
             <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
               {tripHistory.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-3 grayscale opacity-30">
+                <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-2 grayscale opacity-30">
                   <HistoryOutlined className="text-4xl" />
                   <span className="text-xs font-bold uppercase tracking-widest">
                     No Records Found
@@ -527,7 +527,7 @@ const TripDetailsMasonry: React.FC<Props> = ({ trip }) => {
         >
           <div className="pl-3">
             {items.map((item, index) => (
-              <div key={index} className="relative flex gap-3 pb-5">
+              <div key={index} className="relative flex gap-2 pb-5">
                 {index !== items.length - 1 && (
                   <span className="absolute left-3.5 top-7 h-full w-px bg-gray-200" />
                 )}
