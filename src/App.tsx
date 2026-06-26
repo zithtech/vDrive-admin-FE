@@ -268,9 +268,11 @@ const RootLayout: React.FC = () => {
   const notificationsAccess = useModuleAccess("notifications");
   const tripsAccess = useModuleAccess("trips");
   const tripTransactionAccess = useModuleAccess("trip_transaction");
-  const tripverificationAccess = useModuleAccess("trip_verification");
+  // Trip verification is enforced under the `trips` module (no separate DB module).
+  const tripverificationAccess = useModuleAccess("trips");
   const supportTicketsAccess = useModuleAccess("support_tickets");
-  const supportAnalyticsAccess = useModuleAccess("support_analytics");
+  // Support analytics is enforced under the `support_tickets` module.
+  const supportAnalyticsAccess = useModuleAccess("support_tickets");
 
   useEffect(() => {
     if (isAuthenticated && !currentUser) {
@@ -1123,7 +1125,7 @@ const router = createBrowserRouter([
         path: "trip-verifications",
         element: (
           <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="trip_verification">
+            <ModuleProtectedRoute module="trips">
               <TripVerifications />
             </ModuleProtectedRoute>
           </Suspense>
