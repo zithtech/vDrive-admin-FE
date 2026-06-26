@@ -1,5 +1,5 @@
 // components/DriverTable/DriverTable.tsx
-import { useRef, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import {
   Table,
@@ -28,7 +28,6 @@ import {
 } from "@ant-design/icons";
 
 import DriverDetails, { getMediaUrl } from "../DriverDetails/DriverDetails";
-import { useGetHeight } from "../../utilities/customheightWidth";
 import { useHasPermission } from "../../hooks/usePermission";
 
 interface DriverTableProps {
@@ -39,8 +38,6 @@ interface DriverTableProps {
 
 
 const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
-  const contentRef = useRef<HTMLDivElement>(null);
-  const tableHeight = useGetHeight(contentRef);
   const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -169,8 +166,8 @@ const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
             src={getMediaUrl(record.profilePicUrl || record.profile_pic_url)}
             size={28}
             style={{
-              background: record.profilePicUrl || record.profile_pic_url ? undefined : "#e0e7ff",
-              color: "#4f46e5",
+              backgroundColor: "#eff6ff",
+              color: "#2563eb",
               fontWeight: 600,
               fontSize: "12px",
             }}
@@ -445,25 +442,30 @@ const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
           
           /* BULLETPROOF DARK MODE OVERRIDES */
           html.dark .premium-table-flat .ant-table-thead > tr > th {
-            background: #0f172a !important;
-            border-bottom: 1px solid #1e293b !important;
-            color: #64748b !important;
+            background: #1e293b !important;
+            border-bottom: 1px solid #334155 !important;
+            border-top: 1px solid #334155 !important;
+            color: #94a3b8 !important;
+          }
+          html.dark .premium-table-flat .ant-table-thead > tr > th::before {
+            background-color: #334155 !important;
           }
           html.dark .premium-table-flat .ant-table-cell-fix-left,
           html.dark .premium-table-flat .ant-table-cell-fix-right {
-            background: #0f172a !important;
+            background: #1e293b !important;
           }
           html.dark .premium-table-flat .ant-table-row > td {
-            border-bottom: 1px solid #1e293b !important;
+            background: #1e293b !important;
+            border-bottom: 1px solid #334155 !important;
           }
           html.dark .premium-table-flat .ant-table-row:hover > td,
           html.dark .premium-table-flat .ant-table-row:hover > .ant-table-cell-fix-left,
           html.dark .premium-table-flat .ant-table-row:hover > .ant-table-cell-fix-right {
-            background: #1e293b !important;
+            background: #334155 !important;
           }
           html.dark .premium-table-flat .ant-table-thead > tr > .ant-table-cell-fix-left,
           html.dark .premium-table-flat .ant-table-thead > tr > .ant-table-cell-fix-right {
-            background: #0f172a !important;
+            background: #1e293b !important;
           }
           
           /* Visual Table Box */
@@ -486,15 +488,15 @@ const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
             height: 100%;
           }
           html.dark .premium-table-flat .ant-table-container {
-            border-color: #1e293b;
-            background: #0f172a;
+            border-color: #334155;
+            background: #1e293b;
           }
 
           /* PAGINATION OUTSIDE BOX */
           .premium-pagination {
             display: flex !important;
             align-items: center !important;
-            width: 100% !important;
+            justify-content: flex-end !important;
             padding: 16px 8px !important;
             margin: 0 !important;
             margin-top: auto !important;
@@ -507,9 +509,8 @@ const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
           }
         `}
       </style>
-      <div ref={contentRef} className="h-full w-full flex flex-col">
+      <div className="h-full w-full flex flex-col">
         <Table
-          key={tableHeight}
           rowSelection={{
             type: 'checkbox',
             onChange: (selectedRowKeys) => {
@@ -520,22 +521,11 @@ const DriverTable = ({ data, onViewDetails }: DriverTableProps) => {
           columns={columns}
           dataSource={data}
           rowKey={(record) => record.driver_id || record.id || ""}
-          pagination={{
-            position: ["bottomRight"],
-            showTotal: (total, range) => (
-              <span className="text-slate-500 font-medium text-[13px]">
-                Showing <strong className="text-slate-700 dark:text-slate-200">{range[0]}-{range[1]}</strong> of <strong className="text-slate-700 dark:text-slate-200">{total}</strong>
-              </span>
-            ),
-            showSizeChanger: true,
-            pageSizeOptions: ['15', '30', '50'],
-            defaultPageSize: 15,
-            className: "premium-pagination",
-          }}
+          pagination={false}
           showSorterTooltip={false}
           tableLayout="fixed"
           size="small"
-          scroll={{ y: Math.floor(tableHeight || 0), x: 1200 }}
+          scroll={{ x: 1200 }}
           className="premium-table-flat"
           onRow={(record) => ({
             onClick: (event) => {

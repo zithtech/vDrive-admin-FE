@@ -5,7 +5,6 @@ import {
   Trash2,
   X,
   Zap,
-  ChevronDown,
   Users,
   Edit3,
   Power,
@@ -15,11 +14,12 @@ import {
   Crown,
   Sparkles,
   CalendarDays,
+  Eye,
 } from "lucide-react";
 
 import axios from "../../api/axios";
 import { messageApi, modalApi, notificationApi } from "../../utilities/antdStaticHolder";
-import { Select, Drawer, Button, Avatar, Tag } from "antd";
+import { Select, Drawer, Button, Avatar, Tag, Pagination } from "antd";
 
 /* ================= TYPES ================= */
 
@@ -70,6 +70,14 @@ const ManagePlans: React.FC = () => {
     tag: "",
   });
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
 
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -435,11 +443,15 @@ const ManagePlans: React.FC = () => {
       <div className="w-[260px] flex-shrink-0 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
         {/* Sidebar Header */}
         <div className="p-6 pb-4">
-          <div className="flex items-center gap-2 mb-1 text-slate-800 dark:text-slate-100">
-            <Zap size={20} className="text-indigo-600" />
-            <h2 className="font-black text-sm uppercase tracking-wider">RECHARGE PLANS</h2>
+          <div className="flex items-center gap-3 mb-1 text-slate-800 dark:text-slate-100">
+            <div className="w-18 h-8 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
+              <Zap size={20} />
+            </div>
+            <h2 className="text-[20px] text-slate-900 dark:text-white tracking-wider whitespace-nowrap"><b>Recharge Plans</b></h2>
           </div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Manage Plans</p>
+          <p className="text-[11px] text-slate-500 font-medium leading-snug mt-1">
+            Create, update, and manage subscription plans with ease
+          </p>
         </div>
 
         <div className="px-4 pb-6 border-b border-slate-100 dark:border-slate-700/50">
@@ -547,266 +559,278 @@ const ManagePlans: React.FC = () => {
           </div>
         </div>
 
-        {/* Content Scrollable Area */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
-            {/* 1. Total Plans */}
-            <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 flex items-center justify-center text-base bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-                    <Zap size={14} />
-                  </div>
-                  <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">TOTAL PLANS</p>
-                </div>
-              </div>
-              <div className="flex items-end justify-between mt-2">
-                <div className="flex flex-col">
-                  <div className="flex items-baseline gap-1.5">
-                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{plans.length}</h3>
-                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">PLANS</span>
-                  </div>
-                </div>
-                <div className="w-24 h-10 mb-[-5px]">
-                  <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
-                    <path d="M0,40 L10,30 L20,35 L40,10 L60,25 L80,5 L100,20" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M0,40 L10,30 L20,35 L40,10 L60,25 L80,5 L100,20 L100,40 Z" fill="url(#gradient-indigo)" opacity="0.1" />
-                    <defs>
-                      <linearGradient id="gradient-indigo" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="#6366f1" />
-                        <stop offset="100%" stopColor="transparent" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </div>
-              </div>
-            </div>
-            
-            {/* 2. Active Plans */}
-            <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 flex items-center justify-center text-base bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 dark:text-emerald-400">
-                    <CheckCircle2 size={14} />
-                  </div>
-                  <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">ACTIVE PLANS</p>
-                </div>
-              </div>
-              <div className="flex items-end justify-between mt-2">
-                <div className="flex flex-col">
-                  <div className="flex items-baseline gap-1.5">
-                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{plans.filter(p => p.isActive).length}</h3>
-                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">LIVE</span>
-                  </div>
-                </div>
-                <div className="w-24 h-10 mb-[-5px]">
-                  <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
-                    <path d="M0,40 L20,35 L40,20 L60,25 L80,10 L100,5" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M0,40 L20,35 L40,20 L60,25 L80,10 L100,5 L100,40 Z" fill="url(#gradient-emerald)" opacity="0.1" />
-                    <defs>
-                      <linearGradient id="gradient-emerald" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="#10b981" />
-                        <stop offset="100%" stopColor="transparent" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* 3. Inactive Plans */}
-            <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 flex items-center justify-center text-base bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400">
-                    <Power size={14} />
-                  </div>
-                  <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">INACTIVE PLANS</p>
-                </div>
-              </div>
-              <div className="flex items-end justify-between mt-2">
-                <div className="flex flex-col">
-                  <div className="flex items-baseline gap-1.5">
-                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{plans.filter(p => !p.isActive).length}</h3>
-                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">DISABLED</span>
-                  </div>
-                </div>
-                <div className="w-24 h-10 mb-[-5px]">
-                  <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
-                    <path d="M0,40 L10,25 L30,30 L50,15 L70,20 L90,5 L100,10" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M0,40 L10,25 L30,30 L50,15 L70,20 L90,5 L100,10 L100,40 Z" fill="url(#gradient-amber)" opacity="0.1" />
-                    <defs>
-                      <linearGradient id="gradient-amber" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="#f59e0b" />
-                        <stop offset="100%" stopColor="transparent" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* 4. Total Subs */}
-            <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 flex items-center justify-center text-base bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400">
-                    <Users size={14} />
-                  </div>
-                  <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">TOTAL SUBS</p>
-                </div>
-              </div>
-              <div className="flex items-end justify-between mt-2">
-                <div className="flex flex-col">
-                  <div className="flex items-baseline gap-1.5">
-                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{activeSubscriptions.length}</h3>
-                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">ACTIVE</span>
-                  </div>
-                </div>
-                <div className="w-24 h-10 mb-[-5px]">
-                  <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
-                    <path d="M0,40 L20,38 L40,35 L60,32 L80,30 L100,28" fill="none" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M0,40 L20,38 L40,35 L60,32 L80,30 L100,28 L100,40 Z" fill="url(#gradient-rose)" opacity="0.1" />
-                    <defs>
-                      <linearGradient id="gradient-rose" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="#f43f5e" />
-                        <stop offset="100%" stopColor="transparent" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* List View Container */}
-          <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden rounded-none">
-            {/* List Header */}
-            <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-100 dark:border-slate-700/50">
-              <div className="col-span-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">PLAN NAME</div>
-              <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">VALIDITY</div>
-              <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">PRICING</div>
-              <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">STATUS</div>
-              <div className="col-span-1 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">SUBSCRIBERS</div>
-              <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">ACTIONS</div>
-            </div>
-
-            {/* List Body */}
-            <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
-              {loading ? (
-                <div className="p-8 text-center text-slate-400">Loading templates...</div>
-              ) : filteredPlans.length > 0 ? (
-                filteredPlans.map((plan) => {
-                  return (
-                    <div key={plan.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-                      {/* Name & Desc */}
-                      <div className="col-span-3 flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 shrink-0 mt-0.5">
-                          <Zap size={16} />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">{plan.planName}</h4>
-                            {plan.tag && <span className="bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 text-[10px] font-bold px-1.5 py-0.5 rounded">{plan.tag}</span>}
-                          </div>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5" title={plan.description}>{plan.description}</p>
-                        </div>
-                      </div>
-
-                      {/* Validity */}
-                      <div className="col-span-2 flex items-center">
-                        <div className="bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
-                          {plan.validityDays} DAYS
-                        </div>
-                      </div>
-
-                      {/* Pricing */}
-                      <div className="col-span-2 flex flex-col gap-1">
-                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">₹{plan.monthlyPrice} <span className="text-[10px] text-slate-400 font-normal">/ mo</span></span>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400">₹{plan.dailyPrice}/d • ₹{plan.weeklyPrice}/w</span>
-                      </div>
-
-                      {/* Status */}
-                      <div className="col-span-2 flex flex-col justify-center">
-                        {plan.isActive ? (
-                          <div className="flex items-center gap-1.5 text-emerald-500">
-                            <CheckCircle2 size={12} />
-                            <span className="text-[10px] font-black uppercase tracking-wider">ACTIVE</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1.5 text-rose-500">
-                            <Power size={12} />
-                            <span className="text-[10px] font-black uppercase tracking-wider">INACTIVE</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Subscribers */}
-                      <div className="col-span-1 flex justify-center">
-                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded">
-                          {activeSubscriptions.filter(s => s.planName?.toLowerCase() === plan.planName?.toLowerCase()).length}
-                        </span>
-                      </div>
-                      
-                      {/* Actions */}
-                      <div className="col-span-2 flex items-center justify-end gap-3">
-                        <div className="relative group/menu">
-                          <button className="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg>
-                          </button>
-                          {/* Dropdown Menu */}
-                          <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-100 dark:border-slate-700 opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 overflow-hidden">
-                            <button onClick={() => handleOpenModal(plan)} className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2">
-                              <Edit3 size={14} /> Edit
-                            </button>
-                            <button onClick={() => toggleStatus(plan.id, plan.isActive)} className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2">
-                              <Power size={14} /> {plan.isActive ? "Deactivate" : "Activate"}
-                            </button>
-                            <button onClick={() => handleDelete(plan.id)} className="w-full text-left px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2">
-                              <Trash2 size={14} /> Delete
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
+        {/* Outer wrapper for scrollable content and sticky footer */}
+        <div className="flex-grow flex flex-col min-w-0 relative h-full">
+          {/* Content Scrollable Area */}
+          <div className="flex-grow overflow-y-auto p-6 bg-[#f8f9fa] dark:bg-[#0b0f19] flex flex-col gap-6 pb-20 custom-scrollbar">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-4 gap-2">
+              {/* 1. Total Plans */}
+              <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 flex items-center justify-center text-base bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                      <Zap size={14} />
                     </div>
-                  );
-                })
-              ) : (
-                <div className="p-12 text-center">
-                  <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Search size={24} className="text-slate-300" />
+                    <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">TOTAL PLANS</p>
                   </div>
-                  <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">No plans found</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Try adjusting your filters or search term.</p>
                 </div>
-              )}
-            </div>
-          </div>
-          
-          {/* Pagination */}
-          <div className="mt-4 flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
-            <span>SHOWING 1-{filteredPlans.length > 0 ? filteredPlans.length : 0} OF {filteredPlans.length} PLANS</span>
-            <div className="flex items-center gap-3">
-              <button className="text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50" disabled>
-                <ChevronDown className="rotate-90" size={16} />
-              </button>
-              <div className="px-3 py-1 border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                1
+                <div className="flex items-end justify-between mt-2">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{plans.length}</h3>
+                      <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">PLANS</span>
+                    </div>
+                  </div>
+                  <div className="w-24 h-10 mb-[-5px]">
+                    <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
+                      <path d="M0,40 L10,30 L20,35 L40,10 L60,25 L80,5 L100,20" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M0,40 L10,30 L20,35 L40,10 L60,25 L80,5 L100,20 L100,40 Z" fill="url(#gradient-blue)" opacity="0.1" />
+                      <defs>
+                        <linearGradient id="gradient-blue" x1="0" x2="0" y1="0" y2="1">
+                          <stop offset="0%" stopColor="#3b82f6" />
+                          <stop offset="100%" stopColor="transparent" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                  </div>
+                </div>
               </div>
-              <button className="text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50" disabled>
-                <ChevronDown className="-rotate-90" size={16} />
-              </button>
-              <div className="flex items-center gap-1 border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-slate-800 px-3 py-1 ml-2">
-                10 / page <ChevronDown size={14} className="ml-1" />
+
+              {/* 2. Active Plans */}
+              <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 flex items-center justify-center text-base bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 dark:text-emerald-400">
+                      <CheckCircle2 size={14} />
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">ACTIVE PLANS</p>
+                  </div>
+                </div>
+                <div className="flex items-end justify-between mt-2">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{plans.filter(p => p.isActive).length}</h3>
+                      <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">LIVE</span>
+                    </div>
+                  </div>
+                  <div className="w-24 h-10 mb-[-5px]">
+                    <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
+                      <path d="M0,40 L20,35 L40,20 L60,25 L80,10 L100,5" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M0,40 L20,35 L40,20 L60,25 L80,10 L100,5 L100,40 Z" fill="url(#gradient-emerald)" opacity="0.1" />
+                      <defs>
+                        <linearGradient id="gradient-emerald" x1="0" x2="0" y1="0" y2="1">
+                          <stop offset="0%" stopColor="#10b981" />
+                          <stop offset="100%" stopColor="transparent" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Inactive Plans */}
+              <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 flex items-center justify-center text-base bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400">
+                      <Power size={14} />
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">INACTIVE PLANS</p>
+                  </div>
+                </div>
+                <div className="flex items-end justify-between mt-2">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{plans.filter(p => !p.isActive).length}</h3>
+                      <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">DISABLED</span>
+                    </div>
+                  </div>
+                  <div className="w-24 h-10 mb-[-5px]">
+                    <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
+                      <path d="M0,40 L10,25 L30,30 L50,15 L70,20 L90,5 L100,10" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M0,40 L10,25 L30,30 L50,15 L70,20 L90,5 L100,10 L100,40 Z" fill="url(#gradient-red)" opacity="0.1" />
+                      <defs>
+                        <linearGradient id="gradient-red" x1="0" x2="0" y1="0" y2="1">
+                          <stop offset="0%" stopColor="#ef4444" />
+                          <stop offset="100%" stopColor="transparent" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Total Subs */}
+              <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 flex items-center justify-center text-base bg-slate-50 dark:bg-slate-500/10 text-slate-500 dark:text-slate-400">
+                      <Users size={14} />
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">TOTAL SUBS</p>
+                  </div>
+                </div>
+                <div className="flex items-end justify-between mt-2">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{activeSubscriptions.length}</h3>
+                      <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">ACTIVE</span>
+                    </div>
+                  </div>
+                  <div className="w-24 h-10 mb-[-5px]">
+                    <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
+                      <path d="M0,40 L20,38 L40,35 L60,32 L80,30 L100,28" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M0,40 L20,38 L40,35 L60,32 L80,30 L100,28 L100,40 Z" fill="url(#gradient-slate)" opacity="0.1" />
+                      <defs>
+                        <linearGradient id="gradient-slate" x1="0" x2="0" y1="0" y2="1">
+                          <stop offset="0%" stopColor="#64748b" />
+                          <stop offset="100%" stopColor="transparent" />
+                        </linearGradient>
+                      </defs>
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* List View Container */}
+            <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm overflow-visible rounded-none">
+              {/* List Header */}
+              <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-100 dark:border-slate-700/50">
+                <div className="col-span-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">PLAN NAME</div>
+                <div className="col-span-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">VALIDITY</div>
+                <div className="col-span-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">PRICING</div>
+                <div className="col-span-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">STATUS</div>
+                <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">SUBSCRIBERS</div>
+                <div className="col-span-1 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">ACTIONS</div>
+              </div>
+
+              {/* List Body */}
+              <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                {loading ? (
+                  <div className="p-8 text-center text-slate-400">Loading templates...</div>
+                ) : filteredPlans.length > 0 ? (
+                  filteredPlans.slice((currentPage - 1) * pageSize, currentPage * pageSize).map((plan) => {
+                    return (
+                      <div key={plan.id} className="relative hover:z-50 grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
+                        {/* Name & Desc */}
+                        <div className="col-span-3 flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0 mt-0.5">
+                            <Zap size={16} />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">{plan.planName}</h4>
+                              {plan.tag && <span className="bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 text-[10px] font-bold px-1.5 py-0.5 rounded">{plan.tag}</span>}
+                            </div>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5" title={plan.description}>{plan.description}</p>
+                          </div>
+                        </div>
+
+                        {/* Validity */}
+                        <div className="col-span-1 flex items-center">
+                          <div className="bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
+                            {plan.validityDays} DAYS
+                          </div>
+                        </div>
+
+                        {/* Pricing */}
+                        <div className="col-span-4 flex items-center">
+                          <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap truncate">
+                            ₹{plan.dailyPrice}<span className="text-slate-500 font-normal text-[10px] ml-0.5 mr-1.5">/d</span>
+                            <span className="text-slate-300 dark:text-slate-600 mr-1.5">•</span>
+                            ₹{plan.weeklyPrice}<span className="text-slate-500 font-normal text-[10px] ml-0.5 mr-1.5">/w</span>
+                            <span className="text-slate-300 dark:text-slate-600 mr-1.5">•</span>
+                            ₹{plan.monthlyPrice}<span className="text-slate-500 font-normal text-[10px] ml-0.5">/mo</span>
+                          </span>
+                        </div>
+
+                        {/* Status */}
+                        <div className="col-span-1 flex flex-col justify-center">
+                          {plan.isActive ? (
+                            <div className="flex items-center gap-1.5 text-emerald-500">
+                              <CheckCircle2 size={12} />
+                              <span className="text-[10px] font-black uppercase tracking-wider">ACTIVE</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5 text-rose-500">
+                              <Power size={12} />
+                              <span className="text-[10px] font-black uppercase tracking-wider">INACTIVE</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Subscribers */}
+                        <div className="col-span-2 flex justify-center">
+                          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded">
+                            {activeSubscriptions.filter(s => s.planName?.toLowerCase() === plan.planName?.toLowerCase()).length}
+                          </span>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="col-span-1 flex items-center justify-end gap-3">
+                          <div className="relative group/menu">
+                            <button className="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg>
+                            </button>
+                            {/* Dropdown Menu */}
+                            <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-100 dark:border-slate-700 opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 overflow-hidden">
+                              <button onClick={() => setManagingPlanId(plan.id)} className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2">
+                                <Eye size={14} /> View
+                              </button>
+                              <button onClick={() => handleOpenModal(plan)} className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2">
+                                <Edit3 size={14} /> Edit
+                              </button>
+                              <button onClick={() => toggleStatus(plan.id, plan.isActive)} className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2">
+                                <Power size={14} /> {plan.isActive ? "Deactivate" : "Activate"}
+                              </button>
+                              <button onClick={() => handleDelete(plan.id)} className="w-full text-left px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2">
+                                <Trash2 size={14} /> Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="p-12 text-center">
+                    <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Search size={24} className="text-slate-300" />
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">No plans found</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Try adjusting your filters or search term.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
           </div>
 
+          {/* Sticky Bottom Pagination Bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)] overflow-x-auto gap-4 custom-scrollbar">
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider whitespace-nowrap flex-shrink-0">
+              Showing {filteredPlans.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, filteredPlans.length)} of {filteredPlans.length} plans
+            </span>
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={filteredPlans.length}
+              onChange={(page, size) => {
+                setCurrentPage(page);
+                setPageSize(size);
+              }}
+              showSizeChanger
+              pageSizeOptions={["10", "20", "50", "100"]}
+              size="small"
+              className="premium-pagination"
+            />
+          </div>
         </div>
       </div>
-        
+
       <Drawer
         rootClassName="dark-drawer"
         title={

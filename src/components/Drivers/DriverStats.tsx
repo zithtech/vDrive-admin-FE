@@ -35,11 +35,11 @@ const generatePath = (data: number[]) => {
   return d;
 };
 
-const StatCard = ({ title, value, icon, trend, bg, strokeColor, secondaryValue, secondaryText, chartData }: any) => {
+const StatCard = ({ title, value, icon, trend, trendColorClass, bg, strokeColor, secondaryValue, secondaryText, chartData }: any) => {
   const pathD = chartData ? generatePath(chartData) : "M0,35 C20,35 30,20 50,20 C70,20 80,5 100,5";
 
   return (
-    <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] rounded-[10px]">
+    <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-base ${bg}`}>
@@ -48,7 +48,7 @@ const StatCard = ({ title, value, icon, trend, bg, strokeColor, secondaryValue, 
           <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0">{title}</p>
         </div>
         {trend && (
-          <div className="flex items-center text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 px-1.5 py-0.5 rounded">
+          <div className={`flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded ${trendColorClass || 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30'}`}>
             <svg className="w-3 h-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
@@ -110,7 +110,7 @@ const DriverStats: React.FC<DriverStatsProps> = ({ drivers }) => {
   );
 
   const newDriversData = last7DaysData.map(date =>
-    drivers.filter(d => dayjs(d.created_at).isSame(dayjs(date), 'day')).length
+    drivers.filter(d => dayjs(d.created_at).isBefore(dayjs(date).endOf('day')) && dayjs(d.created_at).isAfter(dayjs(date).subtract(1, 'day').endOf('day'))).length
   );
 
   const restrictedDriversData = last7DaysData.map(date =>
@@ -122,37 +122,41 @@ const DriverStats: React.FC<DriverStatsProps> = ({ drivers }) => {
       <StatCard
         title="Total Drivers"
         value={total}
-        icon={<CarOutlined className="text-blue-600 dark:text-blue-400 text-base" />}
+        icon={<CarOutlined />}
         trend="+14"
-        bg="bg-blue-50 dark:bg-blue-500/10"
+        trendColorClass="text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-500/20"
+        bg="bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400"
         strokeColor="#3b82f6"
         chartData={totalDriversData}
       />
       <StatCard
         title="Active Drivers"
         value={active}
-        icon={<CheckCircleOutlined className="text-slate-500" />}
+        icon={<CheckCircleOutlined />}
         trend="+31"
-        bg="bg-slate-100 dark:bg-slate-800"
-        strokeColor="#34d399"
+        trendColorClass="text-emerald-600 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/20"
+        bg="bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400"
+        strokeColor="#10b981"
         chartData={activeDriversData}
       />
       <StatCard
         title="New Drivers"
         value={newToday}
-        icon={<RiseOutlined className="text-indigo-500" />}
+        icon={<RiseOutlined />}
         trend="+11"
-        bg="bg-indigo-50 dark:bg-indigo-900/20"
-        strokeColor="#34d399"
+        trendColorClass="text-slate-600 bg-slate-100 dark:text-slate-400 dark:bg-slate-800"
+        bg="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+        strokeColor="#64748b"
         chartData={newDriversData}
       />
       <StatCard
         title="Restricted"
         value={suspended}
-        icon={<StopOutlined className="text-emerald-500" />}
+        icon={<StopOutlined />}
         trend="+14"
-        bg="bg-emerald-50 dark:bg-emerald-900/20"
-        strokeColor="#e2e8f0"
+        trendColorClass="text-rose-600 bg-rose-50 dark:text-rose-400 dark:bg-rose-500/20"
+        bg="bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400"
+        strokeColor="#f43f5e"
         chartData={restrictedDriversData}
       />
     </div>

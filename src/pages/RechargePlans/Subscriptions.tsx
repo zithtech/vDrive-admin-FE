@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Search,
   Zap,
@@ -15,7 +15,7 @@ import {
 import SubscriptionDrawer from "../../components/RechargePlan/SubscriptionDrawer";
 import axios from "../../api/axios";
 import { messageApi } from "../../utilities/antdStaticHolder";
-import { Select, Spin } from "antd";
+import { Select, Spin, Pagination } from "antd";
 import { getMediaUrl } from "../../components/DriverDetails/DriverDetails";
 
 
@@ -43,7 +43,35 @@ const Subscriptions: React.FC = () => {
   const [isDriverHistoryOpen, setIsDriverHistoryOpen] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState<any>(null);
   const [notifyingSubscribers, setNotifyingSubscribers] = useState(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [subscriptionTab, subSearchTerm, subFilter, billingCycleFilter, remainingDaysFilter]);
+
+  const filteredSubscriptions = useMemo(() => {
+    const list = subscriptionTab === "ACTIVE" ? activeSubscriptions : expiredSubscriptions;
+    return list.filter((s) => {
+      const matchesSearch =
+        s.driverName?.toLowerCase().includes(subSearchTerm.toLowerCase()) ||
+        s.driverPhone?.toLowerCase().includes(subSearchTerm.toLowerCase());
+      const matchesFilter =
+        subFilter === "ALL" ||
+        (s.planName && s.planName.toUpperCase().includes(subFilter));
+      const matchesBilling =
+        billingCycleFilter === "ALL" ||
+        (s.billingCycle && s.billingCycle.toUpperCase() === billingCycleFilter);
+      const daysLeft = Math.ceil(
+        (new Date(s.expiryDate).getTime() - new Date().getTime()) /
+          (1000 * 60 * 60 * 24),
+      );
+      const matchesDaysLeft =
+        remainingDaysFilter === "" ||
+        daysLeft === parseInt(remainingDaysFilter, 10);
+      return matchesSearch && matchesFilter && matchesBilling && matchesDaysLeft;
+    });
+  }, [subscriptionTab, activeSubscriptions, expiredSubscriptions, subSearchTerm, subFilter, billingCycleFilter, remainingDaysFilter]);
 
   useEffect(() => {
     fetchSubscriptionStats();
@@ -209,15 +237,15 @@ const Subscriptions: React.FC = () => {
         {/* Sidebar Header */}
         <div className="p-6 border-b border-slate-100 dark:border-slate-700/50">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+            <div className="w-18 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
               <Zap size={20} />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                Subscription
+              <h2 className="text-lg text-slate-1000 dark:text-slate-200  tracking-wider">
+                <b>Subscription</b>
               </h2>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">
-                Management
+              <p className="text-[11px] text-slate-500 font-medium mt-1 leading-snug">
+                Monitor active subscriptions and manage plan renewals
               </p>
             </div>
           </div>
@@ -312,7 +340,7 @@ const Subscriptions: React.FC = () => {
               </div>
               <button
                 onClick={fetchActiveSubscriptions}
-                className="p-1.5 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-md transition-colors"
+                className="p-1.5 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-md transition-colors"
                 title="Sync Data"
               >
                 <Zap size={14} />
@@ -324,28 +352,28 @@ const Subscriptions: React.FC = () => {
               <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Today</span>
                 <div className="text-sm font-black text-slate-900 dark:text-slate-100">{subStats?.today_count || 0}</div>
-                <div className="text-[10px] font-bold text-indigo-600 mt-0.5">₹{Number(subStats?.today_amount || 0).toLocaleString()}</div>
+                <div className="text-[12px] font-black text-emerald-600 dark:text-emerald-500 mt-0.5">₹{Number(subStats?.today_amount || 0).toLocaleString()}</div>
               </div>
 
               {/* Week Segment */}
               <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">This Week</span>
                 <div className="text-sm font-black text-slate-900 dark:text-slate-100">{subStats?.week_count || 0}</div>
-                <div className="text-[10px] font-bold text-emerald-600 mt-0.5">₹{Number(subStats?.week_amount || 0).toLocaleString()}</div>
+                <div className="text-[12px] font-black text-emerald-600 dark:text-emerald-500 mt-0.5">₹{Number(subStats?.week_amount || 0).toLocaleString()}</div>
               </div>
 
               {/* Month Segment */}
               <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">This Month</span>
                 <div className="text-sm font-black text-slate-900 dark:text-slate-100">{subStats?.month_count || 0}</div>
-                <div className="text-[10px] font-bold text-purple-600 mt-0.5">₹{Number(subStats?.month_amount || 0).toLocaleString()}</div>
+                <div className="text-[12px] font-black text-emerald-600 dark:text-emerald-500 mt-0.5">₹{Number(subStats?.month_amount || 0).toLocaleString()}</div>
               </div>
 
               {/* Lifetime Segment */}
               <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1">Lifetime</span>
                 <div className="text-sm font-black text-slate-900 dark:text-slate-100">{subStats?.lifetime_count || 0}</div>
-                <div className="text-[10px] font-bold text-amber-600 mt-0.5">₹{Number(subStats?.lifetime_amount || 0).toLocaleString()}</div>
+                <div className="text-[12px] font-black text-emerald-600 dark:text-emerald-500 mt-0.5">₹{Number(subStats?.lifetime_amount || 0).toLocaleString()}</div>
               </div>
             </div>
           </div>
@@ -355,13 +383,13 @@ const Subscriptions: React.FC = () => {
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col overflow-hidden relative bg-white dark:bg-[#0b0f19]">
         {/* Top Header Strip */}
-        <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 shadow-sm z-0">
-          <div className="relative flex-1 max-w-3xl flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
-            <Search className="absolute left-3 text-slate-400" size={16} />
+        <div className="bg-white dark:bg-slate-800 px-6 py-2.5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 shadow-sm z-0 flex-shrink-0">
+          <div className="relative flex-1 max-w-3xl flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
+            <Search className="absolute left-3 text-slate-400" size={14} />
             <input
               type="text"
               placeholder="Search drivers..."
-              className="w-full pl-10 pr-4 py-2 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
+              className="w-full pl-9 pr-4 py-1 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
               value={subSearchTerm}
               onChange={(e) => setSubSearchTerm(e.target.value)}
             />
@@ -373,19 +401,21 @@ const Subscriptions: React.FC = () => {
                 {subscriptionTab === "ACTIVE" ? activeSubscriptions.length : expiredSubscriptions.length} RESULTS
               </span>
             </div>
-            <span className="text-[11px] font-black tracking-widest uppercase text-indigo-600 dark:text-indigo-400 mr-2">SUBSCRIPTION TRACKING</span>
+            <span className="text-[11px] font-black tracking-widest uppercase text-blue-600 dark:text-blue-400 mr-2">SUBSCRIPTION TRACKING</span>
           </div>
         </div>
 
-        {/* Content Scrollable Area */}
-        <div className="flex-1 overflow-y-auto p-6">
+        {/* Outer wrapper for scrollable content and sticky footer */}
+        <div className="flex-grow flex flex-col min-w-0 relative h-full">
+          {/* Content Scrollable Area */}
+          <div className="flex-grow overflow-y-auto px-6 py-4 bg-white dark:bg-slate-900 flex flex-col gap-4 pb-20 custom-scrollbar">
           {/* Stats Cards */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-4 gap-2">
             {/* 1. Total Subs */}
-            <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
+            <div className="bg-white dark:bg-slate-900 px-5 pt-2 pb-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[90px]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 flex items-center justify-center text-base bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                  <div className="w-8 h-8 flex items-center justify-center text-base bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400">
                     <Users size={14} />
                   </div>
                   <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">TOTAL SUBS</p>
@@ -398,13 +428,13 @@ const Subscriptions: React.FC = () => {
                     <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">LIFETIME</span>
                   </div>
                 </div>
-                <div className="w-24 h-10 mb-[-5px]">
+                <div className="w-20 h-8 mb-[-2px]">
                   <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
-                    <path d="M0,40 L10,30 L20,35 L40,10 L60,25 L80,5 L100,20" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M0,40 L10,30 L20,35 L40,10 L60,25 L80,5 L100,20 L100,40 Z" fill="url(#gradient-indigo)" opacity="0.1" />
+                    <path d="M0,40 L10,30 L20,35 L40,10 L60,25 L80,5 L100,20" fill="none" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M0,40 L10,30 L20,35 L40,10 L60,25 L80,5 L100,20 L100,40 Z" fill="url(#gradient-blue)" opacity="0.1" />
                     <defs>
-                      <linearGradient id="gradient-indigo" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="#6366f1" />
+                      <linearGradient id="gradient-blue" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#3b82f6" />
                         <stop offset="100%" stopColor="transparent" />
                       </linearGradient>
                     </defs>
@@ -414,7 +444,7 @@ const Subscriptions: React.FC = () => {
             </div>
             
             {/* 2. Active Subs */}
-            <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
+            <div className="bg-white dark:bg-slate-900 px-5 pt-2 pb-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[90px]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 flex items-center justify-center text-base bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 dark:text-emerald-400">
@@ -430,7 +460,7 @@ const Subscriptions: React.FC = () => {
                     <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">LIVE</span>
                   </div>
                 </div>
-                <div className="w-24 h-10 mb-[-5px]">
+                <div className="w-20 h-8 mb-[-2px]">
                   <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
                     <path d="M0,40 L20,35 L40,20 L60,25 L80,10 L100,5" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
                     <path d="M0,40 L20,35 L40,20 L60,25 L80,10 L100,5 L100,40 Z" fill="url(#gradient-emerald)" opacity="0.1" />
@@ -446,10 +476,10 @@ const Subscriptions: React.FC = () => {
             </div>
 
             {/* 3. Expired Subs */}
-            <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
+            <div className="bg-white dark:bg-slate-900 px-5 pt-2 pb-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[90px]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 flex items-center justify-center text-base bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400">
+                  <div className="w-8 h-8 flex items-center justify-center text-base bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400">
                     <Power size={14} />
                   </div>
                   <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">EXPIRED</p>
@@ -462,13 +492,13 @@ const Subscriptions: React.FC = () => {
                     <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">ENDED</span>
                   </div>
                 </div>
-                <div className="w-24 h-10 mb-[-5px]">
+                <div className="w-20 h-8 mb-[-2px]">
                   <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
-                    <path d="M0,40 L10,25 L30,30 L50,15 L70,20 L90,5 L100,10" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M0,40 L10,25 L30,30 L50,15 L70,20 L90,5 L100,10 L100,40 Z" fill="url(#gradient-amber)" opacity="0.1" />
+                    <path d="M0,40 L10,25 L30,30 L50,15 L70,20 L90,5 L100,10" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M0,40 L10,25 L30,30 L50,15 L70,20 L90,5 L100,10 L100,40 Z" fill="url(#gradient-red)" opacity="0.1" />
                     <defs>
-                      <linearGradient id="gradient-amber" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="#f59e0b" />
+                      <linearGradient id="gradient-red" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#ef4444" />
                         <stop offset="100%" stopColor="transparent" />
                       </linearGradient>
                     </defs>
@@ -478,10 +508,10 @@ const Subscriptions: React.FC = () => {
             </div>
 
             {/* 4. Today Subs */}
-            <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
+            <div className="bg-white dark:bg-slate-900 px-5 pt-2 pb-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[90px]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 flex items-center justify-center text-base bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400">
+                  <div className="w-8 h-8 flex items-center justify-center text-base bg-slate-100 dark:bg-slate-500/20 text-slate-500 dark:text-slate-400">
                     <Activity size={14} />
                   </div>
                   <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">TODAY</p>
@@ -494,13 +524,13 @@ const Subscriptions: React.FC = () => {
                     <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">NEW TODAY</span>
                   </div>
                 </div>
-                <div className="w-24 h-10 mb-[-5px]">
+                <div className="w-20 h-8 mb-[-2px]">
                   <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
-                    <path d="M0,40 L20,38 L40,35 L60,32 L80,30 L100,28" fill="none" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M0,40 L20,38 L40,35 L60,32 L80,30 L100,28 L100,40 Z" fill="url(#gradient-rose)" opacity="0.1" />
+                    <path d="M0,40 L20,38 L40,35 L60,32 L80,30 L100,28" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" />
+                    <path d="M0,40 L20,38 L40,35 L60,32 L80,30 L100,28 L100,40 Z" fill="url(#gradient-slate)" opacity="0.1" />
                     <defs>
-                      <linearGradient id="gradient-rose" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="#f43f5e" />
+                      <linearGradient id="gradient-slate" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#64748b" />
                         <stop offset="100%" stopColor="transparent" />
                       </linearGradient>
                     </defs>
@@ -510,19 +540,19 @@ const Subscriptions: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 overflow-hidden rounded-none shadow-sm">
-            <div className="px-5 py-4 border-b border-gray-50 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-800">
+          <div className="bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 overflow-hidden rounded-none">
+            <div className="px-5 py-2.5 border-b border-gray-50 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-800">
               <div className="flex items-center gap-3">
-                <div className="p-1 px-2.5 bg-indigo-50 text-indigo-500 rounded-lg font-outfit text-xs font-extrabold tracking-tighter">
+                <div className="py-0.5 px-2 bg-blue-50 text-blue-500 rounded-md font-outfit text-[10px] font-extrabold tracking-tighter">
                   LIVE FEED
                 </div>
                 <div className="h-4 w-px bg-gray-100 dark:bg-slate-600"></div>
-                <div className="flex items-center bg-slate-50 dark:bg-slate-900/50 p-1 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                <div className="flex items-center bg-slate-50 dark:bg-slate-900/50 p-0.5 rounded-md border border-slate-100 dark:border-slate-700/50">
                   <button
                     onClick={() => setSubscriptionTab("ACTIVE")}
-                    className={`px-4 py-1.5 rounded-md text-[11px] font-black uppercase tracking-widest transition-all ${
+                    className={`px-3 py-1.5 rounded text-sm font-bold transition-all ${
                       subscriptionTab === "ACTIVE"
-                        ? "bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200 dark:border-slate-700"
+                        ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm border border-slate-200 dark:border-slate-700"
                         : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 border border-transparent"
                     }`}
                   >
@@ -530,7 +560,7 @@ const Subscriptions: React.FC = () => {
                   </button>
                   <button
                     onClick={() => setSubscriptionTab("EXPIRED")}
-                    className={`px-4 py-1.5 rounded-md text-[11px] font-black uppercase tracking-widest transition-all ${
+                    className={`px-3 py-1.5 rounded text-sm font-bold transition-all ${
                       subscriptionTab === "EXPIRED"
                         ? "bg-white dark:bg-slate-800 text-rose-500 shadow-sm border border-slate-200 dark:border-slate-700"
                         : "text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 border border-transparent"
@@ -544,7 +574,7 @@ const Subscriptions: React.FC = () => {
               <button
                 onClick={handleNotifyExpiring}
                 disabled={notifyingSubscribers}
-                className="flex items-center gap-2 px-4 h-[32px] rounded-lg text-[12px] font-bold bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all active:scale-95 disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 h-[28px] rounded-md text-[11px] font-bold bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-700 transition-all active:scale-95 disabled:opacity-50"
               >
                 {notifyingSubscribers ? (
                   <Spin size="small" />
@@ -562,28 +592,28 @@ const Subscriptions: React.FC = () => {
               <table className="w-full text-left border-collapse">
                 <thead className="border-b border-gray-100 dark:border-slate-700/60">
                   <tr className="bg-transparent">
-                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent whitespace-nowrap">
                       Driver Identity
                     </th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent whitespace-nowrap">
                       Communication
                     </th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent whitespace-nowrap">
                       Driver ID
                     </th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent whitespace-nowrap">
                       Plan Config
                     </th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent whitespace-nowrap">
                       Plan Amount
                     </th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent whitespace-nowrap">
                       Billing Cycle
                     </th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent whitespace-nowrap">
                       Timeline Progress
                     </th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent border-l border-gray-100 dark:border-slate-700/60 text-center w-24">
+                    <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent border-l border-gray-100 dark:border-slate-700/60 text-center w-24 whitespace-nowrap">
                       Actions
                     </th>
                   </tr>
@@ -597,48 +627,9 @@ const Subscriptions: React.FC = () => {
                         </td>
                       </tr>
                     ))
-                  ) : (subscriptionTab === "ACTIVE"
-                      ? activeSubscriptions
-                      : expiredSubscriptions
-                    ).filter((s) => {
-                      const matchesSearch =
-                        s.driverName?.toLowerCase().includes(subSearchTerm.toLowerCase()) ||
-                        s.driverPhone?.toLowerCase().includes(subSearchTerm.toLowerCase());
-                      const matchesFilter =
-                        subFilter === "ALL" ||
-                        (s.planName && s.planName.toUpperCase().includes(subFilter));
-                      const matchesBilling =
-                        billingCycleFilter === "ALL" ||
-                        (s.billingCycle && s.billingCycle.toUpperCase() === billingCycleFilter);
-                      const daysLeft = Math.ceil(
-                        (new Date(s.expiryDate).getTime() - new Date().getTime()) /
-                          (1000 * 60 * 60 * 24),
-                      );
-                      const matchesDaysLeft =
-                        remainingDaysFilter === "" ||
-                        daysLeft === parseInt(remainingDaysFilter, 10);
-                      return matchesSearch && matchesFilter && matchesBilling && matchesDaysLeft;
-                    }).length > 0 ? (
-                    (subscriptionTab === "ACTIVE" ? activeSubscriptions : expiredSubscriptions)
-                      .filter((s) => {
-                        const matchesSearch =
-                          s.driverName?.toLowerCase().includes(subSearchTerm.toLowerCase()) ||
-                          s.driverPhone?.toLowerCase().includes(subSearchTerm.toLowerCase());
-                        const matchesFilter =
-                          subFilter === "ALL" ||
-                          (s.planName && s.planName.toUpperCase().includes(subFilter));
-                        const matchesBilling =
-                          billingCycleFilter === "ALL" ||
-                          (s.billingCycle && s.billingCycle.toUpperCase() === billingCycleFilter);
-                        const daysLeft = Math.ceil(
-                          (new Date(s.expiryDate).getTime() - new Date().getTime()) /
-                            (1000 * 60 * 60 * 24),
-                        );
-                        const matchesDaysLeft =
-                          remainingDaysFilter === "" ||
-                          daysLeft === parseInt(remainingDaysFilter, 10);
-                        return matchesSearch && matchesFilter && matchesBilling && matchesDaysLeft;
-                      })
+                  ) : filteredSubscriptions.length > 0 ? (
+                    filteredSubscriptions
+                      .slice((currentPage - 1) * pageSize, currentPage * pageSize)
                       .map((sub: any) => {
                         const daysLeft = Math.ceil(
                           (new Date(sub.expiryDate).getTime() - new Date().getTime()) /
@@ -655,18 +646,8 @@ const Subscriptions: React.FC = () => {
                           Math.max(0, (daysElapsed / (totalDays || 1)) * 100),
                         );
 
-                        const planNameLower = sub.planName?.toLowerCase() || "";
                         let badgeClass =
-                          "bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20";
-                        if (planNameLower.includes("basic"))
-                          badgeClass =
-                            "bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-500/20";
-                        else if (planNameLower.includes("elite"))
-                          badgeClass =
-                            "bg-white dark:bg-slate-800 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-500/20";
-                        else if (planNameLower.includes("premium"))
-                          badgeClass =
-                            "bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20";
+                          "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20";
 
                         let tagText = "";
                         let tagClasses = "";
@@ -697,7 +678,7 @@ const Subscriptions: React.FC = () => {
                               className={`group bg-white dark:bg-slate-800 hover:bg-indigo-50/30 dark:hover:bg-slate-700/50 transition-colors cursor-pointer border-b border-gray-50 dark:border-slate-700/50`}
                               onClick={() => fetchDriverHistory(sub)}
                             >
-                              <td className="px-6 py-4">
+                              <td className="px-6 py-2 whitespace-nowrap">
                                 <div className="flex items-center gap-3">
                                   {sub.profilePicUrl ? (
                                     <div className="relative w-9 h-9">
@@ -735,7 +716,7 @@ const Subscriptions: React.FC = () => {
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4">
+                              <td className="px-6 py-2">
                                 <div className="flex flex-col gap-1.5">
                                   <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
                                     <Mail size={14} className="shrink-0" />
@@ -751,7 +732,7 @@ const Subscriptions: React.FC = () => {
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4">
+                              <td className="px-6 py-2">
                                 {sub.vdriveId ? (
                                   <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 uppercase tracking-widest font-black">
                                     {sub.vdriveId}
@@ -764,33 +745,28 @@ const Subscriptions: React.FC = () => {
                                   <span className="text-gray-400 dark:text-slate-500">---</span>
                                 )}
                               </td>
-                              <td className="px-6 py-4">
+                              <td className="px-6 py-2">
                                 <span
                                   className={`text-[11px] font-black px-3 py-1 rounded-full border uppercase tracking-widest ${badgeClass}`}
                                 >
                                   {sub.planName}
                                 </span>
                               </td>
-                              <td className="px-6 py-4 text-center">
-                                <div className="flex flex-col items-center">
-                                  <span className="text-[14px] font-black text-slate-800 dark:text-slate-200 tracking-tighter">
-                                    ₹{Number(sub.amountPaid || sub.price || 0).toLocaleString()}
-                                  </span>
-                                  <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
-                                    Paid Amount
-                                  </span>
-                                </div>
+                              <td className="px-6 py-2">
+                                <span className="text-[14px] font-black text-slate-800 dark:text-slate-200 tracking-tighter">
+                                  ₹{Number(sub.amountPaid || sub.price || 0).toLocaleString()}
+                                </span>
                               </td>
-                              <td className="px-6 py-4">
+                              <td className="px-6 py-2">
                                 <div className="flex flex-col items-start">
-                                  <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-500/20">
+                                  <span className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-500/20">
                                     {sub.billingCycle}
                                   </span>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 w-64">
-                                <div className="flex flex-col gap-2.5 w-full pr-4">
-                                  <div className="flex items-center gap-3 w-full">
+                              <td className="px-6 py-2 w-96 whitespace-nowrap">
+                                <div className="flex items-center gap-4 w-full pr-4">
+                                  <div className="flex items-center gap-3 w-48">
                                     <span className="text-[12px] font-black text-slate-800 dark:text-white whitespace-nowrap">
                                       {sub.startDate
                                         ? new Date(sub.startDate).toLocaleDateString("en-US", {
@@ -815,19 +791,19 @@ const Subscriptions: React.FC = () => {
                                     </span>
                                   </div>
 
-                                  <div className="flex items-center gap-3">
+                                  <div className="flex items-center gap-3 shrink-0">
                                     <div
                                       className={`px-2 py-0.5 rounded-md border text-[9px] font-black uppercase tracking-widest ${tagClasses}`}
                                     >
                                       {tagText}
                                     </div>
-                                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">
+                                    <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 whitespace-nowrap">
                                       {cycleStr}
                                     </span>
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 text-center border-l border-gray-100 dark:border-slate-700/60 w-24">
+                              <td className="px-6 py-2 text-center border-l border-gray-100 dark:border-slate-700/60 w-24">
                                 <button
                                   className="p-1.5 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                                   onClick={(e) => {
@@ -861,6 +837,27 @@ const Subscriptions: React.FC = () => {
                 </tbody>
               </table>
             </div>
+          </div>
+        </div>
+          
+        {/* Sticky Bottom Pagination Bar */}
+          <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800/80 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)] overflow-x-auto gap-4 custom-scrollbar">
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider whitespace-nowrap flex-shrink-0">
+              Showing {filteredSubscriptions.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}-{Math.min(currentPage * pageSize, filteredSubscriptions.length)} of {filteredSubscriptions.length} subscriptions
+            </span>
+            <Pagination
+              current={currentPage}
+              pageSize={pageSize}
+              total={filteredSubscriptions.length}
+              onChange={(page, size) => {
+                setCurrentPage(page);
+                setPageSize(size);
+              }}
+              showSizeChanger
+              pageSizeOptions={["10", "20", "50", "100"]}
+              size="small"
+              className="premium-pagination"
+            />
           </div>
         </div>
 
