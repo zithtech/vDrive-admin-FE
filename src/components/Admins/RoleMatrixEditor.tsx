@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Table, Checkbox, Button, Card, Input, Space, message, Select, Modal } from "antd";
 import { SaveOutlined, ReloadOutlined, PlusOutlined } from "@ant-design/icons";
 import axiosIns from "../../api/axios";
-
-import { VDRIVE_MODULES } from "../../config/permissions";
 
 interface PermissionRow {
   key: string;
@@ -17,14 +15,6 @@ interface PermissionRow {
   assign: boolean;
 }
 
-const SYSTEM_MODULES = Object.keys(VDRIVE_MODULES);
-
-const getSupportedActions = (modName: string): string[] => {
-  const modConfig = VDRIVE_MODULES[modName as keyof typeof VDRIVE_MODULES];
-  if (!modConfig) return [];
-  return modConfig.permissions.map((p) => p.split(".")[1]);
-};
-
 interface Role {
   id: number | string;
   name: string;
@@ -32,46 +22,6 @@ interface Role {
   is_system: boolean;
   role_type?: string;
 }
-
-// Memory/Local storage fallback for demonstration & robust operation
-const MOCK_ROLES: Role[] = [
-  { id: 1, name: "super_admin", description: "Complete system authority bypass", is_system: true },
-  { id: 2, name: "admin", description: "Platform level operation manager", is_system: true },
-  {
-    id: 3,
-    name: "support_agent",
-    description: "View only access with limited customer messaging",
-    is_system: false,
-  },
-];
-
-const MOCK_PERMISSIONS: Record<number | string, Record<string, Record<string, boolean>>> = {
-  1: SYSTEM_MODULES.reduce((acc, mod) => {
-    acc[mod] = { create: true, read: true, update: true, delete: true };
-    return acc;
-  }, {} as any),
-  2: {
-    dashboard: { create: false, read: true, update: false, delete: false },
-    customers: { create: true, read: true, update: true, delete: false },
-    drivers: { create: true, read: true, update: true, delete: false },
-    admins: { create: false, read: false, update: false, delete: false },
-    pricing: { create: false, read: true, update: false, delete: false },
-    deductions: { create: false, read: true, update: false, delete: false },
-    recharge: { create: false, read: true, update: false, delete: false },
-    taxes: { create: false, read: true, update: false, delete: false },
-    coupons: { create: true, read: true, update: true, delete: false },
-    notifications: { create: true, read: true, update: false, delete: false },
-  },
-  3: SYSTEM_MODULES.reduce((acc, mod) => {
-    acc[mod] = {
-      create: false,
-      read: mod === "customers" || mod === "drivers" || mod === "dashboard",
-      update: false,
-      delete: false,
-    };
-    return acc;
-  }, {} as any),
-};
 
 interface RoleMatrixEditorProps {
   height?: number;
@@ -82,13 +32,39 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
   const [selectedRoleId, setSelectedRoleId] = useState<number | string | null>(null);
   const [loading, setLoading] = useState(false);
   const [matrix, setMatrix] = useState<Record<string, Record<string, boolean>>>({});
+  const [catalog, setCatalog] = useState<{ module: string; actions: string[] }[]>([]);
 
   const selectedRole = roles.find((r) => r.id === selectedRoleId);
+
+  // The grid is driven entirely by the DB permission catalog (single source of
+  // truth) — new permissions appear automatically with no config edits here.
+  const systemModules = useMemo(() => catalog.map((c) => c.module), [catalog]);
+  const actionsByModule = useMemo(() => {
+    const map: Record<string, string[]> = {};
+    for (const c of catalog) map[c.module] = c.actions;
+    return map;
+  }, [catalog]);
+  const getSupportedActions = (modName: string): string[] => actionsByModule[modName] ?? [];
 
   // New role inputs
   const [newRoleName, setNewRoleName] = useState("");
   const [newRoleDesc, setNewRoleDesc] = useState("");
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const fetchCatalog = async () => {
+    try {
+      const response = await axiosIns.get("/api/roles/catalog");
+      if (response.data && response.data.success) {
+        setCatalog(response.data.data);
+      } else {
+        throw new Error("Unexpected /api/roles/catalog response");
+      }
+    } catch (err) {
+      console.error("Failed to load permission catalog:", err);
+      setCatalog([]);
+      message.error("Could not load the permission catalog. The matrix is unavailable.");
+    }
+  };
 
   const fetchRoles = async () => {
     try {
@@ -99,17 +75,13 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
           setSelectedRoleId(response.data.data[0].id);
         }
       } else {
-        throw new Error();
+        throw new Error("Unexpected /api/roles response");
       }
     } catch (err) {
-      // Fallback
-      console.log("Roles Endpoint not available yet. Using in-memory fallback.");
-      const saved = localStorage.getItem("vdrive_custom_roles");
-      const loadedRoles = saved ? JSON.parse(saved) : MOCK_ROLES;
-      setRoles(loadedRoles);
-      if (loadedRoles.length > 0 && !selectedRoleId) {
-        setSelectedRoleId(loadedRoles[0].id);
-      }
+      // Fail safe — never fabricate roles (placeholder ids corrupt admin_users.role_id).
+      console.error("Failed to load roles:", err);
+      setRoles([]);
+      message.error("Could not load roles.");
     }
   };
 
@@ -120,33 +92,20 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
       if (response.data && response.data.success) {
         setMatrix(response.data.data.permissions);
       } else {
-        throw new Error();
+        throw new Error("Unexpected response");
       }
     } catch (err) {
-      // Fallback
-      const storageKey = `vdrive_role_perms_${roleId}`;
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        setMatrix(JSON.parse(saved));
-      } else {
-        setMatrix(
-          MOCK_PERMISSIONS[roleId] ||
-            SYSTEM_MODULES.reduce((acc, mod) => {
-              const modAcc: Record<string, boolean> = {};
-              for (const action of getSupportedActions(mod)) {
-                modAcc[action] = false;
-              }
-              acc[mod] = modAcc;
-              return acc;
-            }, {} as any),
-        );
-      }
+      // Fail safe — show nothing rather than fabricated/cached permissions.
+      console.error("Failed to load role permissions:", err);
+      setMatrix({});
+      message.error("Could not load this role's permissions.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    fetchCatalog();
     fetchRoles();
   }, []);
 
@@ -173,7 +132,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
   const handleSavePermissions = async () => {
     if (!selectedRoleId) return;
     setLoading(true);
-    const payload = SYSTEM_MODULES.map((moduleName) => {
+    const payload = systemModules.map((moduleName) => {
       const actionsObj = matrix[moduleName] || {};
       const activeActions = Object.keys(actionsObj).filter(
         (act) => actionsObj[act] && getSupportedActions(moduleName).includes(act),
@@ -189,15 +148,14 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
         permissions: payload,
       });
       if (res.data && res.data.success) {
-        message.success("Role permissions updated successfully on servers!");
+        message.success("Role permissions updated successfully.");
       } else {
-        throw new Error();
+        throw new Error("Unexpected response");
       }
     } catch (err) {
-      // Fallback to saving in LocalStorage
-      const storageKey = `vdrive_role_perms_${selectedRoleId}`;
-      localStorage.setItem(storageKey, JSON.stringify(matrix));
-      message.success("Role permissions updated in secure client cache!");
+      // Fail safe — do not pretend a server save succeeded via local cache.
+      console.error("Failed to save role permissions:", err);
+      message.error("Failed to save role permissions. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -222,38 +180,12 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
         fetchRoles();
         setSelectedRoleId(response.data.data.id);
       } else {
-        throw new Error();
+        throw new Error("Unexpected response");
       }
     } catch (err) {
-      // Fallback role creation
-      const nextId =
-        Math.max(...roles.map((r) => (typeof r.id === "number" ? r.id : Number(r.id) || 0)), 0) + 1;
-      const newRole: Role = {
-        id: nextId,
-        name: cleanName,
-        description: newRoleDesc || "Custom Admin Role",
-        is_system: false,
-      };
-      const updatedRoles = [...roles, newRole];
-      setRoles(updatedRoles);
-      localStorage.setItem("vdrive_custom_roles", JSON.stringify(updatedRoles));
-
-      // Initialize matching blank permissions for this custom role
-      const initialPerms = SYSTEM_MODULES.reduce((acc, mod) => {
-        const modAcc: Record<string, boolean> = {};
-        for (const action of getSupportedActions(mod)) {
-          modAcc[action] = false;
-        }
-        acc[mod] = modAcc;
-        return acc;
-      }, {} as any);
-      localStorage.setItem(`vdrive_role_perms_${nextId}`, JSON.stringify(initialPerms));
-
-      message.success("New role created in local configuration! Set permissions below.");
-      setNewRoleName("");
-      setNewRoleDesc("");
-      setIsCreateModalOpen(false);
-      setSelectedRoleId(nextId);
+      // Fail safe — never fabricate a role with a placeholder id locally.
+      console.error("Failed to create role:", err);
+      message.error("Failed to create role. Please try again.");
     }
   };
 
@@ -264,16 +196,11 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
         message.success("Role type updated successfully!");
         fetchRoles();
       } else {
-        throw new Error();
+        throw new Error("Unexpected response");
       }
     } catch (err) {
-      // Local fallback
-      const updatedRoles = roles.map((r) =>
-        r.id === roleId ? { ...r, is_system: roleType === "system", role_type: roleType } : r,
-      );
-      setRoles(updatedRoles);
-      localStorage.setItem("vdrive_custom_roles", JSON.stringify(updatedRoles));
-      message.success("Role type updated in client cache!");
+      console.error("Failed to update role type:", err);
+      message.error("Failed to update role type. Please try again.");
     }
   };
 
@@ -297,7 +224,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
   const getModulesSupportingAction = (
     action: "read" | "create" | "update" | "delete" | "manage" | "verify" | "assign",
   ) => {
-    return SYSTEM_MODULES.filter((mod) => getSupportedActions(mod).includes(action));
+    return systemModules.filter((mod) => getSupportedActions(mod).includes(action));
   };
 
   const isAllChecked = (
@@ -356,7 +283,9 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
       title: "Module Name",
       dataIndex: "module",
       key: "module",
-      render: (text: string) => <strong className="capitalize text-slate-700">{text}</strong>,
+      render: (text: string) => (
+        <strong className="capitalize text-slate-700">{text.replace(/_/g, " ")}</strong>
+      ),
     },
     {
       title: renderHeaderCheckbox("read", "Read (View)"),
@@ -395,7 +324,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
     },
   ];
 
-  const tableData: PermissionRow[] = SYSTEM_MODULES.map((modName) => {
+  const tableData: PermissionRow[] = systemModules.map((modName) => {
     const modObj = matrix[modName] || {};
     return {
       key: modName,

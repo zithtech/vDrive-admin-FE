@@ -6,15 +6,11 @@ import { Moon, UserPlus, ShieldCheck, Headphones } from "lucide-react";
 import {
   // TeamOutlined,
   UserOutlined,
-  HomeOutlined,
   LogoutOutlined,
-  DollarOutlined,
   MenuOutlined,
   EnvironmentOutlined,
   ArrowRightOutlined,
-  TableOutlined,
   CheckCircleOutlined,
-  BellOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   // CustomerServiceOutlined,
@@ -25,119 +21,27 @@ import logo from "/90.png";
 import {
   createBrowserRouter,
   RouterProvider,
-  Link,
   useLocation,
   useNavigate,
   Outlet,
-  Navigate,
 } from "react-router-dom";
-import { PiSteeringWheel } from "react-icons/pi";
-import { RiAdminLine, RiQuestionLine } from "react-icons/ri";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import { logoutAsync, fetchCurrentUser } from "./store/slices/authSlice";
 import FullScreenLoader from "./components/FullScreenLoader";
 import ErrorBoundary from "./components/ErrorBoundary";
-import DashBoard from "./pages/DashBoard";
-import { MdOutlineMoneyOff } from "react-icons/md";
 import { AntdStaticHolder, notificationApi } from "./utilities/antdStaticHolder";
 import { useSocket } from "./hooks/useSocket";
 import { notification } from "antd";
 import { useAdminTripAlert } from "./hooks/useAdminTripAlert";
 import { useUserAlert } from "./hooks/useUserAlert";
 import { useTripVerificationAlert } from "./hooks/useTripVerificationAlert";
-import {
-  // IoReceiptOutline,
-  IoCarOutline,
-} from "react-icons/io5";
-import { MdOutlineAccountBalanceWallet } from "react-icons/md";
 import SosMonitor from "./components/SosMonitor/SosMonitor";
 import { useTheme } from "./contexts/ThemeContext";
-import { useModuleAccess } from "./hooks/usePermission";
-import { ModuleProtectedRoute } from "./components/ModuleProtectedRoute";
+import { hasModuleAccess } from "./hooks/usePermission";
+import { MODULE_REGISTRY, buildModuleRoutes } from "./config/moduleRegistry";
+import RouteLoadingFallback from "./components/RouteLoadingFallback";
 
-// Loading component for route suspense
-const RouteLoadingFallback = () => (
-  <div
-    style={{
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      minHeight: "400px",
-      padding: "20px",
-    }}
-  >
-    <div
-      className="loader"
-      style={{
-        border: "6px solid #f3f3f3",
-        borderTop: "6px solid #1677ff",
-        borderRadius: "50%",
-        width: 40,
-        height: 40,
-        animation: "spin 1s linear infinite",
-      }}
-    />
-    <p style={{ marginTop: 16, color: "#666" }}>Loading...</p>
-    <style>
-      {`
-@keyframes spin {
-0% { transform: rotate(0deg); }
-100% { transform: rotate(360deg); }
-}
-`}
-    </style>
-  </div>
-);
 
-// Lazy load heavy components for better bundle splitting
-const Users = lazy(() => import("./pages/Users"));
-const Customers = lazy(
-  () => import("./pages/Customers") as Promise<{ default: React.ComponentType<any> }>,
-);
-const Admins = lazy(
-  () => import("./pages/Admins") as Promise<{ default: React.ComponentType<any> }>,
-);
-const InvoiceTemplates = lazy(
-  () => import("./pages/InvoiceTemplates") as Promise<{ default: React.ComponentType<any> }>,
-);
-const TripDetails = lazy(
-  () => import("./pages/TripDetails") as Promise<{ default: React.ComponentType<any> }>,
-);
-const Drivers = lazy(
-  () => import("./pages/Drivers") as Promise<{ default: React.ComponentType<any> }>,
-);
-const DriverApplications = lazy(
-  () => import("./pages/DriverApplications") as Promise<{ default: React.ComponentType<any> }>,
-);
-const DriverPricing = lazy(
-  () => import("./pages/DriverPricing") as Promise<{ default: React.ComponentType<any> }>,
-);
-const PricingAndFareRules = lazy(
-  () => import("./pages/Pricing&FareRules") as Promise<{ default: React.ComponentType<any> }>,
-);
-const Deductions = lazy(
-  () => import("./pages/Deductions") as Promise<{ default: React.ComponentType<any> }>,
-);
-const RechargeLayout = lazy(
-  () => import("./pages/RechargePlans/RechargeLayout") as Promise<{ default: React.ComponentType<any> }>,
-);
-const ManagePlans = lazy(
-  () => import("./pages/RechargePlans/ManagePlans") as Promise<{ default: React.ComponentType<any> }>,
-);
-const Subscriptions = lazy(
-  () => import("./pages/RechargePlans/Subscriptions") as Promise<{ default: React.ComponentType<any> }>,
-);
-const SubscriptionOffers = lazy(
-  () => import("./pages/Promotions") as Promise<{ default: React.ComponentType<any> }>,
-);
-const PaymentHistory = lazy(
-  () => import("./pages/PaymentHistory") as Promise<{ default: React.ComponentType<any> }>,
-);
-const TripTransactions = lazy(
-  () => import("./pages/TripTransactions") as Promise<{ default: React.ComponentType<any> }>,
-);
-const Tax = lazy(() => import("./pages/Tax") as Promise<{ default: React.ComponentType<any> }>);
 const SignUp = lazy(
   () => import("./signup/Signup") as Promise<{ default: React.ComponentType<any> }>,
 );
@@ -145,21 +49,6 @@ const Login = lazy(() => import("./login/Login") as Promise<{ default: React.Com
 const ResetPassword = lazy(
   () => import("./login/ResetPassword") as Promise<{ default: React.ComponentType<any> }>,
 );
-const PricingCombinations = lazy(
-  () => import("./pages/PricingCombinations") as Promise<{ default: React.ComponentType<any> }>,
-);
-const Coupons = lazy(
-  () => import("./pages/Coupons") as Promise<{ default: React.ComponentType<any> }>,
-);
-const DriverReconciliation = lazy(
-  () => import("./pages/DriverReconciliation") as Promise<{ default: React.ComponentType<any> }>,
-);
-const TripVerifications = lazy(
-  () => import("./pages/TripVerifications") as Promise<{ default: React.ComponentType<any> }>,
-);
-const Notifications = lazy(() => import("./pages/Notifications"));
-const SupportTickets = lazy(() => import("./pages/SupportTickets"));
-const SupportAnalytics = lazy(() => import("./pages/SupportAnalytics"));
 
 const { Content, Sider, Header } = Layout;
 
@@ -249,30 +138,6 @@ const RootLayout: React.FC = () => {
     if (isAuthenticated) fetchCounts();
   }, [isAuthenticated]);
 
-  const dashboardAccess = useModuleAccess("dashboard");
-  const customersAccess = useModuleAccess("customers");
-  const pricingAccess = useModuleAccess("pricing");
-  const driversAccess = useModuleAccess("drivers");
-  const driverOutreachAccess = useModuleAccess("drivers_outreach");
-  const adminsAccess = useModuleAccess("admins");
-  const deductionsAccess = useModuleAccess("deductions");
-  const rechargePlanAccess = useModuleAccess("recharge");
-  const taxesAccess = useModuleAccess("taxes");
-  const couponsAccess = useModuleAccess([
-    "coupons",
-    "promos",
-    "user_referrals",
-    "driver_referrals",
-  ]);
-  // const promotionsAccess = useModuleAccess("promos");
-  const notificationsAccess = useModuleAccess("notifications");
-  const tripsAccess = useModuleAccess("trips");
-  const tripTransactionAccess = useModuleAccess("trip_transaction");
-  // Trip verification is enforced under the `trips` module (no separate DB module).
-  const tripverificationAccess = useModuleAccess("trips");
-  const supportTicketsAccess = useModuleAccess("support_tickets");
-  // Support analytics is enforced under the `support_tickets` module.
-  const supportAnalyticsAccess = useModuleAccess("support_tickets");
 
   useEffect(() => {
     if (isAuthenticated && !currentUser) {
@@ -596,168 +461,14 @@ const RootLayout: React.FC = () => {
     }
   };
 
-  const menuItems = React.useMemo(() => {
-    const items: MenuProps["items"] = [];
-
-    if (dashboardAccess) {
-      items.push({ label: <Link to="/">Dashboard</Link>, key: "/", icon: <HomeOutlined /> });
-    }
-    if (customersAccess) {
-      items.push({
-        label: <Link to="/customers">Customers</Link>,
-        key: "/customers",
-        icon: <UserOutlined />,
-      });
-    }
-    if (pricingAccess) {
-      items.push({
-        label: <Link to="/PricingAndFareRules">Pricing And Fare Rules</Link>,
-        key: "/PricingAndFareRules",
-        icon: <DollarOutlined />,
-      });
-    }
-    if (driversAccess) {
-      items.push({
-        label: <Link to="/drivers">Drivers</Link>,
-        key: "/drivers",
-        icon: <PiSteeringWheel />,
-      });
-      items.push({
-        label: <Link to="/driver-applications">Driver Applications</Link>,
-        key: "/driver-applications",
-        icon: <CheckCircleOutlined />,
-      });
-    }
-    if (driverOutreachAccess) {
-      items.push({
-        label: <Link to="/driver-reconciliation">Driver Outreach</Link>,
-        key: "/driver-reconciliation",
-        icon: <TableOutlined />,
-      });
-    }
-    if (adminsAccess) {
-      items.push({
-        label: <Link to="/admins">Admins</Link>,
-        key: "/admins",
-        icon: <RiAdminLine />,
-      });
-    }
-
-    // Core functional tools available to authorized members
-    if (tripsAccess) {
-      items.push({
-        label: <Link to="/TripDetails">Trip Details</Link>,
-        key: "/TripDetails",
-        icon: <IoCarOutline />,
-      });
-    }
-    if (tripTransactionAccess) {
-      items.push({
-        label: <Link to="/trip-transactions">Trip Transactions</Link>,
-        key: "/trip-transactions",
-        icon: <EnvironmentOutlined />,
-      });
-    }
-
-    if (tripverificationAccess) {
-      items.push({
-        label: <Link to="/trip-verifications">Trip Verifications</Link>,
-        key: "/trip-verifications",
-        icon: <CheckCircleOutlined />,
-      });
-    }
-    if (deductionsAccess) {
-      items.push({
-        label: <Link to="/Deductions">Deduction Management</Link>,
-        key: "/Deductions",
-        icon: <MdOutlineMoneyOff />,
-      });
-    }
-    if (rechargePlanAccess) {
-      items.push({
-        label: "Recharge Plans",
-        key: "/recharge-plans",
-        icon: <MdOutlineAccountBalanceWallet />,
-        children: [
-          {
-            label: <Link to="/recharge-plans/manage">Manage Plans</Link>,
-            key: "/recharge-plans/manage",
-          },
-          {
-            label: <Link to="/recharge-plans/subscriptions">Subscriptions</Link>,
-            key: "/recharge-plans/subscriptions",
-          },
-          {
-            label: <Link to="/recharge-plans/offers">Offers</Link>,
-            key: "/recharge-plans/offers",
-          },
-          {
-            label: <Link to="/recharge-plans/payments">Payment History</Link>,
-            key: "/recharge-plans/payments",
-          },
-        ]
-      });
-    }
-    if (taxesAccess) {
-      items.push({
-        label: <Link to="/taxes">Tax Management</Link>,
-        key: "/taxes",
-        icon: <DollarOutlined />,
-      });
-    }
-    if (couponsAccess) {
-      items.push({
-        label: <Link to="/coupons">Coupons</Link>,
-        key: "/coupons",
-        icon: <DollarOutlined />,
-      });
-    }
-    // if (promotionsAccess) {
-    //   items.push({ label: <Link to="/promotions">Promotions</Link>, key: "/promotions", icon: <Ticket /> });
-    // }
-    if (notificationsAccess) {
-      items.push({
-        label: <Link to="/notifications">Notifications</Link>,
-        key: "/notifications",
-        icon: <BellOutlined />,
-      });
-    }
-
-    if (supportTicketsAccess) {
-      items.push({
-        label: <Link to="/support-tickets">Support Tickets</Link>,
-        key: "/support-tickets",
-        icon: <RiQuestionLine />,
-      });
-    }
-    if (supportAnalyticsAccess) {
-      items.push({
-        label: <Link to="/support-analytics">Support Analytics</Link>,
-        key: "/support-analytics",
-        icon: <RiQuestionLine />,
-      });
-    }
-
-    return items;
-  }, [
-    dashboardAccess,
-    customersAccess,
-    pricingAccess,
-    driversAccess,
-    driverOutreachAccess,
-    adminsAccess,
-    deductionsAccess,
-    rechargePlanAccess,
-    taxesAccess,
-    couponsAccess,
-    // promotionsAccess,
-    notificationsAccess,
-    tripsAccess,
-    tripTransactionAccess,
-    tripverificationAccess,
-    supportTicketsAccess,
-    supportAnalyticsAccess,
-  ]);
+  // Sidebar items are derived from the module registry — one place to add a page.
+  const menuItems = React.useMemo<MenuProps["items"]>(
+    () =>
+      MODULE_REGISTRY.filter(
+        (entry) => entry.menu && hasModuleAccess(currentUser, entry.rbacModule),
+      ).map((entry) => entry.menu!),
+    [currentUser],
+  );
   return (
     <ConfigProvider
       theme={{
@@ -1062,256 +773,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <RootLayout />,
-    children: [
-      {
-        index: true,
-        element: (
-          <ModuleProtectedRoute module="dashboard">
-            <DashBoard />
-          </ModuleProtectedRoute>
-        ),
-      },
-      {
-        path: "users",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="customers">
-              <Users />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-      {
-        path: "customers",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="customers">
-              <Customers />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-      {
-        path: "admins",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="admins">
-              <Admins />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-      {
-        path: "InvoiceTemplates",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="dashboard">
-              <InvoiceTemplates />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-      {
-        path: "TripDetails",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="trips">
-              <TripDetails />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-      {
-        path: "trip-verifications",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="trips">
-              <TripVerifications />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-      {
-        path: "trip-transactions",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="trip_transaction">
-              <TripTransactions />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-      {
-        path: "drivers",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="drivers">
-              <Drivers />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-      {
-        path: "driver-applications",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="drivers">
-              <DriverApplications />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-      {
-        path: "Deductions",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="deductions">
-              <Deductions />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-      {
-        path: "support-tickets",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="support_tickets">
-              <SupportTickets />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-      {
-        path: "support-analytics",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="support_tickets">
-              <SupportAnalytics />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-      {
-        path: "recharge-plans",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="recharge">
-              <RechargeLayout />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-        children: [
-          { index: true, element: <Navigate to="manage" replace /> },
-          {
-            path: "manage",
-            element: (
-              <Suspense fallback={<RouteLoadingFallback />}>
-                <ManagePlans />
-              </Suspense>
-            ),
-          },
-          {
-            path: "subscriptions",
-            element: (
-              <Suspense fallback={<RouteLoadingFallback />}>
-                <Subscriptions />
-              </Suspense>
-            ),
-          },
-          {
-            path: "offers",
-            element: (
-              <Suspense fallback={<RouteLoadingFallback />}>
-                <SubscriptionOffers />
-              </Suspense>
-            ),
-          },
-          {
-            path: "payments",
-            element: (
-              <Suspense fallback={<RouteLoadingFallback />}>
-                <PaymentHistory />
-              </Suspense>
-            ),
-          },
-        ]
-      },
-      {
-        path: "taxes",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="taxes">
-              <Tax />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-      {
-        path: "pricing-combinations",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="pricing">
-              <PricingCombinations />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-      {
-        path: "coupons",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute
-              module={["coupons", "promos", "user_referrals", "driver_referrals"]}
-            >
-              <Coupons />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-      {
-        path: "driver-reconciliation",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="drivers_outreach">
-              <DriverReconciliation />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-      {
-        path: "notifications",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="notifications">
-              <Notifications />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-      },
-
-      {
-        path: "PricingAndFareRules",
-        element: (
-          <Suspense fallback={<RouteLoadingFallback />}>
-            <ModuleProtectedRoute module="pricing">
-              <PricingAndFareRules />
-            </ModuleProtectedRoute>
-          </Suspense>
-        ),
-        children: [
-          {
-            path: "pricing/:id?",
-            element: (
-              <Suspense fallback={<RouteLoadingFallback />}>
-                <ModuleProtectedRoute module="pricing">
-                  <DriverPricing />
-                </ModuleProtectedRoute>
-              </Suspense>
-            ),
-          },
-        ],
-      },
-    ],
+    children: buildModuleRoutes(),
   },
   {
     path: "/login",
