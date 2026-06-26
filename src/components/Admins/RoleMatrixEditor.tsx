@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Table, Checkbox, Button, Card, Input, Space, message, Select, Modal } from "antd";
 import { SaveOutlined, ReloadOutlined, PlusOutlined } from "@ant-design/icons";
 import axiosIns from "../../api/axios";
+import { useHasPermission } from "../../hooks/usePermission";
 
 interface PermissionRow {
   key: string;
@@ -33,6 +34,11 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
   const [loading, setLoading] = useState(false);
   const [matrix, setMatrix] = useState<Record<string, Record<string, boolean>>>({});
   const [catalog, setCatalog] = useState<{ module: string; actions: string[] }[]>([]);
+
+  // Editing RBAC requires roles.update; creating a role requires roles.create.
+  // With only roles.read the matrix is view-only (super_admin bypasses both).
+  const canManageRoles = useHasPermission("roles", "update");
+  const canCreateRoles = useHasPermission("roles", "create");
 
   const selectedRole = roles.find((r) => r.id === selectedRoleId);
 
@@ -215,7 +221,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
     return (
       <Checkbox
         checked={record[action]}
-        disabled={selectedRole?.is_system}
+        disabled={selectedRole?.is_system || !canManageRoles}
         onChange={(e) => handleCheckboxChange(record.module, action, e.target.checked)}
       />
     );
@@ -270,7 +276,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
         <Checkbox
           checked={isAllChecked(action)}
           indeterminate={isIndeterminate(action)}
-          disabled={selectedRole?.is_system}
+          disabled={selectedRole?.is_system || !canManageRoles}
           onChange={(e) => handleHeaderCheckboxChange(action, e.target.checked)}
         />
         <span>{label}</span>
@@ -370,6 +376,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
             type="dashed"
             icon={<PlusOutlined />}
             onClick={() => setIsCreateModalOpen(true)}
+            disabled={!canCreateRoles}
             className="rounded-xl font-bold border-blue-300 text-blue-600 hover:bg-blue-50"
           >
             New Role
@@ -387,7 +394,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
             loading={loading}
             onClick={handleSavePermissions}
             className="rounded-xl font-bold bg-blue-600 border-none shadow-md hover:opacity-90"
-            disabled={selectedRole?.is_system}
+            disabled={selectedRole?.is_system || !canManageRoles}
           >
             Save Permissions
           </Button>
@@ -464,6 +471,7 @@ export const RoleMatrixEditor: React.FC<RoleMatrixEditorProps> = ({ height }) =>
                     selectedRole.role_type || (selectedRole.is_system ? "system" : "customizable")
                   }
                   onChange={(val) => handleRoleTypeChange(selectedRole.id, val)}
+                  disabled={!canManageRoles}
                   className="w-40 font-bold"
                   options={[
                     { value: "system", label: "System Locked" },

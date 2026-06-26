@@ -7,6 +7,7 @@ import {
   setSosAlerts,
 } from "../../store/slices/sosSlice";
 import { useSocket } from "../../hooks/useSocket";
+import { useHasPermission } from "../../hooks/usePermission";
 import { Card, Button, Modal, List, Badge, Typography } from "antd";
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 import {
@@ -39,7 +40,12 @@ const SosMonitor: React.FC = () => {
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAP_API || "",
   });
 
+  // SOS is gated under `drivers` on the backend — don't poll /sos/active (or show the
+  // monitor) for users who can't access it, instead of letting the call 403.
+  const canViewSos = useHasPermission("drivers", "read");
+
   useEffect(() => {
+    if (!canViewSos) return;
     const fetchActiveSos = async () => {
       try {
         const response = await sosApi.getActiveSos();
@@ -65,7 +71,7 @@ const SosMonitor: React.FC = () => {
     };
 
     fetchActiveSos();
-  }, [dispatch]);
+  }, [dispatch, canViewSos]);
 
   useEffect(() => {
     if (!socket) return;

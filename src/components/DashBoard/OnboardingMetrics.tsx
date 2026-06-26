@@ -1,52 +1,29 @@
-import React, { useEffect, useMemo } from "react";
+import React from "react";
 import { Typography, Badge } from "antd";
 import { Users, ShieldCheck, FileWarning, XCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { fetchDrivers } from "../../store/slices/driverSlice";
 
 const { Title, Text } = Typography;
 
 interface OnboardingMetricsProps {
   stats: {
-    pendingVerifications: number;
-    documentExpiryAlerts: number;
+    onboardingPending?: number;
+    onboardingDocRejected?: number;
+    onboardingRejected?: number;
     loading: boolean;
   };
 }
 
-const OnboardingMetrics: React.FC<OnboardingMetricsProps> = (_props) => {
+const OnboardingMetrics: React.FC<OnboardingMetricsProps> = ({ stats }) => {
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const { drivers, loading: driversLoading } = useAppSelector((state) => state.drivers);
-
-  useEffect(() => {
-    dispatch(fetchDrivers());
-  }, [dispatch]);
-
-  const pipelineDrivers = useMemo(() => {
-    if (!drivers || !Array.isArray(drivers)) return [];
-    return drivers.filter(
-      (d) =>
-        d.status === "pending" ||
-        d.status === "pending_verification" ||
-        d.status === "rejected" ||
-        (d.onboarding_status &&
-          !["ONBOARDING_COMPLETED", "SUBSCRIPTION_ACTIVE", "ACTIVE"].includes(d.onboarding_status)),
-    );
-  }, [drivers]);
-
-  const counts = useMemo(() => {
-    return {
-      pending: pipelineDrivers.filter(
-        (d) => d.status !== "rejected" && d.onboarding_status !== "DOCS_REJECTED",
-      ).length,
-      docRejected: pipelineDrivers.filter(
-        (d) => d.status !== "rejected" && d.onboarding_status === "DOCS_REJECTED",
-      ).length,
-      rejected: pipelineDrivers.filter((d) => d.status === "rejected").length,
-    };
-  }, [pipelineDrivers]);
+  // Counts come from the dashboard payload (gated by dashboard.read) — no separate
+  // /api/drivers fetch, so the panel works for any dashboard viewer.
+  const driversLoading = stats.loading;
+  const counts = {
+    pending: stats.onboardingPending ?? 0,
+    docRejected: stats.onboardingDocRejected ?? 0,
+    rejected: stats.onboardingRejected ?? 0,
+  };
 
   const MetricItem = ({
     title,

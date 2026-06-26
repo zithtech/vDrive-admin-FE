@@ -37,7 +37,7 @@ import { useUserAlert } from "./hooks/useUserAlert";
 import { useTripVerificationAlert } from "./hooks/useTripVerificationAlert";
 import SosMonitor from "./components/SosMonitor/SosMonitor";
 import { useTheme } from "./contexts/ThemeContext";
-import { hasModuleAccess } from "./hooks/usePermission";
+import { hasModuleAccess, useHasPermission } from "./hooks/usePermission";
 import { MODULE_REGISTRY, buildModuleRoutes } from "./config/moduleRegistry";
 import RouteLoadingFallback from "./components/RouteLoadingFallback";
 
@@ -118,25 +118,42 @@ const RootLayout: React.FC = () => {
   const [openTicketsCount, setOpenTicketsCount] = useState(0);
   const [pendingVerificationsCount, setPendingVerificationsCount] = useState(0);
 
+  // These header badges poll permission-gated endpoints — only fetch them if the user
+  // can actually read that data, otherwise the call 403s for no reason.
+  const canReadSupportTickets = useHasPermission("support_tickets", "read");
+  const canReadTripVerifications = useHasPermission("trips", "read");
+  const canReadDrivers = useHasPermission("drivers", "read");
+
   useEffect(() => {
-    const fetchCounts = async () => {
+    if (!isAuthenticated) return;
+
+    const fetchTicketCount = async () => {
+      if (!canReadSupportTickets) return;
       try {
-        const [{ data: tickets }, { data: verifications }] = await Promise.all([
-          axiosIns.get("/api/support-management/tickets"),
-          axiosIns.get("/api/trip-verification/pending")
-        ]);
+        const { data: tickets } = await axiosIns.get("/api/support-management/tickets");
         if (tickets?.data?.tickets) {
           setOpenTicketsCount(tickets.data.tickets.filter((t: any) => t.status === "open").length);
         }
+      } catch (e) {
+        console.error("Failed to fetch support ticket count", e);
+      }
+    };
+
+    const fetchPendingVerifications = async () => {
+      if (!canReadTripVerifications) return;
+      try {
+        const { data: verifications } = await axiosIns.get("/api/trip-verification/pending");
         if (verifications?.success) {
           setPendingVerificationsCount(verifications.data.length || 0);
         }
       } catch (e) {
-        console.error("Failed to fetch topnav counts", e);
+        console.error("Failed to fetch pending verifications count", e);
       }
     };
-    if (isAuthenticated) fetchCounts();
-  }, [isAuthenticated]);
+
+    fetchTicketCount();
+    fetchPendingVerifications();
+  }, [isAuthenticated, canReadSupportTickets, canReadTripVerifications]);
 
 
   useEffect(() => {
@@ -511,7 +528,6 @@ const RootLayout: React.FC = () => {
     >
       <AntdApp>
         <AntdStaticHolder />
-        <SosMonitor />
         {loading && <FullScreenLoader />}
         <Layout hasSider={!isMobile && isAuthenticated && location.pathname !== "/login"}>
           {!isMobile && isAuthenticated && location.pathname !== "/login" && (
@@ -598,39 +614,45 @@ const RootLayout: React.FC = () => {
                       >
                         <Moon size={18} strokeWidth={2} />
                       </div>
-                      <div 
-                        onClick={() => navigate("/driver-applications")}
-                        className="relative flex items-center justify-center w-[32px] h-[32px] rounded-[10px] cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
-                      >
-                        {awaitingCount > 0 && (
-                          <div className="absolute -top-1 -right-1 bg-[#2563eb] text-white text-[9px] font-bold w-[16px] h-[16px] flex items-center justify-center rounded-full leading-none shadow-sm">
-                            {awaitingCount > 99 ? '99+' : awaitingCount}
-                          </div>
-                        )}
-                        <UserPlus size={18} strokeWidth={2} />
-                      </div>
-                      <div 
-                        onClick={() => navigate("/trip-verifications")}
-                        className="relative flex items-center justify-center w-[32px] h-[32px] rounded-[10px] cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
-                      >
-                        {pendingVerificationsCount > 0 && (
-                          <div className="absolute -top-1 -right-1 bg-orange-500 text-white text-[9px] font-bold w-[16px] h-[16px] flex items-center justify-center rounded-full leading-none shadow-sm">
-                            {pendingVerificationsCount > 99 ? '99+' : pendingVerificationsCount}
-                          </div>
-                        )}
-                        <ShieldCheck size={18} strokeWidth={2} />
-                      </div>
-                      <div 
-                        onClick={() => navigate("/support-tickets")}
-                        className="relative flex items-center justify-center w-[32px] h-[32px] rounded-[10px] cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
-                      >
-                        {openTicketsCount > 0 && (
-                          <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-[16px] h-[16px] flex items-center justify-center rounded-full leading-none shadow-sm">
-                            {openTicketsCount > 99 ? '99+' : openTicketsCount}
-                          </div>
-                        )}
-                        <Headphones size={18} strokeWidth={2} />
-                      </div>
+                      {canReadDrivers && (
+                        <div
+                          onClick={() => navigate("/driver-applications")}
+                          className="relative flex items-center justify-center w-[32px] h-[32px] rounded-[10px] cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                        >
+                          {awaitingCount > 0 && (
+                            <div className="absolute -top-1 -right-1 bg-[#2563eb] text-white text-[9px] font-bold w-[16px] h-[16px] flex items-center justify-center rounded-full leading-none shadow-sm">
+                              {awaitingCount > 99 ? '99+' : awaitingCount}
+                            </div>
+                          )}
+                          <UserPlus size={18} strokeWidth={2} />
+                        </div>
+                      )}
+                      {canReadTripVerifications && (
+                        <div
+                          onClick={() => navigate("/trip-verifications")}
+                          className="relative flex items-center justify-center w-[32px] h-[32px] rounded-[10px] cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                        >
+                          {pendingVerificationsCount > 0 && (
+                            <div className="absolute -top-1 -right-1 bg-orange-500 text-white text-[9px] font-bold w-[16px] h-[16px] flex items-center justify-center rounded-full leading-none shadow-sm">
+                              {pendingVerificationsCount > 99 ? '99+' : pendingVerificationsCount}
+                            </div>
+                          )}
+                          <ShieldCheck size={18} strokeWidth={2} />
+                        </div>
+                      )}
+                      {canReadSupportTickets && (
+                        <div
+                          onClick={() => navigate("/support-tickets")}
+                          className="relative flex items-center justify-center w-[32px] h-[32px] rounded-[10px] cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                        >
+                          {openTicketsCount > 0 && (
+                            <div className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-[16px] h-[16px] flex items-center justify-center rounded-full leading-none shadow-sm">
+                              {openTicketsCount > 99 ? '99+' : openTicketsCount}
+                            </div>
+                          )}
+                          <Headphones size={18} strokeWidth={2} />
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -761,8 +783,8 @@ const RootLayout: React.FC = () => {
             </Drawer>
           )}
 
-          {/* SOS Monitor - Always active for authenticated admins */}
-          {isAuthenticated && <SosMonitor />}
+          {/* SOS Monitor — only for users who can access SOS (gated under drivers) */}
+          {isAuthenticated && canReadDrivers && <SosMonitor />}
         </Layout>
       </AntdApp>
     </ConfigProvider>
