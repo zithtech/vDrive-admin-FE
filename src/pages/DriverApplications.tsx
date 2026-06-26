@@ -2,8 +2,6 @@ import { useState, useEffect, useMemo } from "react";
 import { IoMdRefresh } from "react-icons/io";
 import { ClipboardCheck, ShieldAlert, FileWarning, XCircle } from "lucide-react";
 import {
-  SafetyCertificateOutlined,
-  FileExclamationOutlined,
   CloseCircleOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
@@ -149,7 +147,7 @@ const DriverApplications = () => {
     data,
     flexClass = "flex-1",
     extraClasses = "",
-  }: any) => (
+  }: { data: Driver[]; flexClass?: string; extraClasses?: string }) => (
     <div
       className={`${flexClass} flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden ${extraClasses}`}
     >
@@ -316,11 +314,10 @@ const DriverApplications = () => {
                 </span>
               </div>
             </div>
-            
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 px-3 py-1 rounded-full border border-orange-100 dark:border-orange-500/20">
-                <div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
-                <span className="text-[10px] font-black tracking-widest uppercase">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 px-3 py-1.5 rounded-full border border-orange-100 dark:border-orange-500/20">
+                <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                <span className="text-[11px] font-black tracking-widest uppercase">
                   {filteredData.length} RESULTS
                 </span>
               </div>

@@ -1,6 +1,6 @@
 import React from "react";
-import { Table, Button, Switch, Tooltip, Space } from "antd";
-import { EditOutlined, DeleteOutlined, UserOutlined, CarOutlined } from "@ant-design/icons";
+import { Table, Button, Switch, Dropdown } from "antd";
+import { EditOutlined, DeleteOutlined, UserOutlined, CarOutlined, EllipsisOutlined } from "@ant-design/icons";
 import { type ReferralConfig } from "../../store/slices/referralSlice";
 
 interface ReferralTableProps {
@@ -11,6 +11,9 @@ interface ReferralTableProps {
   onToggleStatus: (id: string, is_active: boolean) => void;
   canUpdate?: boolean;
   canDelete?: boolean;
+  currentPage?: number;
+  pageSize?: number;
+  onPageChange?: (page: number, size: number) => void;
 }
 
 const ReferralTable: React.FC<ReferralTableProps> = ({
@@ -21,77 +24,62 @@ const ReferralTable: React.FC<ReferralTableProps> = ({
   onToggleStatus,
   canUpdate = false,
   canDelete = false,
+  currentPage = 1,
+  pageSize = 15,
+  onPageChange,
 }) => {
   const columns = [
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Target Audience
-        </span>
-      ),
+      title: "TARGET AUDIENCE",
       dataIndex: "user_type",
       key: "user_type",
       render: (text: string) => (
-        <div className="flex items-center gap-2">
-          <div
-            className={`w-8 h-8 rounded-lg ${text === "CUSTOMER" ? "bg-orange-50 dark:bg-orange-500/10 text-orange-500 dark:text-orange-400" : "bg-blue-50 dark:bg-blue-500/10 text-blue-500 dark:text-blue-400"} flex items-center justify-center`}
-          >
-            {text === "CUSTOMER" ? <UserOutlined /> : <CarOutlined />}
-          </div>
-          <span className="font-bold text-gray-700 dark:text-slate-200 text-xs tracking-wide">
-            {text}
-          </span>
-        </div>
+        <span className={`px-2 py-0.5 rounded-md font-bold text-[9px] uppercase tracking-wider border-none w-fit inline-flex items-center gap-1 ${text === "CUSTOMER"
+            ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+            : "bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400"
+          }`}>
+          {text === "CUSTOMER" ? <UserOutlined /> : <CarOutlined />}
+          {text.toLowerCase()}
+        </span>
       ),
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Referrer Reward
-        </span>
-      ),
+      title: "REFERRER REWARD",
       key: "referrer_reward",
       render: (_: any, record: ReferralConfig) => (
-        <div className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-400 text-white rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-md shadow-amber-100 w-fit">
+        <span className="px-2 py-0.5 rounded-md font-bold text-[9px] uppercase tracking-wider bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400 border-none w-fit inline-block">
           {record.referrer_reward_type === "PERCENTAGE"
             ? `${record.referrer_reward}% DISCOUNT`
             : `₹${record.referrer_reward} CREDIT`}
-        </div>
+        </span>
       ),
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Referee Reward
-        </span>
-      ),
+      title: "REFEREE REWARD",
       key: "referee_reward",
       render: (_: any, record: ReferralConfig) => (
-        <div className="px-3 py-1 bg-gradient-to-r from-blue-500 to-cyan-400 text-white rounded-full text-[10px] font-extrabold uppercase tracking-wider shadow-md shadow-blue-100 w-fit">
+        <span className="px-2 py-0.5 rounded-md font-bold text-[9px] uppercase tracking-wider bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400 border-none w-fit inline-block">
           {record.referee_reward_type === "PERCENTAGE"
             ? `${record.referee_reward}% DISCOUNT`
             : `₹${record.referee_reward} CREDIT`}
-        </div>
+        </span>
       ),
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Status
-        </span>
-      ),
+      title: "STATUS",
       key: "is_active",
       render: (_: any, record: ReferralConfig) => (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Switch
+            size="small"
             checked={record.is_active}
             disabled={!canUpdate}
             onChange={(checked) => onToggleStatus(record.id, checked)}
-            className={`${record.is_active ? "bg-emerald-500" : "bg-gray-300"} ${!canUpdate ? "opacity-50" : ""}`}
           />
-          <span
-            className={`text-[10px] font-bold uppercase tracking-widest ${record.is_active ? "text-emerald-600" : "text-gray-400"}`}
-          >
+          <span className={`px-2 py-0.5 rounded-md font-bold text-[9px] uppercase tracking-wider border-none w-fit inline-block ${record.is_active
+              ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+              : "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+            }`}>
             {record.is_active ? "Live" : "Paused"}
           </span>
         </div>
@@ -99,52 +87,127 @@ const ReferralTable: React.FC<ReferralTableProps> = ({
     },
     ...(canUpdate || canDelete
       ? [
-          {
-            title: (
-              <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-                Actions
-              </span>
-            ),
-            key: "actions",
-            render: (_: any, record: ReferralConfig) => (
-              <Space size="small">
-                {canUpdate && (
-                  <Tooltip title="Configure Rule">
-                    <Button
-                      type="text"
-                      icon={<EditOutlined className="text-blue-500 dark:text-blue-400" />}
-                      onClick={() => onEdit(record)}
-                      className="hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
-                    />
-                  </Tooltip>
-                )}
-                {canDelete && (
-                  <Tooltip title="Archive Rule">
-                    <Button
-                      type="text"
-                      danger
-                      icon={<DeleteOutlined />}
-                      onClick={() => onDelete(record.id)}
-                      className="hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg h-9 w-9 flex items-center justify-center transition-colors"
-                    />
-                  </Tooltip>
-                )}
-              </Space>
-            ),
+        {
+          title: "ACTIONS",
+          key: "actions",
+          fixed: "right" as const,
+          width: 80,
+          align: "center" as const,
+          render: (_: any, record: ReferralConfig) => {
+            const menuItems = [
+              ...(canUpdate
+                ? [
+                  {
+                    key: "edit",
+                    icon: <EditOutlined className="text-slate-500" />,
+                    label: <span className="font-semibold text-xs text-slate-700 dark:text-slate-200">Configure Rule</span>,
+                  },
+                ]
+                : []),
+              ...(canDelete
+                ? [
+                  {
+                    key: "delete",
+                    icon: <DeleteOutlined />,
+                    label: <span className="font-semibold text-xs">Archive Rule</span>,
+                    danger: true,
+                  },
+                ]
+                : []),
+            ];
+
+            return (
+              <Dropdown
+                menu={{
+                  items: menuItems,
+                  onClick: ({ key }) => {
+                    if (key === "edit") {
+                      onEdit(record);
+                    } else if (key === "delete") {
+                      onDelete(record.id);
+                    }
+                  },
+                }}
+                trigger={["click"]}
+                placement="bottomRight"
+              >
+                <Button
+                  type="text"
+                  icon={<EllipsisOutlined className="text-slate-500 dark:text-slate-400 text-base" />}
+                  className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200/80 dark:border-slate-700/80 p-0 cursor-pointer"
+                />
+              </Dropdown>
+            );
           },
-        ]
+        },
+      ]
       : []),
   ];
 
   return (
-    <Table
-      columns={columns}
-      dataSource={data}
-      rowKey="id"
-      loading={loading}
-      pagination={{ pageSize: 10 }}
-      className="premium-table shadow-sm rounded-xl overflow-hidden border border-gray-100 dark:border-slate-700"
-    />
+    <>
+      <style>{`
+        /* Compact premium table flat styles */
+        .premium-table-compact .ant-table-thead > tr > th {
+          background: #f8fafc !important;
+          color: #64748b !important;
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          font-size: 10px !important;
+          letter-spacing: 0.05em !important;
+          border-bottom: 1px solid #e2e8f0 !important;
+          padding: 8px 12px !important;
+        }
+        .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
+          padding: 8px 12px !important;
+          border-bottom: 1px solid #f1f5f9 !important;
+          background: #ffffff !important;
+        }
+        .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row):hover > td {
+          background: #f8fafc !important;
+        }
+        .premium-table-compact .ant-table-cell-row-hover {
+          background: #f8fafc !important;
+        }
+        .premium-table-compact .ant-table {
+          background: transparent !important;
+        }
+        .premium-table-compact table {
+          border-collapse: collapse !important;
+          border-spacing: 0 !important;
+        }
+
+        /* Dark mode overrides for compact table */
+        .dark .premium-table-compact .ant-table-thead > tr > th {
+          background: #1e293b !important;
+          color: #94a3b8 !important;
+          border-bottom: 1px solid #334155 !important;
+        }
+        .dark .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
+          background: #0f172a !important;
+          border-bottom: 1px solid #1e293b !important;
+          color: #cbd5e1 !important;
+        }
+        .dark .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row):hover > td {
+          background: #1e293b !important;
+        }
+        .dark .premium-table-compact .ant-table-cell-row-hover {
+          background: #1e293b !important;
+        }
+      `}</style>
+      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 shadow-sm overflow-hidden pb-1">
+        <Table
+          columns={columns}
+          dataSource={data}
+          rowKey="id"
+          loading={loading}
+          pagination={{ position: ["none"], current: currentPage, pageSize: pageSize, onChange: onPageChange }}
+          className="premium-table-compact"
+          scroll={{ x: 800 }}
+          size="small"
+        />
+      </div>
+    </>
   );
 };
 
