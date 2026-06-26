@@ -4,7 +4,7 @@ import { Users, Car, ShieldAlert } from "lucide-react";
 import {
   SearchOutlined,
 } from "@ant-design/icons";
-import { Select, DatePicker, Slider, Spin, Pagination } from "antd";
+import { Select, DatePicker, Spin, Pagination } from "antd";
 import DriverTable from "../components/DriverTable/DriverTable";
 import dayjs from "dayjs";
 import DriverStats from "../components/Drivers/DriverStats";
