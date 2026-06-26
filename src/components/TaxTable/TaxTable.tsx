@@ -131,26 +131,26 @@ const TaxTable = ({
           {
             key: "view",
             icon: <EyeOutlined className="text-slate-500" />,
-            label: <span className="font-semibold text-xs text-slate-700 dark:text-slate-200">View Detail</span>,
+            label: <span className="font-semibold text-xs text-slate-700 dark:text-slate-100">View Detail</span>,
           },
           ...(canUpdate
             ? [
-                {
-                  key: "edit",
-                  icon: <EditOutlined className="text-slate-500" />,
-                  label: <span className="font-semibold text-xs text-slate-700 dark:text-slate-200">Modify Rule</span>,
-                },
-              ]
+              {
+                key: "edit",
+                icon: <EditOutlined className="text-slate-500" />,
+                label: <span className="font-semibold text-xs text-slate-700 dark:text-slate-100">Modify Rule</span>,
+              },
+            ]
             : []),
           ...(canDelete
             ? [
-                {
-                  key: "delete",
-                  icon: <DeleteOutlined className="text-rose-500" />,
-                  label: <span className="font-semibold text-xs text-rose-600">Delete Rule</span>,
-                  danger: true,
-                },
-              ]
+              {
+                key: "delete",
+                icon: <DeleteOutlined className="text-rose-500" />,
+                label: <span className="font-semibold text-xs text-rose-600">Delete Rule</span>,
+                danger: true,
+              },
+            ]
             : []),
         ];
 
@@ -203,12 +203,12 @@ const TaxTable = ({
           border-bottom: 1px solid #e2e8f0 !important;
           padding: 8px 12px !important;
         }
-        .premium-table-compact .ant-table-tbody > tr > td {
+        .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
           padding: 8px 12px !important;
           border-bottom: 1px solid #f1f5f9 !important;
           background: #ffffff !important;
         }
-        .premium-table-compact .ant-table-tbody > tr:hover > td {
+        .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row):hover > td {
           background: #f8fafc !important;
         }
         .premium-table-compact .ant-table-cell-row-hover {
@@ -224,19 +224,19 @@ const TaxTable = ({
           color: #94a3b8 !important;
           border-bottom: 1px solid #334155 !important;
         }
-        .dark .premium-table-compact .ant-table-tbody > tr > td {
+        .dark .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
           background: #0f172a !important;
           border-bottom: 1px solid #1e293b !important;
           color: #cbd5e1 !important;
         }
-        .dark .premium-table-compact .ant-table-tbody > tr:hover > td {
+        .dark .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row):hover > td {
           background: #1e293b !important;
         }
         .dark .premium-table-compact .ant-table-cell-row-hover {
           background: #1e293b !important;
         }
       `}</style>
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 shadow-sm overflow-hidden pb-1">
+      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 shadow-sm overflow-hidden flex flex-col flex-1 min-h-0 h-full">
         <Table
           columns={columns}
           dataSource={data}
@@ -244,7 +244,7 @@ const TaxTable = ({
           rowKey="id"
           pagination={false}
           className="premium-table-compact"
-          scroll={{ x: 800 }}
+          scroll={{ x: 1000, y: 'calc(100vh - 430px)' }}
           size="small"
         />
       </div>

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button, Form, Input, Drawer, Select, Table, Space, Spin, Pagination, Avatar, Dropdown, Typography } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { EditOutlined, DeleteOutlined, SafetyCertificateOutlined, SearchOutlined, UsergroupAddOutlined, AppstoreAddOutlined, EllipsisOutlined } from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined, SafetyCertificateOutlined, SearchOutlined, UsergroupAddOutlined, AppstoreAddOutlined, EllipsisOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import { RoleMatrixEditor } from "../components/Admins/RoleMatrixEditor";
 import AdminStats from "../components/Admins/AdminStats";
 import { IoPersonAddOutline } from "react-icons/io5";
@@ -46,13 +46,18 @@ export default function AdminPage() {
 
   const [currentView, setCurrentView] = useState<"administrators" | "roles">("administrators");
   const [globalSearch, setGlobalSearch] = useState("");
+  const [filters, setFilters] = useState({
+    name: "",
+    mobile: "",
+    email: "",
+  });
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(15);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [currentView, globalSearch]);
+  }, [currentView, globalSearch, filters]);
 
   const fetchRoles = async () => {
     try {
@@ -331,149 +336,150 @@ export default function AdminPage() {
   ];
 
   const filteredAdmins = admins.filter((admin) => {
-    if (!globalSearch) return true;
-    const lowerSearch = globalSearch.toLowerCase();
-    return (
-      admin.name.toLowerCase().includes(lowerSearch) ||
-      admin.email.toLowerCase().includes(lowerSearch) ||
-      (admin.contact && admin.contact.includes(lowerSearch))
-    );
+    if (globalSearch) {
+      const lowerSearch = globalSearch.toLowerCase();
+      const matchesGlobal = admin.name.toLowerCase().includes(lowerSearch) ||
+        admin.email.toLowerCase().includes(lowerSearch) ||
+        (admin.contact && admin.contact.includes(lowerSearch));
+      if (!matchesGlobal) return false;
+    }
+
+    if (filters.name && !admin.name.toLowerCase().includes(filters.name.toLowerCase())) return false;
+    if (filters.mobile && (!admin.contact || !admin.contact.includes(filters.mobile))) return false;
+    if (filters.email && !admin.email.toLowerCase().includes(filters.email.toLowerCase())) return false;
+
+    return true;
   });
 
-  const ViewItem = ({ icon, label, count, isActive, onClick, activeColorClass = "text-indigo-500", bgActiveColorClass = "bg-indigo-50/80 dark:bg-indigo-900/30", badgeColorClass = "bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400" }: any) => (
+  const ViewItem = ({ icon, label, count, isActive, onClick, activeColorClass = "text-blue-600 dark:text-blue-400", bgActiveColorClass = "bg-blue-50/80 dark:bg-blue-500/10", badgeColorClass = "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300" }: any) => (
     <div
       onClick={onClick}
-      className={`flex items-center justify-between px-3 py-2 rounded-[10px] cursor-pointer transition-all ${isActive
-        ? `${bgActiveColorClass} text-slate-800 dark:text-slate-100 font-bold`
-        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium"
+      className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${isActive
+        ? `${bgActiveColorClass} ${activeColorClass} font-bold`
+        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
         }`}
     >
-      <div className="flex items-center gap-2.5">
-        <span className={`text-[15px] ${isActive ? activeColorClass : "text-slate-400"}`}>{icon}</span>
-        <span className="text-[13px] tracking-tight">{label}</span>
+      <div className="flex items-center gap-2 text-xs">
+        <span className="text-xs">{icon}</span>
+        <span>{label}</span>
       </div>
       {count !== undefined && (
-        isActive ? (
-          <div className={`px-2 py-0.5 rounded-md text-[10px] font-black min-w-[20px] text-center ${badgeColorClass}`}>
-            {count}
-          </div>
-        ) : (
-          <div className="text-[11px] font-bold text-slate-400 mr-1">
-            {count}
-          </div>
-        )
+        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${isActive
+          ? badgeColorClass
+          : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+          }`}>
+          {count}
+        </span>
       )}
     </div>
   );
 
   return (
     <>
-      <div className="flex h-full w-full overflow-hidden bg-white dark:bg-slate-900">
-        {/* LEFT SIDEBAR */}
-        <div className="w-[220px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col flex-shrink-0">
-          {/* Sidebar Header */}
-          <div className="p-6 pb-4">
-            <div className="flex items-center gap-3 text-slate-800 dark:text-slate-100">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-                <ShieldCheck size={16} strokeWidth={2.5} />
-              </div>
-              <div className="flex flex-col justify-center mt-0.5">
-                <h2 className="font-black text-sm uppercase tracking-wider leading-none m-0">ADMINISTRATION</h2>
-                <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1">System Access</p>
-              </div>
+      <div className="flex flex-col h-full w-full overflow-hidden bg-white dark:bg-slate-900">
+        {/* Top Navbar */}
+        <div className="bg-white dark:bg-slate-800  h-12 px-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4 z-0 flex-shrink-0 w-full">
+          {/* Title & Description */}
+          <div className="flex items-center gap-4 flex-shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+              <ShieldCheck size={16} strokeWidth={2.5} />
+            </div>
+            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Administrators</h1>
+            <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0">View and manage administrators</p>
+          </div>
+
+          <div className="relative flex-1 max-w-xl mx-auto flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all h-9">
+            <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
+            <input
+              type="text"
+              placeholder="Search administrators..."
+              className="w-full pl-10 pr-4 py-1.5 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch(e.target.value)}
+            />
+            <div className="absolute right-3">
+              <span className="text-[11px] font-bold text-slate-400 border border-slate-200 dark:border-slate-600 rounded-[4px] px-1.5 py-[1px] bg-slate-50/50 dark:bg-slate-800 tracking-wide">
+                ⌘K
+              </span>
             </div>
           </div>
 
-          <div className="px-4 pb-4">
+          <div className="flex items-center gap-4 flex-shrink-0">
+            <div className="flex items-center gap-2 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 px-3 py-1.5 rounded-full border border-blue-100 dark:border-blue-500/20">
+              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+              <span className="text-[11px] font-black tracking-widest uppercase">
+                {currentView === "administrators" ? filteredAdmins.length : Object.keys(roles).length} RESULTS
+              </span>
+            </div>
+
+            <button
+              onClick={() => {
+                dispatch(fetchAdminUsers());
+                fetchRoles();
+              }}
+              className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all shrink-0"
+            >
+              <IoMdRefresh className={`text-lg ${loading ? "animate-spin" : ""}`} />
+            </button>
+
             {canCreateAdmin && (
               <Button
                 type="primary"
                 icon={<IoPersonAddOutline className="text-lg" />}
                 onClick={openCreateModal}
-                className="w-full h-9 rounded-lg font-bold text-xs uppercase tracking-wider border-none !bg-blue-600 hover:!bg-blue-700 text-white shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.01] transition-all"
+                className="px-4 h-10 rounded-lg font-bold text-xs uppercase tracking-wider border-none !bg-blue-600 hover:!bg-blue-700 text-white shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.01] transition-all"
               >
                 Create Admin
               </Button>
             )}
           </div>
+        </div>
 
-          <div className="flex-1 overflow-y-auto overflow-x-hidden">
-            {/* VIEWS */}
-            <div className="px-4 pt-4 pb-6 border-b border-slate-200 dark:border-slate-800/50">
-              <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-2 mb-5">
-                Views
-              </p>
-              <div className="flex flex-col gap-1">
-                <ViewItem
-                  icon={<UsergroupAddOutlined />}
-                  label="Administrators"
-                  count={admins.length}
-                  isActive={currentView === "administrators"}
-                  onClick={() => setCurrentView("administrators")}
-                  activeColorClass="text-blue-500"
-                  bgActiveColorClass="bg-blue-50/80 dark:bg-blue-900/30"
-                  badgeColorClass="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400"
-                />
-                {isSuperAdmin && (
+        {/* Bottom Content Area */}
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          {/* LEFT SIDEBAR */}
+          <div className="w-[220px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col flex-shrink-0">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden">
+              {/* VIEWS */}
+              <div className="px-4 pt-4 pb-6 border-b border-slate-200 dark:border-slate-800/50">
+                <p className="text-[11px] font-black uppercase tracking-widest text-slate-400 px-2 mb-5">
+                  Views
+                </p>
+                <div className="flex flex-col gap-1">
                   <ViewItem
-                    icon={<AppstoreAddOutlined />}
-                    label="Role Customizer"
-                    isActive={currentView === "roles"}
-                    onClick={() => setCurrentView("roles")}
+                    icon={<UsergroupAddOutlined />}
+                    label="Administrators"
+                    count={admins.length}
+                    isActive={currentView === "administrators"}
+                    onClick={() => setCurrentView("administrators")}
                     activeColorClass="text-blue-500"
                     bgActiveColorClass="bg-blue-50/80 dark:bg-blue-900/30"
                     badgeColorClass="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400"
                   />
-                )}
+                  {isSuperAdmin && (
+                    <ViewItem
+                      icon={<AppstoreAddOutlined />}
+                      label="Role Customizer"
+                      isActive={currentView === "roles"}
+                      onClick={() => setCurrentView("roles")}
+                      activeColorClass="text-blue-500"
+                      bgActiveColorClass="bg-blue-50/80 dark:bg-blue-900/30"
+                      badgeColorClass="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400"
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* RIGHT MAIN CONTENT */}
-        <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0b0f19]">
-          {/* Top Navbar */}
-          <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 shadow-sm z-0 flex-shrink-0">
-            <div className="relative flex-1 max-w-3xl flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
-              <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
-              <input
-                type="text"
-                placeholder="Search administrators..."
-                className="w-full pl-10 pr-4 py-2 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
-                value={globalSearch}
-                onChange={(e) => setGlobalSearch(e.target.value)}
-              />
-              <div className="absolute right-3">
-                <span className="text-[11px] font-bold text-slate-400 border border-slate-200 dark:border-slate-600 rounded-[4px] px-1.5 py-[1px] bg-slate-50/50 dark:bg-slate-800 tracking-wide">
-                  ⌘K
-                </span>
-              </div>
-            </div>
+          {/* RIGHT MAIN CONTENT */}
+          <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0b0f19] relative h-full">
 
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 px-3 py-1.5 rounded-full border border-blue-100 dark:border-blue-500/20">
-                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                <span className="text-[11px] font-black tracking-widest uppercase">
-                  {currentView === "administrators" ? filteredAdmins.length : Object.keys(roles).length} RESULTS
-                </span>
-              </div>
-
-              <button
-                onClick={() => {
-                  dispatch(fetchAdminUsers());
-                  fetchRoles();
-                }}
-                className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all shrink-0"
-              >
-                <IoMdRefresh className={`text-lg ${loading ? "animate-spin" : ""}`} />
-              </button>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="flex-1 overflow-hidden p-6 bg-slate-50/50 dark:bg-[#0f172a] flex flex-col gap-6" ref={contentRef}>
-            <style>
-              {`
+            {/* Main Content */}
+            <div className="flex-1 overflow-hidden p-4 bg-slate-50/50 dark:bg-[#0f172a] flex flex-col gap-2 pb-20" ref={contentRef}>
+              <style>
+                {`
                   .premium-table-flat .ant-table-thead > tr > th {
                       background: #f8fafc !important;
                       color: #64748b !important;
@@ -576,65 +582,130 @@ export default function AdminPage() {
                   .dark .customer-row-odd:hover { background-color: #1e293b !important; }
                   .customer-menu-icon { color: #9ca3af; }
                   .customer-menu-label { font-weight: 700; color: #374151; }
+                  .dark .customer-menu-label { color: #f1f5f9; }
                   .customer-menu-label-bold { font-weight: 700; }
+                  
+                  /* Admin filter inputs dark mode override */
+                  .dark-theme-input-override .ant-input {
+                    border-radius: 8px !important;
+                  }
+                  .dark .dark-theme-input-override .ant-input {
+                    background-color: #0f172a !important;
+                    border-color: #334155 !important;
+                    color: #f1f5f9 !important;
+                  }
+                  .dark .dark-theme-input-override .ant-input::placeholder {
+                    color: #64748b !important;
+                  }
               `}
-            </style>
+              </style>
 
-            {currentView === "administrators" && <AdminStats admins={admins} loading={loading} />}
-            {loading && admins.length === 0 ? (
-              <div className="flex-1 flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
-                <Spin size="large" />
-              </div>
-            ) : (
-              <div className="flex-1 flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                <div className="flex-grow overflow-hidden">
-                  {currentView === "administrators" ? (
-                    <div className="customer-table-container h-full w-full">
-                      <Table
-                        key={tableHeight}
-                        dataSource={filteredAdmins}
-                        columns={columns}
-                        rowKey="id"
-                        loading={loading}
-                        pagination={{ position: ["none"], current: currentPage, pageSize: pageSize }}
-                        showSorterTooltip={false}
-                        tableLayout="auto"
-                        className="premium-table-flat"
-                        rowClassName={(_, index) => ((index || 0) % 2 === 0 ? "customer-row-even" : "customer-row-odd")}
-                        scroll={{ y: tableHeight ? Math.max(0, Math.floor(tableHeight)) : undefined, x: 1000 }}
-                        size="small"
-                      />
-                    </div>
-                  ) : (
-                    <div style={{ height: Math.max(Math.floor(tableHeight || 0) - 10, 400), overflow: "hidden" }}>
-                      <RoleMatrixEditor height={Math.max(Math.floor(tableHeight || 0) - 10, 400)} />
-                    </div>
+              {currentView === "administrators" && <AdminStats admins={admins} loading={loading} />}
+
+              {currentView === "administrators" && (
+                <div className="bg-white dark:bg-slate-800 py-1 px-3 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm flex-shrink-0 dark-theme-input-override">
+                  <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
+                      Name:
+                    </span>
+                    <Input
+                      placeholder="Filter by name..."
+                      className="flex-1 text-xs"
+                      value={filters.name}
+                      onChange={(e) => setFilters(prev => ({ ...prev, name: e.target.value }))}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
+                      Mobile Number:
+                    </span>
+                    <Input
+                      placeholder="Filter by mobile..."
+                      className="flex-1 text-xs"
+                      value={filters.mobile}
+                      onChange={(e) => setFilters(prev => ({ ...prev, mobile: e.target.value }))}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
+                      Email:
+                    </span>
+                    <Input
+                      placeholder="Filter by email..."
+                      className="flex-1 text-xs"
+                      value={filters.email}
+                      onChange={(e) => setFilters(prev => ({ ...prev, email: e.target.value }))}
+                    />
+                  </div>
+                  {(filters.name || filters.mobile || filters.email) && (
+                    <Button
+                      type="text"
+                      danger
+                      icon={<CloseCircleOutlined />}
+                      className="text-[11px] font-bold uppercase tracking-wider"
+                      onClick={() => setFilters({ name: "", mobile: "", email: "" })}
+                    >
+                      Clear
+                    </Button>
                   )}
                 </div>
+              )}
+              {loading && admins.length === 0 ? (
+                <div className="flex-1 flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
+                  <Spin size="large" />
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  <div className="flex-grow overflow-hidden">
+                    {currentView === "administrators" ? (
+                      <div className="customer-table-container h-full w-full">
+                        <Table
+                          key={tableHeight}
+                          dataSource={filteredAdmins}
+                          columns={columns}
+                          rowKey="id"
+                          loading={loading}
+                          pagination={{ position: ["none"], current: currentPage, pageSize: pageSize }}
+                          showSorterTooltip={false}
+                          tableLayout="auto"
+                          className="premium-table-flat"
+                          rowClassName={(_, index) => ((index || 0) % 2 === 0 ? "customer-row-even" : "customer-row-odd")}
+                          scroll={{ y: tableHeight ? Math.max(0, Math.floor(tableHeight)) : undefined, x: 1000 }}
+                          size="small"
+                        />
+                      </div>
+                    ) : (
+                      <div style={{ height: Math.max(Math.floor(tableHeight || 0) - 10, 400), overflow: "hidden" }}>
+                        <RoleMatrixEditor height={Math.max(Math.floor(tableHeight || 0) - 10, 400)} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Sticky Pagination Footer (only for administrators view) */}
+            {currentView === "administrators" && (
+              <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-805 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+                  Showing {filteredAdmins.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
+                  {Math.min(currentPage * pageSize, filteredAdmins.length)} of {filteredAdmins.length} admins
+                </span>
+                <Pagination
+                  current={currentPage}
+                  pageSize={pageSize}
+                  total={filteredAdmins.length}
+                  onChange={(page, size) => {
+                    setCurrentPage(page);
+                    setPageSize(size);
+                  }}
+                  showSizeChanger
+                  pageSizeOptions={[10, 15, 20, 50, 100]}
+                  size="small"
+                />
               </div>
             )}
           </div>
-
-          {/* Sticky Pagination Footer (only for administrators view) */}
-          {currentView === "administrators" && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 z-10 flex-shrink-0">
-              <div className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
-                Showing <span className="font-bold text-slate-800 dark:text-slate-200">{filteredAdmins.length === 0 ? 0 : (currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, filteredAdmins.length)}</span> of <span className="font-bold text-slate-800 dark:text-slate-200">{filteredAdmins.length}</span> admins
-              </div>
-              <Pagination
-                current={currentPage}
-                pageSize={pageSize}
-                total={filteredAdmins.length}
-                onChange={(page, size) => {
-                  setCurrentPage(page);
-                  setPageSize(size);
-                }}
-                showSizeChanger
-                pageSizeOptions={[10, 15, 20, 50, 100]}
-                size="small"
-              />
-            </div>
-          )}
         </div>
       </div>
 

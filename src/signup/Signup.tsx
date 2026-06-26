@@ -123,7 +123,7 @@ const SignUp = () => {
             />
           </div>
           <div className="text-center">
-            <h1 className="text-2xl font-extrabold text-white tracking-tight font-outfit">
+            <h1 className="text-lg font-extrabold text-white tracking-tight font-outfit">
               Create Admin Account
             </h1>
             <p className="text-slate-400 text-xs mt-1 font-medium tracking-wide">
@@ -132,7 +132,7 @@ const SignUp = () => {
           </div>
         </header>
 
-        <fieldset className="flex flex-col gap-5 border-none p-0 m-0">
+        <fieldset className="flex flex-col gap-2 border-none p-0 m-0">
           <div className="glass-input-wrapper">
             <label className="block text-[13px] font-semibold text-slate-300 tracking-wide mb-1.5">
               Name <span className="text-indigo-400 font-bold">*</span>

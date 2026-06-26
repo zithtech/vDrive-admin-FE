@@ -129,7 +129,7 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
         footer: { borderTop: "1px solid #f1f5f9", padding: "16px 24px", background: "#fff" },
       }}
       footer={
-        <div className="flex justify-end gap-3 px-2">
+        <div className="flex justify-end gap-2 px-2">
           <Button
             onClick={onClose}
             className="rounded-full h-11 px-8 font-bold text-gray-400 hover:text-gray-600 border-gray-200 transition-all"
@@ -192,7 +192,7 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
         disabled={!isAllowed}
       >
         <div className="bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm space-y-4 mx-4 mt-4">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
               <TagOutlined className="text-sm" />
             </div>
@@ -258,7 +258,7 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
         </div>
 
         <div className="bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm space-y-4 mx-4">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500">
               <CalendarOutlined className="text-sm" />
             </div>
@@ -355,7 +355,7 @@ const CouponFormDrawer: React.FC<CouponFormDrawerProps> = ({
         </div>
 
         <div className="bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm space-y-4 mx-4 mb-8">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-2 mb-2">
             <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500">
               <UserOutlined className="text-sm" />
             </div>

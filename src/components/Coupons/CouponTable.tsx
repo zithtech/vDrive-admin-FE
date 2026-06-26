@@ -340,7 +340,7 @@ const CouponTable: React.FC<CouponTableProps> = ({
           background: #1e293b !important;
         }
       `}</style>
-      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 shadow-sm overflow-hidden pb-1">
+      <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 shadow-sm overflow-hidden flex flex-col flex-1 min-h-0 h-full">
         <Table
           columns={columns}
           dataSource={data}
@@ -348,7 +348,7 @@ const CouponTable: React.FC<CouponTableProps> = ({
           loading={loading}
           pagination={{ position: ["none"], current: currentPage, pageSize: pageSize, onChange: onPageChange }}
           className="premium-table-compact"
-          scroll={{ x: 800 }}
+          scroll={{ x: 1000, y: 'calc(100vh - 430px)' }}
           size="small"
         />
       </div>
