@@ -44,20 +44,20 @@ const HotspotConfiguration = ({
   }
 
   return (
-    <Card size="small" className="w-full bg-white dark:!bg-[#0f172a] border border-slate-200 dark:!border-slate-800">
-      <div className="w-full flex flex-col gap-3">
+    <Card size="small">
+      <div className="w-full flex flex-col gap-4">
         <div className="flex items-center justify-between w-full">
           <div className="w-full flex items-center gap-2">
-            <ThunderboltOutlined className="text-[20px] text-blue-500 dark:text-blue-400" />
-            <span className="text-[19px] font-semibold p-0 m-0 text-slate-800 dark:text-slate-100">Hotspot Configuration</span>
+            <ThunderboltOutlined className="text-[20px] text-[#0080FF]" />
+            <span className="text-[19px] font-semibold p-0 m-0">Hotspot Configuration</span>
           </div>
         </div>
 
-        <Card variant="borderless" size="small" className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50">
+        <Card variant="borderless" size="small" className="w-full bg-[#F8F9FA]">
           <div className="w-full flex items-center gap-2 justify-between">
             <div className="flex flex-col gap-2 ">
-              <span className="text-[16px] font-semibold p-0 m-0 text-slate-800 dark:text-slate-100">Enable Hotspot Pricing</span>
-              <span className="text-[10px]  p-0 m-0 text-slate-500 dark:text-slate-400">Apply dynamic pricing based on demand</span>
+              <span className="text-[16px] font-semibold p-0 m-0">Enable Hotspot Pricing</span>
+              <span className="text-[10px]  p-0 m-0">Apply dynamic pricing based on demand</span>
             </div>
             <div>
               <Switch checked={hotspotEnabled} onChange={setHotspotEnabled} />
@@ -86,7 +86,7 @@ const HotspotConfiguration = ({
                     <div className="flex items-center gap-2">
                       <ThunderboltOutlined />
                       <span>{hotspot.hotspot_name}</span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400">
+                      <span className="text-xs text-gray-500">
                         +₹{Number(hotspot.fare).toFixed(0)} -{" "}
                         {Number(hotspot.multiplier).toFixed(1)}x
                       </span>
@@ -104,10 +104,10 @@ const HotspotConfiguration = ({
                       {selectedHotspot.hotspot_name}
                     </Tag>
                   </div>
-                  <span className="text-sm text-slate-600 dark:text-slate-300">
+                  <span className="text-sm text-gray-600">
                     Flat fare: ₹{Number(selectedHotspot.fare).toFixed(2)} / ride
                   </span>
-                  <span className="text-xs text-slate-400 dark:text-slate-500">
+                  <span className="text-xs text-gray-400">
                     One-time surcharge added to the ride total
                   </span>
                 </div>
@@ -127,7 +127,7 @@ const HotspotConfiguration = ({
                       />
                     </div>
                     <div>
-                      <span className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                      <span className="text-xs text-gray-500 mt-1">
                         Default: {Number(selectedHotspot.multiplier).toFixed(1)}x
                       </span>
                     </div>

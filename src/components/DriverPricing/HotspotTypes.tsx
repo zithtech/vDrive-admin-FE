@@ -3,7 +3,7 @@ import {
   Button,
   Card,
   List,
-  // Typography,
+  Typography,
   Modal,
   Form,
   Input,
@@ -123,18 +123,18 @@ const HotspotTypes = () => {
   }
 
   return (
-    <Card size="small" className="w-full bg-white dark:bg-[#0f17255d] border-none shadow-none">
+    <Card size="small">
       <div className="w-full flex flex-col gap-4">
         <div className="flex items-center justify-between w-full">
           <div className="w-full flex items-center gap-2">
-            <LuZap className="text-[20px] text-blue-500 dark:text-blue-400" />
-            <span className="text-[19px] font-semibold p-0 m-0 text-slate-800 dark:text-slate-100">Hotspot Types Management</span>
+            <LuZap className="text-[20px] text-[#0080FF]" />
+            <span className="text-[19px] font-semibold p-0 m-0">Hotspot Types Management</span>
           </div>
         </div>
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <h3 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100 m-0">
+          <Typography.Title level={5} className="text-lg sm:text-xl">
             Manage Hotspots
-          </h3>
+          </Typography.Title>
           <Button
             type="primary"
             icon={<PlusOutlined />}
@@ -151,17 +151,17 @@ const HotspotTypes = () => {
           dataSource={hotspots}
           renderItem={(item) => (
             <List.Item>
-              <div className="w-full flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 p-4 bg-white dark:bg-[#0f172a] rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm">
+              <div className="w-full flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 p-4 bg-white rounded-md border">
                 <div className="flex items-center gap-3 flex-1">
                   <LuZap className="text-lg text-yellow-500" />
                   <div className="flex-1">
                     <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span className="font-semibold text-slate-800 dark:text-slate-200">{item.hotspot_name}</span>
+                      <span className="font-semibold">{item.hotspot_name}</span>
                       <Tag color="blue" className="w-fit">
                         {item.id}
                       </Tag>
                     </div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                    <span className="text-xs text-gray-600">
                       ₹{Number(item.fare).toFixed(2)} fare • {Number(item.multiplier).toFixed(1)}x
                       multiplier
                     </span>
