@@ -1,5 +1,5 @@
 import { PlusOutlined, DeleteOutlined } from "@ant-design/icons";
-import { Badge, Button, Card, Input, Segmented, Select, Tag, TimePicker, Tooltip } from "antd";
+import { Button, Card, Divider, Input, InputNumber, Segmented, Select, Tag, TimePicker } from "antd";
 import { useState, useEffect } from "react";
 import { BsClock } from "react-icons/bs";
 import { FaRegStar } from "react-icons/fa";
@@ -8,7 +8,6 @@ import dayjs, { type Dayjs } from "dayjs";
 import { LuZap } from "react-icons/lu";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { fetchHotspots } from "../../store/slices/hotspotSlice";
-import { useTaxBreakdown } from "../../hooks/useTaxedPricing";
 
 export type Day =
   | "monday"
@@ -19,6 +18,9 @@ export type Day =
   | "saturday"
   | "sunday";
 
+export type UserType = "normal-driver" | "premium-driver" | "elite-driver";
+
+// Day/time-of-day slot (overrides the rate card for a window)
 export interface TimeSlot {
   id: number;
   day: Day;
@@ -26,14 +28,24 @@ export interface TimeSlot {
   perKmRate: number;
   perHourRate: number;
 }
+export type UserTimeSlots = Record<UserType, TimeSlot[]>;
 
-export type UserType = "normal-driver" | "premium-driver" | "elite-driver";
-
-export interface UserTimeSlots {
-  "normal-driver": TimeSlot[];
-  "premium-driver": TimeSlot[];
-  "elite-driver": TimeSlot[];
+// Per-type default rate card
+export interface UiRateCard {
+  perHourRate: number;
+  perKmRate: number;
+  freeKm: number;
+  minimumFare: number;
 }
+export type RateCards = Record<UserType, UiRateCard>;
+
+// Per-type duration slab ("from X hrs → ₹/hr")
+export interface UiSlab {
+  uid: number;
+  fromHours: number;
+  perHourRate: number;
+}
+export type TimeSlabs = Record<UserType, UiSlab[]>;
 
 const dayOptions = [
   { label: "Monday", value: "monday" },
@@ -45,422 +57,317 @@ const dayOptions = [
   { label: "Sunday", value: "sunday" },
 ];
 
-const TimeSlotItem = ({
-  slot,
-  index,
-  updateTimeSlot,
-  removeTimeSlot,
-  perKmPrice,
-  hasCollision,
-  hotspotEnabled,
-  hotspotFare,
-  multiplier,
-}: {
-  slot: TimeSlot;
-  index: number;
-  updateTimeSlot: (index: number, updatedSlot: Partial<TimeSlot>) => void;
-  removeTimeSlot: (id: number) => void;
-  perKmPrice: number;
-  hasCollision: boolean;
-  hotspotEnabled: boolean;
-  hotspotFare: number;
-  multiplier: number;
-}) => {
-  // Per-km rate after surge multiplier (the flat hotspot fare is a separate per-ride charge)
-  const rateAfterSurge = hotspotEnabled ? slot.perKmRate * multiplier : slot.perKmRate;
-
-  // Indicative tax computed on the ₹/km rate (a rate is not a ride total)
-  const breakdown = useTaxBreakdown(rateAfterSurge);
-  const { hasTax, totalTaxAmount, totalPrice, appliedTaxes } = breakdown;
-
-  return (
-    <div
-      className={`w-full p-3 sm:p-4 flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 items-start sm:items-center justify-start sm:justify-center rounded-md ${
-        hasCollision
-          ? "bg-red-50 border-2 border-red-300"
-          : "bg-[#F8F9FA] border-2 border-transparent"
-      }`}
-    >
-      <div className="flex items-center gap-2 w-full sm:w-auto">
-        <span className="font-medium">Slot {index + 1}</span>
-        {hasCollision && (
-          <Tag color="error" className="text-xs">
-            Time Collision!
-          </Tag>
-        )}
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto sm:flex-1 flex-wrap">
-        <div className="flex gap-2 items-center w-full sm:w-auto">
-          <span className="text-sm font-medium min-w-fit">Day:</span>
-          <Select
-            value={slot.day}
-            options={dayOptions}
-            className="w-full sm:w-32"
-            onChange={(day) => updateTimeSlot(index, { day })}
-            status={hasCollision ? "error" : undefined}
-          />
-        </div>
-
-        <div className="flex gap-2 items-center w-full sm:w-auto">
-          <span className="text-sm font-medium min-w-fit">Time:</span>
-          <TimePicker.RangePicker
-            value={slot.timeRange}
-            format="h:mm A"
-            onChange={(timeRange) =>
-              updateTimeSlot(index, {
-                timeRange: timeRange as [Dayjs, Dayjs] | null,
-              })
-            }
-            className="w-full sm:w-48"
-            use12Hours
-            status={hasCollision ? "error" : undefined}
-          />
-        </div>
-
-        <div className="flex gap-2 items-center w-full sm:w-auto">
-          <span className="text-sm font-medium min-w-fit">₹/km:</span>
-          <Input
-            style={{ width: 100 }}
-            value={slot.perKmRate}
-            onChange={(e) => updateTimeSlot(index, { perKmRate: Number(e.target.value) })}
-            type="number"
-            prefix="₹"
-            suffix="/km"
-          />
-        </div>
-
-        <div className="flex gap-2 items-center w-full sm:w-auto">
-          <span className="text-sm font-medium min-w-fit">₹/hr:</span>
-          <Input
-            style={{ width: 100 }}
-            value={slot.perHourRate}
-            onChange={(e) => updateTimeSlot(index, { perHourRate: Number(e.target.value) })}
-            type="number"
-            prefix="₹"
-            suffix="/hr"
-          />
-        </div>
-      </div>
-
-      <div className="flex items-baseline justify-between w-full sm:w-auto gap-2">
-        <div className="flex flex-col gap-1">
-          {/* Rate vs zone ₹/km */}
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-green-600 text-sm sm:text-base">
-              ₹{slot.perKmRate || "0"}/km
-            </span>
-            <Badge
-              status="success"
-              count={`${
-                perKmPrice > 0
-                  ? Math.round(((slot.perKmRate - perKmPrice) / perKmPrice) * 100)
-                  : 0
-              }%`}
-              overflowCount={1000}
-              style={{ backgroundColor: "#52c41a" }}
-            />
-          </div>
-
-          {/* Hotspot effect */}
-          {hotspotEnabled && (
-            <span className="text-xs text-blue-600">
-              After surge ×{multiplier}: ₹{rateAfterSurge.toFixed(2)}/km
-              {hotspotFare > 0 && <> &middot; +₹{hotspotFare.toFixed(2)} flat/ride</>}
-            </span>
-          )}
-
-          {/* Indicative tax breakdown on the rate */}
-          {hasTax && (
-            <Tooltip
-              title={
-                <div style={{ fontSize: 12 }}>
-                  {appliedTaxes.map((t) => (
-                    <div key={t.taxCode}>
-                      {t.taxCode} ({t.taxPercentage}%): +₹{t.taxAmount.toFixed(2)}
-                    </div>
-                  ))}
-                  <div
-                    style={{
-                      borderTop: "1px solid rgba(255,255,255,0.3)",
-                      marginTop: 4,
-                      paddingTop: 4,
-                    }}
-                  >
-                    Total tax: +₹{totalTaxAmount.toFixed(2)} / km
-                  </div>
-                </div>
-              }
-            >
-              <div className="flex items-center gap-1 cursor-help flex-wrap">
-                {appliedTaxes.map((t) => (
-                  <Tag
-                    key={t.taxCode}
-                    color="orange"
-                    style={{ fontSize: 11, margin: 0, fontFamily: "monospace" }}
-                  >
-                    {t.taxCode}
-                  </Tag>
-                ))}
-                <span className="text-orange-500 font-semibold text-sm">
-                  +₹{totalTaxAmount.toFixed(2)}/km
-                </span>
-              </div>
-            </Tooltip>
-          )}
-
-          {/* Indicative per-km incl. tax */}
-          <span className="text-green-700 font-bold text-sm">
-            ≈ ₹{totalPrice.toFixed(2)}/km incl. tax
-          </span>
-        </div>
-
-        <Button
-          icon={<DeleteOutlined />}
-          onClick={() => removeTimeSlot(slot.id)}
-          danger
-          size="small"
-        />
-      </div>
-    </div>
-  );
+const userTypeDetails: Record<UserType, { tag: string; description: string; color: string }> = {
+  "normal-driver": { tag: "Normal Driver", description: "Standard tier", color: "#5599FF" },
+  "premium-driver": { tag: "Premium Driver", description: "Enhanced tier", color: "gold" },
+  "elite-driver": { tag: "Elite Driver", description: "Luxury tier", color: "#5599FF" },
 };
 
-interface DriverTimeSlotsAndPricingProps {
+interface Props {
+  rateCards: RateCards;
+  setRateCards: (v: RateCards) => void;
+  timeSlabs: TimeSlabs;
+  setTimeSlabs: (v: TimeSlabs) => void;
   timeSlots: UserTimeSlots;
-  setTimeSlots: (timeSlots: UserTimeSlots) => void;
+  setTimeSlots: (v: UserTimeSlots) => void;
   hotspotEnabled: boolean;
   hotspotId: string;
   multiplier: number;
-  perKmPrice: number;
 }
 
 const DriverTimeSlotsAndPricing = ({
+  rateCards,
+  setRateCards,
+  timeSlabs,
+  setTimeSlabs,
   timeSlots,
   setTimeSlots,
   hotspotEnabled,
   hotspotId,
   multiplier,
-  perKmPrice,
-}: DriverTimeSlotsAndPricingProps) => {
+}: Props) => {
   const [userType, setUserType] = useState<UserType>("normal-driver");
-
   const dispatch = useAppDispatch();
-  const { hotspots } = useAppSelector((state) => state.hotspot);
-  const activeTaxes = useAppSelector((state) => state.tax.taxes).filter((t) => t.is_active);
-  const hasTax = activeTaxes.length > 0;
+  const { hotspots } = useAppSelector((s) => s.hotspot);
 
   useEffect(() => {
     dispatch(fetchHotspots({ limit: 100 }));
   }, [dispatch]);
 
   const selectedHotspot = hotspots.find((h) => h.id === hotspotId);
-  const hotspotFare = selectedHotspot ? Number(selectedHotspot.fare) : 0;
+  const card = rateCards[userType];
+  const slabs = timeSlabs[userType];
+  const slots = timeSlots[userType];
 
-  const hasTimeCollision = (
-    day: Day,
-    timeRange: [Dayjs, Dayjs] | null,
-    excludeIndex?: number,
-  ): boolean => {
-    if (!timeRange) return false;
-    const [startTime, endTime] = timeRange;
-    const currentSlots = timeSlots[userType];
-    return currentSlots.some((slot, index) => {
-      if (index === excludeIndex) return false;
-      if (slot.day !== day) return false;
-      if (!slot.timeRange) return false;
-      const [slotStart, slotEnd] = slot.timeRange;
-      return (
-        ((startTime.isAfter(slotStart) || startTime.isSame(slotStart)) &&
-          startTime.isBefore(slotEnd)) ||
-        (endTime.isAfter(slotStart) && (endTime.isBefore(slotEnd) || endTime.isSame(slotEnd))) ||
-        ((startTime.isBefore(slotStart) || startTime.isSame(slotStart)) &&
-          (endTime.isAfter(slotEnd) || endTime.isSame(slotEnd)))
-      );
+  // ── Rate card ──────────────────────────────────────────────────────────
+  const updateCard = (patch: Partial<UiRateCard>) =>
+    setRateCards({ ...rateCards, [userType]: { ...card, ...patch } });
+
+  // ── Duration slabs ─────────────────────────────────────────────────────
+  const nextFromHours = () => {
+    const max = slabs.reduce((m, s) => Math.max(m, s.fromHours), 0);
+    return max > 0 ? max + 2 : 2;
+  };
+  const addSlab = () =>
+    setTimeSlabs({
+      ...timeSlabs,
+      [userType]: [...slabs, { uid: Date.now(), fromHours: nextFromHours(), perHourRate: card.perHourRate }],
     });
-  };
+  const updateSlab = (uid: number, patch: Partial<UiSlab>) =>
+    setTimeSlabs({
+      ...timeSlabs,
+      [userType]: slabs.map((s) => (s.uid === uid ? { ...s, ...patch } : s)),
+    });
+  const removeSlab = (uid: number) =>
+    setTimeSlabs({ ...timeSlabs, [userType]: slabs.filter((s) => s.uid !== uid) });
 
-  const userTypeDetails = {
-    "normal-driver": {
-      tag: "Normal Driver",
-      description: "Standard ride pricing",
-      icon: <FiUsers />,
-      color: "#5599FF",
-      badge: "+5%",
-    },
-    "premium-driver": {
-      tag: "Premium Driver",
-      description: "Enhanced service features",
-      icon: <FaRegStar className="text-yellow-400" />,
-      color: "gold",
-      badge: "+10%",
-    },
-    "elite-driver": {
-      tag: "Elite Driver",
-      description: "Luxury ride experience",
-      icon: <FaRegStar className="text-blue-400" />,
-      color: "#5599FF",
-      badge: "+8%",
-    },
-  };
+  const sortedSlabs = [...slabs].sort((a, b) => a.fromHours - b.fromHours);
 
-  const addTimeSlot = () => {
-    const currentUserTimeSlots = timeSlots[userType];
-    const newTimeSlot: TimeSlot = {
-      id:
-        currentUserTimeSlots.length > 0
-          ? Math.max(...currentUserTimeSlots.map((t) => t.id)) + 1
-          : 1,
-      day: "monday" as Day,
-      timeRange: [dayjs("7:00 AM", "h:mm A"), dayjs("9:00 AM", "h:mm A")] as [Dayjs, Dayjs],
-      perKmRate: perKmPrice || 12,
-      perHourRate: 150,
-    };
+  // ── Day/time slots ─────────────────────────────────────────────────────
+  const addSlot = () => {
+    const newId = slots.length > 0 ? Math.max(...slots.map((s) => s.id)) + 1 : 1;
     setTimeSlots({
       ...timeSlots,
-      [userType]: [...currentUserTimeSlots, newTimeSlot],
+      [userType]: [
+        ...slots,
+        {
+          id: newId,
+          day: "monday" as Day,
+          timeRange: [dayjs("7:00 AM", "h:mm A"), dayjs("9:00 AM", "h:mm A")] as [Dayjs, Dayjs],
+          perKmRate: card.perKmRate,
+          perHourRate: card.perHourRate,
+        },
+      ],
     });
   };
-
-  const updateTimeSlot = (index: number, updatedSlot: Partial<TimeSlot>) => {
-    const newTimeSlots = { ...timeSlots };
-    newTimeSlots[userType][index] = {
-      ...newTimeSlots[userType][index],
-      ...updatedSlot,
-    };
-    setTimeSlots(newTimeSlots);
+  const updateSlot = (index: number, patch: Partial<TimeSlot>) => {
+    const next = { ...timeSlots };
+    next[userType][index] = { ...next[userType][index], ...patch };
+    setTimeSlots(next);
   };
-
-  const removeTimeSlot = (id: number) => {
-    setTimeSlots({
-      ...timeSlots,
-      [userType]: timeSlots[userType].filter((slot) => slot.id !== id),
-    });
-  };
+  const removeSlot = (id: number) =>
+    setTimeSlots({ ...timeSlots, [userType]: slots.filter((s) => s.id !== id) });
 
   return (
     <Card size="small">
-      <div className="w-full flex flex-col gap-4">
-        <div className="flex items-center justify-between w-full">
-          <div className="w-full flex items-center gap-1">
-            <BsClock className="text-[20px] text-[#0080FF]" />
-            <span className="text-[19px] font-semibold p-0 m-0">
-              Driver Time Slots &amp; Pricing (₹/km &amp; ₹/hr)
-            </span>
+      <div className="w-full max-w-3xl flex flex-col gap-4">
+        <div className="flex items-center gap-1">
+          <BsClock className="text-[20px] text-[#0080FF]" />
+          <span className="text-[19px] font-semibold">Driver Rates (time-first)</span>
+        </div>
+
+        {/* Driver type selector */}
+        <Segmented<UserType>
+          block
+          size="large"
+          value={userType}
+          onChange={(v) => setUserType(v as UserType)}
+          options={[
+            {
+              value: "normal-driver",
+              label: (
+                <span className="flex items-center justify-center gap-1">
+                  <FiUsers /> Normal
+                </span>
+              ),
+            },
+            {
+              value: "premium-driver",
+              label: (
+                <span className="flex items-center justify-center gap-1">
+                  <FaRegStar className="text-yellow-400" /> Premium
+                </span>
+              ),
+            },
+            {
+              value: "elite-driver",
+              label: (
+                <span className="flex items-center justify-center gap-1">
+                  <FaRegStar className="text-blue-400" /> Elite
+                </span>
+              ),
+            },
+          ]}
+        />
+
+        <Tag color={userTypeDetails[userType].color} className="w-fit">
+          {userTypeDetails[userType].tag} — {userTypeDetails[userType].description}
+        </Tag>
+
+        {/* Rate card — default when no day/time slot matches */}
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-semibold">Default Rate Card</span>
+          <span className="text-xs text-gray-500">
+            Used when no day/time slot matches. ₹/hr is the primary rate; leave ₹/km = 0 for pure
+            time-based pricing.
+          </span>
+          <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col gap-1 w-44">
+              <span className="text-xs font-medium">Price / Hour</span>
+              <InputNumber
+                min={0}
+                precision={2}
+                value={card.perHourRate}
+                onChange={(v) => updateCard({ perHourRate: v || 0 })}
+                prefix="₹"
+                addonAfter="/hr"
+                className="w-full"
+                rootClassName="w-full"
+              />
+            </div>
+            <div className="flex flex-col gap-1 w-44">
+              <span className="text-xs font-medium">Price / KM (optional)</span>
+              <InputNumber
+                min={0}
+                precision={2}
+                value={card.perKmRate}
+                onChange={(v) => updateCard({ perKmRate: v || 0 })}
+                prefix="₹"
+                addonAfter="/km"
+                className="w-full"
+                rootClassName="w-full"
+              />
+            </div>
+            <div className="flex flex-col gap-1 w-44">
+              <span className="text-xs font-medium">Free Distance</span>
+              <InputNumber
+                min={0}
+                precision={2}
+                value={card.freeKm}
+                onChange={(v) => updateCard({ freeKm: v || 0 })}
+                addonAfter="km"
+                className="w-full"
+                rootClassName="w-full"
+              />
+            </div>
+            <div className="flex flex-col gap-1 w-44">
+              <span className="text-xs font-medium">Minimum Fare</span>
+              <InputNumber
+                min={0}
+                precision={2}
+                value={card.minimumFare}
+                onChange={(v) => updateCard({ minimumFare: v || 0 })}
+                prefix="₹"
+                className="w-full"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Active taxes banner */}
-        {hasTax && (
-          <div className="flex items-center gap-2 px-3 py-2 bg-orange-50 border border-orange-200 rounded-md flex-wrap">
-            {activeTaxes.map((t) => (
-              <Tag
-                key={t.tax_code}
-                color="orange"
-                style={{ fontFamily: "monospace", fontWeight: 700, margin: 0 }}
-              >
-                {t.tax_code} {t.percentage}%
-              </Tag>
-            ))}
-            <span className="text-sm text-orange-700">
-              applicable taxes will be added to the final fare
-            </span>
+        <Divider className="my-1" />
+
+        {/* Duration slabs */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold">Duration Slabs (₹/hr by trip length)</span>
+            <Button size="small" icon={<PlusOutlined />} onClick={addSlab}>
+              Add Slab
+            </Button>
           </div>
-        )}
-
-        <div className="w-full px-4">
-          <Segmented<string>
-            options={[
-              {
-                className: "w-full",
-                label: (
-                  <div className="flex gap-1 items-center justify-center flex-wrap py-1 sm:py-0">
-                    <FiUsers />
-                    <span>Normal Driver</span>
-                  </div>
-                ),
-                value: "normal-driver",
-              },
-              {
-                className: "w-full",
-                label: (
-                  <div className="flex gap-1 items-center justify-center flex-wrap py-1 sm:py-0">
-                    <FaRegStar className="text-yellow-400" />
-                    <span>Premium Driver</span>
-                  </div>
-                ),
-                value: "premium-driver",
-              },
-              {
-                className: "w-full",
-                label: (
-                  <div className="flex gap-1 items-center justify-center flex-wrap py-1 sm:py-0">
-                    <FaRegStar className="text-yellow-400" />
-                    <span>Elite Driver</span>
-                  </div>
-                ),
-                value: "elite-driver",
-              },
-            ]}
-            size="large"
-            value={userType}
-            className="w-full"
-            onChange={(value) => setUserType(value as UserType)}
-          />
-        </div>
-
-        <div className="flex gap-1 justify-between items-center">
-          <div className="flex gap-2 flex-wrap">
-            <Tag color={userTypeDetails[userType].color}>
-              <div className="flex gap-1 items-center">
-                {userTypeDetails[userType].icon}
-                <span>{userTypeDetails[userType].tag}</span>
+          <div className="flex items-center gap-2 p-2 bg-[#EEF5FF] rounded-md">
+            <span className="text-xs text-gray-600 min-w-[120px]">From 0 hrs (base)</span>
+            <InputNumber value={card.perHourRate} disabled prefix="₹" addonAfter="/hr" size="small" className="w-full" />
+          </div>
+          {sortedSlabs.map((s) => (
+            <div key={s.uid} className="flex items-center gap-2">
+              <div className="flex-1 flex items-center gap-2 p-2 bg-[#F8F9FA] rounded-md">
+                <span className="text-xs text-gray-500">From</span>
+                <InputNumber
+                  min={0.5}
+                  step={0.5}
+                  precision={2}
+                  value={s.fromHours}
+                  onChange={(v) => updateSlab(s.uid, { fromHours: v || 0 })}
+                  addonAfter="hrs"
+                  size="small"
+                  className="w-full"
+                />
+                <span className="text-xs text-gray-500">→</span>
+                <InputNumber
+                  min={0}
+                  precision={2}
+                  value={s.perHourRate}
+                  onChange={(v) => updateSlab(s.uid, { perHourRate: v ?? 0 })}
+                  prefix="₹"
+                  addonAfter="/hr"
+                  size="small"
+                  className="w-full"
+                />
               </div>
-            </Tag>
-            <span className="text-[#535454]">{userTypeDetails[userType].description}</span>
-          </div>
-          <Button icon={<PlusOutlined />} onClick={addTimeSlot}>
-            Add Time Slot
-          </Button>
+              <Button type="text" danger icon={<DeleteOutlined />} size="small" onClick={() => removeSlab(s.uid)} />
+            </div>
+          ))}
         </div>
 
-        <div className="max-h-[37vh] overflow-y-auto pr-1">
-          <div className="flex flex-col gap-2">
-            {timeSlots[userType].map((item, index) => {
-              const hasCollision = hasTimeCollision(item.day, item.timeRange, index);
-              return (
-                <div key={index} className="py-0">
-                  <TimeSlotItem
-                    slot={item}
-                    index={index}
-                    updateTimeSlot={updateTimeSlot}
-                    removeTimeSlot={removeTimeSlot}
-                    perKmPrice={perKmPrice}
-                    hasCollision={hasCollision}
-                    hotspotEnabled={hotspotEnabled}
-                    hotspotFare={hotspotFare}
-                    multiplier={multiplier}
-                  />
-                </div>
-              );
-            })}
+        <Divider className="my-1" />
+
+        {/* Day/time slots */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold">Day / Time Slots (override)</span>
+            <Button size="small" icon={<PlusOutlined />} onClick={addSlot}>
+              Add Slot
+            </Button>
+          </div>
+          <span className="text-xs text-gray-500">
+            Flat ₹/hr + ₹/km for a specific day &amp; time window (overrides the rate card &amp; slabs).
+          </span>
+          <div className="max-h-[26vh] overflow-y-auto flex flex-col gap-2 pr-1">
+            {slots.map((slot, index) => (
+              <div key={slot.id} className="p-2 bg-[#F8F9FA] rounded-md flex flex-wrap items-center gap-2">
+                <span className="font-medium text-xs">#{index + 1}</span>
+                <Select
+                  value={slot.day}
+                  options={dayOptions}
+                  size="small"
+                  className="w-28"
+                  onChange={(day) => updateSlot(index, { day })}
+                />
+                <TimePicker.RangePicker
+                  value={slot.timeRange}
+                  format="h:mm A"
+                  use12Hours
+                  size="small"
+                  className="w-44"
+                  onChange={(r) => updateSlot(index, { timeRange: r as [Dayjs, Dayjs] | null })}
+                />
+                <Input
+                  style={{ width: 90 }}
+                  size="small"
+                  type="number"
+                  prefix="₹"
+                  suffix="/hr"
+                  value={slot.perHourRate}
+                  onChange={(e) => updateSlot(index, { perHourRate: Number(e.target.value) })}
+                />
+                <Input
+                  style={{ width: 90 }}
+                  size="small"
+                  type="number"
+                  prefix="₹"
+                  suffix="/km"
+                  value={slot.perKmRate}
+                  onChange={(e) => updateSlot(index, { perKmRate: Number(e.target.value) })}
+                />
+                <Button type="text" danger icon={<DeleteOutlined />} size="small" onClick={() => removeSlot(slot.id)} />
+              </div>
+            ))}
           </div>
         </div>
 
         {hotspotEnabled && selectedHotspot && (
-          <div className="w-full p-4 flex flex-col gap-2 bg-[#F8F9FA] rounded-md">
+          <div className="w-full p-3 flex flex-col gap-1 bg-[#F8F9FA] rounded-md">
             <div className="flex gap-2 items-center">
               <Tag color="processing">
-                <div className="flex gap-1 items-center">
+                <span className="flex gap-1 items-center">
                   <LuZap />
-                  <span>{selectedHotspot.hotspot_name}</span>
-                </div>
+                  {selectedHotspot.hotspot_name}
+                </span>
               </Tag>
-              <span className="text-sm">Active Hotspot Configuration</span>
+              <span className="text-sm">Active hotspot</span>
             </div>
             <span className="text-sm">
-              Surge: ×{multiplier} on fare &middot; Flat fare: +₹
-              {Number(selectedHotspot.fare).toFixed(2)} per ride
+              Surge ×{multiplier} on fare · +₹{Number(selectedHotspot.fare).toFixed(2)} flat / ride
             </span>
           </div>
         )}

@@ -3,6 +3,23 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 import axiosIns from "../../api/axios";
 import axios from "axios";
 
+export interface DriverRateCard {
+  id?: string;
+  driver_types: string;
+  per_hour_rate: number;
+  per_km_rate: number;
+  free_km: number;
+  minimum_fare: number;
+}
+
+export interface TimeSlab {
+  id?: string;
+  driver_types: string;
+  from_hours: number;
+  per_hour_rate: number;
+  sort_order: number;
+}
+
 export interface PricingFareRule {
   id: string;
   country_name: string;
@@ -13,16 +30,18 @@ export interface PricingFareRule {
   district_id: string | null;
   area_name: string;
   area_id: string;
-  per_km_price: number;
-  per_hour_price: number;
-  minimum_fare: number;
   one_way_return_pct: number;
+  night_charge_pct: number;
+  night_start: string;
+  night_end: string;
+  outstation_allowance_per_day: number;
   is_hotspot: boolean;
   hotspot_id: string | null;
   hotspot_name: string | null;
   multiplier: number | null;
   pincode: string | null;
-  extra_km_checkpoints?: Array<{ id: string; from_km: number; price: number; sort_order: number }>;
+  rate_cards?: DriverRateCard[];
+  time_slabs?: TimeSlab[];
   time_slots?: DriverTimeSlot[];
 }
 
@@ -35,6 +54,41 @@ export interface DriverTimeSlot {
   to_time: string;
   per_km_rate: number;
   per_hour_rate: number;
+}
+
+// Payload shape for create/update with-slots
+export interface PricingRulePayload {
+  district_id?: string;
+  area_id?: string | null;
+  one_way_return_pct?: number;
+  night_charge_pct?: number;
+  night_start?: string;
+  night_end?: string;
+  outstation_allowance_per_day?: number;
+  is_hotspot?: boolean;
+  hotspot_id?: string | null;
+  multiplier?: number | null;
+  rate_cards?: Array<{
+    driver_types: string;
+    per_hour_rate: number;
+    per_km_rate: number;
+    free_km: number;
+    minimum_fare: number;
+  }>;
+  time_slabs?: Array<{
+    driver_types: string;
+    from_hours: number;
+    per_hour_rate: number;
+    sort_order: number;
+  }>;
+  time_slots?: Array<{
+    driver_types: string;
+    day: string;
+    from_time: string;
+    to_time: string;
+    per_km_rate: number;
+    per_hour_rate: number;
+  }>;
 }
 
 interface PricingFareRulesState {
@@ -141,29 +195,7 @@ export const fetchPricingFareRuleById = createAsyncThunk(
 // Async thunk to create pricing fare rule with time slots
 export const createPricingRuleWithSlots = createAsyncThunk(
   "pricingFareRules/createPricingRuleWithSlots",
-  async (
-    data: {
-      district_id: string;
-      area_id?: string | null;
-      per_km_price: number;
-      per_hour_price?: number;
-      minimum_fare?: number;
-      one_way_return_pct?: number;
-      is_hotspot: boolean;
-      hotspot_id?: string | null;
-      multiplier?: number | null;
-      extra_km_checkpoints?: Array<{ from_km: number; price: number; sort_order: number }>;
-      time_slots: Array<{
-        driver_types: string;
-        day: string;
-        from_time: string;
-        to_time: string;
-        per_km_rate: number;
-        per_hour_rate: number;
-      }>;
-    },
-    { rejectWithValue },
-  ) => {
+  async (data: PricingRulePayload, { rejectWithValue }) => {
     try {
       const response = await axiosIns.post("/api/pricing-fare-rules/with-slots", data);
       return response.data.data;
@@ -179,32 +211,7 @@ export const createPricingRuleWithSlots = createAsyncThunk(
 export const updatePricingRuleWithSlots = createAsyncThunk(
   "pricingFareRules/updatePricingRuleWithSlots",
   async (
-    {
-      id,
-      data,
-    }: {
-      id: string;
-      data: {
-        district_id?: string;
-        area_id?: string | null;
-        per_km_price?: number;
-        per_hour_price?: number;
-        minimum_fare?: number;
-        one_way_return_pct?: number;
-        is_hotspot?: boolean;
-        hotspot_id?: string | null;
-        multiplier?: number | null;
-        extra_km_checkpoints?: Array<{ from_km: number; price: number; sort_order: number }>;
-        time_slots?: Array<{
-          driver_types: string;
-          day: string;
-          from_time: string;
-          to_time: string;
-          per_km_rate: number;
-          per_hour_rate: number;
-        }>;
-      };
-    },
+    { id, data }: { id: string; data: PricingRulePayload },
     { rejectWithValue },
   ) => {
     try {

@@ -1,4 +1,5 @@
-import { AutoComplete, Button, Card, Divider, Input, InputNumber, Modal, Space } from "antd";
+import { AutoComplete, Button, Card, Divider, Input, InputNumber, Modal, Space, TimePicker } from "antd";
+import type { Dayjs } from "dayjs";
 import { messageApi as message } from "../../utilities/antdStaticHolder";
 import { MdOutlineLocationOn } from "react-icons/md";
 import { PlusOutlined } from "@ant-design/icons";
@@ -26,14 +27,16 @@ interface LocationConfigurationProps {
   setArea: (area: string) => void;
   pincode: string;
   setPincode: (pincode: string) => void;
-  perKmPrice: number;
-  setPerKmPrice: (v: number) => void;
-  perHourPrice: number;
-  setPerHourPrice: (v: number) => void;
-  minimumFare: number;
-  setMinimumFare: (v: number) => void;
   oneWayReturnPct: number;
   setOneWayReturnPct: (v: number) => void;
+  nightChargePct: number;
+  setNightChargePct: (v: number) => void;
+  nightStart: Dayjs;
+  setNightStart: (v: Dayjs) => void;
+  nightEnd: Dayjs;
+  setNightEnd: (v: Dayjs) => void;
+  outstationAllowancePerDay: number;
+  setOutstationAllowancePerDay: (v: number) => void;
 }
 
 const LocationConfiguration = ({
@@ -47,14 +50,16 @@ const LocationConfiguration = ({
   setArea,
   pincode,
   setPincode,
-  perKmPrice,
-  setPerKmPrice,
-  perHourPrice,
-  setPerHourPrice,
-  minimumFare,
-  setMinimumFare,
   oneWayReturnPct,
   setOneWayReturnPct,
+  nightChargePct,
+  setNightChargePct,
+  nightStart,
+  setNightStart,
+  nightEnd,
+  setNightEnd,
+  outstationAllowancePerDay,
+  setOutstationAllowancePerDay,
 }: LocationConfigurationProps) => {
   const dispatch = useAppDispatch();
   const {
@@ -562,50 +567,6 @@ const LocationConfiguration = ({
             <Input value={pincode} onChange={handlePincodeChange} />
           </div>
           <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">Price per KM</span>
-            <InputNumber
-              min={0}
-              precision={2}
-              value={perKmPrice}
-              onChange={(e) => setPerKmPrice(e || 0)}
-              prefix="₹"
-              addonAfter="/km"
-              className="w-full"
-            />
-            <span className="text-xs text-gray-500 mt-1">Base distance rate (from 0 km)</span>
-          </div>
-        </div>
-
-        <div className="w-full grid grid-cols-2 gap-4">
-          <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">Price per Hour</span>
-            <InputNumber
-              min={0}
-              precision={2}
-              value={perHourPrice}
-              onChange={(e) => setPerHourPrice(e || 0)}
-              prefix="₹"
-              addonAfter="/hr"
-              className="w-full"
-            />
-            <span className="text-xs text-gray-500 mt-1">Charged on trip duration</span>
-          </div>
-          <div className="w-full flex flex-col">
-            <span className="text-sm font-medium mb-1">Minimum Fare</span>
-            <InputNumber
-              min={0}
-              precision={2}
-              value={minimumFare}
-              onChange={(e) => setMinimumFare(e || 0)}
-              prefix="₹"
-              className="w-full"
-            />
-            <span className="text-xs text-gray-500 mt-1">Fare floor for short trips</span>
-          </div>
-        </div>
-
-        <div className="w-full grid grid-cols-2 gap-4">
-          <div className="w-full flex flex-col">
             <span className="text-sm font-medium mb-1">One-way Return %</span>
             <InputNumber
               min={0}
@@ -620,6 +581,60 @@ const LocationConfiguration = ({
               Added to one-way trips (driver's return). Round trips: none.
             </span>
           </div>
+        </div>
+
+        <div className="flex items-center gap-2 mt-1">
+          <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            Zone-wide surcharges
+          </span>
+          <Divider className="flex-1 my-0" />
+        </div>
+
+        <div className="w-full grid grid-cols-2 gap-4">
+          <div className="w-full flex flex-col">
+            <span className="text-sm font-medium mb-1">Night Charge %</span>
+            <InputNumber
+              min={0}
+              max={100}
+              precision={2}
+              value={nightChargePct}
+              onChange={(e) => setNightChargePct(e || 0)}
+              addonAfter="%"
+              className="w-full"
+              rootClassName="w-full"
+            />
+            <span className="text-xs text-gray-500 mt-1">Added during the night window</span>
+          </div>
+          <div className="w-full flex flex-col">
+            <span className="text-sm font-medium mb-1">Outstation / day</span>
+            <InputNumber
+              min={0}
+              precision={2}
+              value={outstationAllowancePerDay}
+              onChange={(e) => setOutstationAllowancePerDay(e || 0)}
+              prefix="₹"
+              className="w-full"
+            />
+            <span className="text-xs text-gray-500 mt-1">Driver food/stay (outstation)</span>
+          </div>
+        </div>
+
+        <div className="w-full flex flex-col">
+          <span className="text-sm font-medium mb-1">Night Window</span>
+          <TimePicker.RangePicker
+            value={[nightStart, nightEnd]}
+            format="h:mm A"
+            use12Hours
+            allowClear={false}
+            className="w-full"
+            onChange={(r) => {
+              if (r && r[0] && r[1]) {
+                setNightStart(r[0]);
+                setNightEnd(r[1]);
+              }
+            }}
+          />
+          <span className="text-xs text-gray-500 mt-1">e.g. 10:00 PM – 6:00 AM</span>
         </div>
       </div>
 

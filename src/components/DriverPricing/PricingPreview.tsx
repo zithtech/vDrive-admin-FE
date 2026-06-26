@@ -1,14 +1,16 @@
 import { useEffect } from "react";
-import { Card, Typography, Tag, Divider, Table } from "antd";
+import { Card, Typography, Tag, Divider } from "antd";
 import { MdOutlineLocationOn } from "react-icons/md";
-import { BsClock } from "react-icons/bs";
-import { ThunderboltOutlined, NodeIndexOutlined } from "@ant-design/icons";
-import type { UserTimeSlots, UserType, TimeSlot } from "./DriverTimeSlotsAndPricing";
-import type { UiCheckpoint } from "./ExtraKmConfiguration";
+import { ThunderboltOutlined } from "@ant-design/icons";
+import type { Dayjs } from "dayjs";
+import type {
+  UserType,
+  RateCards,
+  TimeSlabs,
+  UserTimeSlots,
+} from "./DriverTimeSlotsAndPricing";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { fetchHotspots } from "../../store/slices/hotspotSlice";
-import { computeTaxBreakdown } from "../../hooks/useTaxedPricing";
-import TaxBreakdownDisplay from "./TaxbreakdownDisplay";
 
 interface PricingPreviewProps {
   country: string;
@@ -16,16 +18,24 @@ interface PricingPreviewProps {
   district: string;
   area: string;
   pincode: string;
-  timeSlots: UserTimeSlots;
+  oneWayReturnPct: number;
+  nightChargePct: number;
+  nightStart: Dayjs;
+  nightEnd: Dayjs;
+  outstationAllowancePerDay: number;
   hotspotEnabled: boolean;
   hotspotId: string;
   multiplier: number;
-  perKmPrice: number;
-  perHourPrice: number;
-  minimumFare: number;
-  oneWayReturnPct: number;
-  extraKmCheckpoints: UiCheckpoint[];
+  rateCards: RateCards;
+  timeSlabs: TimeSlabs;
+  timeSlots: UserTimeSlots;
 }
+
+const TYPES: { key: UserType; label: string; color: string }[] = [
+  { key: "normal-driver", label: "Normal", color: "default" },
+  { key: "premium-driver", label: "Premium", color: "gold" },
+  { key: "elite-driver", label: "Elite", color: "blue" },
+];
 
 const PricingPreview = ({
   country,
@@ -33,22 +43,21 @@ const PricingPreview = ({
   district,
   area,
   pincode,
-  timeSlots,
+  oneWayReturnPct,
+  nightChargePct,
+  nightStart,
+  nightEnd,
+  outstationAllowancePerDay,
   hotspotEnabled,
   hotspotId,
   multiplier,
-  perKmPrice,
-  perHourPrice,
-  minimumFare,
-  oneWayReturnPct,
-  extraKmCheckpoints,
+  rateCards,
+  timeSlabs,
+  timeSlots,
 }: PricingPreviewProps) => {
   const dispatch = useAppDispatch();
   const { hotspots } = useAppSelector((s) => s.hotspot);
   const { countries, states } = useAppSelector((s) => s.location);
-
-  // We need the full taxes array for the pure computeTaxBreakdown function
-  const taxes = useAppSelector((s) => s.tax.taxes);
 
   useEffect(() => {
     dispatch(fetchHotspots({ limit: 100 }));
@@ -56,140 +65,116 @@ const PricingPreview = ({
 
   const selectedHotspot = hotspots.find((h) => h.id === hotspotId);
   const hotspotFare = selectedHotspot ? Number(selectedHotspot.fare) : 0;
-
   const countryLabel = countries.find((c) => c.id === country)?.name || country;
   const stateLabel = states.find((s) => s.id === state)?.name || state;
-
-  const userTypeTags = {
-    "normal-driver": <Tag color="default">Normal Driver</Tag>,
-    "premium-driver": <Tag color="gold">Premium Driver</Tag>,
-    "elite-driver": <Tag color="blue">Elite Driver</Tag>,
-  };
-
-  // Indicative tax on a slot's per-km rate (after surge)
-  const getRateBreakdown = (slot: TimeSlot) => {
-    const rateAfterSurge = hotspotEnabled ? slot.perKmRate * multiplier : slot.perKmRate;
-    return computeTaxBreakdown(rateAfterSurge, taxes);
-  };
-
-  // Extra-KM distance bands: 0-km row = zone Price per KM, then each breakpoint
-  const sortedCheckpoints = [...extraKmCheckpoints].sort((a, b) => a.from_km - b.from_km);
-  const firstBreak = sortedCheckpoints.length > 0 ? sortedCheckpoints[0].from_km : null;
-  const bandRows = [
-    {
-      key: "base",
-      kmRange: firstBreak !== null ? `0–${firstBreak} km` : `0 km and beyond`,
-      rate: `₹${Number(perKmPrice).toFixed(2)} / km`,
-    },
-    ...sortedCheckpoints.map((c, i) => {
-      const next = sortedCheckpoints[i + 1];
-      return {
-        key: c.uid,
-        kmRange: next ? `${c.from_km}–${next.from_km} km` : `${c.from_km} km and beyond`,
-        rate: `₹${Number(c.price).toFixed(2)} / km`,
-      };
-    }),
-  ];
 
   return (
     <Card size="small" className="w-full">
       <div className="w-full flex flex-col gap-4">
-        <Typography.Title level={5} className="text-lg sm:text-xl">
-          Pricing Preview
-        </Typography.Title>
+        <Typography.Title level={5}>Pricing Preview</Typography.Title>
 
-        {/* Location row */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex flex-col gap-2 sm:flex-1">
-            <div className="flex items-center gap-2">
-              <MdOutlineLocationOn className="text-[20px] text-[#0080FF]" />
-              <span className="font-semibold">Location</span>
-            </div>
-            <div className="p-2 bg-[#F8F9FA] rounded-md">
-              <span className="text-sm break-all">
-                {[countryLabel, stateLabel, district, area, pincode]
-                  .filter((x) => x && x.trim() !== "" && x.trim() !== "N/A")
-                  .join(" - ")}
-              </span>
-            </div>
-          </div>
+        {/* Location */}
+        <div className="flex items-center gap-2">
+          <MdOutlineLocationOn className="text-[20px] text-[#0080FF]" />
+          <span className="font-semibold">Location</span>
+        </div>
+        <div className="p-2 bg-[#F8F9FA] rounded-md text-sm break-all">
+          {[countryLabel, stateLabel, district, area, pincode]
+            .filter((x) => x && x.trim() !== "" && x.trim() !== "N/A")
+            .join(" - ") || "—"}
         </div>
 
-        {/* Zone rate summary */}
+        {/* Zone-wide */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col">
-            <span className="text-[11px] text-gray-500 uppercase">Price / KM</span>
-            <span className="font-semibold text-green-700">₹{Number(perKmPrice).toFixed(2)}</span>
-          </div>
-          <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col">
-            <span className="text-[11px] text-gray-500 uppercase">Price / Hour</span>
-            <span className="font-semibold text-green-700">₹{Number(perHourPrice).toFixed(2)}</span>
-          </div>
-          <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col">
-            <span className="text-[11px] text-gray-500 uppercase">Minimum Fare</span>
-            <span className="font-semibold text-green-700">₹{Number(minimumFare).toFixed(2)}</span>
-          </div>
-          <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col">
             <span className="text-[11px] text-gray-500 uppercase">One-way Return</span>
+            <span className="font-semibold text-green-700">{Number(oneWayReturnPct).toFixed(0)}%</span>
+          </div>
+          <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col">
+            <span className="text-[11px] text-gray-500 uppercase">Night Charge</span>
+            <span className="font-semibold text-green-700">{Number(nightChargePct).toFixed(0)}%</span>
+          </div>
+          <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col">
+            <span className="text-[11px] text-gray-500 uppercase">Night Window</span>
+            <span className="font-semibold text-gray-700 text-xs">
+              {nightStart.format("h:mm A")}–{nightEnd.format("h:mm A")}
+            </span>
+          </div>
+          <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col">
+            <span className="text-[11px] text-gray-500 uppercase">Outstation / day</span>
             <span className="font-semibold text-green-700">
-              {Number(oneWayReturnPct).toFixed(0)}%
+              ₹{Number(outstationAllowancePerDay).toFixed(0)}
             </span>
           </div>
         </div>
 
-        {/* Formula reminder */}
         <div className="p-2 bg-[#EEF5FF] rounded-md text-xs text-gray-600">
-          fare = (distance × ₹/km) + (hours × ₹/hr) + one-way return → × surge + flat hotspot fare,
-          floored at minimum fare, then taxes.
+          fare = hours×₹/hr (duration slabs) + max(0, km−free)×₹/km + one-way return → × surge + flat
+          hotspot + night %, floored at minimum, then taxes.
         </div>
 
-        {/* Slots grid */}
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <BsClock className="text-[18px] text-[#0080FF]" />
-            <span className="font-semibold">Time Slot Rates</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {Object.entries(timeSlots).map(([userType, slots]) => (
-              <div key={userType} className="flex flex-col gap-2">
-                <div className="font-semibold text-center">
-                  {userTypeTags[userType as UserType]}
+        {/* Per driver type */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {TYPES.map(({ key, label, color }) => {
+            const card = rateCards[key];
+            const slabs = [...timeSlabs[key]].sort((a, b) => a.fromHours - b.fromHours);
+            const slots = timeSlots[key];
+            return (
+              <div key={key} className="flex flex-col gap-2 p-2 bg-[#F8F9FA] rounded-md">
+                <Tag color={color} className="w-fit">
+                  {label}
+                </Tag>
+                <div className="text-[13px] flex flex-col gap-0.5">
+                  <span>
+                    Base: <strong>₹{card.perHourRate}/hr</strong>
+                  </span>
+                  <span>
+                    Distance: <strong>₹{card.perKmRate}/km</strong> (free {card.freeKm} km)
+                  </span>
+                  <span>
+                    Minimum: <strong>₹{card.minimumFare}</strong>
+                  </span>
                 </div>
-                {slots.map((slot: TimeSlot) => {
-                  const rateAfterSurge = hotspotEnabled
-                    ? slot.perKmRate * multiplier
-                    : slot.perKmRate;
-                  const breakdown = getRateBreakdown(slot);
 
-                  return (
-                    <div key={slot.id} className="p-2 bg-[#F8F9FA] rounded-md flex flex-col gap-1">
-                      <span className="capitalize font-medium">{slot.day}</span>
-                      <span className="text-[12px] text-gray-600">
-                        {slot.timeRange
-                          ? `${slot.timeRange[0].format("h:mm A")} - ${slot.timeRange[1].format("h:mm A")}`
-                          : "No time set"}
+                <Divider className="my-1" />
+                <span className="text-[11px] text-gray-500 uppercase">Duration slabs</span>
+                <div className="text-[12px] flex flex-col gap-0.5">
+                  <span>
+                    0{slabs.length ? `–${slabs[0].fromHours}` : "+"} hr → ₹{card.perHourRate}/hr
+                  </span>
+                  {slabs.map((s, i) => {
+                    const next = slabs[i + 1];
+                    return (
+                      <span key={s.uid}>
+                        {s.fromHours}
+                        {next ? `–${next.fromHours}` : "+"} hr → ₹{s.perHourRate}/hr
                       </span>
-                      <span className="text-[12px] text-gray-600">
-                        Rate: ₹{slot.perKmRate}/km &middot; ₹{slot.perHourRate}/hr
-                      </span>
-                      {hotspotEnabled && selectedHotspot && (
-                        <span className="text-[12px] text-blue-600">
-                          After surge ×{multiplier}: ₹{rateAfterSurge.toFixed(2)}/km
-                        </span>
-                      )}
-                      {/* Indicative per-km tax breakdown */}
-                      <Divider style={{ margin: "4px 0" }} />
-                      <span className="text-[11px] text-gray-400">indicative tax / km</span>
-                      <TaxBreakdownDisplay breakdown={breakdown} />
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+
+                <Divider className="my-1" />
+                <span className="text-[11px] text-gray-500 uppercase">
+                  Day/Time slots ({slots.length})
+                </span>
+                <div className="text-[12px] flex flex-col gap-0.5">
+                  {slots.length === 0 && <span className="text-gray-400">none</span>}
+                  {slots.map((s) => (
+                    <span key={s.id}>
+                      <span className="capitalize">{s.day}</span>{" "}
+                      {s.timeRange
+                        ? `${s.timeRange[0].format("h:mm A")}-${s.timeRange[1].format("h:mm A")}`
+                        : ""}{" "}
+                      → ₹{s.perHourRate}/hr, ₹{s.perKmRate}/km
+                    </span>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        {/* Hotspot section */}
+        {/* Hotspot */}
         {hotspotEnabled && selectedHotspot && (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
@@ -203,31 +188,6 @@ const PricingPreview = ({
             </div>
           </div>
         )}
-
-        {/* Extra KM section */}
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <NodeIndexOutlined className="text-[18px] text-[#0080FF]" />
-            <span className="font-semibold">Distance Rate Bands</span>
-          </div>
-          <div className="p-2 bg-[#F8F9FA] rounded-md flex flex-col gap-2">
-            <Table
-              size="small"
-              pagination={false}
-              rowKey="key"
-              dataSource={bandRows}
-              columns={[
-                { title: "KM Range", dataIndex: "kmRange", key: "kmRange" },
-                {
-                  title: "Rate",
-                  dataIndex: "rate",
-                  key: "rate",
-                  render: (v: string) => <span className="text-green-600 font-semibold">{v}</span>,
-                },
-              ]}
-            />
-          </div>
-        </div>
       </div>
     </Card>
   );
