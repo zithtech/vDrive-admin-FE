@@ -186,7 +186,7 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
           type="primary"
           icon={<SendOutlined style={{ fontSize: "10px" }} />}
           onClick={() => onOpenNotifyModal(record)}
-          className="rounded-md font-bold text-[9px] uppercase tracking-wider h-7 px-2.5 !bg-blue-600 hover:!bg-blue-700 text-white border-none shadow-sm flex items-center gap-1 transition-all"
+          className="rounded-md font-bold text-[9px] uppercase tracking-wider h-7 px-2.5 !bg-blue-600 hover:!bg-blue-700 text-white border-none !shadow-none flex items-center gap-1 transition-all"
         >
           Send
         </Button>
@@ -207,7 +207,7 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
                       {
                         key: "edit",
                         icon: <EditOutlined className="text-slate-500" />,
-                        label: <span className="font-semibold text-xs text-slate-700 dark:text-slate-200">Edit</span>,
+                        label: <span className="font-semibold text-xs text-slate-700 dark:text-slate-100">Edit</span>,
                       },
                     ]
                   : []),
@@ -265,12 +265,12 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
           border-bottom: 1px solid #e2e8f0 !important;
           padding: 8px 12px !important;
         }
-        .premium-table-compact .ant-table-tbody > tr > td {
+        .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
           padding: 8px 12px !important;
           border-bottom: 1px solid #f1f5f9 !important;
           background: #ffffff !important;
         }
-        .premium-table-compact .ant-table-tbody > tr:hover > td {
+        .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row):hover > td {
           background: #f8fafc !important;
         }
         .premium-table-compact .ant-table-cell-row-hover {
@@ -286,12 +286,12 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
           color: #94a3b8 !important;
           border-bottom: 1px solid #334155 !important;
         }
-        .dark .premium-table-compact .ant-table-tbody > tr > td {
+        .dark .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
           background: #0f172a !important;
           border-bottom: 1px solid #1e293b !important;
           color: #cbd5e1 !important;
         }
-        .dark .premium-table-compact .ant-table-tbody > tr:hover > td {
+        .dark .premium-table-compact .ant-table-tbody > tr:not(.ant-table-measure-row):hover > td {
           background: #1e293b !important;
         }
         .dark .premium-table-compact .ant-table-cell-row-hover {
@@ -306,7 +306,7 @@ const NotificationTable: React.FC<NotificationTableProps> = ({
           rowKey="id"
           pagination={false}
           className="premium-table-compact"
-          scroll={{ x: 800 }}
+          scroll={{ x: 1050, y: 'calc(100vh - 350px)' }}
           size="small"
         />
       </div>

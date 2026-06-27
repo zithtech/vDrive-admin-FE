@@ -5,7 +5,6 @@ import {
   Trash2,
   X,
   Zap,
-  ChevronDown,
   Users,
   Edit3,
   Power,
@@ -19,7 +18,7 @@ import {
 
 import axios from "../../api/axios";
 import { messageApi, modalApi, notificationApi } from "../../utilities/antdStaticHolder";
-import { Select, Drawer, Button, Avatar, Tag } from "antd";
+import { Select, Drawer, Button, Avatar, Tag, Pagination } from "antd";
 
 /* ================= TYPES ================= */
 
@@ -46,6 +45,8 @@ const ManagePlans: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(15);
 
   const [activeSubscriptions, setActiveSubscriptions] = useState<any[]>([]);
   const [, setLoadingActiveSubs] = useState(false);
@@ -429,384 +430,399 @@ const ManagePlans: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
+
+  const displayedPlans = filteredPlans.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   return (
-    <div className="flex flex-row h-full w-full bg-[#f8f9fa] dark:bg-[#0b0f19] overflow-hidden">
-      {/* SIDEBAR */}
-      <div className="w-[260px] flex-shrink-0 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
-        {/* Sidebar Header */}
-        <div className="p-6 pb-4">
-          <div className="flex items-center gap-2 mb-1 text-slate-800 dark:text-slate-100">
-            <Zap size={20} className="text-indigo-600" />
-            <h2 className="font-black text-sm uppercase tracking-wider">RECHARGE PLANS</h2>
+    <div className="w-full h-full flex flex-col bg-[#f8f9fa] dark:bg-[#0b0f19] overflow-hidden">
+      {/* Top Navbar */}
+      <div className="bg-white dark:bg-slate-800 h-12 px-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4 z-0 flex-shrink-0">
+        {/* Title & Description */}
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+            <Zap size={16} strokeWidth={2.5} />
           </div>
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Manage Plans</p>
+          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Recharge Plans</h1>
+          <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0">Manage Plans</p>
         </div>
 
-        <div className="px-4 pb-6 border-b border-slate-100 dark:border-slate-700/50">
-          <button
+        <div className="relative flex-1 max-w-xl mx-auto flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all h-9">
+          <Search className="absolute left-3 text-slate-400 text-[16px]" />
+          <input
+            type="text"
+            placeholder="Search plans..."
+            className="w-full pl-10 pr-4 py-1.5 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400 border-none shadow-none focus:ring-0"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            {filteredPlans.length} results
+          </span>
+
+          <Button
+            type="primary"
+            icon={<Plus className="text-lg" />}
             onClick={() => handleOpenModal()}
-            className="w-full py-2.5 bg-[#3b82f6] hover:bg-[#2563eb] text-white !text-white rounded-lg flex items-center justify-center gap-2 font-bold text-sm transition-colors shadow-md shadow-blue-500/20 border-none"
-            style={{ color: "#ffffff" }}
+            className="px-4 h-10 rounded-lg font-bold text-xs uppercase tracking-wider border-none !bg-blue-600 hover:!bg-blue-700 text-white shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.01] transition-all"
           >
-            <Plus size={18} /> Create New Plan
-          </button>
+            Create Plan
+          </Button>
         </div>
+      </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-8">
-          {/* Views */}
-          <div>
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-2">Views</h3>
-            <div className="space-y-1">
-              <button
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* SIDEBAR */}
+        <div className="w-[220px] flex-shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
+          <div className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
+            {/* Sidenav views section */}
+            <div className="flex flex-col gap-1">
+              <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase px-2 mb-0.5">
+                Views
+              </span>
+
+              <div
                 onClick={() => setStatusFilter("all")}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${statusFilter === "all" ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400" : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"}`}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "all"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  }`}
               >
-                <div className="flex items-center gap-2">
-                  <Zap size={16} className={statusFilter === "all" ? "text-indigo-500" : "text-slate-400"} />
-                  All Plans
+                <div className="flex items-center gap-2 text-xs">
+                  <Zap size={14} />
+                  <span>All</span>
                 </div>
-                <span className="bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "all"
+                  ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 font-bold"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
                   {plans.length}
                 </span>
-              </button>
-              <button
+              </div>
+
+              <div
                 onClick={() => setStatusFilter("active")}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${statusFilter === "active" ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400" : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"}`}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "active"
+                  ? "bg-emerald-50/80 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  }`}
               >
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 size={16} className={statusFilter === "active" ? "text-indigo-500" : "text-slate-400"} />
-                  Active Plans
+                <div className="flex items-center gap-2 text-xs">
+                  <CheckCircle2 size={14} className="text-emerald-500" />
+                  <span>Active</span>
                 </div>
-                <span className="bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 text-[10px] px-2 py-0.5 rounded-full font-bold">
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "active"
+                  ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
                   {plans.filter(p => p.isActive).length}
                 </span>
-              </button>
-              <button
+              </div>
+
+              <div
                 onClick={() => setStatusFilter("inactive")}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${statusFilter === "inactive" ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400" : "text-slate-600 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50"}`}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${statusFilter === "inactive"
+                  ? "bg-amber-50/80 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  }`}
               >
-                <div className="flex items-center gap-2">
-                  <Power size={16} className={statusFilter === "inactive" ? "text-indigo-500" : "text-slate-400"} />
-                  Inactive Plans
+                <div className="flex items-center gap-2 text-xs">
+                  <Power size={14} className="text-rose-500" />
+                  <span>Inactive</span>
                 </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Filters */}
-          <div>
-            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 px-2">Filters</h3>
-            <div className="space-y-4 px-2">
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Status</label>
-                <Select
-                  value={statusFilter}
-                  onChange={setStatusFilter}
-                  className="w-full h-9"
-                  options={[
-                    { value: "all", label: "All Statuses" },
-                    { value: "active", label: "Active" },
-                    { value: "inactive", label: "Inactive" },
-                  ]}
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Created Date</label>
-                <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 h-9">
-                  <input type="text" placeholder="Start" className="w-full bg-transparent text-xs outline-none text-slate-600" disabled />
-                  <span className="text-slate-400 mx-2">→</span>
-                  <input type="text" placeholder="End" className="w-full bg-transparent text-xs outline-none text-slate-600" disabled />
-                  <CalendarDays size={14} className="text-slate-400 ml-2" />
-                </div>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full ${statusFilter === "inactive"
+                  ? "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
+                  {plans.filter(p => !p.isActive).length}
+                </span>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* MAIN CONTENT */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden bg-[#f8f9fa] dark:bg-[#0b0f19]">
-        {/* Top Search Bar */}
-        <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 shadow-sm z-0">
-          <div className="relative flex-1 max-w-3xl flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
-            <Search className="absolute left-3 text-slate-400" size={16} />
-            <input
-              type="text"
-              placeholder="Search plans..."
-              className="w-full pl-10 pr-4 py-2 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-100 dark:border-emerald-500/20">
-              <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-              <span className="text-[11px] font-black tracking-widest uppercase">{filteredPlans.length} RESULTS</span>
-            </div>
-            <span className="text-[11px] font-black tracking-widest uppercase text-indigo-600 dark:text-indigo-400 mr-2">PLAN MANAGEMENT</span>
-          </div>
-        </div>
-
-        {/* Content Scrollable Area */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
-            {/* 1. Total Plans */}
-            <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 flex items-center justify-center text-base bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-                    <Zap size={14} />
-                  </div>
-                  <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">TOTAL PLANS</p>
-                </div>
-              </div>
-              <div className="flex items-end justify-between mt-2">
-                <div className="flex flex-col">
-                  <div className="flex items-baseline gap-1.5">
-                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{plans.length}</h3>
-                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">PLANS</span>
-                  </div>
-                </div>
-                <div className="w-24 h-10 mb-[-5px]">
-                  <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
-                    <path d="M0,40 L10,30 L20,35 L40,10 L60,25 L80,5 L100,20" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M0,40 L10,30 L20,35 L40,10 L60,25 L80,5 L100,20 L100,40 Z" fill="url(#gradient-indigo)" opacity="0.1" />
-                    <defs>
-                      <linearGradient id="gradient-indigo" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="#6366f1" />
-                        <stop offset="100%" stopColor="transparent" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </div>
-              </div>
-            </div>
-            
-            {/* 2. Active Plans */}
-            <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 flex items-center justify-center text-base bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 dark:text-emerald-400">
-                    <CheckCircle2 size={14} />
-                  </div>
-                  <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">ACTIVE PLANS</p>
-                </div>
-              </div>
-              <div className="flex items-end justify-between mt-2">
-                <div className="flex flex-col">
-                  <div className="flex items-baseline gap-1.5">
-                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{plans.filter(p => p.isActive).length}</h3>
-                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">LIVE</span>
-                  </div>
-                </div>
-                <div className="w-24 h-10 mb-[-5px]">
-                  <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
-                    <path d="M0,40 L20,35 L40,20 L60,25 L80,10 L100,5" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M0,40 L20,35 L40,20 L60,25 L80,10 L100,5 L100,40 Z" fill="url(#gradient-emerald)" opacity="0.1" />
-                    <defs>
-                      <linearGradient id="gradient-emerald" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="#10b981" />
-                        <stop offset="100%" stopColor="transparent" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* 3. Inactive Plans */}
-            <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 flex items-center justify-center text-base bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400">
-                    <Power size={14} />
-                  </div>
-                  <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">INACTIVE PLANS</p>
-                </div>
-              </div>
-              <div className="flex items-end justify-between mt-2">
-                <div className="flex flex-col">
-                  <div className="flex items-baseline gap-1.5">
-                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{plans.filter(p => !p.isActive).length}</h3>
-                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">DISABLED</span>
-                  </div>
-                </div>
-                <div className="w-24 h-10 mb-[-5px]">
-                  <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
-                    <path d="M0,40 L10,25 L30,30 L50,15 L70,20 L90,5 L100,10" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M0,40 L10,25 L30,30 L50,15 L70,20 L90,5 L100,10 L100,40 Z" fill="url(#gradient-amber)" opacity="0.1" />
-                    <defs>
-                      <linearGradient id="gradient-amber" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="#f59e0b" />
-                        <stop offset="100%" stopColor="transparent" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* 4. Total Subs */}
-            <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 flex items-center justify-center text-base bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400">
-                    <Users size={14} />
-                  </div>
-                  <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest">TOTAL SUBS</p>
-                </div>
-              </div>
-              <div className="flex items-end justify-between mt-2">
-                <div className="flex flex-col">
-                  <div className="flex items-baseline gap-1.5">
-                    <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">{activeSubscriptions.length}</h3>
-                    <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider">ACTIVE</span>
-                  </div>
-                </div>
-                <div className="w-24 h-10 mb-[-5px]">
-                  <svg viewBox="0 0 100 40" className="w-full h-full" preserveAspectRatio="none">
-                    <path d="M0,40 L20,38 L40,35 L60,32 L80,30 L100,28" fill="none" stroke="#f43f5e" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M0,40 L20,38 L40,35 L60,32 L80,30 L100,28 L100,40 Z" fill="url(#gradient-rose)" opacity="0.1" />
-                    <defs>
-                      <linearGradient id="gradient-rose" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="#f43f5e" />
-                        <stop offset="100%" stopColor="transparent" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* List View Container */}
-          <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden rounded-none">
-            {/* List Header */}
-            <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-100 dark:border-slate-700/50">
-              <div className="col-span-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">PLAN NAME</div>
-              <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">VALIDITY</div>
-              <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">PRICING</div>
-              <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">STATUS</div>
-              <div className="col-span-1 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">SUBSCRIBERS</div>
-              <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">ACTIONS</div>
-            </div>
-
-            {/* List Body */}
-            <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
-              {loading ? (
-                <div className="p-8 text-center text-slate-400">Loading templates...</div>
-              ) : filteredPlans.length > 0 ? (
-                filteredPlans.map((plan) => {
-                  return (
-                    <div key={plan.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group">
-                      {/* Name & Desc */}
-                      <div className="col-span-3 flex items-start gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 shrink-0 mt-0.5">
-                          <Zap size={16} />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">{plan.planName}</h4>
-                            {plan.tag && <span className="bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 text-[10px] font-bold px-1.5 py-0.5 rounded">{plan.tag}</span>}
-                          </div>
-                          <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5" title={plan.description}>{plan.description}</p>
-                        </div>
-                      </div>
-
-                      {/* Validity */}
-                      <div className="col-span-2 flex items-center">
-                        <div className="bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
-                          {plan.validityDays} DAYS
-                        </div>
-                      </div>
-
-                      {/* Pricing */}
-                      <div className="col-span-2 flex flex-col gap-1">
-                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">₹{plan.monthlyPrice} <span className="text-[10px] text-slate-400 font-normal">/ mo</span></span>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400">₹{plan.dailyPrice}/d • ₹{plan.weeklyPrice}/w</span>
-                      </div>
-
-                      {/* Status */}
-                      <div className="col-span-2 flex flex-col justify-center">
-                        {plan.isActive ? (
-                          <div className="flex items-center gap-1.5 text-emerald-500">
-                            <CheckCircle2 size={12} />
-                            <span className="text-[10px] font-black uppercase tracking-wider">ACTIVE</span>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-1.5 text-rose-500">
-                            <Power size={12} />
-                            <span className="text-[10px] font-black uppercase tracking-wider">INACTIVE</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Subscribers */}
-                      <div className="col-span-1 flex justify-center">
-                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded">
-                          {activeSubscriptions.filter(s => s.planName?.toLowerCase() === plan.planName?.toLowerCase()).length}
-                        </span>
-                      </div>
-                      
-                      {/* Actions */}
-                      <div className="col-span-2 flex items-center justify-end gap-3">
-                        <div className="relative group/menu">
-                          <button className="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg>
-                          </button>
-                          {/* Dropdown Menu */}
-                          <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-100 dark:border-slate-700 opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 overflow-hidden">
-                            <button onClick={() => handleOpenModal(plan)} className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2">
-                              <Edit3 size={14} /> Edit
-                            </button>
-                            <button onClick={() => toggleStatus(plan.id, plan.isActive)} className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2">
-                              <Power size={14} /> {plan.isActive ? "Deactivate" : "Activate"}
-                            </button>
-                            <button onClick={() => handleDelete(plan.id)} className="w-full text-left px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2">
-                              <Trash2 size={14} /> Delete
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
+        {/* ─── Right Content Area ─────────────────────────────────────── */}
+        <div className="flex-grow flex flex-col min-w-0 relative h-full">
+          <div className="flex-grow flex flex-col p-3 overflow-y-auto custom-scrollbar gap-2 pb-20">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-0">
+              {/* 1. Total Plans */}
+              <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 flex items-center justify-center text-base bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 z-10 rounded-lg`}>
+                      <Zap size={14} />
                     </div>
-                  );
-                })
-              ) : (
-                <div className="p-12 text-center">
-                  <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Search size={24} className="text-slate-300" />
+                    <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                      TOTAL PLANS
+                    </p>
                   </div>
-                  <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">No plans found</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Try adjusting your filters or search term.</p>
                 </div>
-              )}
-            </div>
-          </div>
-          
-          {/* Pagination */}
-          <div className="mt-4 flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
-            <span>SHOWING 1-{filteredPlans.length > 0 ? filteredPlans.length : 0} OF {filteredPlans.length} PLANS</span>
-            <div className="flex items-center gap-3">
-              <button className="text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50" disabled>
-                <ChevronDown className="rotate-90" size={16} />
-              </button>
-              <div className="px-3 py-1 border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                1
+                <div className="flex items-end justify-between mt-2 z-10">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                        {plans.length}
+                      </h3>
+                      <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                        PLANS
+                      </span>
+                    </div>
+                  </div>
+                  {/* Background Icon */}
+                  <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-indigo-600 dark:text-indigo-400`}>
+                    <Zap size={100} />
+                  </div>
+                </div>
               </div>
-              <button className="text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-50" disabled>
-                <ChevronDown className="-rotate-90" size={16} />
-              </button>
-              <div className="flex items-center gap-1 border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-slate-800 px-3 py-1 ml-2">
-                10 / page <ChevronDown size={14} className="ml-1" />
-              </div>
-            </div>
-          </div>
 
+              {/* 2. Active Plans */}
+              <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 flex items-center justify-center text-base bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400 z-10 rounded-lg`}>
+                      <CheckCircle2 size={14} />
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                      ACTIVE PLANS
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-end justify-between mt-2 z-10">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                        {plans.filter(p => p.isActive).length}
+                      </h3>
+                      <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                        LIVE
+                      </span>
+                    </div>
+                  </div>
+                  {/* Background Icon */}
+                  <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-amber-600 dark:text-amber-400`}>
+                    <CheckCircle2 size={100} />
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Inactive Plans */}
+              <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 flex items-center justify-center text-base bg-amber-50 dark:bg-amber-500/10 text-amber-500 dark:text-amber-400 z-10 rounded-lg`}>
+                      <Power size={14} />
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                      INACTIVE PLANS
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-end justify-between mt-2 z-10">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                        {plans.filter(p => !p.isActive).length}
+                      </h3>
+                      <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                        DISABLED
+                      </span>
+                    </div>
+                  </div>
+                  {/* Background Icon */}
+                  <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-amber-500 dark:text-amber-400`}>
+                    <Power size={100} />
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Total Subs */}
+              <div className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-8 h-8 flex items-center justify-center text-base bg-rose-50 dark:bg-rose-500/10 text-rose-500 dark:text-rose-400 z-10 rounded-lg`}>
+                      <Users size={14} />
+                    </div>
+                    <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                      TOTAL SUBS
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-end justify-between mt-2 z-10">
+                  <div className="flex flex-col">
+                    <div className="flex items-baseline gap-1.5">
+                      <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                        {activeSubscriptions.length}
+                      </h3>
+                      <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                        ACTIVE
+                      </span>
+                    </div>
+                  </div>
+                  {/* Background Icon */}
+                  <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none text-rose-600 dark:text-rose-400`}>
+                    <Users size={100} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* FILTERS TOOLBAR */}
+            <div className="bg-white dark:bg-slate-800 py-1 px-3 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm flex-shrink-0 mb-1">
+              <div className="flex items-center gap-2 flex-1 min-w-[220px]">
+                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
+                  Created Date:
+                </span>
+                <div className="flex items-center bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 h-8 flex-1">
+                  <input type="text" placeholder="Start" className="w-20 bg-transparent text-xs outline-none text-slate-600 dark:text-slate-300" disabled />
+                  <span className="text-slate-400 mx-2">→</span>
+                  <input type="text" placeholder="End" className="w-20 bg-transparent text-xs outline-none text-slate-600 dark:text-slate-300" disabled />
+                  <CalendarDays size={14} className="text-slate-400 ml-auto" />
+                </div>
+              </div>
+            </div>
+
+            {/* List View Container */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden rounded-none">
+              {/* List Header */}
+              <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-100 dark:border-slate-700/50">
+                <div className="col-span-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">PLAN NAME</div>
+                <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">VALIDITY</div>
+                <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">PRICING</div>
+                <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">STATUS</div>
+                <div className="col-span-1 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">SUBSCRIBERS</div>
+                <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">ACTIONS</div>
+              </div>
+
+              {/* List Body */}
+              <div className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                {loading ? (
+                  <div className="p-8 text-center text-slate-400">Loading templates...</div>
+                ) : displayedPlans.length > 0 ? (
+                  displayedPlans.map((plan) => {
+                    return (
+                      <div key={plan.id} className="grid grid-cols-12 gap-4 px-6 py-4 items-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors group">
+                        {/* Name & Desc */}
+                        <div className="col-span-3 flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-500 shrink-0 mt-0.5">
+                            <Zap size={16} />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">{plan.planName}</h4>
+                              {plan.tag && <span className="bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400 text-[10px] font-bold px-1.5 py-0.5 rounded">{plan.tag}</span>}
+                            </div>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 mt-0.5" title={plan.description}>{plan.description}</p>
+                          </div>
+                        </div>
+
+                        {/* Validity */}
+                        <div className="col-span-2 flex items-center">
+                          <div className="bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
+                            {plan.validityDays} DAYS
+                          </div>
+                        </div>
+
+                        {/* Pricing */}
+                        <div className="col-span-2 flex flex-col gap-1">
+                          <span className="text-xs font-bold text-slate-800 dark:text-slate-200">₹{plan.monthlyPrice} <span className="text-[10px] text-slate-400 font-normal">/ mo</span></span>
+                          <span className="text-[10px] text-slate-500 dark:text-slate-400">₹{plan.dailyPrice}/d • ₹{plan.weeklyPrice}/w</span>
+                        </div>
+
+                        {/* Status */}
+                        <div className="col-span-2 flex flex-col justify-center">
+                          {plan.isActive ? (
+                            <div className="flex items-center gap-1.5 text-amber-500">
+                              <CheckCircle2 size={12} />
+                              <span className="text-[10px] font-black uppercase tracking-wider">ACTIVE</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5 text-rose-500">
+                              <Power size={12} />
+                              <span className="text-[10px] font-black uppercase tracking-wider">INACTIVE</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Subscribers */}
+                        <div className="col-span-1 flex justify-center">
+                          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 px-2.5 py-1 rounded">
+                            {activeSubscriptions.filter(s => s.planName?.toLowerCase() === plan.planName?.toLowerCase()).length}
+                          </span>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="col-span-2 flex items-center justify-end gap-3">
+                          <div className="relative group/menu">
+                            <button className="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg>
+                            </button>
+                            {/* Dropdown Menu */}
+                            <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-100 dark:border-slate-700 opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 overflow-hidden">
+                              <button onClick={() => handleOpenModal(plan)} className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2">
+                                <Edit3 size={14} /> Edit
+                              </button>
+                              <button onClick={() => toggleStatus(plan.id, plan.isActive)} className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2">
+                                <Power size={14} /> {plan.isActive ? "Deactivate" : "Activate"}
+                              </button>
+                              <button onClick={() => handleDelete(plan.id)} className="w-full text-left px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2">
+                                <Trash2 size={14} /> Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="p-12 text-center">
+                    <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Search size={24} className="text-slate-300" />
+                    </div>
+                    <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">No plans found</h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Try adjusting your filters or search term.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Sticky Pagination Footer */}
+            <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-805 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+                Showing {filteredPlans.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
+                {Math.min(currentPage * pageSize, filteredPlans.length)} of {filteredPlans.length} plans
+              </span>
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={filteredPlans.length}
+                onChange={(page, size) => {
+                  setCurrentPage(page);
+                  setPageSize(size);
+                }}
+                showSizeChanger
+                pageSizeOptions={[10, 15, 20, 50, 100]}
+                size="small"
+              />
+            </div>
+
+          </div>
         </div>
       </div>
-        
+
+
+
       <Drawer
         rootClassName="dark-drawer"
         title={
@@ -977,7 +993,7 @@ const ManagePlans: React.FC = () => {
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               Pricing (₹)
             </label>
-            <div className="grid grid-cols-3 gap-3 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-600 shadow-sm">
+            <div className="grid grid-cols-3 gap-2 bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-600 shadow-sm">
               <div className="space-y-1.5">
                 <span className="text-[10px] font-bold text-slate-400 block ml-1 uppercase">
                   Daily
@@ -1224,7 +1240,7 @@ const ManagePlans: React.FC = () => {
                           };
 
                           return (
-                            <div key={field} className="flex items-start gap-3 w-full">
+                            <div key={field} className="flex items-start gap-2 w-full">
                               <span className="text-[10px] font-bold text-slate-400 w-28 shrink-0 uppercase tracking-wider pt-0.5">
                                 {field.replace(/_/g, " ")}:
                               </span>
@@ -1262,7 +1278,7 @@ const ManagePlans: React.FC = () => {
                   )}
 
                   {item.action === "TOGGLE_STATUS" && (
-                    <div className="flex items-center gap-3 mt-1 text-xs">
+                    <div className="flex items-center gap-2 mt-1 text-xs">
                       <span className="text-slate-500 dark:text-slate-400 font-medium w-28 shrink-0">
                         Status change:
                       </span>

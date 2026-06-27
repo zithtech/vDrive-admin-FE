@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { IoMdRefresh } from "react-icons/io";
-import { Users } from "lucide-react";
+import { Users, Filter } from "lucide-react";
 import {
   CarOutlined,
   CloseCircleOutlined,
@@ -8,7 +8,7 @@ import {
   EnvironmentOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { Select, DatePicker,  Slider, Spin } from "antd";
+import { Select, DatePicker, Slider, Spin, Pagination } from "antd";
 import DriverTable from "../components/DriverTable/DriverTable";
 import dayjs from "dayjs";
 import DriverStats from "../components/Drivers/DriverStats";
@@ -40,6 +40,8 @@ const Drivers = () => {
   });
 
   const [currentView, setCurrentView] = useState<"all" | "active" | "restricted">("all");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(15);
 
   useEffect(() => {
     dispatch(fetchDrivers());
@@ -110,6 +112,7 @@ const Drivers = () => {
       );
     }
 
+    setCurrentPage(1);
     setFilteredData(tempData);
   }, [DATA, filters]);
 
@@ -128,6 +131,7 @@ const Drivers = () => {
   }, [filteredData]);
 
   const applyFilters = (values: Partial<Filters>) => {
+    setCurrentPage(1);
     setFilters((prev) => ({
       ...prev,
       ...values,
@@ -148,255 +152,363 @@ const Drivers = () => {
     extraClasses = "",
   }: any) => (
     <div
-      className={`${flexClass} flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden ${extraClasses}`}
+      className={`${flexClass} flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden pb-1 ${extraClasses}`}
     >
-      <div className="flex-grow overflow-hidden">
-        <DriverTable data={data} />
+      <div className="flex-grow min-h-0 overflow-hidden">
+        <DriverTable
+          data={data}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          onPageChange={(page, size) => {
+            setCurrentPage(page);
+            setPageSize(size);
+          }}
+        />
       </div>
     </div>
   );
 
-  const ViewItem = ({ icon, label, count, isActive, onClick }: any) => (
+  const ViewItem = ({ icon, label, count, isActive, onClick, activeColorClass = "text-blue-600 dark:text-blue-400", bgActiveColorClass = "bg-blue-50/80 dark:bg-blue-500/10", badgeColorClass = "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300" }: any) => (
     <div
       onClick={onClick}
-      className={`flex items-center justify-between px-3 py-2 rounded-[10px] cursor-pointer transition-all ${
-        isActive
-          ? "bg-blue-50/80 dark:bg-blue-900/30 text-slate-800 dark:text-slate-100 font-bold"
-          : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium"
-      }`}
+      className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${isActive
+        ? `${bgActiveColorClass} ${activeColorClass} font-bold`
+        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+        }`}
     >
-      <div className="flex items-center gap-2.5">
-        <span className={`text-[15px] ${isActive ? "text-blue-500" : "text-slate-400"}`}>{icon}</span>
-        <span className="text-[13px] tracking-tight">{label}</span>
+      <div className="flex items-center gap-2 text-xs">
+        <span className="text-xs">{icon}</span>
+        <span>{label}</span>
       </div>
-      {isActive ? (
-        <div className="px-2 py-0.5 rounded-md text-[10px] font-black min-w-[20px] text-center bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400">
+      {count !== undefined && (
+        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${isActive
+          ? badgeColorClass
+          : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+          }`}>
           {count}
-        </div>
-      ) : (
-        <div className="text-[11px] font-bold text-slate-400 mr-1">
-          {count}
-        </div>
+        </span>
       )}
     </div>
   );
 
   return (
-    <div className="flex flex-row h-full w-full bg-[#f8f9fa] dark:bg-[#0b0f19] overflow-hidden">
-      {/* SIDEBAR */}
-      <div className="w-[260px] flex-shrink-0 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
-        {/* Sidebar Header */}
-        <div className="p-6 pb-4">
-          <div className="flex items-center gap-4 text-slate-800 dark:text-slate-100">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-              <Users size={24} strokeWidth={2.5} />
-            </div>
-            <div className="flex flex-col justify-center mt-0.5">
-              <h2 className="font-black text-lg uppercase tracking-wider leading-none m-0 ">DRIVERS</h2>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-1.5">Manage Fleet</p>
-            </div>
+    <div className="flex flex-col h-full w-full bg-[#f8f9fa] dark:bg-[#0b0f19] overflow-hidden">
+      {/* Top Navbar */}
+      <div className="bg-white dark:bg-slate-800 h-12 px-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4 z-0 flex-shrink-0">
+        {/* Title & Description */}
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+            <Users size={16} strokeWidth={2.5} />
+          </div>
+          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Drivers</h1>
+          <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0 hidden lg:block">View and manage fleet drivers</p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="relative flex-1 max-w-xl mx-auto flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all h-9">
+          <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
+          <input
+            type="text"
+            placeholder="Search drivers by name or ID..."
+            className="w-full pl-10 pr-4 py-1.5 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400 border-none shadow-none focus:ring-0"
+            value={filters.search}
+            onChange={(e) => applyFilters({ search: e.target.value })}
+          />
+          <div className="absolute right-3">
+            <span className="text-[11px] font-bold text-slate-400 border border-slate-200 dark:border-slate-600 rounded-[4px] px-1.5 py-[1px] bg-slate-50/50 dark:bg-slate-800 tracking-wide">
+              ⌘K
+            </span>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
-          {/* VIEWS SECTION */}
-          <div>
-            <div className="flex items-center gap-2 mb-3 px-2">
-              <span className="text-[11px] font-black tracking-widest uppercase text-slate-600 dark:text-slate-400">VIEWS</span>
-            </div>
-            
-            <div className="space-y-1">
-              <ViewItem
-                icon={<EnvironmentOutlined />}
-                label="All Drivers"
-                count={allFleetDrivers.length}
-                isActive={currentView === "all"}
-                onClick={() => setCurrentView("all")}
-              />
-              <ViewItem
-                icon={<CarOutlined />}
-                label="Active"
-                count={activeDrivers.length}
-                isActive={currentView === "active"}
-                onClick={() => setCurrentView("active")}
-              />
-              <ViewItem
-                icon={<ExclamationCircleOutlined />}
-                label="Restricted"
-                count={restrictedDrivers.length}
-                isActive={currentView === "restricted"}
-                onClick={() => setCurrentView("restricted")}
-              />
-            </div>
+        {/* Results & Refresh */}
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-100 dark:border-emerald-500/20">
+            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+            <span className="text-[11px] font-black tracking-widest uppercase">
+              {activeDrivers.length} ACTIVE
+            </span>
+          </div>
+          <div className="flex items-center gap-2 bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 px-3 py-1.5 rounded-full border border-blue-100 dark:border-blue-500/20">
+            <span className="text-[11px] font-black tracking-widest uppercase">
+              {DATA.length} TOTAL
+            </span>
           </div>
 
-          {/* FILTERS SECTION */}
-          <div>
-            <div className="flex items-center gap-2 mb-3 px-2">
-              <span className="text-[11px] font-black tracking-widest uppercase text-slate-600 dark:text-slate-400">FILTERS</span>
-            </div>
-            
-            <div className="space-y-4 px-2">
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Status</label>
-                <Select
-                  mode="multiple"
-                  placeholder="Select status..."
-                  className="w-full custom-select-compact"
-                  options={STATUSES.map((s) => ({ label: s.toUpperCase(), value: s }))}
-                  value={filters.status}
-                  onChange={(val) => applyFilters({ status: val })}
-                  maxTagCount="responsive"
-                />
-              </div>
-              
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Plan</label>
-                <Select
-                  mode="multiple"
-                  placeholder="Filter by plan..."
-                  className="w-full custom-select-compact"
-                  options={planOptions}
-                  value={filters.plan}
-                  onChange={(val) => applyFilters({ plan: val })}
-                  maxTagCount="responsive"
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Joined Date</label>
-                <DatePicker
-                  placeholder="Select Date"
-                  className="w-full"
-                  onChange={(date) => applyFilters({ joined_at: date ? date.toDate() : null })}
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Rating</label>
-                <Slider
-                  range
-                  min={0}
-                  max={5}
-                  step={0.1}
-                  value={filters.rating}
-                  onChange={(val) => applyFilters({ rating: val as [number, number] })}
-                  tooltip={{ formatter: (v) => `${v}★` }}
-                  className="mx-2"
-                />
-              </div>
-
-              {hasActiveFilters && (
-                <button
-                  onClick={() => setFilters({ search: "", status: [], plan: [], rating: [0, 5], joined_at: null })}
-                  className="w-full h-[36px] flex items-center justify-center rounded-lg text-[11px] font-black uppercase tracking-widest text-rose-500 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 transition-all mt-4"
-                >
-                  Clear Filters
-                </button>
-              )}
-            </div>
-          </div>
+          <button
+            onClick={() => dispatch(fetchDrivers())}
+            className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all"
+          >
+            <IoMdRefresh className={`text-lg ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
       </div>
 
-      {/* RIGHT MAIN CONTENT */}
-      <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-[#0b0f19]">
-        {/* Top Navbar */}
-        <div className="bg-white dark:bg-slate-800 p-4 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between gap-4 shadow-sm z-0 flex-shrink-0">
-          <div className="relative flex-1 max-w-3xl flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all">
-            <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
-            <input
-              type="text"
-              placeholder="Search drivers by name or ID..."
-              className="w-full pl-10 pr-4 py-2 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
-              value={filters.search}
-              onChange={(e) => applyFilters({ search: e.target.value })}
-            />
-            <div className="absolute right-3">
-              <span className="text-[11px] font-bold text-slate-400 border border-slate-200 dark:border-slate-600 rounded-[4px] px-1.5 py-[1px] bg-slate-50/50 dark:bg-slate-800 tracking-wide">
-                ⌘K
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* SIDEBAR */}
+        <div className="w-[220px] flex-shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-8 custom-scrollbar">
+            {/* VIEWS SECTION */}
+            <div className="flex flex-col gap-1">
+              <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase px-2 mb-0.5 block">
+                Views
               </span>
-            </div>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-100 dark:border-emerald-500/20">
-              <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-              <span className="text-[11px] font-black tracking-widest uppercase">
-                {activeDrivers.length} ACTIVE
-              </span>
-            </div>
-            <div className="flex items-center gap-2 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 px-3 py-1.5 rounded-full border border-indigo-100 dark:border-indigo-500/20">
-              <span className="text-[11px] font-black tracking-widest uppercase">
-                {DATA.length} TOTAL
-              </span>
-            </div>
 
-            <button
-              onClick={() => dispatch(fetchDrivers())}
-              className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all"
-            >
-              <IoMdRefresh className={`text-lg ${loading ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-        </div>
-
-        {/* Scrollable Main Content */}
-        <div className="flex-1 overflow-y-auto p-6 bg-white dark:bg-slate-900 flex flex-col gap-6">
-          <DriverStats drivers={DATA} loading={loading} />
-          
-          {loading && DATA.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
-              <Spin size="large" />
-            </div>
-          ) : error ? (
-            <div className="flex items-center justify-center p-20 bg-rose-50 rounded-sm border border-rose-100 text-rose-500 font-bold shadow-sm">
-              {error}
-            </div>
-          ) : (
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-              {currentView === "all" && (
-                <TableSection
-                  title="Fleet Overview"
+              <div className="space-y-1">
+                <ViewItem
                   icon={<EnvironmentOutlined />}
-                  data={allFleetDrivers}
+                  label="All Drivers"
                   count={allFleetDrivers.length}
-                  flexClass="flex-1 h-full"
-                  extraClasses="border-none rounded-none !min-h-0"
-                  colorClass="bg-indigo-600"
-                  bgColorClass="from-indigo-50 dark:from-indigo-900/30"
-                  borderColorClass="border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 bg-indigo-100/50 dark:bg-indigo-900/30 font-black"
+                  isActive={currentView === "all"}
+                  onClick={() => setCurrentView("all")}
+                  activeColorClass="text-blue-500"
+                  bgActiveColorClass="bg-blue-50/80 dark:bg-blue-900/30"
+                  badgeColorClass="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400"
                 />
-              )}
-              {currentView === "active" && (
-                <TableSection
-                  title="Verified & Active"
+                <ViewItem
                   icon={<CarOutlined />}
-                  data={activeDrivers}
+                  label="Active"
                   count={activeDrivers.length}
-                  flexClass="flex-1 h-full"
-                  extraClasses="border-none rounded-none !min-h-0"
-                  colorClass="bg-emerald-500 shadow-lg shadow-emerald-500/40"
-                  bgColorClass="from-emerald-50 dark:from-emerald-900/30 via-emerald-50/10 dark:via-emerald-900/10"
-                  borderColorClass="border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-100/50 dark:bg-emerald-900/30 font-black"
+                  isActive={currentView === "active"}
+                  onClick={() => setCurrentView("active")}
+                  activeColorClass="text-emerald-600 dark:text-emerald-400"
+                  bgActiveColorClass="bg-emerald-50/80 dark:bg-emerald-500/10"
+                  badgeColorClass="bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
                 />
-              )}
-              {currentView === "restricted" && (
-                <TableSection
-                  title="Suspended / Blocked / Rejected"
-                  icon={<CloseCircleOutlined />}
-                  data={restrictedDrivers}
+                <ViewItem
+                  icon={<ExclamationCircleOutlined />}
+                  label="Restricted"
                   count={restrictedDrivers.length}
-                  flexClass="flex-1 h-full"
-                  extraClasses="border-none rounded-none !min-h-0"
-                  colorClass="bg-slate-400"
-                  bgColorClass="from-slate-50 dark:from-slate-800/50"
-                  borderColorClass="border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 font-black"
+                  isActive={currentView === "restricted"}
+                  onClick={() => setCurrentView("restricted")}
+                  activeColorClass="text-rose-600 dark:text-rose-400"
+                  bgActiveColorClass="bg-rose-50/80 dark:bg-rose-500/10"
+                  badgeColorClass="bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300"
                 />
-              )}
+              </div>
             </div>
-          )}
+
+          </div>
         </div>
+
+        {/* RIGHT MAIN CONTENT */}
+        <div className="flex-1 flex flex-col min-w-0 bg-slate-50/50 dark:bg-[#0f172a] relative">
+          {/* Scrollable Main Content */}
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 pb-20">
+            <DriverStats drivers={DATA} loading={loading} />
+
+            {/* HORIZONTAL FILTERS BAR */}
+            <div className="bg-white dark:bg-slate-800 p-3 border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm rounded-none">
+              <div className="flex items-center gap-2 px-3 border-r border-slate-200 dark:border-slate-700 text-slate-400 shrink-0">
+                <Filter size={16} className="text-indigo-500" />
+                <span className="text-[11px] font-black uppercase tracking-widest">FILTERS</span>
+              </div>
+
+              <div className="flex-1 flex flex-wrap items-center gap-4 dark-theme-select-override">
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status:</span>
+                  <Select
+                    mode="multiple"
+                    placeholder="All Statuses"
+                    className="w-48 custom-driver-select"
+                    options={STATUSES.map((s) => ({ label: s.toUpperCase(), value: s }))}
+                    value={filters.status}
+                    onChange={(val) => applyFilters({ status: val })}
+                    maxTagCount="responsive"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Plan:</span>
+                  <Select
+                    mode="multiple"
+                    placeholder="All Plans"
+                    className="w-48 custom-driver-select"
+                    options={planOptions}
+                    value={filters.plan}
+                    onChange={(val) => applyFilters({ plan: val })}
+                    maxTagCount="responsive"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Joined:</span>
+                  <DatePicker
+                    placeholder="Select Date"
+                    className="w-36 custom-picker-compact"
+                    value={filters.joined_at ? dayjs(filters.joined_at) : null}
+                    onChange={(date) => applyFilters({ joined_at: date ? date.toDate() : null })}
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0 flex-1 min-w-[150px] max-w-[250px]">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Rating:</span>
+                  <Slider
+                    range
+                    min={0}
+                    max={5}
+                    step={0.1}
+                    value={filters.rating}
+                    onChange={(val: any) => applyFilters({ rating: val })}
+                    tooltip={{ formatter: (v) => `${v}★` }}
+                    className="flex-1 m-0"
+                  />
+                </div>
+
+                {hasActiveFilters && (
+                  <button
+                    onClick={() => setFilters({ search: "", status: [], plan: [], rating: [0, 5], joined_at: null })}
+                    className="ml-auto px-3 py-1.5 rounded text-[11px] font-black uppercase tracking-widest text-rose-500 bg-rose-50 hover:bg-rose-100 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 transition-all"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {loading && DATA.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
+                <Spin size="large" />
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center p-20 bg-rose-50 rounded-sm border border-rose-100 text-rose-500 font-bold shadow-sm">
+                {error}
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                {currentView === "all" && (
+                  <TableSection
+                    title="Fleet Overview"
+                    icon={<EnvironmentOutlined />}
+                    data={allFleetDrivers}
+                    count={allFleetDrivers.length}
+                    flexClass="flex-1 h-full"
+                    extraClasses="border-none rounded-none !min-h-0"
+                    colorClass="bg-indigo-600"
+                    bgColorClass="from-indigo-50 dark:from-indigo-900/30"
+                    borderColorClass="border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 bg-indigo-100/50 dark:bg-indigo-900/30 font-black"
+                  />
+                )}
+                {currentView === "active" && (
+                  <TableSection
+                    title="Verified & Active"
+                    icon={<CarOutlined />}
+                    data={activeDrivers}
+                    count={activeDrivers.length}
+                    flexClass="flex-1 h-full"
+                    extraClasses="border-none rounded-none !min-h-0"
+                    colorClass="bg-emerald-500 shadow-lg shadow-emerald-500/40"
+                    bgColorClass="from-emerald-50 dark:from-emerald-900/30 via-emerald-50/10 dark:via-emerald-900/10"
+                    borderColorClass="border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-100/50 dark:bg-emerald-900/30 font-black"
+                  />
+                )}
+                {currentView === "restricted" && (
+                  <TableSection
+                    title="Suspended / Blocked / Rejected"
+                    icon={<CloseCircleOutlined />}
+                    data={restrictedDrivers}
+                    count={restrictedDrivers.length}
+                    flexClass="flex-1 h-full"
+                    extraClasses="border-none rounded-none !min-h-0"
+                    colorClass="bg-slate-400"
+                    bgColorClass="from-slate-50 dark:from-slate-800/50"
+                    borderColorClass="border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 font-black"
+                  />
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Sticky Pagination Footer */}
+          {(() => {
+            const currentViewData = currentView === "all" ? allFleetDrivers : currentView === "active" ? activeDrivers : restrictedDrivers;
+            return (
+              <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-805 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+                  Showing {currentViewData.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
+                  {Math.min(currentPage * pageSize, currentViewData.length)} of {currentViewData.length} drivers
+                </span>
+                <Pagination
+                  current={currentPage}
+                  pageSize={pageSize}
+                  total={currentViewData.length}
+                  onChange={(page, size) => {
+                    setCurrentPage(page);
+                    setPageSize(size);
+                  }}
+                  showSizeChanger
+                  pageSizeOptions={[10, 15, 20, 50, 100]}
+                  size="small"
+                />
+              </div>
+            );
+          })()}
+        </div>
+
+        <style>{`
+        /* Filter input styling overrides to match dark mode search bar */
+        .custom-driver-select .ant-select-selector {
+          border-radius: 8px !important;
+        }
+
+         .dark .dark-theme-select-override .custom-driver-select {
+           border-color: #334155 !important;
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selector,
+        html.dark .dark-theme-select-override .ant-select-selector {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-item,
+        html.dark .dark-theme-select-override .ant-select-selection-item {
+          color: #f1f5f9 !important;
+          background-color: #1e293b !important;
+          border-color: #334155 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-placeholder,
+        html.dark .dark-theme-select-override .ant-select-selection-placeholder {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-arrow,
+        html.dark .dark-theme-select-override .ant-select-arrow {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-clear,
+        html.dark .dark-theme-select-override .ant-select-clear {
+          background-color: transparent !important;
+          color: #64748b !important;
+        }
+
+        .custom-picker-compact.ant-picker {
+          border-radius: 8px !important;
+        }
+        .dark .custom-picker-compact.ant-picker {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+        }
+        .dark .custom-picker-compact.ant-picker .ant-picker-input > input {
+          color: #f1f5f9 !important;
+        }
+        .dark .custom-picker-compact.ant-picker .ant-picker-input > input::placeholder {
+          color: #64748b !important;
+        }
+        .dark .custom-picker-compact.ant-picker .ant-picker-suffix {
+          color: #94a3b8 !important;
+        }
+        .dark .custom-picker-compact.ant-picker .ant-picker-clear {
+          background-color: transparent !important;
+          color: #94a3b8 !important;
+        }
+      `}</style>
       </div>
     </div>
   );

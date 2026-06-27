@@ -1,4 +1,20 @@
 import { useAppSelector } from "../store/hooks";
+import type { CurrentUser } from "../store/slices/authSlice";
+
+/**
+ * Pure module-access check (read permission), usable outside React render — e.g.
+ * building the sidebar menu from the module registry without a hook per module.
+ * super_admin is bypassed; otherwise requires read on at least one of the modules.
+ */
+export const hasModuleAccess = (
+  currentUser: CurrentUser | null,
+  module: string | string[],
+): boolean => {
+  if (!currentUser) return false;
+  if (currentUser.role === "super_admin") return true;
+  const modules = Array.isArray(module) ? module : [module];
+  return modules.some((m) => !!currentUser.permissions?.[m]?.read);
+};
 
 /**
  * Hook to verify individual granular permission.
@@ -25,19 +41,7 @@ export const useHasPermission = (
  */
 export const useModuleAccess = (module: string | string[]): boolean => {
   const currentUser = useAppSelector((state) => state.auth.currentUser);
-
-  if (!currentUser) return false;
-  if (currentUser.role === "super_admin") return true;
-
-  if (Array.isArray(module)) {
-    return module.some((m) => {
-      const modulePerms = currentUser.permissions?.[m];
-      return !!(modulePerms && modulePerms.read);
-    });
-  }
-
-  const modulePerms = currentUser.permissions?.[module];
-  return !!(modulePerms && modulePerms.read);
+  return hasModuleAccess(currentUser, module);
 };
 
 /**

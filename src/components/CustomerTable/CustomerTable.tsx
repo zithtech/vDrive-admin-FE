@@ -484,6 +484,7 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
                     .dark .customer-row-odd:hover { background-color: #1e293b !important; }
                     .customer-menu-icon { color: #9ca3af; }
                     .customer-menu-label { font-weight: 700; color: #374151; }
+                    .dark .customer-menu-label { color: #f1f5f9; }
                     .customer-menu-label-bold { font-weight: 700; }
                     .customer-menu-icon-suspend { color: #fb923c; }
                     .customer-menu-label-suspend { font-weight: 700; color: #ea580c; }

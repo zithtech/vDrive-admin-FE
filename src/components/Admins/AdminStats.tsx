@@ -3,47 +3,6 @@ import { ShieldCheck, UserCheck, KeySquare, Clock } from "lucide-react";
 import type { AdminUser } from "../../store/slices/adminSlice";
 import dayjs from "dayjs";
 
-// Beautiful SVG Sparkline helper component matching the mockup designs
-const Sparkline: React.FC<{ color: string }> = ({ color }) => {
-  let strokeColor = "#3b82f6";
-  let gradientId = "blue-grad-admin";
-  let stopColor = "#3b82f6";
-
-  if (color === "green") {
-    strokeColor = "#10b981";
-    gradientId = "green-grad-admin";
-    stopColor = "#10b981";
-  } else if (color === "purple") {
-    strokeColor = "#8b5cf6";
-    gradientId = "purple-grad-admin";
-    stopColor = "#8b5cf6";
-  } else if (color === "orange") {
-    strokeColor = "#f59e0b";
-    gradientId = "orange-grad-admin";
-    stopColor = "#f59e0b";
-  }
-
-  return (
-    <svg className="w-20 h-6 opacity-70" viewBox="0 0 100 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={stopColor} stopOpacity="0.2" />
-          <stop offset="100%" stopColor={stopColor} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M0 25 C15 20, 30 28, 50 16 C70 4, 85 8, 100 2 L100 30 L0 30 Z"
-        fill={`url(#${gradientId})`}
-      />
-      <path
-        d="M0 25 C15 20, 30 28, 50 16 C70 4, 85 8, 100 2"
-        stroke={strokeColor}
-        strokeWidth="1.25"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-};
 
 interface AdminStatsProps {
   admins: AdminUser[];
@@ -64,36 +23,36 @@ const AdminStats: React.FC<AdminStatsProps> = ({ admins }) => {
       value: total,
       label: "records",
       icon: <ShieldCheck size={14} strokeWidth={3} />,
+      bgIcon: <ShieldCheck size={100} strokeWidth={1.5} />,
       iconColor: "text-blue-500 dark:text-blue-400",
       iconBg: "bg-blue-50 dark:bg-blue-500/10",
-      sparklineColor: "blue",
     },
     {
       title: "Super Admins",
       value: superAdmins,
       label: "system",
       icon: <KeySquare size={14} strokeWidth={3} />,
+      bgIcon: <KeySquare size={100} strokeWidth={1.5} />,
       iconColor: "text-purple-500 dark:text-purple-400",
       iconBg: "bg-purple-50 dark:bg-purple-500/10",
-      sparklineColor: "purple",
     },
     {
       title: "Platform Admins",
       value: standardAdmins,
       label: "active",
       icon: <UserCheck size={14} strokeWidth={3} />,
+      bgIcon: <UserCheck size={100} strokeWidth={1.5} />,
       iconColor: "text-emerald-500 dark:text-emerald-400",
       iconBg: "bg-emerald-50 dark:bg-emerald-500/10",
-      sparklineColor: "green",
     },
     {
       title: "New Additions",
       value: newThisMonth,
       label: "this month",
       icon: <Clock size={14} strokeWidth={3} />,
+      bgIcon: <Clock size={100} strokeWidth={1.5} />,
       iconColor: "text-amber-500 dark:text-amber-400",
       iconBg: "bg-amber-50 dark:bg-amber-500/10",
-      sparklineColor: "orange",
     },
   ];
 
@@ -102,28 +61,33 @@ const AdminStats: React.FC<AdminStatsProps> = ({ admins }) => {
       {stats.map((card, idx) => (
         <div
           key={idx}
-          className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all rounded-sm"
+          className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden"
         >
-          <div className="flex items-center gap-2 mb-3">
-            <div className={`w-7 h-7 rounded-lg ${card.iconBg} ${card.iconColor} flex items-center justify-center text-sm flex-shrink-0`}>
-              {card.icon}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className={`w-8 h-8 flex items-center justify-center text-base ${card.iconBg} ${card.iconColor} z-10 rounded-lg`}>
+                {card.icon}
+              </div>
+              <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                {card.title}
+              </p>
             </div>
-            <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-450 tracking-wide uppercase leading-none">
-              {card.title}
-            </span>
           </div>
-          <div className="flex items-baseline gap-1 mt-auto">
-            <span className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">
-              {card.value.toLocaleString()}
-            </span>
-            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-              {card.label}
-            </span>
-          </div>
-
-          {/* Bottom Right Sparkline */}
-          <div className="absolute bottom-0 right-0 pointer-events-none">
-            <Sparkline color={card.sparklineColor} />
+          <div className="flex items-end justify-between mt-2 z-10">
+            <div className="flex flex-col">
+              <div className="flex items-baseline gap-1.5">
+                <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                  {card.value.toLocaleString()}
+                </h3>
+                <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                  {card.label}
+                </span>
+              </div>
+            </div>
+            {/* Background Icon */}
+            <div className={`absolute -bottom-4 -right-4 opacity-[0.04] pointer-events-none ${card.iconColor}`}>
+              {card.bgIcon}
+            </div>
           </div>
         </div>
       ))}

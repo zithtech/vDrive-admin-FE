@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { Button, Select, Input, DatePicker, Pagination } from "antd";
+import { useEffect, useState, useMemo } from "react";
+import { Button, Select, DatePicker, Pagination } from "antd";
 import {
   IoCarOutline,
 } from "react-icons/io5";
@@ -24,51 +24,7 @@ import * as XLSX from "xlsx";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 
-// Beautiful SVG Sparkline helper component matching the mockup designs
-const Sparkline: React.FC<{ color: string }> = ({ color }) => {
-  let strokeColor = "#3b82f6";
-  let gradientId = "blue-grad";
-  let stopColor = "#3b82f6";
 
-  if (color === "green") {
-    strokeColor = "#10b981";
-    gradientId = "green-grad";
-    stopColor = "#10b981";
-  } else if (color === "orange") {
-    strokeColor = "#f59e0b";
-    gradientId = "orange-grad";
-    stopColor = "#f59e0b";
-  } else if (color === "red") {
-    strokeColor = "#ef4444";
-    gradientId = "red-grad";
-    stopColor = "#ef4444";
-  } else if (color === "purple") {
-    strokeColor = "#8b5cf6";
-    gradientId = "purple-grad";
-    stopColor = "#8b5cf6";
-  }
-
-  return (
-    <svg className="w-20 h-6 opacity-70" viewBox="0 0 100 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={stopColor} stopOpacity="0.2" />
-          <stop offset="100%" stopColor={stopColor} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M0 25 C15 20, 30 28, 50 16 C70 4, 85 8, 100 2 L100 30 L0 30 Z"
-        fill={`url(#${gradientId})`}
-      />
-      <path
-        d="M0 25 C15 20, 30 28, 50 16 C70 4, 85 8, 100 2"
-        stroke={strokeColor}
-        strokeWidth="1.25"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-};
 
 export const exportTripsToExcel = (data: TripDetailsType[], fileName: string) => {
   if (!data.length) return;
@@ -263,331 +219,341 @@ const TripDetails = () => {
   }, [trips]);
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-slate-900">
-      <div className="w-full h-full flex flex-col md:flex-row bg-slate-50/50 dark:bg-slate-950/25 overflow-hidden">
-        {/* ─── Left Sidebar Panel ─────────────────────────────────────── */}
-        <div className="w-full md:w-64 flex-shrink-0 bg-white dark:bg-slate-900 border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-800/80 flex flex-col p-4 gap-4 overflow-y-auto custom-scrollbar">
-          {/* Header Title / Context */}
-          <div className="flex items-center gap-2.5 px-1">
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-              <IoCarOutline className="text-lg" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-slate-800 dark:text-slate-200 tracking-tight text-xs uppercase leading-none">
-                Trip Management
-              </span>
-              <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mt-0.5">
-                Orchestrate ride activities
-              </span>
-            </div>
+    <div className="w-full h-full flex flex-col bg-[#f8f9fa] dark:bg-[#0b0f19] overflow-hidden">
+      {/* Top Navbar */}
+      <div className="bg-white dark:bg-slate-800 h-12 px-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4 z-0 flex-shrink-0">
+        {/* Title & Description */}
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
+            <IoCarOutline className="text-lg" />
           </div>
+          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Trip Details</h1>
+          <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0">Orchestrate ride activities</p>
+        </div>
 
-          {/* Action Button: Export */}
+        <div className="relative flex-1 max-w-xl mx-auto flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all h-9">
+          <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
+          <input
+            type="text"
+            placeholder="Search trip, driver, user..."
+            className="w-full pl-10 pr-4 py-1.5 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400 border-none shadow-none focus:ring-0"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <div className="absolute right-3">
+            <span className="text-[11px] font-bold text-slate-400 border border-slate-200 dark:border-slate-600 rounded-[4px] px-1.5 py-[1px] bg-slate-50/50 dark:bg-slate-800 tracking-wide">
+              ⌘K
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            {filteredTrips.length} results
+          </span>
+
           <Button
             type="primary"
-            icon={<LuDownload className="text-sm" />}
+            icon={<LuDownload className="text-lg" />}
             onClick={handleExport}
-            className="w-full h-9 rounded-lg font-bold text-xs uppercase tracking-wider border-none !bg-blue-600 hover:!bg-blue-700 text-white shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.01] transition-all"
+            className="px-4 h-10 rounded-lg font-bold text-xs uppercase tracking-wider border-none !bg-blue-600 hover:!bg-blue-700 text-white shadow-sm flex items-center justify-center gap-1.5 hover:scale-[1.01] transition-all"
           >
             Export Report
           </Button>
+        </div>
+      </div>
 
-          {/* Sidenav views section */}
-          <div className="flex flex-col gap-1">
-            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase px-2 mb-0.5">
-              Views
-            </span>
+      <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* SIDEBAR */}
+        <div className="w-[220px] flex-shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-10 shadow-[2px_0_10px_rgba(0,0,0,0.02)]">
+          <div className="flex-1 overflow-y-auto p-4 space-y-8 custom-scrollbar">
+            {/* Sidenav views section */}
+            <div className="flex flex-col gap-1">
+              <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase px-2 mb-0.5">
+                Views
+              </span>
 
-            {/* View: All Trips */}
-            <div
-              onClick={() => setMainView("ALL")}
-              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "ALL"
-                ? "bg-slate-100/80 dark:bg-slate-500/10 text-slate-700 dark:text-slate-300 font-bold"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
-                }`}
-            >
-              <div className="flex items-center gap-2 text-xs">
-                <CarOutlined className="text-xs" />
-                <span>All Trips</span>
+              {/* View: All Trips */}
+              <div
+                onClick={() => setMainView("ALL")}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "ALL"
+                  ? "bg-slate-100/80 dark:bg-slate-500/10 text-slate-700 dark:text-slate-300 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  }`}
+              >
+                <div className="flex items-center gap-2 text-xs">
+                  <CarOutlined className="text-xs" />
+                  <span>All Trips</span>
+                </div>
+                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "ALL"
+                  ? "bg-slate-200 dark:bg-slate-500/20 text-slate-800 dark:text-slate-200"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
+                  {getViewCount("ALL")}
+                </span>
               </div>
-              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "ALL"
-                ? "bg-slate-200 dark:bg-slate-500/20 text-slate-800 dark:text-slate-200"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                }`}>
-                {getViewCount("ALL")}
-              </span>
-            </div>
 
-            {/* View: Requested */}
-            <div
-              onClick={() => setMainView("REQUESTED")}
-              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "REQUESTED"
-                ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
-                }`}
-            >
-              <div className="flex items-center gap-2 text-xs">
-                <BellOutlined className="text-xs" />
-                <span>Requested</span>
+              {/* View: Requested */}
+              <div
+                onClick={() => setMainView("REQUESTED")}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "REQUESTED"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  }`}
+              >
+                <div className="flex items-center gap-2 text-xs">
+                  <BellOutlined className="text-xs" />
+                  <span>Requested</span>
+                </div>
+                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "REQUESTED"
+                  ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
+                  {getViewCount("REQUESTED")}
+                </span>
               </div>
-              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "REQUESTED"
-                ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                }`}>
-                {getViewCount("REQUESTED")}
-              </span>
-            </div>
 
-            {/* View: Assigned */}
-            <div
-              onClick={() => setMainView("ASSIGNED")}
-              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "ASSIGNED"
-                ? "bg-cyan-50/80 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-bold"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
-                }`}
-            >
-              <div className="flex items-center gap-2 text-xs">
-                <UserAddOutlined className="text-xs" />
-                <span>Assigned</span>
+              {/* View: Assigned */}
+              <div
+                onClick={() => setMainView("ASSIGNED")}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "ASSIGNED"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  }`}
+              >
+                <div className="flex items-center gap-2 text-xs">
+                  <UserAddOutlined className="text-xs" />
+                  <span>Assigned</span>
+                </div>
+                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "ASSIGNED"
+                  ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
+                  {getViewCount("ASSIGNED")}
+                </span>
               </div>
-              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "ASSIGNED"
-                ? "bg-cyan-100 dark:bg-cyan-500/20 text-cyan-700 dark:text-cyan-300"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                }`}>
-                {getViewCount("ASSIGNED")}
-              </span>
-            </div>
 
-            {/* View: Accepted */}
-            <div
-              onClick={() => setMainView("ACCEPTED")}
-              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "ACCEPTED"
-                ? "bg-emerald-50/80 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
-                }`}
-            >
-              <div className="flex items-center gap-2 text-xs">
-                <CheckOutlined className="text-xs" />
-                <span>Accepted</span>
+              {/* View: Accepted */}
+              <div
+                onClick={() => setMainView("ACCEPTED")}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "ACCEPTED"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  }`}
+              >
+                <div className="flex items-center gap-2 text-xs">
+                  <CheckOutlined className="text-xs" />
+                  <span>Accepted</span>
+                </div>
+                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "ACCEPTED"
+                  ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
+                  {getViewCount("ACCEPTED")}
+                </span>
               </div>
-              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "ACCEPTED"
-                ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                }`}>
-                {getViewCount("ACCEPTED")}
-              </span>
-            </div>
 
-            {/* View: Scheduled (Upcoming) */}
-            <div
-              onClick={() => setMainView("SCHEDULED")}
-              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "SCHEDULED"
-                ? "bg-purple-50/80 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-bold"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
-                }`}
-            >
-              <div className="flex items-center gap-2 text-xs">
-                <ClockCircleOutlined className="text-xs" />
-                <span>Upcoming</span>
+              {/* View: Scheduled (Upcoming) */}
+              <div
+                onClick={() => setMainView("SCHEDULED")}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "SCHEDULED"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  }`}
+              >
+                <div className="flex items-center gap-2 text-xs">
+                  <ClockCircleOutlined className="text-xs" />
+                  <span>Upcoming</span>
+                </div>
+                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "SCHEDULED"
+                  ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
+                  {getViewCount("SCHEDULED")}
+                </span>
               </div>
-              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "SCHEDULED"
-                ? "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                }`}>
-                {getViewCount("SCHEDULED")}
-              </span>
-            </div>
 
-            {/* View: Live Rides */}
-            <div
-              onClick={() => setMainView("LIVE")}
-              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "LIVE"
-                ? "bg-orange-50/80 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
-                }`}
-            >
-              <div className="flex items-center gap-2 text-xs">
-                <EnvironmentOutlined className="text-xs" />
-                <span>Live</span>
+              {/* View: Live Rides */}
+              <div
+                onClick={() => setMainView("LIVE")}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "LIVE"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  }`}
+              >
+                <div className="flex items-center gap-2 text-xs">
+                  <EnvironmentOutlined className="text-xs" />
+                  <span>Live</span>
+                </div>
+                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "LIVE"
+                  ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
+                  {getViewCount("LIVE")}
+                </span>
               </div>
-              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "LIVE"
-                ? "bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-300"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                }`}>
-                {getViewCount("LIVE")}
-              </span>
-            </div>
-            
-            {/* View: Completed */}
-            <div
-              onClick={() => setMainView("COMPLETED")}
-              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "COMPLETED"
-                ? "bg-indigo-50/80 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
-                }`}
-            >
-              <div className="flex items-center gap-2 text-xs">
-                <CheckCircleOutlined className="text-xs" />
-                <span>Completed</span>
+
+              {/* View: Completed */}
+              <div
+                onClick={() => setMainView("COMPLETED")}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "COMPLETED"
+                  ? "bg-emerald-50/80 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  }`}
+              >
+                <div className="flex items-center gap-2 text-xs">
+                  <CheckCircleOutlined className="text-xs" />
+                  <span>Completed</span>
+                </div>
+                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "COMPLETED"
+                  ? "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
+                  {getViewCount("COMPLETED")}
+                </span>
               </div>
-              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "COMPLETED"
-                ? "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                }`}>
-                {getViewCount("COMPLETED")}
-              </span>
-            </div>
 
-            {/* View: Cancelled */}
-            <div
-              onClick={() => setMainView("CANCELLED")}
-              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "CANCELLED"
-                ? "bg-slate-200/80 dark:bg-slate-600/30 text-slate-700 dark:text-slate-300 font-bold"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
-                }`}
-            >
-              <div className="flex items-center gap-2 text-xs">
-                <StopOutlined className="text-xs text-slate-500" />
-                <span>Cancelled</span>
+              {/* View: Cancelled */}
+              <div
+                onClick={() => setMainView("CANCELLED")}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "CANCELLED"
+                  ? "bg-slate-200/80 dark:bg-slate-600/30 text-slate-700 dark:text-slate-300 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  }`}
+              >
+                <div className="flex items-center gap-2 text-xs">
+                  <StopOutlined className="text-xs text-slate-500" />
+                  <span>Cancelled</span>
+                </div>
+                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "CANCELLED"
+                  ? "bg-slate-300/50 dark:bg-slate-500/40 text-slate-800 dark:text-slate-200"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
+                  {getViewCount("CANCELLED")}
+                </span>
               </div>
-              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "CANCELLED"
-                ? "bg-slate-300/50 dark:bg-slate-500/40 text-slate-800 dark:text-slate-200"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                }`}>
-                {getViewCount("CANCELLED")}
-              </span>
-            </div>
 
-            {/* View: Mid-Cancelled */}
-            <div
-              onClick={() => setMainView("MID_CANCELLED")}
-              className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "MID_CANCELLED"
-                ? "bg-rose-50/80 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold"
-                : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
-                }`}
-            >
-              <div className="flex items-center gap-2 text-xs">
-                <StopOutlined className="text-xs text-rose-500" />
-                <span>Mid-Cancelled</span>
+              {/* View: Mid-Cancelled */}
+              <div
+                onClick={() => setMainView("MID_CANCELLED")}
+                className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${mainView === "MID_CANCELLED"
+                  ? "bg-blue-50/80 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-bold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+                  }`}
+              >
+                <div className="flex items-center gap-2 text-xs">
+                  <StopOutlined className="text-xs text-rose-500" />
+                  <span>Mid-Cancelled</span>
+                </div>
+                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "MID_CANCELLED"
+                  ? "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  }`}>
+                  {getViewCount("MID_CANCELLED")}
+                </span>
               </div>
-              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${mainView === "MID_CANCELLED"
-                ? "bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300"
-                : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                }`}>
-                {getViewCount("MID_CANCELLED")}
-              </span>
-            </div>
-          </div>
-
-          <div className="h-[1px] bg-slate-100 dark:bg-slate-800/80" />
-
-          {/* Filters section */}
-          <div className="flex flex-col gap-3">
-            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider uppercase px-2">
-              Detailed Filters
-            </span>
-
-            {/* Filter: Date Range */}
-            <div className="flex flex-col gap-1 px-2">
-              <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
-                Date Range
-              </span>
-              <DatePicker.RangePicker
-                value={dateRange}
-                onChange={setDateRange}
-                format="DD/MM/YYYY"
-                className="w-full premium-range-picker-sidebar"
-                placeholder={["Start", "End"]}
-              />
             </div>
 
-            {/* Filter: Driver Status */}
-            <div className="flex flex-col gap-1 px-2">
-              <span className="text-[9px] font-semibold text-slate-500 dark:text-slate-400 uppercase">
-                Driver Status
-              </span>
-              <Select
-                placeholder="All Records"
-                value={driverStatusFilter}
-                onChange={setDriverStatusFilter}
-                className="w-full text-xs premium-select-sidebar"
-                options={[
-                  { value: "all", label: "All Records" },
-                  { value: "driverAssigned", label: "Driver Assigned" },
-                  { value: "driverNotAssigned", label: "Not Assigned" },
-                ]}
-              />
-            </div>
           </div>
         </div>
 
         {/* ─── Right Content Area ─────────────────────────────────────── */}
         <div className="flex-grow flex flex-col min-w-0 relative h-full">
-          <div className="flex-grow flex flex-col p-6 overflow-y-auto custom-scrollbar gap-5 pb-20">
-
-            {/* Top Bar: Search Input & Results Count (mockup style) */}
-            <div className="flex items-center justify-between gap-4 px-0 py-0.5 md:flex-nowrap flex-wrap">
-              <div className="flex items-center gap-3 flex-grow flex-shrink-0">
-                <Input
-                  placeholder="Search trip, driver, user..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  allowClear
-                  prefix={<SearchOutlined className="text-slate-400 text-xs" />}
-                  className="w-64 text-xs rounded-xl border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 h-9"
-                />
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  {filteredTrips.length} results
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-blue-600 dark:text-blue-400 font-extrabold uppercase tracking-wider">
-                  {mainView} Ledger
-                </span>
-              </div>
-            </div>
+          <div className="flex-grow flex flex-col p-3 overflow-y-auto custom-scrollbar gap-2 pb-20">
 
             {/* Status Cards Grid Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 px-0">
               {stats.map((card, idx) => (
                 <div
                   key={idx}
-                  className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-850 p-4 flex flex-col relative overflow-hidden shadow-sm transition-all"
+                  className="bg-white dark:bg-slate-900 px-5 py-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-between h-[110px] shadow-sm relative overflow-hidden"
                 >
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className={`w-7 h-7 rounded-lg ${card.iconBg} ${card.iconColor} flex items-center justify-center text-sm flex-shrink-0`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 h-8 flex items-center justify-center text-base ${card.iconBg} ${card.iconColor} z-10 rounded-lg`}>
+                        {card.icon}
+                      </div>
+                      <p className="text-slate-600 dark:text-slate-400 text-[13px] font-bold m-0 uppercase tracking-widest z-10">
+                        {card.title}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-end justify-between mt-2 z-10">
+                    <div className="flex flex-col">
+                      <div className="flex items-baseline gap-1.5">
+                        <h3 className="text-2xl font-bold text-slate-800 dark:text-white m-0 leading-none">
+                          {card.value}
+                        </h3>
+                        <span className="text-[10px] text-slate-400 font-semibold mb-0.5 tracking-wider uppercase">
+                          {card.label}
+                        </span>
+                      </div>
+                    </div>
+                    {/* Background Icon */}
+                    <div className={`absolute -bottom-4 -right-4 text-[100px] opacity-[0.04] pointer-events-none ${card.iconColor}`}>
                       {card.icon}
                     </div>
-                    <span className="text-[10px] font-extrabold text-slate-500 dark:text-slate-450 tracking-wide uppercase leading-none">
-                      {card.title}
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-1 mt-auto">
-                    <span className="text-2xl font-extrabold text-slate-800 dark:text-slate-100 leading-none">
-                      {card.value}
-                    </span>
-                    <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider">
-                      {card.label}
-                    </span>
-                  </div>
-
-                  {/* Bottom Right Sparkline */}
-                  <div className="absolute bottom-0 right-0 pointer-events-none">
-                    <Sparkline color={card.sparklineColor} />
                   </div>
                 </div>
               ))}
             </div>
 
+            {/* FILTERS TOOLBAR */}
+            <div className="bg-white dark:bg-slate-800 py-1 px-2 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm flex-shrink-0 dark-theme-select-override">
+              <div className="flex items-center gap-2 flex-1 min-w-[220px]">
+                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
+                  Driver:
+                </span>
+                <Select
+                  placeholder="All Records"
+                  value={driverStatusFilter}
+                  onChange={setDriverStatusFilter}
+                  className="flex-1 text-xs premium-select-sidebar custom-driver-select min-w-0"
+                  options={[
+                    { value: "all", label: "All Records" },
+                    { value: "driverAssigned", label: "Driver Assigned" },
+                    { value: "driverNotAssigned", label: "Not Assigned" },
+                  ]}
+                />
+              </div>
+
+              <div className="flex items-center gap-2 flex-1 min-w-[220px]">
+                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
+                  Date Range:
+                </span>
+                <DatePicker.RangePicker
+                  value={dateRange}
+                  onChange={setDateRange}
+                  format="DD/MM/YYYY"
+                  className="flex-1 text-xs premium-range-picker-sidebar custom-picker-compact min-w-0"
+                  placeholder={["Start", "End"]}
+                />
+              </div>
+
+              {(driverStatusFilter !== "all" || dateRange) && (
+                <Button
+                  type="text"
+                  danger
+                  className="text-[11px] font-bold uppercase tracking-wider"
+                  onClick={() => {
+                    setDriverStatusFilter("all");
+                    setDateRange(null);
+                  }}
+                >
+                  Clear
+                </Button>
+              )}
+            </div>
+
             {/* Table Container */}
             <div className="flex-grow flex flex-col min-h-0 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800/80 shadow-sm overflow-hidden pb-1">
-              <TripDetailsTable 
-                data={paginatedData} 
-                isSuperAdmin={isSuperAdmin} 
+              <TripDetailsTable
+                data={paginatedData}
+                isSuperAdmin={isSuperAdmin}
                 loading={loading}
-                pagination={false} 
+                pagination={false}
               />
             </div>
           </div>
@@ -615,24 +581,57 @@ const TripDetails = () => {
       </div>
 
       <style>{`
-        /* Sidebar input styling overrides */
-        .premium-select-sidebar.ant-select .ant-select-selector {
+        /* Filter input styling overrides to match dark mode search bar */
+        .custom-driver-select .ant-select-selector {
           border-radius: 8px !important;
           border-color: #cbd5e1 !important;
           height: 34px !important;
         }
-        .dark .premium-select-sidebar.ant-select .ant-select-selector {
+
+        .dark .dark-theme-select-override .custom-driver-select {
           border-color: #334155 !important;
           background-color: #0f172a !important;
           color: #f1f5f9 !important;
         }
-        .premium-range-picker-sidebar.ant-picker {
+        
+        .dark .dark-theme-select-override .ant-select-selector,
+        html.dark .dark-theme-select-override .ant-select-selector {
+          border-color: #334155 !important;
+          background-color: #0f172a !important;
+          color: #f1f5f9 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-item,
+        html.dark .dark-theme-select-override .ant-select-selection-item {
+          color: #f1f5f9 !important;
+          background-color: #1e293b !important;
+          border-color: #334155 !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-selection-placeholder,
+        html.dark .dark-theme-select-override .ant-select-selection-placeholder {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-arrow,
+        html.dark .dark-theme-select-override .ant-select-arrow {
+          color: #64748b !important;
+        }
+        
+        .dark .dark-theme-select-override .ant-select-clear,
+        html.dark .dark-theme-select-override .ant-select-clear {
+          background-color: transparent !important;
+          color: #64748b !important;
+        }
+        
+        /* Picker compact styling */
+        .custom-picker-compact.ant-picker {
           border-radius: 8px !important;
           border-color: #cbd5e1 !important;
           padding: 4px 8px !important;
           height: 34px !important;
         }
-        .dark .premium-range-picker-sidebar.ant-picker {
+        .dark .custom-picker-compact.ant-picker {
           border-color: #334155 !important;
           background-color: #0f172a !important;
         }

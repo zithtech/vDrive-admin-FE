@@ -10,9 +10,13 @@ import QuickActions from "../components/DashBoard/QuickActions";
 import { useEffect, useState } from "react";
 import axiosIns from "../api/axios";
 import { useSocket } from "../hooks/useSocket";
+import { useHasPermission } from "../hooks/usePermission";
 
 const Dashboard = () => {
   const { socket } = useSocket();
+  // Dashboard overview loads with dashboard.read; the recent-trips list is real trip
+  // data and stays gated on trips.read (shown only if permitted, never 403s).
+  const canReadTrips = useHasPermission("trips", "read");
   const [trips, setTrips] = useState<any[]>([]);
   const [stats, setStats] = useState({
     activeDrivers: 0,
@@ -33,6 +37,9 @@ const Dashboard = () => {
     totalCancellationsToday: 0,
     pendingVerifications: 0,
     documentExpiryAlerts: 0,
+    onboardingPending: 0,
+    onboardingDocRejected: 0,
+    onboardingRejected: 0,
     complianceHealth: 0,
     lastSyncAt: new Date().toISOString(),
     trends: {
@@ -65,6 +72,9 @@ const Dashboard = () => {
   };
 
   const fetchLatestTrips = async () => {
+    // Skip silently if the viewer can't read trips — keeps the overview working with
+    // just dashboard.read, and never triggers a 403 for the recent-trips list.
+    if (!canReadTrips) return;
     try {
       const response = await axiosIns.get("/api/trips");
       if (response.data.success) {
@@ -124,7 +134,7 @@ const Dashboard = () => {
           <div>
             <Typography.Title
               level={4}
-              className="!m-0 text-lg sm:text-xl font-extrabold text-gray-900 dark:text-white tracking-tight"
+              className="!m-0 text-lg sm:text-lg font-extrabold text-gray-900 dark:text-white tracking-tight"
             >
               Dashboard
             </Typography.Title>
@@ -152,7 +162,7 @@ const Dashboard = () => {
       </div>
 
       {/* Main Dashboard Layout - 4 Column Top Grid with adjusted widths (3:2:3:2) */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-3 min-h-0 overflow-hidden text-sm">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-2 min-h-0 overflow-hidden text-sm">
         <div className="lg:col-span-3 flex flex-col min-h-0">
           <DriverMetricsColumn stats={stats} />
         </div>
