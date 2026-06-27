@@ -13,9 +13,12 @@ interface ModuleProtectedRouteProps {
 export const ModuleProtectedRoute: React.FC<ModuleProtectedRouteProps> = ({ module, children }) => {
   const navigate = useNavigate();
   const hasAccess = useModuleAccess(module);
-  const { loading, isAuthenticated } = useAppSelector((state) => state.auth);
+  const { loading, isAuthenticated, currentUser } = useAppSelector((state) => state.auth);
 
-  if (loading) {
+  // While authenticated but the profile/permissions haven't arrived yet, we are
+  // still "loading" — not "denied". Treating this window as denied is what caused
+  // the 403 "Access Denied" flash on reload.
+  if (loading || (isAuthenticated && !currentUser)) {
     return <FullScreenLoader />;
   }
 

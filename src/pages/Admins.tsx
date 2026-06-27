@@ -68,37 +68,12 @@ export default function AdminPage() {
         throw new Error();
       }
     } catch (err) {
-      console.log("Roles Endpoint not available yet. Using in-memory fallback.");
-      const saved = localStorage.getItem("vdrive_custom_roles");
-      const loadedRoles = saved
-        ? JSON.parse(saved)
-        : [
-          {
-            id: "1a1a1a1a-1a1a-1a1a-1a1a-1a1a1a1a1a1a",
-            name: "super_admin",
-            description: "Complete system authority bypass",
-            is_system: true,
-          },
-          {
-            id: "2b2b2b2b-2b2b-2b2b-2b2b-2b2b2b2b2b2b",
-            name: "admin",
-            description: "Platform level operation manager",
-            is_system: true,
-          },
-          {
-            id: "3c3c3c3c-3c3c-3c3c-3c3c-3c3c3c3c3c3c",
-            name: "ops_manager",
-            description: "Operations manager focusing on fleet and driver metrics",
-            is_system: true,
-          },
-          {
-            id: "4d4d4d4d-4d4d-4d4d-4d4d-4d4d4d4d4d4d",
-            name: "finance_viewer",
-            description: "Read-only view for financial models and payouts",
-            is_system: true,
-          },
-        ];
-      setRoles(loadedRoles);
+      // NEVER fabricate roles with placeholder UUIDs — assigning one writes an
+      // invalid role_id into admin_users (a real source of corruption). Fail safe:
+      // empty list + surface the error so no bogus role can be assigned.
+      console.error("Failed to load roles from /api/roles:", err);
+      setRoles([]);
+      messageApi.error("Could not load roles. Role assignment is unavailable until roles load.");
     }
   };
 
@@ -117,11 +92,14 @@ export default function AdminPage() {
   const openEditModal = (admin: AdminUser) => {
     setModalMode("edit");
     setEditingAdmin(admin);
+    // The `role` string is only a coarse bypass flag (admin/super_admin). The real
+    // role lives in role_id — resolve it so the dropdown shows the actual role.
+    const roleObj = roles.find((r) => String(r.id) === String(admin.role_id));
     form.setFieldsValue({
       name: admin.name,
       email: admin.email,
       contact: admin.contact ?? "",
-      role: admin.role,
+      role: roleObj?.name ?? admin.role,
     });
     setIsModalOpen(true);
   };
@@ -267,7 +245,11 @@ export default function AdminPage() {
       dataIndex: "role",
       key: "role",
       minWidth: 140,
-      render: (role: string) => {
+      render: (_role: string, record: AdminUser) => {
+        // Display the real role from role_id, not the coarse `role` bypass flag.
+        const roleObj = roles.find((r) => String(r.id) === String(record.role_id));
+        const role = roleObj?.name ?? record.role;
+
         let colorClass = "text-emerald-600 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-emerald-500/20"; // admin
         if (role === "super_admin")
           colorClass = "text-indigo-600 bg-indigo-50 border-indigo-200 dark:text-indigo-400 dark:bg-indigo-500/10 dark:border-indigo-500/20";

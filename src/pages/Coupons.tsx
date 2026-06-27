@@ -138,7 +138,9 @@ const CouponsPage: React.FC = () => {
   const currentModule =
     subTab === "COUPONS"
       ? mainTab === "CUSTOMER" ? "coupons" : "promos"
-      : mainTab === "CUSTOMER" ? "user_referrals" : "driver_referrals";
+      : // Referral management (both customer & driver) hits one BE endpoint gated by
+        // `user_referrals`, so gate the buttons on it too to match enforcement.
+        "user_referrals";
 
   const canCreate = useHasPermission(currentModule, "create");
   const canUpdate = useHasPermission(currentModule, "update");

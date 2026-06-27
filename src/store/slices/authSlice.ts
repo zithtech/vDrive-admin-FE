@@ -14,31 +14,11 @@ export interface PermissionMap {
   [moduleName: string]: ModulePermissions;
 }
 
-export const DEFAULT_PERMISSIONS: PermissionMap = {
-  dashboard: { create: true, read: true, update: true, delete: true },
-  customers: { create: true, read: true, update: true, delete: true },
-  drivers: { create: true, read: true, update: true, delete: true },
-  admins: { create: true, read: true, update: true, delete: true },
-  pricing: { create: true, read: true, update: true, delete: true },
-  deductions: { create: true, read: true, update: true, delete: true },
-  recharge: { create: true, read: true, update: true, delete: true },
-  taxes: { create: true, read: true, update: true, delete: true },
-  coupons: { create: true, read: true, update: true, delete: true },
-  notifications: { create: true, read: true, update: true, delete: true },
-};
-
-export const RESTRICTED_ADMIN_PERMISSIONS: PermissionMap = {
-  dashboard: { create: false, read: true, update: false, delete: false },
-  customers: { create: true, read: true, update: true, delete: false },
-  drivers: { create: true, read: true, update: true, delete: false },
-  admins: { create: false, read: false, update: false, delete: false },
-  pricing: { create: false, read: true, update: false, delete: false },
-  deductions: { create: false, read: true, update: false, delete: false },
-  recharge: { create: false, read: true, update: false, delete: false },
-  taxes: { create: false, read: true, update: false, delete: false },
-  coupons: { create: true, read: true, update: true, delete: false },
-  notifications: { create: true, read: true, update: false, delete: false },
-};
+// NOTE: Hardcoded permission fallbacks were intentionally removed. The app now
+// fails closed — permissions come solely from /api/auth/me. A super_admin still
+// gets full access via the role bypass in the permission hooks. Fabricating a
+// "restricted admin" default previously let the UI grant access the backend
+// denied, hiding real misconfigurations.
 
 export interface CurrentUser {
   id: string;
@@ -171,16 +151,19 @@ const authSlice = createSlice({
       });
 
     builder
+      .addCase(fetchCurrentUser.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(fetchCurrentUser.fulfilled, (state, action: PayloadAction<CurrentUser>) => {
+        state.loading = false;
         const user = { ...action.payload };
-        if (!user.permissions) {
-          user.permissions =
-            user.role === "super_admin" ? DEFAULT_PERMISSIONS : RESTRICTED_ADMIN_PERMISSIONS;
-        }
+        // Fail closed: never fabricate permissions the backend didn't grant.
+        user.permissions = user.permissions ?? {};
         state.currentUser = user;
         state.role = user.role;
       })
       .addCase(fetchCurrentUser.rejected, (state) => {
+        state.loading = false;
         state.role = null;
         state.currentUser = null;
       });
