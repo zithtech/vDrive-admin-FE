@@ -11,6 +11,7 @@ const VerifyEmail = () => {
   
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
+  const hasRequested = React.useRef(false);
 
   useEffect(() => {
     if (!token) {
@@ -18,6 +19,9 @@ const VerifyEmail = () => {
       setErrorMessage("No verification token provided in the URL.");
       return;
     }
+
+    if (hasRequested.current) return;
+    hasRequested.current = true;
 
     const verify = async () => {
       try {

@@ -1,13 +1,18 @@
 import React, { useState } from "react";
-import { Card, Form, Input, Button, Avatar, Divider, message } from "antd";
-import { UserOutlined, MailOutlined, LockOutlined, SafetyCertificateOutlined, PhoneOutlined } from "@ant-design/icons";
-import { useAppSelector } from "../store/hooks";
+import { Card, Form, Input, Button, Avatar, Divider, message, Modal } from "antd";
+import { UserOutlined, MailOutlined, LockOutlined, SafetyCertificateOutlined, PhoneOutlined, EditOutlined } from "@ant-design/icons";
+import { useAppSelector, useAppDispatch } from "../store/hooks";
+import { fetchCurrentUser } from "../store/slices/authSlice";
 import axiosIns from "../api/axios";
 
 const Profile: React.FC = () => {
   const { currentUser, role } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(false);
   const [form] = Form.useForm();
+  const [profileForm] = Form.useForm();
 
   const handlePasswordChange = async (values: any) => {
     setLoading(true);
@@ -27,6 +32,33 @@ const Profile: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleUpdateProfile = async (values: any) => {
+    setProfileLoading(true);
+    try {
+      const response = await axiosIns.post("/api/auth/update-profile", {
+        contact: values.contact,
+      });
+      if (response.data?.success) {
+        message.success("Profile updated successfully!");
+        setIsModalVisible(false);
+        dispatch(fetchCurrentUser());
+      } else {
+        message.error(response.data?.message || "Failed to update profile");
+      }
+    } catch (error: any) {
+      message.error(error.response?.data?.message || "Error updating profile");
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  const showEditModal = () => {
+    profileForm.setFieldsValue({
+      contact: currentUser?.contact || currentUser?.mobile_number || currentUser?.phone_number || currentUser?.mobile || "",
+    });
+    setIsModalVisible(true);
   };
 
   return (
@@ -96,14 +128,22 @@ const Profile: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-4 group">
-                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center text-emerald-500 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/50 group-hover:text-emerald-600">
-                    <PhoneOutlined className="text-lg" />
+                <div className="flex items-center gap-4 group justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center text-emerald-500 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/50 group-hover:text-emerald-600">
+                      <PhoneOutlined className="text-lg" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Mobile Number</p>
+                      <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{currentUser?.contact || currentUser?.mobile_number || currentUser?.phone_number || currentUser?.mobile || "N/A"}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Mobile Number</p>
-                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200">{currentUser?.mobile_number || currentUser?.phone_number || currentUser?.mobile || "N/A"}</p>
-                  </div>
+                  <Button 
+                    type="text" 
+                    icon={<EditOutlined />} 
+                    onClick={showEditModal}
+                    className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                  />
                 </div>
               </div>
             </div>
@@ -193,6 +233,58 @@ const Profile: React.FC = () => {
           </Card>
         </div>
       </div>
+      
+      <Modal
+        title={
+          <div className="flex items-center gap-2">
+            <EditOutlined className="text-indigo-500" />
+            <span>Edit Mobile Number</span>
+          </div>
+        }
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        footer={null}
+        destroyOnClose
+        className="rounded-xl overflow-hidden"
+      >
+        <Form
+          form={profileForm}
+          layout="vertical"
+          onFinish={handleUpdateProfile}
+          className="mt-6"
+        >
+          <Form.Item
+            name="contact"
+            label={<span className="text-slate-700 dark:text-slate-300 font-semibold">Mobile Number</span>}
+            rules={[
+              { required: true, message: "Please enter your mobile number" },
+            ]}
+          >
+            <Input 
+              prefix={<PhoneOutlined className="text-slate-400 mr-1" />} 
+              className="h-12 rounded-xl border-slate-200 hover:border-indigo-400 focus:border-indigo-500 focus:shadow-[0_0_0_2px_rgba(99,102,241,0.2)] transition-all bg-slate-50 dark:bg-slate-900/50 dark:border-slate-700" 
+              placeholder="Enter mobile number" 
+            />
+          </Form.Item>
+          
+          <div className="flex justify-end gap-3 mt-8">
+            <Button 
+              onClick={() => setIsModalVisible(false)}
+              className="h-10 px-6 rounded-lg font-medium"
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="primary" 
+              htmlType="submit" 
+              loading={profileLoading}
+              className="h-10 px-6 rounded-lg bg-indigo-600 hover:bg-indigo-700 border-none font-medium shadow-md"
+            >
+              Save Changes
+            </Button>
+          </div>
+        </Form>
+      </Modal>
     </div>
   );
 };
