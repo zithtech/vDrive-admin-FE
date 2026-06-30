@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Button, Input } from "antd";
+import { Button, Input, message } from "antd";
+import { useNavigate } from "react-router-dom";
+import axiosIns from "../api/axios";
 
 export interface Reset {
   userName: string;
@@ -19,6 +21,9 @@ const ResetPassword = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [step, setStep] = useState<1 | 2 | 3>(1); // 1=username, 2=otp, 3=new password
 
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
   const handleChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = evt?.target;
     setFields((prev) => ({
@@ -31,27 +36,37 @@ const ResetPassword = () => {
   const validateUsername = () => {
     const newErrors: Record<string, string> = {};
     if (!fields?.userName) {
-      newErrors.userName = "Registered Email/Mobile Number is required";
+      newErrors.userName = "Registered Email is required";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSendOTP = () => {
+  const handleSendOTP = async () => {
     if (validateUsername()) {
-      setStep(2); // go to OTP step
+      setLoading(true);
+      try {
+        await axiosIns.post("/api/auth/forgot-password", { email: fields.userName });
+        message.success("If this email is registered, an OTP has been sent.");
+        setStep(2);
+      } catch (error: any) {
+        message.error(error.response?.data?.message || "Failed to send OTP");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
   const handleVerifyOTP = () => {
-    if (!fields.otp) {
-      setErrors({ otp: "OTP is required" });
+    if (!fields.otp || fields.otp.length !== 6) {
+      setErrors({ otp: "Please enter a valid 6-digit OTP" });
       return;
     }
-    setStep(3); // go to reset password step
+    // We will verify the OTP along with the new password in step 3
+    setStep(3); 
   };
 
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     const newErrors: Record<string, string> = {};
     if (!fields.newPassword) {
       newErrors.newPassword = "New password is required";
@@ -61,7 +76,20 @@ const ResetPassword = () => {
     }
     setErrors(newErrors);
     if (Object.keys(newErrors).length === 0) {
-      //  call backend
+      setLoading(true);
+      try {
+        await axiosIns.post("/api/auth/reset-password", {
+          email: fields.userName,
+          otp: fields.otp,
+          newPassword: fields.newPassword,
+        });
+        message.success("Password has been reset successfully!");
+        navigate("/login");
+      } catch (error: any) {
+        message.error(error.response?.data?.message || "Failed to reset password");
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -120,6 +148,7 @@ const ResetPassword = () => {
                 type="primary"
                 block
                 onClick={handleSendOTP}
+                loading={loading}
                 className="premium-btn-primary w-full mt-2"
               >
                 Send OTP
@@ -200,6 +229,7 @@ const ResetPassword = () => {
                 type="primary"
                 block
                 onClick={handleResetPassword}
+                loading={loading}
                 className="premium-btn-primary w-full mt-2"
               >
                 Reset Password

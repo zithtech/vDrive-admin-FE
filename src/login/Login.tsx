@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button, Input } from "antd";
+import { Button, Input, message } from "antd";
 import type { InputRef } from "antd";
+import axiosIns from "../api/axios";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { loginAsync } from "../store/slices/authSlice";
 import FullScreenLoader from "../components/FullScreenLoader";
@@ -19,6 +20,7 @@ const Login = () => {
     password: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [resendLoading, setResendLoading] = useState(false);
 
   const userNameRef = useRef<InputRef>(null);
   const passwordRef = useRef<InputRef>(null);
@@ -65,10 +67,10 @@ const Login = () => {
       try {
         await dispatch(loginAsync(login)).unwrap();
         navigate("/");
-      } catch (error) {
+      } catch (error: any) {
         console.error("Login failed", error);
         setErrors({
-          password: "Login failed. Please check your credentials and try again.",
+          password: typeof error === "string" ? error : "Login failed. Please check your credentials and try again.",
         });
       }
     }
@@ -77,6 +79,26 @@ const Login = () => {
   const handleForgotPassword = () => {
     navigate("/reset-password");
   };
+
+  const handleResendVerification = async () => {
+    if (!login.userName) {
+      message.error("Please enter your registered email to resend verification.");
+      return;
+    }
+    
+    setResendLoading(true);
+    try {
+      await axiosIns.post('/api/auth/resend-verification', { email: login.userName });
+      message.success("Verification email has been resent successfully!");
+    } catch (error: any) {
+      console.error("Failed to resend verification email", error);
+      message.error(error.response?.data?.message || "Failed to resend verification email");
+    } finally {
+      setResendLoading(false);
+    }
+  };
+
+  const isUnverifiedError = errors?.password === "Please verify your email address before logging in";
 
   return (
     <main className="premium-auth-bg">
@@ -178,6 +200,18 @@ const Login = () => {
         </fieldset>
 
         <div className="flex flex-col items-center gap-4 mt-2">
+          {isUnverifiedError && (
+            <Button
+              type="default"
+              size="large"
+              onClick={handleResendVerification}
+              loading={resendLoading}
+              className="w-full !text-rose-500 !border-rose-500 hover:!bg-rose-50 dark:hover:!bg-rose-500/10 transition-colors font-semibold"
+            >
+              Resend Verification Email
+            </Button>
+          )}
+          
           <Button
             id="admin-login-btn"
             size="large"

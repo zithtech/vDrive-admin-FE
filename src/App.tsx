@@ -13,6 +13,7 @@ import {
   CheckCircleOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  SettingOutlined,
   // CustomerServiceOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
@@ -48,6 +49,9 @@ const SignUp = lazy(
 const Login = lazy(() => import("./login/Login") as Promise<{ default: React.ComponentType<any> }>);
 const ResetPassword = lazy(
   () => import("./login/ResetPassword") as Promise<{ default: React.ComponentType<any> }>,
+);
+const VerifyEmail = lazy(
+  () => import("./pages/VerifyEmail") as Promise<{ default: React.ComponentType<any> }>,
 );
 
 const { Content, Sider, Header } = Layout;
@@ -664,6 +668,13 @@ const RootLayout: React.FC = () => {
                             key: "profile",
                             label: <span className="text-[14px]">Profile</span>,
                             icon: <UserOutlined className="text-[16px]" />,
+                            onClick: () => navigate("/profile"),
+                          },
+                          {
+                            key: "settings",
+                            label: <span className="text-[14px]">Settings</span>,
+                            icon: <SettingOutlined className="text-[16px]" />,
+                            onClick: () => navigate("/settings"),
                           },
                           {
                             type: "divider",
@@ -818,6 +829,14 @@ const router = createBrowserRouter([
     element: (
       <Suspense fallback={<RouteLoadingFallback />}>
         <SignUp />
+      </Suspense>
+    ),
+  },
+  {
+    path: "/verify-email",
+    element: (
+      <Suspense fallback={<RouteLoadingFallback />}>
+        <VerifyEmail />
       </Suspense>
     ),
   },
