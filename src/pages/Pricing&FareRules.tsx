@@ -5,35 +5,75 @@ import { IoAdd } from "react-icons/io5";
 import TitleBar from "../components/TitleBarCommon/TitleBar";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { fetchPricingFareRules, setPage, setPageSize } from "../store/slices/pricingFareRulesSlice";
+import {
+  fetchPricingFareRules,
+  fetchPricingFareRuleById,
+  setPage,
+  setPageSize,
+} from "../store/slices/pricingFareRulesSlice";
 import type { PricingFareRule } from "../store/slices/pricingFareRulesSlice";
 import type { ColumnsType } from "antd/es/table";
 import PricingPreview from "../components/DriverPricing/PricingPreview";
+import type {
+  UserType,
+  RateCards,
+  TimeSlabs,
+  UserTimeSlots,
+} from "../components/DriverPricing/DriverTimeSlotsAndPricing";
 import dayjs from "dayjs";
 import { useHasPermission } from "../hooks/usePermission";
 
-// Helper to transform PricingFareRule time_slots to PricingPreview format
-const transformSlotsForPreview = (rule: PricingFareRule) => {
-  const transformed: any = {
-    "normal-driver": [],
-    "premium-driver": [],
-    "elite-driver": [],
-  };
+const emptyByType = <T,>(): Record<UserType, T[]> => ({
+  "normal-driver": [],
+  "premium-driver": [],
+  "elite-driver": [],
+});
 
-  if (rule.time_slots) {
-    rule.time_slots.forEach((slot, index) => {
-      if (transformed[slot.driver_types]) {
-        transformed[slot.driver_types].push({
-          id: index + 1,
-          day: slot.day,
-          timeRange: [dayjs(slot.from_time, "HH:mm:ss"), dayjs(slot.to_time, "HH:mm:ss")],
-          perKmRate: Number(slot.per_km_rate),
-          perHourRate: Number(slot.per_hour_rate),
-        });
-      }
+const toRateCards = (rule: any): RateCards => {
+  const c: RateCards = {
+    "normal-driver": { perHourRate: 0, perKmRate: 0, freeKm: 0, minimumFare: 0 },
+    "premium-driver": { perHourRate: 0, perKmRate: 0, freeKm: 0, minimumFare: 0 },
+    "elite-driver": { perHourRate: 0, perKmRate: 0, freeKm: 0, minimumFare: 0 },
+  };
+  (rule.rate_cards ?? []).forEach((x: any) => {
+    const t = x.driver_types as UserType;
+    if (c[t])
+      c[t] = {
+        perHourRate: Number(x.per_hour_rate),
+        perKmRate: Number(x.per_km_rate),
+        freeKm: Number(x.free_km),
+        minimumFare: Number(x.minimum_fare),
+      };
+  });
+  return c;
+};
+
+const toTimeSlabs = (rule: any): TimeSlabs => {
+  const s = emptyByType<any>() as TimeSlabs;
+  (rule.time_slabs ?? [])
+    .slice()
+    .sort((a: any, b: any) => a.from_hours - b.from_hours)
+    .forEach((x: any, i: number) => {
+      const t = x.driver_types as UserType;
+      if (s[t]) s[t].push({ uid: i + 1, fromHours: Number(x.from_hours), perHourRate: Number(x.per_hour_rate) });
     });
-  }
-  return transformed;
+  return s;
+};
+
+const toTimeSlots = (rule: any): UserTimeSlots => {
+  const s = emptyByType<any>() as UserTimeSlots;
+  (rule.time_slots ?? []).forEach((x: any, i: number) => {
+    const t = x.driver_types as UserType;
+    if (s[t])
+      s[t].push({
+        id: i + 1,
+        day: x.day,
+        timeRange: [dayjs(x.from_time, "HH:mm:ss"), dayjs(x.to_time, "HH:mm:ss")],
+        perKmRate: Number(x.per_km_rate),
+        perHourRate: Number(x.per_hour_rate),
+      });
+  });
+  return s;
 };
 
 const PricingAndFareRules: React.FC = () => {
@@ -80,8 +120,14 @@ const PricingAndFareRules: React.FC = () => {
     navigate(`/PricingAndFareRules/pricing/${record.id}`);
   };
 
-  const handleView = (record: PricingFareRule) => {
-    setPreviewRule(record);
+  const handleView = async (record: PricingFareRule) => {
+    // Fetch full rule (rate cards + slabs + slots are only on the detail endpoint)
+    try {
+      const full = await dispatch(fetchPricingFareRuleById(record.id)).unwrap();
+      setPreviewRule(full as PricingFareRule);
+    } catch {
+      setPreviewRule(record);
+    }
     setIsPreviewOpen(true);
   };
 
@@ -136,28 +182,20 @@ const PricingAndFareRules: React.FC = () => {
       ),
     },
     {
-      title: "Price / KM",
-      dataIndex: "per_km_price",
-      key: "per_km_price",
-      width: 110,
+      title: "One-way Return",
+      dataIndex: "one_way_return_pct",
+      key: "one_way_return_pct",
+      width: 120,
       align: "right",
-      render: (value: number | string) => `₹${Number(value).toFixed(2)}/km`,
+      render: (value: number | string) => `${Number(value || 0).toFixed(0)}%`,
     },
     {
-      title: "Price / Hr",
-      dataIndex: "per_hour_price",
-      key: "per_hour_price",
-      width: 110,
-      align: "right",
-      render: (value: number | string) => `₹${Number(value || 0).toFixed(2)}/hr`,
-    },
-    {
-      title: "Min Fare",
-      dataIndex: "minimum_fare",
-      key: "minimum_fare",
+      title: "Night %",
+      dataIndex: "night_charge_pct",
+      key: "night_charge_pct",
       width: 100,
       align: "right",
-      render: (value: number | string) => `₹${Number(value || 0).toFixed(2)}`,
+      render: (value: number | string) => `${Number(value || 0).toFixed(0)}%`,
     },
     {
       title: "Actions",
@@ -267,22 +305,17 @@ const PricingAndFareRules: React.FC = () => {
                 district={previewRule.district_name || ""}
                 area={previewRule.area_name || ""}
                 pincode={previewRule.pincode || ""}
-                perKmPrice={Number(previewRule.per_km_price)}
-                perHourPrice={Number(previewRule.per_hour_price) || 0}
-                minimumFare={Number(previewRule.minimum_fare) || 0}
                 oneWayReturnPct={Number(previewRule.one_way_return_pct) || 0}
+                nightChargePct={Number(previewRule.night_charge_pct) || 0}
+                nightStart={dayjs(previewRule.night_start || "22:00:00", "HH:mm:ss")}
+                nightEnd={dayjs(previewRule.night_end || "06:00:00", "HH:mm:ss")}
+                outstationAllowancePerDay={Number(previewRule.outstation_allowance_per_day) || 0}
                 hotspotEnabled={previewRule.is_hotspot}
-                hotspotId={previewRule.hotspot_name || ""}
+                hotspotId={previewRule.hotspot_id || ""}
                 multiplier={Number(previewRule.multiplier || 1)}
-                timeSlots={transformSlotsForPreview(previewRule)}
-                extraKmCheckpoints={(previewRule.extra_km_checkpoints ?? [])
-                  .slice()
-                  .sort((a: any, b: any) => a.from_km - b.from_km)
-                  .map((c: any, i: number) => ({
-                    uid: i,
-                    from_km: Number(c.from_km),
-                    price: Number(c.price),
-                  }))}
+                rateCards={toRateCards(previewRule)}
+                timeSlabs={toTimeSlabs(previewRule)}
+                timeSlots={toTimeSlots(previewRule)}
               />
             </div>
           )}
