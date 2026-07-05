@@ -8,52 +8,36 @@ import {
   fetchPricingFareRuleById,
   updatePricingRuleWithSlots,
   fetchPricingFareRules,
+  type PricingRulePayload,
 } from "../store/slices/pricingFareRulesSlice";
-import dayjs from "dayjs";
+import dayjs, { type Dayjs } from "dayjs";
 import LocationConfiguration from "../components/DriverPricing/LocationConfiguration";
 import DriverTimeSlotsAndPricing, {
+  type UserType,
   type UserTimeSlots,
+  type RateCards,
+  type TimeSlabs,
   type TimeSlot,
+  type UiSlab,
 } from "../components/DriverPricing/DriverTimeSlotsAndPricing";
 import HotspotConfiguration from "../components/DriverPricing/HotspotConfiguration";
-import ExtraKmConfiguration, {
-  type UiCheckpoint,
-} from "../components/DriverPricing/ExtraKmConfiguration";
 import PricingPreview from "../components/DriverPricing/PricingPreview";
 import HotspotTypes from "../components/DriverPricing/HotspotTypes";
 import TitleBar from "../components/TitleBarCommon/TitleBar";
 import { EyeOutlined } from "@ant-design/icons";
 import { useHasPermission } from "../hooks/usePermission";
 
-// Default time slots for Add mode (rates are ₹/km and ₹/hour)
-const defaultTimeSlots = (): UserTimeSlots => ({
-  "normal-driver": [
-    {
-      id: 1,
-      day: "monday",
-      timeRange: [dayjs("9:00 AM", "h:mm A"), dayjs("11:00 AM", "h:mm A")],
-      perKmRate: 12,
-      perHourRate: 150,
-    },
-  ],
-  "premium-driver": [
-    {
-      id: 1,
-      day: "monday",
-      timeRange: [dayjs("7:00 AM", "h:mm A"), dayjs("9:00 AM", "h:mm A")],
-      perKmRate: 15,
-      perHourRate: 180,
-    },
-  ],
-  "elite-driver": [
-    {
-      id: 1,
-      day: "monday",
-      timeRange: [dayjs("7:00 AM", "h:mm A"), dayjs("9:00 AM", "h:mm A")],
-      perKmRate: 18,
-      perHourRate: 220,
-    },
-  ],
+const DRIVER_TYPES: UserType[] = ["normal-driver", "premium-driver", "elite-driver"];
+
+const defaultRateCards = (): RateCards => ({
+  "normal-driver": { perHourRate: 150, perKmRate: 0, freeKm: 0, minimumFare: 150 },
+  "premium-driver": { perHourRate: 200, perKmRate: 0, freeKm: 0, minimumFare: 200 },
+  "elite-driver": { perHourRate: 260, perKmRate: 0, freeKm: 0, minimumFare: 260 },
+});
+const emptyByType = <T,>(): Record<UserType, T[]> => ({
+  "normal-driver": [],
+  "premium-driver": [],
+  "elite-driver": [],
 });
 
 const DriverPricing = () => {
@@ -62,136 +46,167 @@ const DriverPricing = () => {
   const { id } = useParams<{ id: string }>();
   const dispatch = useAppDispatch();
   const { isLoading } = useAppSelector((state) => state.pricingFareRules);
-  const [country, setCountry] = useState(""); // Default
-  const [state, setState] = useState(""); // Default
+
+  // Location
+  const [country, setCountry] = useState("");
+  const [state, setState] = useState("");
   const [district, setDistrict] = useState("");
   const [area, setArea] = useState("");
   const [pincode, setPincode] = useState("");
-  const [perKmPrice, setPerKmPrice] = useState(12);
-  const [perHourPrice, setPerHourPrice] = useState(150);
-  const [minimumFare, setMinimumFare] = useState(150);
+
+  // Zone-wide pricing
   const [oneWayReturnPct, setOneWayReturnPct] = useState(50);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [nightChargePct, setNightChargePct] = useState(0);
+  const [nightStart, setNightStart] = useState<Dayjs>(dayjs("22:00:00", "HH:mm:ss"));
+  const [nightEnd, setNightEnd] = useState<Dayjs>(dayjs("06:00:00", "HH:mm:ss"));
+  const [outstationAllowancePerDay, setOutstationAllowancePerDay] = useState(0);
 
-  const canCreatePricing = useHasPermission("pricing", "create");
-  const canUpdatePricing = useHasPermission("pricing", "update");
-  const isAuthorized = id ? canUpdatePricing : canCreatePricing;
-
-  const [timeSlots, setTimeSlots] = useState<UserTimeSlots>({
-    "normal-driver": [],
-    "premium-driver": [],
-    "elite-driver": [],
-  });
-
+  // Hotspot
   const [hotspotEnabled, setHotspotEnabled] = useState(false);
   const [hotspotId, setHotspotId] = useState("");
   const [multiplier, setMultiplier] = useState(1);
 
-  // Extra-KM distance tiers: each is a "from X km → ₹/km rate" breakpoint
-  const [extraKmCheckpoints, setExtraKmCheckpoints] = useState<UiCheckpoint[]>([]);
+  // Per-driver-type
+  const [rateCards, setRateCards] = useState<RateCards>(defaultRateCards());
+  const [timeSlabs, setTimeSlabs] = useState<TimeSlabs>(emptyByType<UiSlab>());
+  const [timeSlots, setTimeSlots] = useState<UserTimeSlots>(emptyByType<TimeSlot>());
 
-  // Store initial names from API response for edit mode
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [initialCountryName, setInitialCountryName] = useState<string>();
   const [initialStateName, setInitialStateName] = useState<string>();
   const [initialDistrictName, setInitialDistrictName] = useState<string>();
   const [initialAreaName, setInitialAreaName] = useState<string>();
 
-  // Fetch data if editing
+  const canCreatePricing = useHasPermission("pricing", "create");
+  const canUpdatePricing = useHasPermission("pricing", "update");
+  const isAuthorized = id ? canUpdatePricing : canCreatePricing;
+
   useEffect(() => {
-    if (id) {
-      dispatch(fetchPricingFareRuleById(id))
-        .unwrap()
-        .then((data) => {
-          setCountry(data.country_id || "");
-          setState(data.state_id || "");
-          setDistrict(data.district_id || "");
-          setArea(data.area_id || "");
-          setPincode(data.pincode || "");
-          setPerKmPrice(Number(data.per_km_price));
-          setPerHourPrice(Number(data.per_hour_price) || 0);
-          setMinimumFare(Number(data.minimum_fare) || 0);
-          setOneWayReturnPct(Number(data.one_way_return_pct) || 0);
-          setHotspotEnabled(data.is_hotspot);
-          setHotspotId(data.hotspot_id || "");
-          setMultiplier(Number(data.multiplier) || 1);
-          setExtraKmCheckpoints(
-            (data.extra_km_checkpoints ?? [])
-              .slice()
-              .sort((a: any, b: any) => a.from_km - b.from_km || a.sort_order - b.sort_order)
-              .map((c: any, i: number) => ({
-                uid: i,
-                from_km: Number(c.from_km),
-                price: Number(c.price),
-              })),
-          );
+    if (!id) return;
+    dispatch(fetchPricingFareRuleById(id))
+      .unwrap()
+      .then((data) => {
+        setCountry(data.country_id || "");
+        setState(data.state_id || "");
+        setDistrict(data.district_id || "");
+        setArea(data.area_id || "");
+        setPincode(data.pincode || "");
+        setOneWayReturnPct(Number(data.one_way_return_pct) || 0);
+        setNightChargePct(Number(data.night_charge_pct) || 0);
+        if (data.night_start) setNightStart(dayjs(data.night_start, "HH:mm:ss"));
+        if (data.night_end) setNightEnd(dayjs(data.night_end, "HH:mm:ss"));
+        setOutstationAllowancePerDay(Number(data.outstation_allowance_per_day) || 0);
+        setHotspotEnabled(data.is_hotspot);
+        setHotspotId(data.hotspot_id || "");
+        setMultiplier(Number(data.multiplier) || 1);
+        setInitialCountryName(data.country_name);
+        setInitialStateName(data.state_name);
+        setInitialDistrictName(data.district_name);
+        setInitialAreaName(data.area_name);
 
-          // Store initial names for display (professional approach)
-          setInitialCountryName(data.country_name);
-          setInitialStateName(data.state_name);
-          setInitialDistrictName(data.district_name);
-          setInitialAreaName(data.area_name);
-
-          // Transform time slots
-          const newSlots: UserTimeSlots = {
-            "normal-driver": [],
-            "premium-driver": [],
-            "elite-driver": [],
-          };
-
-          if (data.time_slots) {
-            data.time_slots.forEach((slot: any, index: number) => {
-              const driverType = slot.driver_types as keyof UserTimeSlots;
-              if (newSlots[driverType]) {
-                newSlots[driverType].push({
-                  id: index + 1, // Simple ID generation
-                  day: slot.day,
-                  timeRange: [dayjs(slot.from_time, "HH:mm:ss"), dayjs(slot.to_time, "HH:mm:ss")],
-                  perKmRate: Number(slot.per_km_rate),
-                  perHourRate: Number(slot.per_hour_rate) || 0,
-                });
-              }
-            });
-          }
-          setTimeSlots(newSlots);
-        })
-        .catch(() => {
-          message.error("Failed to fetch pricing rule details");
-          navigate("/PricingAndFareRules");
+        // Rate cards
+        const cards = defaultRateCards();
+        (data.rate_cards ?? []).forEach((c: any) => {
+          const t = c.driver_types as UserType;
+          if (cards[t])
+            cards[t] = {
+              perHourRate: Number(c.per_hour_rate),
+              perKmRate: Number(c.per_km_rate),
+              freeKm: Number(c.free_km),
+              minimumFare: Number(c.minimum_fare),
+            };
         });
-    } else {
-      // Default initialization for Add mode
-      setTimeSlots(defaultTimeSlots());
-    }
+        setRateCards(cards);
+
+        // Time slabs
+        const slabs = emptyByType<UiSlab>();
+        (data.time_slabs ?? [])
+          .slice()
+          .sort((a: any, b: any) => a.from_hours - b.from_hours)
+          .forEach((s: any, i: number) => {
+            const t = s.driver_types as UserType;
+            if (slabs[t])
+              slabs[t].push({ uid: i + 1, fromHours: Number(s.from_hours), perHourRate: Number(s.per_hour_rate) });
+          });
+        setTimeSlabs(slabs);
+
+        // Day/time slots
+        const slots = emptyByType<TimeSlot>();
+        (data.time_slots ?? []).forEach((s: any, i: number) => {
+          const t = s.driver_types as UserType;
+          if (slots[t])
+            slots[t].push({
+              id: i + 1,
+              day: s.day,
+              timeRange: [dayjs(s.from_time, "HH:mm:ss"), dayjs(s.to_time, "HH:mm:ss")],
+              perKmRate: Number(s.per_km_rate),
+              perHourRate: Number(s.per_hour_rate),
+            });
+        });
+        setTimeSlots(slots);
+      })
+      .catch(() => {
+        message.error("Failed to fetch pricing rule details");
+        navigate("/PricingAndFareRules");
+      });
   }, [id, dispatch, navigate]);
 
-  // Reset form to initial state
   const resetFormState = () => {
     setCountry("");
     setState("");
     setDistrict("");
     setArea("");
     setPincode("");
-    setPerKmPrice(12);
-    setPerHourPrice(150);
-    setMinimumFare(150);
     setOneWayReturnPct(50);
+    setNightChargePct(0);
+    setNightStart(dayjs("22:00:00", "HH:mm:ss"));
+    setNightEnd(dayjs("06:00:00", "HH:mm:ss"));
+    setOutstationAllowancePerDay(0);
     setHotspotEnabled(false);
     setHotspotId("");
     setMultiplier(1);
-    setExtraKmCheckpoints([]);
-    setTimeSlots(defaultTimeSlots());
+    setRateCards(defaultRateCards());
+    setTimeSlabs(emptyByType<UiSlab>());
+    setTimeSlots(emptyByType<TimeSlot>());
   };
 
-  // Build the request payload shared by Save and Save & Add Another
-  const buildPayload = () => {
-    // Transform time slots from object to array
-    const timeSlotsArray = Object.entries(timeSlots).flatMap(([driverType, slots]) =>
-      (slots as TimeSlot[]).map((slot) => {
-        if (!slot.timeRange) {
-          throw new Error(`Time range is required for all slots`);
-        }
+  const validate = () => {
+    if (!district) {
+      message.error("Please select a district");
+      return false;
+    }
+    if (hotspotEnabled && !hotspotId) {
+      message.error("Please select a hotspot when hotspot is enabled");
+      return false;
+    }
+    return true;
+  };
+
+  const buildPayload = (): PricingRulePayload => {
+    const rate_cards = DRIVER_TYPES.map((t) => ({
+      driver_types: t,
+      per_hour_rate: rateCards[t].perHourRate,
+      per_km_rate: rateCards[t].perKmRate,
+      free_km: rateCards[t].freeKm,
+      minimum_fare: rateCards[t].minimumFare,
+    }));
+
+    const time_slabs = DRIVER_TYPES.flatMap((t) =>
+      [...timeSlabs[t]]
+        .sort((a, b) => a.fromHours - b.fromHours)
+        .map((s, i) => ({
+          driver_types: t,
+          from_hours: s.fromHours,
+          per_hour_rate: s.perHourRate,
+          sort_order: i,
+        })),
+    );
+
+    const time_slots = DRIVER_TYPES.flatMap((t) =>
+      timeSlots[t].map((slot) => {
+        if (!slot.timeRange) throw new Error("Time range is required for all slots");
         return {
-          driver_types: driverType,
+          driver_types: t,
           day: slot.day.toLowerCase(),
           from_time: slot.timeRange[0].format("HH:mm:ss"),
           to_time: slot.timeRange[1].format("HH:mm:ss"),
@@ -204,143 +219,64 @@ const DriverPricing = () => {
     return {
       area_id: area || null,
       district_id: district,
-      per_km_price: perKmPrice,
-      per_hour_price: perHourPrice,
-      minimum_fare: minimumFare,
       one_way_return_pct: oneWayReturnPct,
+      night_charge_pct: nightChargePct,
+      night_start: nightStart.format("HH:mm:ss"),
+      night_end: nightEnd.format("HH:mm:ss"),
+      outstation_allowance_per_day: outstationAllowancePerDay,
       is_hotspot: hotspotEnabled,
       hotspot_id: hotspotEnabled ? hotspotId : null,
       multiplier: hotspotEnabled ? multiplier : null,
-      extra_km_checkpoints: extraKmCheckpoints.map((c, i) => ({
-        from_km: c.from_km,
-        price: c.price,
-        sort_order: i,
-      })),
-      time_slots: timeSlotsArray,
+      rate_cards,
+      time_slabs,
+      time_slots,
     };
   };
 
-  // Validate before saving; returns false if invalid
-  const validate = () => {
-    if (!district || district === "") {
-      message.error("Please select a district");
-      return false;
-    }
-    if (hotspotEnabled && !hotspotId) {
-      message.error("Please select a hotspot when hotspot is enabled");
-      return false;
-    }
-    const totalSlots = Object.values(timeSlots).reduce((sum, slots) => sum + slots.length, 0);
-    if (totalSlots === 0) {
-      message.error("Please add at least one time slot");
-      return false;
-    }
-    return true;
-  };
-
-  // Transform and save pricing rule with time slots
-  const handleSave = async () => {
+  const save = async (addAnother: boolean) => {
     if (!validate()) return;
-
     try {
       const payload = buildPayload();
-
       if (id) {
-        // Update existing rule
         await dispatch(updatePricingRuleWithSlots({ id, data: payload })).unwrap();
         message.success("Pricing rule updated successfully!");
       } else {
-        // Create new rule
         await dispatch(createPricingRuleWithSlots(payload)).unwrap();
         message.success("Pricing rule created successfully!");
       }
-
-      // Refresh the pricing fare rules list
-      dispatch(
-        fetchPricingFareRules({
-          page: 1,
-          limit: 10,
-          include_time_slots: true,
-        }),
-      );
-
-      navigate("/PricingAndFareRules");
+      dispatch(fetchPricingFareRules({ page: 1, limit: 10, include_time_slots: true }));
+      if (addAnother) {
+        if (id) navigate("/PricingAndFareRules/pricing");
+        resetFormState();
+      } else {
+        navigate("/PricingAndFareRules");
+      }
     } catch (error: any) {
       console.error("Save error:", error);
       message.error(error || "Failed to save pricing rule");
     }
   };
 
-  // Save and add another pricing rule
-  const handleSaveAndAddAnother = async () => {
-    if (!validate()) return;
-
-    try {
-      const payload = buildPayload();
-
-      if (id) {
-        // Update existing rule
-        await dispatch(updatePricingRuleWithSlots({ id, data: payload })).unwrap();
-        message.success("Pricing rule updated successfully!");
-
-        // Navigate to add mode (remove the ID from URL)
-        navigate("/PricingAndFareRules/pricing");
-      } else {
-        // Create new rule
-        await dispatch(createPricingRuleWithSlots(payload)).unwrap();
-        message.success("Pricing rule created successfully!");
-      }
-
-      // Refresh the pricing fare rules list
-      dispatch(
-        fetchPricingFareRules({
-          page: 1,
-          limit: 10,
-          include_time_slots: true,
-        }),
-      );
-
-      // Reset form to initial state
-      resetFormState();
-    } catch (error: any) {
-      console.error("Save error:", error);
-      message.error(error || "Failed to save pricing rule");
-    }
-  };
   return (
     <div className="h-full w-full">
-      <div className="h-full flex justify-center px-0">
+      <div className="h-full w-full px-0">
         <div className="w-full flex flex-col h-screen overflow-hidden">
           <div className="flex-1 min-h-0 overflow-hidden">
             <TitleBar
               className="w-full flex-1 min-h-0 flex flex-col gap-2"
               title={id ? "Edit Pricing" : "Add Pricing"}
-              description="Configure per-km, per-hour, minimum and return pricing by zone and time slot"
+              description="Time-first pricing — per-driver-type rate cards, duration slabs, day/time slots"
               extraContent={
-                <div>
-                  <Button
-                    icon={<EyeOutlined />}
-                    type="primary"
-                    onClick={() => setIsDrawerOpen(true)}
-                  >
-                    Pricing Preview
-                  </Button>
-                </div>
+                <Button icon={<EyeOutlined />} type="primary" onClick={() => setIsDrawerOpen(true)}>
+                  Pricing Preview
+                </Button>
               }
             >
-              <div className="w-full shrink-0">
+              <div className="w-full shrink-0 max-w-[1200px] mx-auto">
                 <Segmented<string>
                   options={[
-                    {
-                      label: "Configuration",
-                      className: "w-full",
-                      value: "configuration",
-                    },
-                    {
-                      label: "Hotspot Types",
-                      className: "w-full",
-                      value: "hotspot-types",
-                    },
+                    { label: "Configuration", className: "w-full", value: "configuration" },
+                    { label: "Hotspot Types", className: "w-full", value: "hotspot-types" },
                   ]}
                   size="large"
                   className="w-full"
@@ -350,8 +286,8 @@ const DriverPricing = () => {
               </div>
               {activeTab === "configuration" ? (
                 <div className="flex-1 min-h-0 overflow-hidden">
-                  <div className="grid grid-cols-1 lg:grid-cols-[450px_1fr] gap-4 lg:gap-6 mt-2 h-full overflow-hidden">
-                    <div className="flex flex-col gap-4 min-w-0 overflow-y-auto pb-2 h-full">
+                  <div className="grid grid-cols-1 lg:grid-cols-[420px_minmax(0,1fr)] gap-4 lg:gap-6 mt-2 h-full overflow-hidden w-full max-w-[1200px] mx-auto">
+                    <div className="flex flex-col gap-4 min-w-0 overflow-y-auto overflow-x-hidden pb-2 h-full">
                       <LocationConfiguration
                         country={country}
                         setCountry={setCountry}
@@ -363,14 +299,16 @@ const DriverPricing = () => {
                         setArea={setArea}
                         pincode={pincode}
                         setPincode={setPincode}
-                        perKmPrice={perKmPrice}
-                        setPerKmPrice={setPerKmPrice}
-                        perHourPrice={perHourPrice}
-                        setPerHourPrice={setPerHourPrice}
-                        minimumFare={minimumFare}
-                        setMinimumFare={setMinimumFare}
                         oneWayReturnPct={oneWayReturnPct}
                         setOneWayReturnPct={setOneWayReturnPct}
+                        nightChargePct={nightChargePct}
+                        setNightChargePct={setNightChargePct}
+                        nightStart={nightStart}
+                        setNightStart={setNightStart}
+                        nightEnd={nightEnd}
+                        setNightEnd={setNightEnd}
+                        outstationAllowancePerDay={outstationAllowancePerDay}
+                        setOutstationAllowancePerDay={setOutstationAllowancePerDay}
                       />
                       <HotspotConfiguration
                         hotspotEnabled={hotspotEnabled}
@@ -380,20 +318,18 @@ const DriverPricing = () => {
                         multiplier={multiplier}
                         setMultiplier={setMultiplier}
                       />
-                      <ExtraKmConfiguration
-                        perKmPrice={perKmPrice}
-                        extraKmCheckpoints={extraKmCheckpoints}
-                        setExtraKmCheckpoints={setExtraKmCheckpoints}
-                      />
                     </div>
-                    <div className="flex flex-col h-full overflow-auto">
+                    <div className="flex flex-col h-full overflow-y-auto overflow-x-hidden min-w-0">
                       <DriverTimeSlotsAndPricing
+                        rateCards={rateCards}
+                        setRateCards={setRateCards}
+                        timeSlabs={timeSlabs}
+                        setTimeSlabs={setTimeSlabs}
                         timeSlots={timeSlots}
                         setTimeSlots={setTimeSlots}
                         hotspotEnabled={hotspotEnabled}
                         hotspotId={hotspotId}
                         multiplier={multiplier}
-                        perKmPrice={perKmPrice}
                       />
                     </div>
                   </div>
@@ -408,30 +344,22 @@ const DriverPricing = () => {
             {activeTab === "configuration" ? (
               <Card className="w-full rounded-none border-t">
                 <div className="flex flex-col sm:flex-row justify-end gap-2">
-                  <Button
-                    className="w-full sm:w-auto"
-                    onClick={() => navigate("/PricingAndFareRules")}
-                  >
+                  <Button className="w-full sm:w-auto" onClick={() => navigate("/PricingAndFareRules")}>
                     Cancel
                   </Button>
                   {isAuthorized && (
                     <>
-                      <Button
-                        type="primary"
-                        className="w-full sm:w-auto"
-                        onClick={handleSave}
-                        loading={isLoading}
-                      >
+                      <Button type="primary" className="w-full sm:w-auto" onClick={() => save(false)} loading={isLoading}>
                         Save Rule
                       </Button>
                       <Button
                         type="primary"
                         className="w-full sm:w-auto"
                         style={{ background: "#4CAF50" }}
-                        onClick={handleSaveAndAddAnother}
+                        onClick={() => save(true)}
                         loading={isLoading}
                       >
-                        Save & Add Another
+                        Save &amp; Add Another
                       </Button>
                     </>
                   )}
@@ -442,30 +370,25 @@ const DriverPricing = () => {
         </div>
       </div>
 
-      <Drawer
-        title="Pricing Preview"
-        open={isDrawerOpen}
-        width={"80%"}
-        onClose={() => setIsDrawerOpen(false)}
-      >
-        <div className="lg:col-span-1">
-          <PricingPreview
-            country={initialCountryName || ""}
-            state={initialStateName || ""}
-            district={initialDistrictName || ""}
-            area={initialAreaName || ""}
-            pincode={pincode}
-            timeSlots={timeSlots}
-            hotspotEnabled={hotspotEnabled}
-            hotspotId={hotspotId}
-            multiplier={multiplier}
-            perKmPrice={perKmPrice}
-            perHourPrice={perHourPrice}
-            minimumFare={minimumFare}
-            oneWayReturnPct={oneWayReturnPct}
-            extraKmCheckpoints={extraKmCheckpoints}
-          />
-        </div>
+      <Drawer title="Pricing Preview" open={isDrawerOpen} width={"80%"} onClose={() => setIsDrawerOpen(false)}>
+        <PricingPreview
+          country={initialCountryName || ""}
+          state={initialStateName || ""}
+          district={initialDistrictName || ""}
+          area={initialAreaName || ""}
+          pincode={pincode}
+          oneWayReturnPct={oneWayReturnPct}
+          nightChargePct={nightChargePct}
+          nightStart={nightStart}
+          nightEnd={nightEnd}
+          outstationAllowancePerDay={outstationAllowancePerDay}
+          hotspotEnabled={hotspotEnabled}
+          hotspotId={hotspotId}
+          multiplier={multiplier}
+          rateCards={rateCards}
+          timeSlabs={timeSlabs}
+          timeSlots={timeSlots}
+        />
       </Drawer>
     </div>
   );
