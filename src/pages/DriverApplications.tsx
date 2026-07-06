@@ -283,7 +283,7 @@ const DriverApplications = () => {
 
           {/* RIGHT MAIN CONTENT */}
           <div className="flex-1 flex flex-col min-w-0 bg-slate-50/50 dark:bg-[#0f172a] relative">
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 pb-20">
+            <div className="flex-1 overflow-hidden p-4 flex flex-col gap-2 pb-20">
               <ApplicationStats drivers={DATA} loading={loading} />
 
               {/* FILTERS TOOLBAR */}

@@ -535,7 +535,7 @@ const DriverTable = ({ data, onViewDetails, currentPage, pageSize, onPageChange 
           showSorterTooltip={false}
           tableLayout="fixed"
           size="small"
-          scroll={{ y: Math.floor(tableHeight ? tableHeight - 120 : 0), x: 1200 }}
+          scroll={{ y: Math.floor(tableHeight ? tableHeight : 0), x: 1200 }}
           className="premium-table-flat"
           onRow={(record) => ({
             onClick: (event) => {

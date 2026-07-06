@@ -338,6 +338,44 @@ export const runDocumentOCR = createAsyncThunk(
   },
 );
 
+export interface OfflineOnboardingPayload {
+  first_name: string;
+  last_name: string;
+  phone_number: string;
+  alternate_contact?: string;
+  email: string;
+  date_of_birth: string;
+  gender: string;
+  language?: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    country: string;
+    pincode: string;
+  };
+  documents: Array<{
+    document_type: string;
+    document_number?: string;
+    document_url: any;
+    expiry_date?: string;
+  }>;
+}
+
+export const createDriverOffline = createAsyncThunk(
+  "drivers/createDriverOffline",
+  async (payload: OfflineOnboardingPayload, { rejectWithValue }) => {
+    try {
+      const response = await axiosIns.post("/api/drivers", payload);
+      return response.data?.data || response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to create driver",
+      );
+    }
+  },
+);
+
 const driverSlice = createSlice({
   name: "drivers",
   initialState,
@@ -434,6 +472,12 @@ const driverSlice = createSlice({
           if (doc) {
             doc.extracted_data = extracted_data;
           }
+        }
+      })
+      .addCase(createDriverOffline.fulfilled, (state, action) => {
+        // Add the newly created driver to the top of the list
+        if (action.payload) {
+          state.drivers.unshift(action.payload);
         }
       });
   },

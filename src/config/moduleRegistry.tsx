@@ -41,6 +41,9 @@ const Drivers = lazy(
 const DriverApplications = lazy(
   () => import("../pages/DriverApplications") as Promise<{ default: React.ComponentType<any> }>,
 );
+const DriverOfflineOnboarding = lazy(
+  () => import("../pages/DriverOfflineOnboarding") as Promise<{ default: React.ComponentType<any> }>,
+);
 const DriverPricing = lazy(
   () => import("../pages/DriverPricing") as Promise<{ default: React.ComponentType<any> }>,
 );
@@ -185,6 +188,15 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
       label: <Link to="/driver-applications">Driver Applications</Link>,
       key: "/driver-applications",
       icon: <CheckCircleOutlined />,
+    },
+  },
+  {
+    rbacModule: "drivers",
+    route: { path: "driver-offline-onboarding", element: protect("drivers", <DriverOfflineOnboarding />) },
+    menu: {
+      label: <Link to="/driver-offline-onboarding">Offline Onboarding</Link>,
+      key: "/driver-offline-onboarding",
+      icon: <UserOutlined />,
     },
   },
 
