@@ -68,7 +68,7 @@ const DriverApplications = () => {
           !["ONBOARDING_COMPLETED", "SUBSCRIPTION_ACTIVE", "ACTIVE"].includes(d.onboarding_status)),
     );
 
-    // Search by Name, System ID, or vDrive ID
+    // Search by Name, System ID, or T2Drive ID
     if (filters.search) {
       const searchText = filters.search.toLowerCase();
       tempData = tempData.filter(
@@ -284,7 +284,7 @@ const DriverApplications = () => {
           {/* RIGHT MAIN CONTENT */}
           <div className="flex-1 flex flex-col min-w-0 bg-slate-50/50 dark:bg-[#0f172a] relative">
             <div className="flex-1 overflow-hidden p-4 flex flex-col gap-2 pb-20">
-              <ApplicationStats drivers={DATA} loading={loading} />
+              <ApplicationStats drivers={allTrackedApplications} loading={loading} />
 
               {/* FILTERS TOOLBAR */}
               <div className="bg-white dark:bg-slate-800 py-1 px-2 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm flex-shrink-0 dark-theme-select-override">

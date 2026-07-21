@@ -110,7 +110,7 @@ const Navbar: React.FC = () => {
                       alt="AdminApp Logo"
                       className="h-8 w-auto mr-3 dark:invert dark:brightness-200 transition-all duration-300"
                     />
-                    <span>VDrive Admin</span>
+                    <span>T2Drive Admin</span>
                   </div>
                 }
                 placement="left"

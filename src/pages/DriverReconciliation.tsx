@@ -277,7 +277,7 @@ const DriverReconciliation: React.FC = () => {
       title: "Driver Name",
       dataIndex: "driver_name",
       key: "name",
-      minWidth: 200,
+      width: 200,
       render: (text: string, record: DriverData) => (
         <div className="reconciliation-driver-wrapper">
           <Avatar
@@ -303,7 +303,7 @@ const DriverReconciliation: React.FC = () => {
     {
       title: "Contact Info",
       key: "contact",
-      minWidth: 160,
+      width: 160,
       render: (_: any, record: DriverData) => (
         <div className="flex flex-col gap-[0.125rem]">
           <Text className="text-[13px] font-semibold text-[#475569] dark:text-[#cbd5e1]">
@@ -450,20 +450,26 @@ const DriverReconciliation: React.FC = () => {
                         text-transform: uppercase !important;
                         font-size: 12px !important;
                         letter-spacing: 0.05em !important;
-                        border-bottom: 2px solid #f1f5f9 !important;
+                        border-bottom: 1px solid #f1f5f9 !important;
+                        border-top: 1px solid #f1f5f9 !important;
                         padding: 10px 12px !important;
                     }
                     .premium-table-flat .ant-table-thead > tr > th::before {
-                        display: none !important;
+                        display: block !important;
+                        background-color: #e2e8f0 !important;
+                        width: 1px !important;
+                        height: 1.4em !important;
+                        top: 50% !important;
+                        transform: translateY(-50%) !important;
                     }
                     .premium-table-flat .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
                         padding: 4px 12px !important;
                         border-bottom: 1px solid #f8fafc !important;
                     }
                     .dark .premium-table-flat .ant-table-thead > tr > th {
-                        background: #1e293b !important;
-                        color: #94a3b8 !important;
-                        border-bottom: 2px solid #334155 !important;
+                        background: #0f172a !important;
+                        color: #64748b !important;
+                        border-bottom: 1px solid #1e293b !important;
                     }
                     .dark .premium-table-flat .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
                         border-bottom: 1px solid #1e293b !important;
@@ -479,24 +485,18 @@ const DriverReconciliation: React.FC = () => {
                     }
                     .premium-table-flat.ant-table-wrapper,
                     .premium-table-flat .ant-spin-nested-loading,
-                    .premium-table-flat .ant-spin-container,
-                    .premium-table-flat .ant-table,
-                    .premium-table-flat .ant-table-container {
+                    .premium-table-flat .ant-spin-container {
+                        height: 100%;
                         display: flex;
                         flex-direction: column;
-                        flex-grow: 1;
-                        min-height: 0;
-                        min-width: 0;
                     }
                     .premium-table-flat .ant-table {
+                        flex: 1;
                         background: transparent !important;
                     }
-                    .premium-table-flat .ant-table-body,
-                    .premium-table-flat .ant-table-content {
-                        flex-grow: 1;
-                        min-height: 0;
-                        min-width: 0;
-                        overflow: auto !important;
+                    .premium-table-flat .ant-table-container {
+                        height: 100%;
+                        overflow: hidden;
                     }
                     .premium-table-flat .ant-pagination {
                         display: none !important;
@@ -866,8 +866,8 @@ const DriverReconciliation: React.FC = () => {
                       columns={columns}
                       dataSource={filteredDrivers}
                       loading={importing || loading}
-                      pagination={{ position: ["none"] }}
-                      tableLayout="auto"
+                      pagination={{ position: ["none"], current: currentPage, pageSize: pageSize }}
+                      tableLayout="fixed"
                       size="small"
                       className="premium-table-flat"
                       rowClassName={(_, index) =>
@@ -875,7 +875,7 @@ const DriverReconciliation: React.FC = () => {
                           ? "driver-row-even"
                           : "driver-row-odd"
                       }
-                      scroll={{ x: "max-content", y: "calc(100vh - 480px)" }}
+                      scroll={{ x: 1200, y: "calc(100vh - 480px)" }}
                       rowKey={(record, index) => (record?.phone || index || 0).toString() + (index || 0)}
                       locale={{
                         emptyText: (

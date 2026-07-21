@@ -449,7 +449,7 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
 
         <div className="cd-stats-grid">
           <div style={{ height: '100%' }}>
-            <span className="cd-label">Joined VDrive</span>
+            <span className="cd-label">Joined T2Drive</span>
             <div className="cd-stats-box indigo">
               <div className="cd-stats-value">
                 {dayjs(customer.created_at).format("MMM DD, YYYY")}
@@ -790,7 +790,7 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
               </span>
               <span className="cd-auth-value">
                 <span className="cd-auth-dot" />
-                VDrive Admin
+                T2Drive Admin
               </span>
             </div>
             <div className="cd-id-divider" />
