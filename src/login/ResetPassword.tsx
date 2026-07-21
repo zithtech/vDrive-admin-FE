@@ -63,7 +63,7 @@ const ResetPassword = () => {
       return;
     }
     // We will verify the OTP along with the new password in step 3
-    setStep(3); 
+    setStep(3);
   };
 
   const handleResetPassword = async () => {
@@ -107,7 +107,7 @@ const ResetPassword = () => {
           <div className="relative group transition-transform duration-300 hover:scale-105">
             <img
               src="/90.png"
-              alt="vDrive Logo"
+              alt="T2Drive Logo"
               className="h-24 w-auto object-contain filter brightness-0 invert drop-shadow-[0_0_8px_rgba(99,102,241,0.2)]"
             />
           </div>
@@ -248,7 +248,7 @@ const ResetPassword = () => {
           </button>
 
           <footer className="w-full text-center text-[11px] text-slate-500 font-medium tracking-wide mt-2">
-            © 2026 vDrive. All rights reserved.
+            © 2026 T2Drive. All rights reserved.
           </footer>
         </div>
       </div>

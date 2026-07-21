@@ -42,7 +42,7 @@ const CustomerInvoice: React.FC<Props> = ({ isOpen, onClose, trip }) => {
 
         {/* Header */}
         <h1 className="text-2xl font-bold text-center mb-1">Ride Receipt</h1>
-        <p className="text-gray-500 text-center text-sm mb-6">Thank you for riding with VDrive</p>
+        <p className="text-gray-500 text-center text-sm mb-6">Thank you for riding with T2Drive</p>
 
         {/* Route */}
         <div className="bg-gray-50 p-4 rounded-xl mb-5">
@@ -114,7 +114,7 @@ const CustomerInvoice: React.FC<Props> = ({ isOpen, onClose, trip }) => {
 
         {/* Footer */}
         <p className="text-xs text-gray-400 text-center">
-          For billing queries, contact support@vdrive.in
+          For billing queries, contact support@t2drive.in
         </p>
       </div>
     </div>

@@ -254,7 +254,7 @@ const ActivityFeed: React.FC = () => {
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium italic uppercase tracking-tighter">
-              Live vDrive Stream
+              Live T2Drive Stream
             </span>
           </div>
           <Typography.Text className="text-[9px] text-gray-300 dark:text-gray-600 font-medium">

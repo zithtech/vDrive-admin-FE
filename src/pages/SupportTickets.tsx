@@ -477,16 +477,16 @@ const SupportTickets: React.FC = () => {
                       setSearchText("");
                     }}
                     className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-md text-xs font-extrabold transition-all duration-200 ${userTypeFilter === "drivers"
-                        ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+                      ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                       }`}
                   >
                     <UserOutlined />
                     <span>Drivers</span>
                     {driverActiveCount > 0 && (
                       <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${userTypeFilter === "drivers"
-                          ? "bg-blue-500 text-white"
-                          : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                        ? "bg-blue-500 text-white"
+                        : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                         }`}>
                         {driverActiveCount}
                       </span>
@@ -499,16 +499,16 @@ const SupportTickets: React.FC = () => {
                       setSearchText("");
                     }}
                     className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-md text-xs font-extrabold transition-all duration-200 ${userTypeFilter === "customers"
-                        ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+                      ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                       }`}
                   >
                     <UserOutlined />
                     <span>Customers</span>
                     {customerActiveCount > 0 && (
                       <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${userTypeFilter === "customers"
-                          ? "bg-blue-500 text-white"
-                          : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                        ? "bg-blue-500 text-white"
+                        : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                         }`}>
                         {customerActiveCount}
                       </span>
@@ -521,15 +521,15 @@ const SupportTickets: React.FC = () => {
                   <button
                     onClick={() => setStatusFilter("active")}
                     className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-md text-xs font-extrabold transition-all duration-200 ${statusFilter === "active"
-                        ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+                      ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                       }`}
                   >
                     <ClockCircleOutlined />
                     <span>Active</span>
                     <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${statusFilter === "active"
-                        ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                        : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                      ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                      : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                       }`}>
                       {currentActiveCount}
                     </span>
@@ -537,15 +537,15 @@ const SupportTickets: React.FC = () => {
                   <button
                     onClick={() => setStatusFilter("resolved")}
                     className={`flex-1 flex items-center justify-center gap-2 py-1.5 px-3 rounded-md text-xs font-extrabold transition-all duration-200 ${statusFilter === "resolved"
-                        ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
-                        : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+                      ? "bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-sm"
+                      : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                       }`}
                   >
                     <HistoryOutlined />
                     <span>History</span>
                     <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${statusFilter === "resolved"
-                        ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                        : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                      ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                      : "bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                       }`}>
                       {currentHistoryCount}
                     </span>
@@ -579,10 +579,10 @@ const SupportTickets: React.FC = () => {
                         setViewedTickets((prev) => new Set(prev).add(item.id));
                       }}
                       className={`p-4 rounded-xl border cursor-pointer transition-all duration-200 relative flex flex-col gap-2 ${isSelected
-                          ? "bg-white dark:bg-slate-900 border-blue-500 shadow-md shadow-blue-500/5 ring-1 ring-blue-500/10"
-                          : isUnread
-                            ? "bg-white dark:bg-slate-900 border-blue-200 dark:border-blue-900/40 shadow-sm hover:border-blue-400"
-                            : "bg-white/80 dark:bg-slate-900/80 border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm"
+                        ? "bg-white dark:bg-slate-900 border-blue-500 shadow-md shadow-blue-500/5 ring-1 ring-blue-500/10"
+                        : isUnread
+                          ? "bg-white dark:bg-slate-900 border-blue-200 dark:border-blue-900/40 shadow-sm hover:border-blue-400"
+                          : "bg-white/80 dark:bg-slate-900/80 border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-900 hover:shadow-sm"
                         }`}
                     >
                       {/* Unread indicator dot */}
@@ -662,8 +662,8 @@ const SupportTickets: React.FC = () => {
                         {selectedTicket.subject}
                       </Title>
                       <span className={`inline-flex px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${selectedTicket.status === "open"
-                          ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
-                          : "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                        ? "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400"
+                        : "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
                         } rounded-none`}>
                         {selectedTicket.status.toUpperCase()}
                       </span>
@@ -696,7 +696,7 @@ const SupportTickets: React.FC = () => {
                             senderId: currentUser.id,
                             senderType: "admin",
                             message:
-                              "This support session has been closed by the agent. Thank you for contacting VDrive Support! Have a great day.",
+                              "This support session has been closed by the agent. Thank you for contacting T2Drive Support! Have a great day.",
                           });
                         }
                         updateTicketStatus(selectedTicket.id, "resolved");

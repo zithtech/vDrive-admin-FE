@@ -25,7 +25,7 @@ const DailyTripReport: React.FC<Props> = ({ isOpen, onClose }) => {
 
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-xl font-semibold">VDrive - Daily Trip Report</h1>
+          <h1 className="text-xl font-semibold">T2Drive - Daily Trip Report</h1>
           <p className="text-sm text-gray-500">Prepared By: Operations</p>
         </div>
 

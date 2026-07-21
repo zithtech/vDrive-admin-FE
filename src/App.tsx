@@ -59,9 +59,8 @@ const { Content, Sider, Header } = Layout;
 const Logo: React.FC<{ collapsed: boolean; onToggle: () => void }> = ({ collapsed, onToggle }) => (
   <div className="flex flex-col w-full">
     <div
-      className={`flex items-center h-[64px] border-b border-gray-200 dark:border-slate-800 transition-all duration-300 ${
-        collapsed ? "justify-center" : "justify-center px-4"
-      }`}
+      className={`flex items-center h-[64px] border-b border-gray-200 dark:border-slate-800 transition-all duration-300 ${collapsed ? "justify-center" : "justify-center px-4"
+        }`}
     >
       <div className="flex items-center gap-2 overflow-hidden">
         <img
@@ -71,15 +70,14 @@ const Logo: React.FC<{ collapsed: boolean; onToggle: () => void }> = ({ collapse
         />
         {!collapsed && (
           <span className="font-bold text-lg text-slate-900 dark:text-white whitespace-nowrap truncate">
-            VDrive Admin
+            T2Drive Admin
           </span>
         )}
       </div>
     </div>
     <div
-      className={`flex items-center h-[48px] border-b border-gray-200 dark:border-slate-800 transition-all duration-300 ${
-        collapsed ? "justify-center" : "justify-end px-4"
-      }`}
+      className={`flex items-center h-[48px] border-b border-gray-200 dark:border-slate-800 transition-all duration-300 ${collapsed ? "justify-center" : "justify-end px-4"
+        }`}
     >
       <Button
         type="text"
@@ -612,7 +610,7 @@ const RootLayout: React.FC = () => {
                 <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                   {!isMobile && (
                     <div className="flex items-center gap-1 pr-2">
-                      <div 
+                      <div
                         onClick={toggleTheme}
                         className="relative flex items-center justify-center w-[32px] h-[32px] rounded-[10px] cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
                       >
@@ -728,13 +726,12 @@ const RootLayout: React.FC = () => {
             )}
             <Content>
               <div
-                className={`w-full bg-[#F7F8FB] dark:bg-[#0b1121] overflow-y-auto ${
-                  isAuthenticated && location.pathname !== "/login"
+                className={`w-full bg-[#F7F8FB] dark:bg-[#0b1121] overflow-y-auto ${isAuthenticated && location.pathname !== "/login"
                     ? isMobile
                       ? "pt-16 h-[100dvh]"
                       : "h-[calc(100dvh-64px)]"
                     : "h-[100dvh]"
-                }`}
+                  }`}
               >
                 <Outlet />
               </div>
@@ -750,7 +747,7 @@ const RootLayout: React.FC = () => {
                     alt=""
                     className={`w-8 h-8 object-contain transition-all duration-300 ${isDarkMode ? "invert brightness-200" : ""}`}
                   />
-                  <span>VDrive Admin</span>
+                  <span>T2Drive Admin</span>
                 </div>
               }
               placement="left"
