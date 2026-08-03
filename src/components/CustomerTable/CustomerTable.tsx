@@ -145,7 +145,7 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
         title: "Customer",
         dataIndex: "full_name",
         key: "customer",
-        minWidth: 200,
+        width: 200,
         sorter: (a: Customer, b: Customer) => a.full_name.localeCompare(b.full_name),
         ...getColumnSearchProps("full_name"),
         render: (_, record) => (
@@ -187,7 +187,7 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
       {
         title: "Contact",
         key: "contact",
-        minWidth: 160,
+        width: 160,
         render: (_, record) => (
           <div className="customer-contact-wrapper">
             <Text className="customer-phone-text">
@@ -203,7 +203,7 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
       {
         title: "Emergency Contacts",
         key: "emergency_contacts",
-        minWidth: 180,
+        width: 180,
         render: (_, record) => {
           const contacts = record.emergency_contacts || [];
           if (contacts.length === 0) {
@@ -264,7 +264,7 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
       {
         title: "Status",
         dataIndex: "status",
-        minWidth: 120,
+        width: 120,
         key: "status",
         sorter: (a: Customer, b: Customer) => a.status.localeCompare(b.status),
         render: (status: string) => {
@@ -286,7 +286,7 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
       {
         title: "Updated At",
         dataIndex: "updated_at",
-        minWidth: 180,
+        width: 180,
         key: "updated_at",
         render: (text: string) => (
           <div className="customer-updated-wrapper">
@@ -369,20 +369,26 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
                         text-transform: uppercase !important;
                         font-size: 12px !important;
                         letter-spacing: 0.05em !important;
-                        border-bottom: 2px solid #f1f5f9 !important;
+                        border-bottom: 1px solid #f1f5f9 !important;
+                        border-top: 1px solid #f1f5f9 !important;
                         padding: 10px 12px !important;
                     }
                     .premium-table-flat .ant-table-thead > tr > th::before {
-                        display: none !important;
+                        display: block !important;
+                        background-color: #e2e8f0 !important;
+                        width: 1px !important;
+                        height: 1.4em !important;
+                        top: 50% !important;
+                        transform: translateY(-50%) !important;
                     }
                     .premium-table-flat .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
                         padding: 4px 12px !important;
                         border-bottom: 1px solid #f8fafc !important;
                     }
                     .dark .premium-table-flat .ant-table-thead > tr > th {
-                        background: #1e293b !important;
-                        color: #94a3b8 !important;
-                        border-bottom: 2px solid #334155 !important;
+                        background: #0f172a !important;
+                        color: #64748b !important;
+                        border-bottom: 1px solid #1e293b !important;
                     }
                     .dark .premium-table-flat .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
                         border-bottom: 1px solid #1e293b !important;
@@ -404,24 +410,18 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
                     }
                     .premium-table-flat.ant-table-wrapper,
                     .premium-table-flat .ant-spin-nested-loading,
-                    .premium-table-flat .ant-spin-container,
-                    .premium-table-flat .ant-table,
-                    .premium-table-flat .ant-table-container {
+                    .premium-table-flat .ant-spin-container {
+                        height: 100%;
                         display: flex;
                         flex-direction: column;
-                        flex-grow: 1;
-                        min-height: 0;
-                        min-width: 0;
                     }
                     .premium-table-flat .ant-table {
+                        flex: 1;
                         background: transparent !important;
                     }
-                    .premium-table-flat .ant-table-body,
-                    .premium-table-flat .ant-table-content {
-                        flex-grow: 1;
-                        min-height: 0;
-                        min-width: 0;
-                        overflow: auto !important;
+                    .premium-table-flat .ant-table-container {
+                        height: 100%;
+                        overflow: hidden;
                     }
                     .premium-table-flat .ant-pagination {
                         display: none !important;
@@ -508,7 +508,7 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
             onChange: onPageChange,
           }}
           showSorterTooltip={false}
-          tableLayout="auto"
+          tableLayout="fixed"
           size="small"
           scroll={{ y: tableHeight ? Math.max(0, Math.floor(tableHeight)) : undefined, x: 1200 }}
           sticky={true}

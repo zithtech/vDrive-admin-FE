@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Button, Table, Space, Card, Tag, Modal } from "antd";
+import * as XLSX from "xlsx";
+import { Button, Table, Space, Card, Tag, Modal, message } from "antd";
 import { DownloadOutlined, EyeOutlined, EditOutlined, LoadingOutlined } from "@ant-design/icons";
 import { IoAdd } from "react-icons/io5";
 import TitleBar from "../components/TitleBarCommon/TitleBar";
@@ -131,6 +132,55 @@ const PricingAndFareRules: React.FC = () => {
     setIsPreviewOpen(true);
   };
 
+  const exportData = () => {
+    return fareRules.map((rule) => ({
+      Country: "India",
+      State: rule.state_name || "-",
+      District: rule.district_name || "All",
+      Area: rule.area_name || "All",
+      "Hotspot Name": rule.hotspot_name || "-",
+      "Is Hotspot": rule.is_hotspot ? "Yes" : "No",
+      "One-way Return %": `${Number(rule.one_way_return_pct || 0).toFixed(0)}%`,
+      "Night %": `${Number(rule.night_charge_pct || 0).toFixed(0)}%`,
+    }));
+  };
+
+  const exportCSV = () => {
+    if (fareRules.length === 0) {
+      message.warning("No data to export");
+      return;
+    }
+    const data = exportData();
+    const ws = XLSX.utils.json_to_sheet(data);
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Pricing_Rules_${dayjs().format("YYYYMMDD")}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    message.success("CSV exported successfully!");
+  };
+
+  const exportExcel = () => {
+    if (fareRules.length === 0) {
+      message.warning("No data to export");
+      return;
+    }
+    const data = exportData();
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wscols = Object.keys(data[0] || {}).map(() => ({ wch: 15 }));
+    ws["!cols"] = wscols;
+    
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Pricing Rules");
+    XLSX.writeFile(wb, `Pricing_Rules_${dayjs().format("YYYYMMDD")}.xlsx`);
+    message.success("Excel exported successfully!");
+  };
+
   // Column definitions
   const columns: ColumnsType<PricingFareRule> = [
     {
@@ -256,10 +306,10 @@ const PricingAndFareRules: React.FC = () => {
           title="Pricing & Fare Rules"
           extra={
             <Space>
-              <Button icon={<DownloadOutlined />} onClick={() => {}}>
+              <Button icon={<DownloadOutlined />} onClick={exportCSV}>
                 CSV
               </Button>
-              <Button icon={<DownloadOutlined />} onClick={() => {}}>
+              <Button icon={<DownloadOutlined />} onClick={exportExcel}>
                 Excel
               </Button>
             </Space>

@@ -72,7 +72,7 @@ const Drivers = () => {
         d.onboarding_status !== "DOCS_REJECTED",
     );
 
-    // Search by Name, System ID, or vDrive ID
+    // Search by Name, System ID, or T2Drive ID
     if (filters.search) {
       const searchText = filters.search.toLowerCase();
       tempData = tempData.filter(

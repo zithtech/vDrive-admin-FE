@@ -25,6 +25,9 @@ export interface CurrentUser {
   name: string;
   email: string;
   contact: string | null;
+  mobile_number?: string | null;
+  phone_number?: string | null;
+  mobile?: string | null;
   role: "admin" | "super_admin";
   permissions?: PermissionMap;
 }

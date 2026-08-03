@@ -191,7 +191,7 @@ export default function AdminPage() {
       title: "Administrator",
       dataIndex: "name",
       key: "admin",
-      minWidth: 200,
+      width: 200,
       sorter: (a, b) => a.name.localeCompare(b.name),
       render: (_, record) => (
         <div className="customer-avatar-wrapper">
@@ -215,7 +215,7 @@ export default function AdminPage() {
       title: "Email",
       dataIndex: "email",
       key: "email",
-      minWidth: 220,
+      width: 220,
       sorter: (a, b) => a.email.localeCompare(b.email),
       render: (email: string) => (
         <Typography.Text className="customer-phone-text" style={{ textTransform: "none" }}>
@@ -227,7 +227,7 @@ export default function AdminPage() {
       title: "Contact",
       dataIndex: "contact",
       key: "contact",
-      minWidth: 160,
+      width: 160,
       render: (contact: string | null) => (
         <div className="customer-contact-wrapper">
           <Typography.Text className="customer-phone-text">
@@ -244,7 +244,7 @@ export default function AdminPage() {
       title: "Role",
       dataIndex: "role",
       key: "role",
-      minWidth: 140,
+      width: 140,
       render: (_role: string, record: AdminUser) => {
         // Display the real role from role_id, not the coarse `role` bypass flag.
         const roleObj = roles.find((r) => String(r.id) === String(record.role_id));
@@ -269,7 +269,7 @@ export default function AdminPage() {
       title: "Added Date",
       dataIndex: "created_at",
       key: "created_at",
-      minWidth: 180,
+      width: 180,
       render: (text: string) => (
         <div className="customer-updated-wrapper">
           <Typography.Text className="customer-updated-date">
@@ -487,20 +487,26 @@ export default function AdminPage() {
                       text-transform: uppercase !important;
                       font-size: 12px !important;
                       letter-spacing: 0.05em !important;
-                      border-bottom: 2px solid #f1f5f9 !important;
+                      border-bottom: 1px solid #f1f5f9 !important;
+                      border-top: 1px solid #f1f5f9 !important;
                       padding: 10px 12px !important;
                   }
                   .premium-table-flat .ant-table-thead > tr > th::before {
-                      display: none !important;
+                      display: block !important;
+                      background-color: #e2e8f0 !important;
+                      width: 1px !important;
+                      height: 1.4em !important;
+                      top: 50% !important;
+                      transform: translateY(-50%) !important;
                   }
                   .premium-table-flat .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
                       padding: 4px 12px !important;
                       border-bottom: 1px solid #f8fafc !important;
                   }
                   .dark .premium-table-flat .ant-table-thead > tr > th {
-                      background: #1e293b !important;
-                      color: #94a3b8 !important;
-                      border-bottom: 2px solid #334155 !important;
+                      background: #0f172a !important;
+                      color: #64748b !important;
+                      border-bottom: 1px solid #1e293b !important;
                   }
                   .dark .premium-table-flat .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
                       border-bottom: 1px solid #1e293b !important;
@@ -522,24 +528,18 @@ export default function AdminPage() {
                   }
                   .premium-table-flat.ant-table-wrapper,
                   .premium-table-flat .ant-spin-nested-loading,
-                  .premium-table-flat .ant-spin-container,
-                  .premium-table-flat .ant-table,
-                  .premium-table-flat .ant-table-container {
+                  .premium-table-flat .ant-spin-container {
+                      height: 100%;
                       display: flex;
                       flex-direction: column;
-                      flex-grow: 1;
-                      min-height: 0;
-                      min-width: 0;
                   }
                   .premium-table-flat .ant-table {
+                      flex: 1;
                       background: transparent !important;
                   }
-                  .premium-table-flat .ant-table-body,
-                  .premium-table-flat .ant-table-content {
-                      flex-grow: 1;
-                      min-height: 0;
-                      min-width: 0;
-                      overflow: auto !important;
+                  .premium-table-flat .ant-table-container {
+                      height: 100%;
+                      overflow: hidden;
                   }
                   .premium-table-flat .ant-pagination {
                       display: none !important;
@@ -667,10 +667,10 @@ export default function AdminPage() {
                           loading={loading}
                           pagination={{ position: ["none"], current: currentPage, pageSize: pageSize }}
                           showSorterTooltip={false}
-                          tableLayout="auto"
+                          tableLayout="fixed"
                           className="premium-table-flat"
                           rowClassName={(_, index) => ((index || 0) % 2 === 0 ? "customer-row-even" : "customer-row-odd")}
-                          scroll={{ y: tableHeight ? Math.max(0, Math.floor(tableHeight)) : undefined, x: 1000 }}
+                          scroll={{ y: tableHeight ? Math.max(0, Math.floor(tableHeight)) : undefined, x: 1200 }}
                           size="small"
                         />
                       </div>

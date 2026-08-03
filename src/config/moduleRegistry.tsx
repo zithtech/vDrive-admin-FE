@@ -20,6 +20,8 @@ import { ModuleProtectedRoute } from "../components/ModuleProtectedRoute";
 import RouteLoadingFallback from "../components/RouteLoadingFallback";
 
 // ── Lazy-loaded pages (moved here from App.tsx) ──────────────────────────────
+const Profile = lazy(() => import("../pages/Profile"));
+const Settings = lazy(() => import("../pages/Settings"));
 const Users = lazy(() => import("../pages/Users"));
 const Customers = lazy(
   () => import("../pages/Customers") as Promise<{ default: React.ComponentType<any> }>,
@@ -133,6 +135,14 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
   {
     rbacModule: "dashboard",
     route: { path: "InvoiceTemplates", element: protect("dashboard", <InvoiceTemplates />) },
+  },
+  {
+    rbacModule: "dashboard",
+    route: { path: "profile", element: protect("dashboard", <Profile />) },
+  },
+  {
+    rbacModule: "dashboard",
+    route: { path: "settings", element: protect("dashboard", <Settings />) },
   },
 
   // Customers
