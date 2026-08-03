@@ -19,6 +19,7 @@ import {
   Progress,
   Image,
   Dropdown,
+  Switch,
 } from "antd";
 import type { MenuProps } from "antd";
 import dayjs from "dayjs";
@@ -83,7 +84,7 @@ export const getMediaUrl = (path: any) => {
 
   if (typeof path !== "string" || !path) return "";
 
-  const baseUrl = import.meta.env.VITE_MEDIA_URL || "http://localhost:5006";
+  const baseUrl = import.meta.env.VITE_MEDIA_URL || import.meta.env.VITE_BACKEND_URL || "http://localhost:5006";
 
   if (path.includes("/api/media/proxy")) {
     return path.startsWith("http") ? path : `${baseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
@@ -153,6 +154,23 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
   const [statusModalOpen, setStatusModalOpen] = useState(false);
   const [statusAction, setStatusAction] = useState<DriverStatus | null>(null);
   const [statusReason, setStatusReason] = useState("");
+
+  // Subscription Eligibility State
+  const [eligibility, setEligibility] = React.useState({
+    basic: driver?.subscription_eligibility?.basic ?? true,
+    elite: driver?.subscription_eligibility?.elite ?? false,
+    premium: driver?.subscription_eligibility?.premium ?? false,
+  });
+  const [eligibilitySaving, setEligibilitySaving] = React.useState(false);
+
+  // Sync local state when the driver prop changes
+  React.useEffect(() => {
+    setEligibility({
+      basic: driver?.subscription_eligibility?.basic ?? true,
+      elite: driver?.subscription_eligibility?.elite ?? false,
+      premium: driver?.subscription_eligibility?.premium ?? false,
+    });
+  }, [driver?.subscription_eligibility, driver?.driverId, driver?.driver_id]);
 
   const BLOCK_REASONS = [
     "Serious safety violation or physical altercation.",
@@ -1420,6 +1438,134 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
       </div>
     </div>
   );
+  // ── Subscription Eligibility Tab ──────────────────────────────────────
+
+  const handleEligibilitySave = async () => {
+    if (!driver) return;
+    setEligibilitySaving(true);
+    try {
+      await dispatch(
+        updateDriverProfile({
+          driver_id: driver.driverId || driver.driver_id || driver.id || "",
+          data: {
+            subscription_eligibility: eligibility,
+          },
+        }),
+      ).unwrap();
+      message.success("Subscription eligibility updated successfully");
+    } catch (err: any) {
+      message.error(err || "Failed to update eligibility");
+    } finally {
+      setEligibilitySaving(false);
+    }
+  };
+
+  const eligibilityHasChanges =
+    eligibility.basic !== (driver?.subscription_eligibility?.basic ?? true) ||
+    eligibility.elite !== (driver?.subscription_eligibility?.elite ?? false) ||
+    eligibility.premium !== (driver?.subscription_eligibility?.premium ?? false);
+
+  const subscriptionEligibilityContent = (
+    <div className="space-y-6">
+      <div className="content-card p-6">
+        <div className="flex justify-between items-center mb-6">
+          <Title
+            level={4}
+            className="m-0 flex items-center gap-2 text-gray-800 dark:text-slate-100"
+          >
+            <SafetyCertificateOutlined className="text-emerald-500" /> Subscription Eligibility
+          </Title>
+          <Tag color="#6366f1" className="status-badge border-none text-white">
+            Access Control
+          </Tag>
+        </div>
+
+        <Text type="secondary" className="block mb-6 text-sm">
+          Control which subscription tiers this driver is allowed to purchase. Basic is always
+          enabled for all drivers.
+        </Text>
+
+        <div className="space-y-4">
+          {/* Basic – always on */}
+          <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gray-200 dark:bg-slate-700 flex items-center justify-center text-gray-500 dark:text-slate-400">
+                <RocketOutlined />
+              </div>
+              <div>
+                <Text strong className="block text-gray-800 dark:text-slate-100">
+                  Basic
+                </Text>
+                <Text type="secondary" className="text-xs">
+                  Default tier – always enabled
+                </Text>
+              </div>
+            </div>
+            <Switch checked disabled className="bg-green-500" />
+          </div>
+
+          {/* Elite */}
+          <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                <RocketOutlined />
+              </div>
+              <div>
+                <Text strong className="block text-gray-800 dark:text-slate-100">
+                  Elite
+                </Text>
+                <Text type="secondary" className="text-xs">
+                  Unlocks elite-tier features and pricing
+                </Text>
+              </div>
+            </div>
+            <Switch
+              checked={eligibility.elite}
+              onChange={(checked) => setEligibility((prev) => ({ ...prev, elite: checked }))}
+              disabled={!canUpdateDriver}
+            />
+          </div>
+
+          {/* Premium */}
+          <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600 dark:text-amber-400">
+                <RocketOutlined />
+              </div>
+              <div>
+                <Text strong className="block text-gray-800 dark:text-slate-100">
+                  Premium
+                </Text>
+                <Text type="secondary" className="text-xs">
+                  Unlocks premium-tier features and pricing
+                </Text>
+              </div>
+            </div>
+            <Switch
+              checked={eligibility.premium}
+              onChange={(checked) => setEligibility((prev) => ({ ...prev, premium: checked }))}
+              disabled={!canUpdateDriver}
+            />
+          </div>
+        </div>
+
+        {canUpdateDriver && (
+          <div className="mt-6 flex justify-end">
+            <Button
+              type="primary"
+              onClick={handleEligibilitySave}
+              loading={eligibilitySaving}
+              disabled={!eligibilityHasChanges}
+              className="!bg-indigo-600 hover:!bg-indigo-700 !border-none !rounded-lg !h-10 !px-6 !font-semibold"
+            >
+              Save Changes
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   const segments = [
     {
       label: (
@@ -1475,6 +1621,15 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
       ),
       key: "7",
       content: activity,
+    },
+    {
+      label: (
+        <Tooltip title="Eligibility">
+          <SafetyCertificateOutlined />
+        </Tooltip>
+      ),
+      key: "8",
+      content: subscriptionEligibilityContent,
     },
   ];
 
@@ -1693,6 +1848,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
                   {key === "5" && <WalletOutlined />}
                   {key === "6" && <SyncOutlined />}
                   {key === "7" && <LineChartOutlined />}
+                  {key === "8" && <SafetyCertificateOutlined />}
                 </div>
                 <span className="nav-label">
                   {key === "1" && "BASIC"}
@@ -1701,6 +1857,7 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
                   {key === "5" && "WALLET"}
                   {key === "6" && "PLAN"}
                   {key === "7" && "ACTIVITY"}
+                  {key === "8" && "ACCESS"}
                 </span>
               </div>
             ))}

@@ -115,6 +115,11 @@ export interface Driver {
     expiry_date: string;
     status: string;
   };
+  subscription_eligibility?: {
+    basic: boolean;
+    elite: boolean;
+    premium: boolean;
+  };
 }
 
 export interface ExtractedData {
