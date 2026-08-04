@@ -457,3 +457,37 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
   background-color: #0f172a !important;
   color: #f8fafc !important;
 }
+
+/* Global Table Header Override to match Driver Table */
+body .ant-table-thead > tr > th {
+  background: #f8fafc !important;
+  color: #64748b !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  font-size: 12px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+  border-top: 1px solid #f1f5f9 !important;
+  padding: 10px 12px !important;
+}
+
+body .ant-table-thead > tr > th::before {
+  display: block !important;
+  background-color: #e2e8f0 !important;
+  width: 1px !important;
+  height: 1.4em !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+}
+
+/* Bulletproof dark mode override for table headers globally */
+html.dark body .ant-table-thead > tr > th {
+  background: #0f172a !important;
+  border-bottom: 1px solid #1e293b !important;
+  border-top: 1px solid #1e293b !important;
+  color: #64748b !important;
+}
+
+html.dark body .ant-table-thead > tr > th::before {
+  background-color: #1e293b !important;
+}

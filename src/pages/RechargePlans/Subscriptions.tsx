@@ -552,28 +552,28 @@ const Subscriptions: React.FC = () => {
                 <table className="w-full text-left border-collapse">
                   <thead className="border-b border-gray-100 dark:border-slate-700/60">
                     <tr className="bg-transparent">
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-transparent">
                         Driver Identity
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-transparent">
                         Communication
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-transparent">
                         Driver ID
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-transparent">
                         Plan Config
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-transparent">
                         Plan Amount
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-transparent">
                         Billing Cycle
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-transparent">
                         Timeline Progress
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent border-l border-gray-100 dark:border-slate-700/60 text-center w-24">
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider bg-transparent border-l border-gray-100 dark:border-slate-700/60 text-center w-24">
                         Actions
                       </th>
                     </tr>

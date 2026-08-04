@@ -301,6 +301,57 @@ const PricingAndFareRules: React.FC = () => {
         </div>
       }
     >
+      <style>{`
+        .premium-table-flat .ant-table-thead > tr > th {
+          background: #f8fafc !important;
+          color: #64748b !important;
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          font-size: 10px !important;
+          letter-spacing: 0.05em !important;
+          border-bottom: 1px solid #f1f5f9 !important;
+          border-top: 1px solid #f1f5f9 !important;
+          padding: 10px 12px !important;
+        }
+        .premium-table-flat .ant-table-thead > tr > th::before {
+          display: block !important;
+          background-color: #e2e8f0 !important;
+          width: 1px !important;
+          height: 1.4em !important;
+          top: 50% !important;
+          transform: translateY(-50%) !important;
+        }
+        .premium-table-flat .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
+          padding: 4px 12px !important;
+          border-bottom: 1px solid #f8fafc !important;
+        }
+        .dark .premium-table-flat .ant-table-thead > tr > th {
+          background: #0f172a !important;
+          color: #94a3b8 !important;
+          border-bottom: 1px solid #1e293b !important;
+        }
+        .dark .premium-table-flat .ant-table-tbody > tr:not(.ant-table-measure-row) > td {
+          border-bottom: 1px solid #1e293b !important;
+          color: #f1f5f9 !important;
+          background: #0f172a !important;
+        }
+        .dark .premium-table-flat .ant-table-cell-fix-left,
+        .dark .premium-table-flat .ant-table-cell-fix-right {
+          background: #0f172a !important;
+        }
+        .dark .premium-table-flat .ant-table-row:hover > td,
+        .dark .premium-table-flat .ant-table-row:hover > td.ant-table-cell-fix-left,
+        .dark .premium-table-flat .ant-table-row:hover > td.ant-table-cell-fix-right {
+          background: #1e293b !important;
+        }
+        .premium-table-flat .ant-table-row {
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .premium-table-flat .ant-table {
+          background: transparent !important;
+        }
+      `}</style>
       <div className="w-full h-full overflow-y-auto">
         <Card
           title="Pricing & Fare Rules"
@@ -316,6 +367,7 @@ const PricingAndFareRules: React.FC = () => {
           }
         >
           <Table
+            className="premium-table-flat"
             columns={columns}
             dataSource={fareRules}
             loading={{

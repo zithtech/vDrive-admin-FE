@@ -1015,15 +1015,27 @@ const TripVerifications: React.FC = () => {
           color: #64748b !important;
         }
 
+        /* Compact premium table flat styles */
+        .premium-table-compact .ant-table-thead > tr > th {
+          background: #f8fafc !important;
+          color: #64748b !important;
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          font-size: 10px !important;
+          letter-spacing: 0.05em !important;
+          border-bottom: 1px solid #e2e8f0 !important;
+          padding: 8px 12px !important;
+        }
+
         /* Table dark mode overrides */
         .dark .premium-table-compact .ant-table {
           background-color: transparent !important;
           color: #cbd5e1 !important;
         }
         .dark .premium-table-compact .ant-table-thead > tr > th {
-          background-color: #0f172a !important;
-          border-bottom: 1px solid #334155 !important;
+          background: #1e293b !important;
           color: #94a3b8 !important;
+          border-bottom: 1px solid #334155 !important;
         }
         .dark .premium-table-compact .ant-table-tbody > tr > td {
           border-bottom: 1px solid #1e293b !important;

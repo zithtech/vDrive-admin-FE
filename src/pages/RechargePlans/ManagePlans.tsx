@@ -696,12 +696,12 @@ const ManagePlans: React.FC = () => {
             <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden rounded-none">
               {/* List Header */}
               <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-100 dark:border-slate-700/50">
-                <div className="col-span-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">PLAN NAME</div>
-                <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">VALIDITY</div>
-                <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">PRICING</div>
-                <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">STATUS</div>
-                <div className="col-span-1 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">SUBSCRIBERS</div>
-                <div className="col-span-2 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">ACTIONS</div>
+                <div className="col-span-3 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">PLAN NAME</div>
+                <div className="col-span-2 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">VALIDITY</div>
+                <div className="col-span-2 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">PRICING</div>
+                <div className="col-span-2 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">STATUS</div>
+                <div className="col-span-1 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">SUBSCRIBERS</div>
+                <div className="col-span-2 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">ACTIONS</div>
               </div>
 
               {/* List Body */}

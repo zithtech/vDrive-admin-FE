@@ -432,6 +432,15 @@ const PaymentHistory = () => {
         </div>
       </div>
       <style>{`
+        /* Custom Header Styling to match coupons table */
+        .dark-theme-table-override .ant-table-thead > tr > th {
+          color: #64748b !important;
+          font-size: 10px !important;
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.05em !important;
+        }
+
         /* Dark Mode overrides for Antd Table */
         .dark .dark-theme-table-override .ant-table {
           background-color: transparent !important;

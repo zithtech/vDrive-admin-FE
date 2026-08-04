@@ -390,7 +390,7 @@ const DriverTable = ({ data, onViewDetails, currentPage, pageSize, onPageChange 
             font-weight: 700 !important;
             text-transform: uppercase !important;
             letter-spacing: 0.05em !important;
-            font-size: 12px !important;
+            font-size: 10px !important;
             padding: 10px 12px !important;
           }
           .premium-table-flat .ant-table-thead > tr > th::before {
@@ -450,7 +450,7 @@ const DriverTable = ({ data, onViewDetails, currentPage, pageSize, onPageChange 
           html.dark .premium-table-flat .ant-table-thead > tr > th {
             background: #0f172a !important;
             border-bottom: 1px solid #1e293b !important;
-            color: #64748b !important;
+            color: #94a3b8 !important;
           }
           html.dark .premium-table-flat .ant-table-cell-fix-left,
           html.dark .premium-table-flat .ant-table-cell-fix-right {
