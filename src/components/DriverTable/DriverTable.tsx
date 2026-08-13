@@ -245,13 +245,21 @@ const DriverTable = ({ data, onViewDetails, currentPage, pageSize, onPageChange 
         const allDocs = ["profile_selfie", "aadhar_card", "pan_card", "driving_license"];
         const submittedDocs = record.documents?.filter(d => allDocs.includes(d.document_type?.toLowerCase() === "aadhaar_card" ? "aadhar_card" : d.document_type?.toLowerCase() || "")) || [];
         const verifiedCount = submittedDocs.filter(d => (d.license_status || (d as any).status) === "verified").length;
+        const isWebSignup = record.status === "pending_verification";
 
         return (
-          <div className="inline-flex items-center gap-1.5 px-1 py-0.5">
-            <FileTextOutlined className="text-slate-400 text-[12px]" />
-            <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300">
-              {verifiedCount}/{allDocs.length} Verified
-            </span>
+          <div className="flex flex-col gap-1.5">
+            {isWebSignup && (
+              <span className="inline-flex items-center gap-1 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-sm w-fit">
+                🌐 Web Signup
+              </span>
+            )}
+            <div className="inline-flex items-center gap-1.5 px-1 py-0.5">
+              <FileTextOutlined className="text-slate-400 text-[12px]" />
+              <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300">
+                {verifiedCount}/{allDocs.length} Verified
+              </span>
+            </div>
           </div>
         );
       },
