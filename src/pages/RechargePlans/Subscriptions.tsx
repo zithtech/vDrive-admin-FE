@@ -313,6 +313,63 @@ const Subscriptions: React.FC = () => {
                 </span>
               </div>
             </div>
+
+            {/* REAL-TIME REVENUE - SIDEBAR VERSION */}
+            <div className="flex flex-col gap-4 border-t border-slate-200 dark:border-slate-700 pt-6 mt-6">
+              <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                    REAL-TIME REVENUE
+                  </span>
+                </div>
+                <button
+                  onClick={fetchActiveSubscriptions}
+                  className="p-1 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-md transition-colors"
+                  title="Sync Data"
+                >
+                  <Zap size={12} />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-3 px-1">
+                {/* Today Segment */}
+                <div className="flex justify-between items-end border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <div className="flex flex-col">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Today</span>
+                    <div className="text-xs font-black text-slate-900 dark:text-slate-100">{subStats?.today_count || 0}</div>
+                  </div>
+                  <div className="text-[10px] font-bold text-indigo-600">₹{Number(subStats?.today_amount || 0).toLocaleString()}</div>
+                </div>
+                
+                {/* Week Segment */}
+                <div className="flex justify-between items-end border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <div className="flex flex-col">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">This Week</span>
+                    <div className="text-xs font-black text-slate-900 dark:text-slate-100">{subStats?.week_count || 0}</div>
+                  </div>
+                  <div className="text-[10px] font-bold text-emerald-600">₹{Number(subStats?.week_amount || 0).toLocaleString()}</div>
+                </div>
+
+                {/* Month Segment */}
+                <div className="flex justify-between items-end border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <div className="flex flex-col">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">This Month</span>
+                    <div className="text-xs font-black text-slate-900 dark:text-slate-100">{subStats?.month_count || 0}</div>
+                  </div>
+                  <div className="text-[10px] font-bold text-purple-600">₹{Number(subStats?.month_amount || 0).toLocaleString()}</div>
+                </div>
+
+                {/* Lifetime Segment */}
+                <div className="flex justify-between items-end">
+                  <div className="flex flex-col">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Lifetime</span>
+                    <div className="text-xs font-black text-slate-900 dark:text-slate-100">{subStats?.lifetime_count || 0}</div>
+                  </div>
+                  <div className="text-[10px] font-bold text-amber-600">₹{Number(subStats?.lifetime_amount || 0).toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -414,56 +471,6 @@ const Subscriptions: React.FC = () => {
               </div>
             </div>
 
-            {/* REAL-TIME REVENUE */}
-            <div className="bg-white dark:bg-slate-800 p-4 mb-1 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-6 rounded-none">
-              <div className="flex items-center gap-2 border-r border-slate-200 dark:border-slate-700 pr-6 shrink-0">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span className="text-[11px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400">REAL-TIME REVENUE</span>
-                <button
-                  onClick={fetchActiveSubscriptions}
-                  className="ml-2 p-1 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-500/10 rounded-md transition-colors"
-                  title="Sync Data"
-                >
-                  <Zap size={14} />
-                </button>
-              </div>
-
-              <div className="flex-1 grid grid-cols-4 gap-4">
-                {/* Today Segment */}
-                <div className="flex flex-col">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Today</span>
-                  <div className="flex items-baseline gap-2">
-                    <div className="text-sm font-black text-slate-900 dark:text-slate-100">{subStats?.today_count || 0}</div>
-                    <div className="text-[10px] font-bold text-indigo-600">₹{Number(subStats?.today_amount || 0).toLocaleString()}</div>
-                  </div>
-                </div>
-                {/* Week Segment */}
-                <div className="flex flex-col border-l border-slate-200 dark:border-slate-700 pl-4">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">This Week</span>
-                  <div className="flex items-baseline gap-2">
-                    <div className="text-sm font-black text-slate-900 dark:text-slate-100">{subStats?.week_count || 0}</div>
-                    <div className="text-[10px] font-bold text-emerald-600">₹{Number(subStats?.week_amount || 0).toLocaleString()}</div>
-                  </div>
-                </div>
-                {/* Month Segment */}
-                <div className="flex flex-col border-l border-slate-200 dark:border-slate-700 pl-4">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">This Month</span>
-                  <div className="flex items-baseline gap-2">
-                    <div className="text-sm font-black text-slate-900 dark:text-slate-100">{subStats?.month_count || 0}</div>
-                    <div className="text-[10px] font-bold text-purple-600">₹{Number(subStats?.month_amount || 0).toLocaleString()}</div>
-                  </div>
-                </div>
-                {/* Lifetime Segment */}
-                <div className="flex flex-col border-l border-slate-200 dark:border-slate-700 pl-4">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-0.5">Lifetime</span>
-                  <div className="flex items-baseline gap-2">
-                    <div className="text-sm font-black text-slate-900 dark:text-slate-100">{subStats?.lifetime_count || 0}</div>
-                    <div className="text-[10px] font-bold text-amber-600">₹{Number(subStats?.lifetime_amount || 0).toLocaleString()}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {/* HORIZONTAL FILTERS BAR */}
             <div className="bg-white dark:bg-[#0f172a] p-3 mb-1 border border-slate-200 dark:border-slate-700 flex items-center gap-4 shadow-sm rounded-none dark-theme-select-override">
               <div className="flex items-center gap-2 px-3 border-r border-slate-200 dark:border-slate-700 text-slate-400 shrink-0">
@@ -552,28 +559,28 @@ const Subscriptions: React.FC = () => {
                 <table className="w-full text-left border-collapse">
                   <thead className="border-b border-gray-100 dark:border-slate-700/60">
                     <tr className="bg-transparent">
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                      <th className="px-3 py-2.5 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
                         Driver Identity
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                      <th className="px-3 py-2.5 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
                         Communication
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                      <th className="px-3 py-2.5 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
                         Driver ID
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                      <th className="px-3 py-2.5 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
                         Plan Config
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                      <th className="px-3 py-2.5 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
                         Plan Amount
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                      <th className="px-3 py-2.5 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
                         Billing Cycle
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
+                      <th className="px-3 py-2.5 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent">
                         Timeline Progress
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent border-l border-gray-100 dark:border-slate-700/60 text-center w-24">
+                      <th className="px-3 py-2.5 text-[9px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider bg-transparent border-l border-gray-100 dark:border-slate-700/60 text-center w-20">
                         Actions
                       </th>
                     </tr>
@@ -582,8 +589,8 @@ const Subscriptions: React.FC = () => {
                     {(subscriptionTab === "ACTIVE" ? loadingActiveSubs : loadingExpiredSubs) ? (
                       [1, 2, 3].map((i: number) => (
                         <tr key={i} className="animate-pulse">
-                          <td colSpan={8} className="px-6 py-6">
-                            <div className="h-8 bg-white dark:bg-slate-800 rounded-lg w-full"></div>
+                          <td colSpan={8} className="px-4 py-4">
+                            <div className="h-6 bg-white dark:bg-slate-800 rounded-lg w-full"></div>
                           </td>
                         </tr>
                       ))
@@ -646,11 +653,11 @@ const Subscriptions: React.FC = () => {
                                 className={`group bg-white dark:bg-transparent hover:bg-indigo-50/30 dark:hover:bg-slate-800 transition-colors cursor-pointer border-b border-gray-50 dark:border-slate-700/50`}
                                 onClick={() => fetchDriverHistory(sub)}
                               >
-                                <td className="px-6 py-4">
-                                  <div className="flex items-center gap-3">
+                                <td className="px-3 py-2">
+                                  <div className="flex items-center gap-2.5">
                                     {sub.profilePicUrl ? (
-                                      <div className="relative w-9 h-9">
-                                        <div className="absolute inset-0 rounded-lg bg-[#6366f1] text-white font-bold text-xs flex items-center justify-center z-0">
+                                      <div className="relative w-7 h-7">
+                                        <div className="absolute inset-0 rounded-md bg-[#6366f1] text-white font-bold text-[10px] flex items-center justify-center z-0">
                                           {sub.driverName
                                             ?.split(" ")
                                             .map((n: string) => n[0])
@@ -661,14 +668,14 @@ const Subscriptions: React.FC = () => {
                                         <img
                                           src={getMediaUrl(sub.profilePicUrl)}
                                           alt={sub.driverName}
-                                          className="absolute inset-0 w-9 h-9 rounded-lg object-cover border border-gray-200 dark:border-slate-700 z-10"
+                                          className="absolute inset-0 w-7 h-7 rounded-md object-cover border border-gray-200 dark:border-slate-700 z-10"
                                           onError={(e) => {
                                             (e.target as HTMLImageElement).style.display = "none";
                                           }}
                                         />
                                       </div>
                                     ) : (
-                                      <div className="w-9 h-9 rounded-lg bg-[#6366f1] text-white font-bold text-xs flex items-center justify-center">
+                                      <div className="w-7 h-7 rounded-md bg-[#6366f1] text-white font-bold text-[10px] flex items-center justify-center">
                                         {sub.driverName
                                           ?.split(" ")
                                           .map((n: string) => n[0])
@@ -678,69 +685,69 @@ const Subscriptions: React.FC = () => {
                                       </div>
                                     )}
                                     <div className="flex flex-col">
-                                      <span className="text-[13px] font-bold text-gray-900 dark:text-slate-100">
+                                      <span className="text-xs font-bold text-gray-900 dark:text-slate-100">
                                         {sub.driverName}
                                       </span>
                                     </div>
                                   </div>
                                 </td>
-                                <td className="px-6 py-4">
-                                  <div className="flex flex-col gap-1.5">
-                                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                                      <Mail size={14} className="shrink-0" />
-                                      <span className="text-[12px] font-medium">
+                                <td className="px-3 py-2">
+                                  <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                                      <Mail size={12} className="shrink-0" />
+                                      <span className="text-[11px] font-medium leading-none">
                                         {sub.driverEmail === "N/A" ? "-" : sub.driverEmail}
                                       </span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                                      <Phone size={14} className="shrink-0" />
-                                      <span className="text-[12px] font-medium">
+                                    <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                                      <Phone size={12} className="shrink-0" />
+                                      <span className="text-[11px] font-medium leading-none">
                                         {sub.driverPhone}
                                       </span>
                                     </div>
                                   </div>
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-3 py-2">
                                   {sub.vdriveId ? (
-                                    <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 uppercase tracking-widest font-black">
+                                    <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 uppercase tracking-widest font-black">
                                       {sub.vdriveId}
                                     </span>
                                   ) : sub.driverId ? (
-                                    <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 uppercase tracking-widest font-black">
+                                    <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 uppercase tracking-widest font-black">
                                       {sub.driverId.slice(0, 8)}
                                     </span>
                                   ) : (
-                                    <span className="text-gray-400 dark:text-slate-500">---</span>
+                                    <span className="text-gray-400 dark:text-slate-500 text-xs">---</span>
                                   )}
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-3 py-2">
                                   <span
-                                    className={`text-[11px] font-black px-3 py-1 rounded-full border uppercase tracking-widest ${badgeClass}`}
+                                    className={`text-[10px] font-black px-2 py-0.5 rounded border uppercase tracking-widest ${badgeClass}`}
                                   >
                                     {sub.planName}
                                   </span>
                                 </td>
-                                <td className="px-6 py-4 text-center">
-                                  <div className="flex flex-col items-center">
-                                    <span className="text-[14px] font-black text-slate-800 dark:text-slate-200 tracking-tighter">
+                                <td className="px-3 py-2 text-center">
+                                  <div className="flex flex-col items-center gap-0.5">
+                                    <span className="text-xs font-black text-slate-800 dark:text-slate-200 tracking-tighter leading-none">
                                       ₹{Number(sub.amountPaid || sub.price || 0).toLocaleString()}
                                     </span>
-                                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
-                                      Paid Amount
+                                    <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">
+                                      Paid
                                     </span>
                                   </div>
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-3 py-2">
                                   <div className="flex flex-col items-start">
-                                    <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-white dark:bg-slate-800 px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-500/20">
+                                    <span className="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-slate-700">
                                       {sub.billingCycle}
                                     </span>
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 w-64">
-                                  <div className="flex flex-col gap-2.5 w-full pr-4">
+                                <td className="px-3 py-2 w-56">
+                                  <div className="flex flex-col gap-1.5 w-full pr-2">
                                     <div className="flex items-center gap-2 w-full">
-                                      <span className="text-[12px] font-black text-slate-800 dark:text-white whitespace-nowrap">
+                                      <span className="text-[10px] font-black text-slate-800 dark:text-white whitespace-nowrap">
                                         {sub.startDate
                                           ? new Date(sub.startDate).toLocaleDateString("en-US", {
                                             month: "short",
@@ -754,7 +761,7 @@ const Subscriptions: React.FC = () => {
                                           style={{ width: `${progress}%` }}
                                         ></div>
                                       </div>
-                                      <span className="text-[12px] font-black text-slate-800 dark:text-white whitespace-nowrap">
+                                      <span className="text-[10px] font-black text-slate-800 dark:text-white whitespace-nowrap">
                                         {sub.expiryDate
                                           ? new Date(sub.expiryDate).toLocaleDateString("en-US", {
                                             month: "short",
@@ -764,27 +771,27 @@ const Subscriptions: React.FC = () => {
                                       </span>
                                     </div>
 
-                                    <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2">
                                       <div
-                                        className={`px-2 py-0.5 rounded-md border text-[9px] font-black uppercase tracking-widest ${tagClasses}`}
+                                        className={`px-1.5 py-0.5 rounded border text-[8px] font-black uppercase tracking-widest leading-none ${tagClasses}`}
                                       >
                                         {tagText}
                                       </div>
-                                      <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500">
+                                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-none mt-0.5">
                                         {cycleStr}
                                       </span>
                                     </div>
                                   </div>
                                 </td>
-                                <td className="px-6 py-4 text-center border-l border-gray-100 dark:border-slate-700/60 w-24">
+                                <td className="px-3 py-2 text-center border-l border-gray-100 dark:border-slate-700/60 w-20">
                                   <button
-                                    className="p-1.5 text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
+                                    className="p-1.5 text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-md transition-colors cursor-pointer"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       fetchDriverHistory(sub);
                                     }}
                                   >
-                                    <Eye size={18} />
+                                    <Eye size={16} />
                                   </button>
                                 </td>
                               </tr>
@@ -793,10 +800,10 @@ const Subscriptions: React.FC = () => {
                         })
                     ) : (
                       <tr>
-                        <td colSpan={8} className="px-6 py-20 text-center bg-white dark:bg-[#0f172a]">
+                        <td colSpan={8} className="px-4 py-16 text-center bg-white dark:bg-[#0f172a]">
                           <div className="flex flex-col items-center gap-3">
                             <div className="p-3 bg-white dark:bg-[#0f172a] rounded-full text-slate-200 border border-slate-100 dark:border-slate-700">
-                              <Zap size={32} />
+                              <Zap size={24} />
                             </div>
                             <p className="text-slate-400 text-xs font-medium">
                               {subscriptionTab === "ACTIVE"

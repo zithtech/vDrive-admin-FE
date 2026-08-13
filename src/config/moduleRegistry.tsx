@@ -14,6 +14,7 @@ import { PiSteeringWheel } from "react-icons/pi";
 import { RiAdminLine, RiQuestionLine } from "react-icons/ri";
 import { IoCarOutline } from "react-icons/io5";
 import { MdOutlineMoneyOff, MdOutlineAccountBalanceWallet } from "react-icons/md";
+import { AiOutlineMail } from "react-icons/ai";
 
 import DashBoard from "../pages/DashBoard";
 import { ModuleProtectedRoute } from "../components/ModuleProtectedRoute";
@@ -94,6 +95,7 @@ const TripVerifications = lazy(
 const Notifications = lazy(() => import("../pages/Notifications"));
 const SupportTickets = lazy(() => import("../pages/SupportTickets"));
 const SupportAnalytics = lazy(() => import("../pages/SupportAnalytics"));
+const CustomerEnquiries = lazy(() => import("../pages/CustomerEnquiries"));
 
 type MenuItem = NonNullable<MenuProps["items"]>[number];
 
@@ -369,6 +371,17 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
       label: <Link to="/support-analytics">Support Analytics</Link>,
       key: "/support-analytics",
       icon: <RiQuestionLine />,
+    },
+  },
+
+  // Customer Enquiries
+  {
+    rbacModule: "enquiries",
+    route: { path: "customer-enquiries", element: protect("enquiries", <CustomerEnquiries />) },
+    menu: {
+      label: <Link to="/customer-enquiries">Customer Enquiries</Link>,
+      key: "/customer-enquiries",
+      icon: <AiOutlineMail />,
     },
   },
 ];

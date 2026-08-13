@@ -18,7 +18,8 @@ import {
 
 import axios from "../../api/axios";
 import { messageApi, modalApi, notificationApi } from "../../utilities/antdStaticHolder";
-import { Select, Drawer, Button, Avatar, Tag, Pagination } from "antd";
+import { Select, Drawer, Button, Avatar, Tag, Pagination, Dropdown } from "antd";
+import type { MenuProps } from 'antd';
 
 /* ================= TYPES ================= */
 
@@ -763,23 +764,45 @@ const ManagePlans: React.FC = () => {
 
                         {/* Actions */}
                         <div className="col-span-2 flex items-center justify-end gap-3">
-                          <div className="relative group/menu">
+                          <Dropdown
+                            menu={{
+                              items: [
+                                {
+                                  key: 'edit',
+                                  label: (
+                                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                      <Edit3 size={14} /> Edit
+                                    </div>
+                                  ),
+                                  onClick: () => handleOpenModal(plan),
+                                },
+                                {
+                                  key: 'status',
+                                  label: (
+                                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                      <Power size={14} /> {plan.isActive ? "Deactivate" : "Activate"}
+                                    </div>
+                                  ),
+                                  onClick: () => toggleStatus(plan.id, plan.isActive),
+                                },
+                                {
+                                  key: 'delete',
+                                  label: (
+                                    <div className="flex items-center gap-2 text-xs font-semibold text-rose-600">
+                                      <Trash2 size={14} /> Delete
+                                    </div>
+                                  ),
+                                  onClick: () => handleDelete(plan.id),
+                                },
+                              ]
+                            }}
+                            trigger={['click']}
+                            placement="bottomRight"
+                          >
                             <button className="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded transition-colors">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg>
                             </button>
-                            {/* Dropdown Menu */}
-                            <div className="absolute right-0 top-full mt-1 w-36 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-100 dark:border-slate-700 opacity-0 invisible group-hover/menu:opacity-100 group-hover/menu:visible transition-all z-10 overflow-hidden">
-                              <button onClick={() => handleOpenModal(plan)} className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2">
-                                <Edit3 size={14} /> Edit
-                              </button>
-                              <button onClick={() => toggleStatus(plan.id, plan.isActive)} className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2">
-                                <Power size={14} /> {plan.isActive ? "Deactivate" : "Activate"}
-                              </button>
-                              <button onClick={() => handleDelete(plan.id)} className="w-full text-left px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2">
-                                <Trash2 size={14} /> Delete
-                              </button>
-                            </div>
-                          </div>
+                          </Dropdown>
                         </div>
 
                       </div>
