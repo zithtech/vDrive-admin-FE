@@ -19,7 +19,6 @@ import {
 import axios from "../../api/axios";
 import { messageApi, modalApi, notificationApi } from "../../utilities/antdStaticHolder";
 import { Select, Drawer, Button, Avatar, Tag, Pagination, Dropdown } from "antd";
-import type { MenuProps } from 'antd';
 
 /* ================= TYPES ================= */
 
