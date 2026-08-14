@@ -453,7 +453,7 @@ const PromotionsPage: React.FC = () => {
                   return (
                     <div
                       key={promo.id}
-                      className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 transition-all hover:border-indigo-300 dark:hover:border-indigo-500/50 flex flex-col group/card shadow-sm"
+                      className="relative bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-700 transition-all hover:border-indigo-300 dark:hover:border-indigo-500/50 flex flex-col group/card shadow-sm"
                     >
                       <div className="p-4 flex items-start gap-4 border-b border-slate-100 dark:border-slate-700">
                         <div

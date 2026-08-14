@@ -85,19 +85,32 @@ export const getMediaUrl = (path: any) => {
   if (typeof path !== "string" || !path) return "";
 
   const baseUrl = import.meta.env.VITE_MEDIA_URL || import.meta.env.VITE_BACKEND_URL || "http://localhost:5006";
+  const normalizedBase = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+
+  if (path.includes("localhost:")) {
+    try {
+      const urlObj = new URL(path);
+      return `${normalizedBase}${urlObj.pathname}${urlObj.search}`;
+    } catch (e) {
+      // ignore
+    }
+  }
 
   if (path.includes("/api/media/proxy")) {
-    return path.startsWith("http") ? path : `${baseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
+    if (path.startsWith("http")) return path;
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    return `${normalizedBase}${normalizedPath}`;
   }
 
   if (path.includes("amazonaws.com")) {
-    return `${baseUrl}/api/media/proxy?url=${encodeURIComponent(path)}`;
+    return `${normalizedBase}/api/media/proxy?url=${encodeURIComponent(path)}`;
   }
 
   if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:"))
     return path;
 
-  return `${baseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `${normalizedBase}${normalizedPath}`;
 };
 
 interface DriverDetailsProps {
