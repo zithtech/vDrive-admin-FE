@@ -146,7 +146,7 @@ const Subscriptions: React.FC = () => {
         expiryDate: s.expiry_date || s.expiryDate,
         amountPaid: s.amount_paid || s.amountPaid,
         driverId: s.driver_id || s.driverId,
-        vdriveId: s.vdrive_id || s.vdriveId,
+        vdriveId: s.t2d_id || s.vdriveId,
         profilePicUrl: s.profile_pic_url || s.profilePicUrl || s.driverProfilePic || null,
       }));
 
@@ -187,7 +187,7 @@ const Subscriptions: React.FC = () => {
         expiryDate: s.expiry_date || s.expiryDate,
         amountPaid: s.amount_paid || s.amountPaid,
         driverId: s.driver_id || s.driverId,
-        vdriveId: s.vdrive_id || s.vdriveId,
+        vdriveId: s.t2d_id || s.vdriveId,
         profilePicUrl: s.profile_pic_url || s.profilePicUrl || s.driverProfilePic || null,
         status: s.status || "expired", // default to expired for UI handling
       }));
