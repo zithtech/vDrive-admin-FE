@@ -146,7 +146,7 @@ const Subscriptions: React.FC = () => {
         expiryDate: s.expiry_date || s.expiryDate,
         amountPaid: s.amount_paid || s.amountPaid,
         driverId: s.driver_id || s.driverId,
-        vdriveId: s.vdrive_id || s.vdriveId,
+        vdriveId: s.t2d_id || s.vdriveId,
         profilePicUrl: s.profile_pic_url || s.profilePicUrl || s.driverProfilePic || null,
       }));
 
@@ -187,7 +187,7 @@ const Subscriptions: React.FC = () => {
         expiryDate: s.expiry_date || s.expiryDate,
         amountPaid: s.amount_paid || s.amountPaid,
         driverId: s.driver_id || s.driverId,
-        vdriveId: s.vdrive_id || s.vdriveId,
+        vdriveId: s.t2d_id || s.vdriveId,
         profilePicUrl: s.profile_pic_url || s.profilePicUrl || s.driverProfilePic || null,
         status: s.status || "expired", // default to expired for UI handling
       }));
@@ -341,7 +341,7 @@ const Subscriptions: React.FC = () => {
                   </div>
                   <div className="text-[10px] font-bold text-indigo-600">₹{Number(subStats?.today_amount || 0).toLocaleString()}</div>
                 </div>
-                
+
                 {/* Week Segment */}
                 <div className="flex justify-between items-end border-b border-slate-100 dark:border-slate-800 pb-2">
                   <div className="flex flex-col">
@@ -596,86 +596,68 @@ const Subscriptions: React.FC = () => {
                       ))
                     ) : filteredSubscriptions.length > 0 ? (
                       displayedSubscriptions.map((sub: any) => {
-                          const daysLeft = Math.ceil(
-                            (new Date(sub.expiryDate).getTime() - new Date().getTime()) /
-                            (1000 * 60 * 60 * 24),
-                          );
+                        const daysLeft = Math.ceil(
+                          (new Date(sub.expiryDate).getTime() - new Date().getTime()) /
+                          (1000 * 60 * 60 * 24),
+                        );
 
-                          const totalDays = Math.ceil(
-                            (new Date(sub.expiryDate).getTime() - new Date(sub.startDate).getTime()) /
-                            (1000 * 60 * 60 * 24),
-                          );
-                          const daysElapsed = totalDays - daysLeft;
-                          const progress = Math.min(
-                            100,
-                            Math.max(0, (daysElapsed / (totalDays || 1)) * 100),
-                          );
+                        const totalDays = Math.ceil(
+                          (new Date(sub.expiryDate).getTime() - new Date(sub.startDate).getTime()) /
+                          (1000 * 60 * 60 * 24),
+                        );
+                        const daysElapsed = totalDays - daysLeft;
+                        const progress = Math.min(
+                          100,
+                          Math.max(0, (daysElapsed / (totalDays || 1)) * 100),
+                        );
 
-                          const planNameLower = sub.planName?.toLowerCase() || "";
-                          let badgeClass =
-                            "bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20";
-                          if (planNameLower.includes("basic"))
-                            badgeClass =
-                              "bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-500/20";
-                          else if (planNameLower.includes("elite"))
-                            badgeClass =
-                              "bg-white dark:bg-slate-800 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-500/20";
-                          else if (planNameLower.includes("premium"))
-                            badgeClass =
-                              "bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20";
+                        const planNameLower = sub.planName?.toLowerCase() || "";
+                        let badgeClass =
+                          "bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-500/20";
+                        if (planNameLower.includes("basic"))
+                          badgeClass =
+                            "bg-white dark:bg-slate-800 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-500/20";
+                        else if (planNameLower.includes("elite"))
+                          badgeClass =
+                            "bg-white dark:bg-slate-800 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-500/20";
+                        else if (planNameLower.includes("premium"))
+                          badgeClass =
+                            "bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-500/20";
 
-                          let tagText = "";
-                          let tagClasses = "";
-                          let lineColor = "";
-                          const cycleStr = `${totalDays || 0}d cycle`;
+                        let tagText = "";
+                        let tagClasses = "";
+                        let lineColor = "";
+                        const cycleStr = `${totalDays || 0}d cycle`;
 
-                          if (sub.status === "closed" || sub.status === "inactive") {
-                            tagText = "CLOSED";
-                            tagClasses = "text-blue-500 border-blue-500/30 bg-blue-500/10";
-                            lineColor = "bg-blue-500";
-                          } else if (daysLeft < 0) {
-                            tagText = `${Math.abs(daysLeft)}D OVERDUE`;
-                            tagClasses = "text-rose-500 border-rose-500/30 bg-rose-500/10";
-                            lineColor = "bg-rose-500";
-                          } else if (daysLeft === 0) {
-                            tagText = "ENDS TODAY";
-                            tagClasses = "text-amber-500 border-amber-500/30 bg-amber-500/10";
-                            lineColor = "bg-amber-500";
-                          } else {
-                            tagText = `${daysLeft}D LEFT`;
-                            tagClasses = "text-emerald-500 border-emerald-500/30 bg-emerald-500/10";
-                            lineColor = "bg-emerald-500";
-                          }
+                        if (sub.status === "closed" || sub.status === "inactive") {
+                          tagText = "CLOSED";
+                          tagClasses = "text-blue-500 border-blue-500/30 bg-blue-500/10";
+                          lineColor = "bg-blue-500";
+                        } else if (daysLeft < 0) {
+                          tagText = `${Math.abs(daysLeft)}D OVERDUE`;
+                          tagClasses = "text-rose-500 border-rose-500/30 bg-rose-500/10";
+                          lineColor = "bg-rose-500";
+                        } else if (daysLeft === 0) {
+                          tagText = "ENDS TODAY";
+                          tagClasses = "text-amber-500 border-amber-500/30 bg-amber-500/10";
+                          lineColor = "bg-amber-500";
+                        } else {
+                          tagText = `${daysLeft}D LEFT`;
+                          tagClasses = "text-emerald-500 border-emerald-500/30 bg-emerald-500/10";
+                          lineColor = "bg-emerald-500";
+                        }
 
-                          return (
-                            <React.Fragment key={sub.id}>
-                              <tr
-                                className={`group bg-white dark:bg-transparent hover:bg-indigo-50/30 dark:hover:bg-slate-800 transition-colors cursor-pointer border-b border-gray-50 dark:border-slate-700/50`}
-                                onClick={() => fetchDriverHistory(sub)}
-                              >
-                                <td className="px-3 py-2">
-                                  <div className="flex items-center gap-2.5">
-                                    {sub.profilePicUrl ? (
-                                      <div className="relative w-7 h-7">
-                                        <div className="absolute inset-0 rounded-md bg-[#6366f1] text-white font-bold text-[10px] flex items-center justify-center z-0">
-                                          {sub.driverName
-                                            ?.split(" ")
-                                            .map((n: string) => n[0])
-                                            .join("")
-                                            .slice(0, 2)
-                                            .toUpperCase()}
-                                        </div>
-                                        <img
-                                          src={getMediaUrl(sub.profilePicUrl)}
-                                          alt={sub.driverName}
-                                          className="absolute inset-0 w-7 h-7 rounded-md object-cover border border-gray-200 dark:border-slate-700 z-10"
-                                          onError={(e) => {
-                                            (e.target as HTMLImageElement).style.display = "none";
-                                          }}
-                                        />
-                                      </div>
-                                    ) : (
-                                      <div className="w-7 h-7 rounded-md bg-[#6366f1] text-white font-bold text-[10px] flex items-center justify-center">
+                        return (
+                          <React.Fragment key={sub.id}>
+                            <tr
+                              className={`group bg-white dark:bg-transparent hover:bg-indigo-50/30 dark:hover:bg-slate-800 transition-colors cursor-pointer border-b border-gray-50 dark:border-slate-700/50`}
+                              onClick={() => fetchDriverHistory(sub)}
+                            >
+                              <td className="px-3 py-2">
+                                <div className="flex items-center gap-2.5">
+                                  {sub.profilePicUrl ? (
+                                    <div className="relative w-7 h-7">
+                                      <div className="absolute inset-0 rounded-md bg-[#6366f1] text-white font-bold text-[10px] flex items-center justify-center z-0">
                                         {sub.driverName
                                           ?.split(" ")
                                           .map((n: string) => n[0])
@@ -683,121 +665,139 @@ const Subscriptions: React.FC = () => {
                                           .slice(0, 2)
                                           .toUpperCase()}
                                       </div>
-                                    )}
-                                    <div className="flex flex-col">
-                                      <span className="text-xs font-bold text-gray-900 dark:text-slate-100">
-                                        {sub.driverName}
-                                      </span>
+                                      <img
+                                        src={getMediaUrl(sub.profilePicUrl)}
+                                        alt={sub.driverName}
+                                        className="absolute inset-0 w-7 h-7 rounded-md object-cover border border-gray-200 dark:border-slate-700 z-10"
+                                        onError={(e) => {
+                                          (e.target as HTMLImageElement).style.display = "none";
+                                        }}
+                                      />
                                     </div>
-                                  </div>
-                                </td>
-                                <td className="px-3 py-2">
-                                  <div className="flex flex-col gap-1">
-                                    <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                                      <Mail size={12} className="shrink-0" />
-                                      <span className="text-[11px] font-medium leading-none">
-                                        {sub.driverEmail === "N/A" ? "-" : sub.driverEmail}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                                      <Phone size={12} className="shrink-0" />
-                                      <span className="text-[11px] font-medium leading-none">
-                                        {sub.driverPhone}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="px-3 py-2">
-                                  {sub.vdriveId ? (
-                                    <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 uppercase tracking-widest font-black">
-                                      {sub.vdriveId}
-                                    </span>
-                                  ) : sub.driverId ? (
-                                    <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 uppercase tracking-widest font-black">
-                                      {sub.driverId.slice(0, 8)}
-                                    </span>
                                   ) : (
-                                    <span className="text-gray-400 dark:text-slate-500 text-xs">---</span>
+                                    <div className="w-7 h-7 rounded-md bg-[#6366f1] text-white font-bold text-[10px] flex items-center justify-center">
+                                      {sub.driverName
+                                        ?.split(" ")
+                                        .map((n: string) => n[0])
+                                        .join("")
+                                        .slice(0, 2)
+                                        .toUpperCase()}
+                                    </div>
                                   )}
-                                </td>
-                                <td className="px-3 py-2">
-                                  <span
-                                    className={`text-[10px] font-black px-2 py-0.5 rounded border uppercase tracking-widest ${badgeClass}`}
-                                  >
-                                    {sub.planName}
+                                  <div className="flex flex-col">
+                                    <span className="text-xs font-bold text-gray-900 dark:text-slate-100">
+                                      {sub.driverName}
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-3 py-2">
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                                    <Mail size={12} className="shrink-0" />
+                                    <span className="text-[11px] font-medium leading-none">
+                                      {sub.driverEmail === "N/A" ? "-" : sub.driverEmail}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                                    <Phone size={12} className="shrink-0" />
+                                    <span className="text-[11px] font-medium leading-none">
+                                      {sub.driverPhone}
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-3 py-2">
+                                {sub.vdriveId ? (
+                                  <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 uppercase tracking-widest font-black">
+                                    {sub.vdriveId}
                                   </span>
-                                </td>
-                                <td className="px-3 py-2 text-center">
-                                  <div className="flex flex-col items-center gap-0.5">
-                                    <span className="text-xs font-black text-slate-800 dark:text-slate-200 tracking-tighter leading-none">
-                                      ₹{Number(sub.amountPaid || sub.price || 0).toLocaleString()}
+                                ) : sub.driverId ? (
+                                  <span className="text-[9px] font-mono text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 uppercase tracking-widest font-black">
+                                    {sub.driverId.slice(0, 8)}
+                                  </span>
+                                ) : (
+                                  <span className="text-gray-400 dark:text-slate-500 text-xs">---</span>
+                                )}
+                              </td>
+                              <td className="px-3 py-2">
+                                <span
+                                  className={`text-[10px] font-black px-2 py-0.5 rounded border uppercase tracking-widest ${badgeClass}`}
+                                >
+                                  {sub.planName}
+                                </span>
+                              </td>
+                              <td className="px-3 py-2 text-center">
+                                <div className="flex flex-col items-center gap-0.5">
+                                  <span className="text-xs font-black text-slate-800 dark:text-slate-200 tracking-tighter leading-none">
+                                    ₹{Number(sub.amountPaid || sub.price || 0).toLocaleString()}
+                                  </span>
+                                  <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">
+                                    Paid
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-3 py-2">
+                                <div className="flex flex-col items-start">
+                                  <span className="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-slate-700">
+                                    {sub.billingCycle}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-3 py-2 w-56">
+                                <div className="flex flex-col gap-1.5 w-full pr-2">
+                                  <div className="flex items-center gap-2 w-full">
+                                    <span className="text-[10px] font-black text-slate-800 dark:text-white whitespace-nowrap">
+                                      {sub.startDate
+                                        ? new Date(sub.startDate).toLocaleDateString("en-US", {
+                                          month: "short",
+                                          day: "numeric",
+                                        })
+                                        : "---"}
                                     </span>
-                                    <span className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">
-                                      Paid
-                                    </span>
-                                  </div>
-                                </td>
-                                <td className="px-3 py-2">
-                                  <div className="flex flex-col items-start">
-                                    <span className="text-[9px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-white dark:bg-slate-800 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-slate-700">
-                                      {sub.billingCycle}
-                                    </span>
-                                  </div>
-                                </td>
-                                <td className="px-3 py-2 w-56">
-                                  <div className="flex flex-col gap-1.5 w-full pr-2">
-                                    <div className="flex items-center gap-2 w-full">
-                                      <span className="text-[10px] font-black text-slate-800 dark:text-white whitespace-nowrap">
-                                        {sub.startDate
-                                          ? new Date(sub.startDate).toLocaleDateString("en-US", {
-                                            month: "short",
-                                            day: "numeric",
-                                          })
-                                          : "---"}
-                                      </span>
-                                      <div className="flex-1 h-0.5 rounded-full bg-slate-200 dark:bg-slate-700/50 flex items-center">
-                                        <div
-                                          className={`h-1 rounded-full ${lineColor}`}
-                                          style={{ width: `${progress}%` }}
-                                        ></div>
-                                      </div>
-                                      <span className="text-[10px] font-black text-slate-800 dark:text-white whitespace-nowrap">
-                                        {sub.expiryDate
-                                          ? new Date(sub.expiryDate).toLocaleDateString("en-US", {
-                                            month: "short",
-                                            day: "numeric",
-                                          })
-                                          : "---"}
-                                      </span>
-                                    </div>
-
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex-1 h-0.5 rounded-full bg-slate-200 dark:bg-slate-700/50 flex items-center">
                                       <div
-                                        className={`px-1.5 py-0.5 rounded border text-[8px] font-black uppercase tracking-widest leading-none ${tagClasses}`}
-                                      >
-                                        {tagText}
-                                      </div>
-                                      <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-none mt-0.5">
-                                        {cycleStr}
-                                      </span>
+                                        className={`h-1 rounded-full ${lineColor}`}
+                                        style={{ width: `${progress}%` }}
+                                      ></div>
                                     </div>
+                                    <span className="text-[10px] font-black text-slate-800 dark:text-white whitespace-nowrap">
+                                      {sub.expiryDate
+                                        ? new Date(sub.expiryDate).toLocaleDateString("en-US", {
+                                          month: "short",
+                                          day: "numeric",
+                                        })
+                                        : "---"}
+                                    </span>
                                   </div>
-                                </td>
-                                <td className="px-3 py-2 text-center border-l border-gray-100 dark:border-slate-700/60 w-20">
-                                  <button
-                                    className="p-1.5 text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-md transition-colors cursor-pointer"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      fetchDriverHistory(sub);
-                                    }}
-                                  >
-                                    <Eye size={16} />
-                                  </button>
-                                </td>
-                              </tr>
-                            </React.Fragment>
-                          );
-                        })
+
+                                  <div className="flex items-center gap-2">
+                                    <div
+                                      className={`px-1.5 py-0.5 rounded border text-[8px] font-black uppercase tracking-widest leading-none ${tagClasses}`}
+                                    >
+                                      {tagText}
+                                    </div>
+                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-none mt-0.5">
+                                      {cycleStr}
+                                    </span>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-3 py-2 text-center border-l border-gray-100 dark:border-slate-700/60 w-20">
+                                <button
+                                  className="p-1.5 text-blue-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-md transition-colors cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    fetchDriverHistory(sub);
+                                  }}
+                                >
+                                  <Eye size={16} />
+                                </button>
+                              </td>
+                            </tr>
+                          </React.Fragment>
+                        );
+                      })
                     ) : (
                       <tr>
                         <td colSpan={8} className="px-4 py-16 text-center bg-white dark:bg-[#0f172a]">

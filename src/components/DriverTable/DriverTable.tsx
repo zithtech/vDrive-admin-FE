@@ -201,14 +201,14 @@ const DriverTable = ({ data, onViewDetails, currentPage, pageSize, onPageChange 
       render: (_, record) => (
         <div className="flex items-center gap-1.5 group/copy">
           <span className="text-slate-500 dark:text-slate-400 text-[12px] font-medium font-mono truncate">
-            {record.vdrive_id || record.driverId || record.driver_id || record.id || "VDD-NEW"}
+            {record.t2d_id || record.driverId || record.driver_id || record.id || "VDD-NEW"}
           </span>
           <Tooltip title="Copy ID">
             <CopyOutlined
               className="text-[12px] text-slate-300 hover:text-indigo-500 cursor-pointer transition-colors opacity-0 group-hover/copy:opacity-100 flex-shrink-0"
               onClick={(e) => {
                 e.stopPropagation();
-                const idToCopy = record.vdrive_id || record.driverId || record.driver_id || record.id || "";
+                const idToCopy = record.t2d_id || record.driverId || record.driver_id || record.id || "";
                 navigator.clipboard.writeText(idToCopy);
                 message.success({
                   content: "Driver ID copied",
@@ -398,7 +398,7 @@ const DriverTable = ({ data, onViewDetails, currentPage, pageSize, onPageChange 
             font-weight: 700 !important;
             text-transform: uppercase !important;
             letter-spacing: 0.05em !important;
-            font-size: 12px !important;
+            font-size: 10px !important;
             padding: 10px 12px !important;
           }
           .premium-table-flat .ant-table-thead > tr > th::before {
@@ -458,7 +458,7 @@ const DriverTable = ({ data, onViewDetails, currentPage, pageSize, onPageChange 
           html.dark .premium-table-flat .ant-table-thead > tr > th {
             background: #0f172a !important;
             border-bottom: 1px solid #1e293b !important;
-            color: #64748b !important;
+            color: #94a3b8 !important;
           }
           html.dark .premium-table-flat .ant-table-cell-fix-left,
           html.dark .premium-table-flat .ant-table-cell-fix-right {
@@ -532,12 +532,12 @@ const DriverTable = ({ data, onViewDetails, currentPage, pageSize, onPageChange 
           pagination={
             currentPage && pageSize && onPageChange
               ? {
-                  current: currentPage,
-                  pageSize: pageSize,
-                  total: data.length,
-                  position: ["none"],
-                  onChange: onPageChange,
-                }
+                current: currentPage,
+                pageSize: pageSize,
+                total: data.length,
+                position: ["none"],
+                onChange: onPageChange,
+              }
               : false
           }
           showSorterTooltip={false}

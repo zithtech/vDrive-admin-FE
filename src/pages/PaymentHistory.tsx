@@ -84,7 +84,7 @@ const PaymentHistory = () => {
           status: statusFilter === "ALL" ? "" : statusFilter
         }
       });
-      
+
       const exportData = res.data?.data?.data || [];
       const doc = new jsPDF();
       doc.text("Payment History Report", 14, 20);
@@ -449,7 +449,7 @@ const PaymentHistory = () => {
                 </table>
               </div>
             </div>
-            
+
             {/* Sticky Pagination Footer */}
             <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
               <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
@@ -472,6 +472,60 @@ const PaymentHistory = () => {
           </div>
         </div>
       </div>
+      <style>{`
+        /* Custom Header Styling to match coupons table */
+        .dark-theme-table-override .ant-table-thead > tr > th {
+          color: #64748b !important;
+          font-size: 10px !important;
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.05em !important;
+        }
+
+        /* Dark Mode overrides for Antd Table */
+        .dark .dark-theme-table-override .ant-table {
+          background-color: transparent !important;
+        }
+        .dark .dark-theme-table-override .ant-table-thead > tr > th {
+          background-color: transparent !important;
+          color: #94a3b8 !important;
+          border-bottom: 1px solid #334155 !important;
+        }
+        .dark .dark-theme-table-override .ant-table-tbody > tr > td {
+          border-bottom: 1px solid #334155 !important;
+          background-color: transparent !important;
+        }
+        .dark .dark-theme-table-override .ant-table-tbody > tr.ant-table-row:hover > td {
+          background-color: #1e293b !important;
+        }
+        .dark .dark-theme-table-override .ant-table-placeholder {
+          background-color: transparent !important;
+        }
+        .dark .dark-theme-table-override .ant-table-placeholder:hover > td {
+          background-color: transparent !important;
+        }
+        .dark .dark-theme-table-override .ant-table-placeholder > td.ant-table-cell {
+          background-color: transparent !important;
+          border-bottom: 1px solid #334155 !important;
+        }
+        .dark .dark-theme-table-override .ant-empty-description {
+          color: #94a3b8 !important;
+        }
+        .dark .dark-theme-table-override .ant-pagination-item {
+          background-color: transparent !important;
+          border-color: #334155 !important;
+        }
+        .dark .dark-theme-table-override .ant-pagination-item a {
+          color: #94a3b8 !important;
+        }
+        .dark .dark-theme-table-override .ant-pagination-item-active {
+          background-color: #3b82f6 !important;
+          border-color: #3b82f6 !important;
+        }
+        .dark .dark-theme-table-override .ant-pagination-item-active a {
+          color: #ffffff !important;
+        }
+      `}</style>
     </div>
   );
 };

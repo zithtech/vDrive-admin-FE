@@ -236,11 +236,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
 
   const columns: TableColumnsType<TripDetailsType> = [
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Trip ID
-        </span>
-      ),
+      title: "Trip ID",
       dataIndex: "trip_code",
       width: 140,
       render: (_, r) => (
@@ -278,11 +274,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
       ),
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Customer Details
-        </span>
-      ),
+      title: "Customer Details",
       width: 200,
       render: (_, r) => (
         <div className="flex items-center gap-3">
@@ -302,11 +294,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
       ),
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Driver Partner
-        </span>
-      ),
+      title: "Driver Partner",
       width: 200,
       render: (_, r) => {
         const hasDriver = isDriverAssigned(r);
@@ -335,11 +323,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
       },
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Route Geography
-        </span>
-      ),
+      title: "Route Geography",
       width: 450,
       render: (_, r) => (
         <div className="flex flex-col gap-1 py-1">
@@ -368,11 +352,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
       ),
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Trip Status
-        </span>
-      ),
+      title: "Trip Status",
       width: 140,
       render: (_, r) => {
         const getStatusColor = () => {
@@ -401,11 +381,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
       },
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Total Revenue
-        </span>
-      ),
+      title: "Total Revenue",
       width: 120,
       render: (_, r) => (
         <div className="text-gray-800 dark:text-gray-200 font-extrabold text-sm tracking-tight">
@@ -414,11 +390,7 @@ const TripDetailsTable: React.FC<Props> = ({ data, isSuperAdmin = false, paginat
       ),
     },
     {
-      title: (
-        <span className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
-          Service
-        </span>
-      ),
+      title: "Service",
       width: 150,
       render: (_, r) => (
         <span className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-100 dark:border-slate-700 px-2.5 py-1 rounded-lg text-[10px] font-extrabold tracking-widest uppercase">
