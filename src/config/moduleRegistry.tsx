@@ -21,8 +21,8 @@ import { ModuleProtectedRoute } from "../components/ModuleProtectedRoute";
 import RouteLoadingFallback from "../components/RouteLoadingFallback";
 
 // ── Lazy-loaded pages (moved here from App.tsx) ──────────────────────────────
-const Earnings = lazy(() => import("../pages/Earnings"));
-const Wallet = lazy(() => import("../pages/Wallet"));
+// const Earnings = lazy(() => import("../pages/Earnings"));
+// const Wallet = lazy(() => import("../pages/Wallet"));
 const Profile = lazy(() => import("../pages/Profile"));
 const Settings = lazy(() => import("../pages/Settings"));
 const Users = lazy(() => import("../pages/Users"));
@@ -72,12 +72,12 @@ const SubscriptionListdata = lazy(
       default: React.ComponentType<any>;
     }>,
 );
-const SubscriptionDashboard = lazy(
-  () =>
-    import("../pages/RechargePlans/SubscriptionDashboard") as Promise<{
-      default: React.ComponentType<any>;
-    }>,
-);
+// const SubscriptionDashboard = lazy(
+//   () =>
+//     import("../pages/RechargePlans/SubscriptionDashboard") as Promise<{
+//       default: React.ComponentType<any>;
+//     }>,
+// );
 const SubscriptionOffers = lazy(
   () => import("../pages/Promotions") as Promise<{ default: React.ComponentType<any> }>,
 );
@@ -109,12 +109,11 @@ const SosHistory = lazy(() => import("../pages/SosHistory"));
 
 type MenuItem = NonNullable<MenuProps["items"]>[number];
 
-export type TopLevelGroup = "dashboard" | "users" | "drivers" | "trips" | "plans" | "support";
+export type TopLevelGroup = "dashboard" | "users_drivers" | "trips" | "plans" | "support";
 
 export const TOP_LEVEL_GROUPS: { key: TopLevelGroup; label: string; defaultPath: string }[] = [
   { key: "dashboard", label: "Dashboard", defaultPath: "/" },
-  { key: "users", label: "Users", defaultPath: "/customers" },
-  { key: "drivers", label: "Drivers", defaultPath: "/drivers" },
+  { key: "users_drivers", label: "Users/Drivers", defaultPath: "/customers" },
   { key: "trips", label: "Trips", defaultPath: "/TripDetails" },
   { key: "plans", label: "Plans & Coupons", defaultPath: "/PricingAndFareRules" },
   { key: "support", label: "Support", defaultPath: "/support-tickets" },
@@ -196,13 +195,13 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
 
   // Customers
   {
-    topGroup: "users",
+    topGroup: "users_drivers",
     rbacModule: "customers",
     route: { path: "customers", element: protect("customers", <Customers />) },
     menu: { label: <Link to="/customers">Customers</Link>, key: "/customers", icon: <UserOutlined /> },
   },
   {
-    topGroup: "users",
+    topGroup: "users_drivers",
     rbacModule: "customers",
     route: { path: "users", element: protect("customers", <Users />) },
   },
@@ -230,13 +229,13 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
 
   // Drivers (two menu items, both gated by `drivers`)
   {
-    topGroup: "drivers",
+    topGroup: "users_drivers",
     rbacModule: "drivers",
     route: { path: "drivers", element: protect("drivers", <Drivers />) },
     menu: { label: <Link to="/drivers">Drivers</Link>, key: "/drivers", icon: <PiSteeringWheel /> },
   },
   {
-    topGroup: "drivers",
+    topGroup: "users_drivers",
     rbacModule: "drivers",
     route: { path: "driver-applications", element: protect("drivers", <DriverApplications />) },
     menu: {
@@ -246,7 +245,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
     },
   },
   {
-    topGroup: "drivers",
+    topGroup: "users_drivers",
     rbacModule: "drivers",
     route: { path: "driver-offline-onboarding", element: protect("drivers", <DriverOfflineOnboarding />) },
     menu: {
@@ -258,7 +257,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
 
   // Driver Outreach
   {
-    topGroup: "drivers",
+    topGroup: "users_drivers",
     rbacModule: "drivers_outreach",
     route: {
       path: "driver-reconciliation",

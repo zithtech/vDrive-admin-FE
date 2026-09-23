@@ -245,7 +245,7 @@ const DriverTable = ({ data, onViewDetails, currentPage, pageSize, onPageChange 
         const allDocs = ["profile_selfie", "aadhar_card", "pan_card", "driving_license"];
         const submittedDocs = record.documents?.filter(d => allDocs.includes(d.document_type?.toLowerCase() === "aadhaar_card" ? "aadhar_card" : d.document_type?.toLowerCase() || "")) || [];
         const verifiedCount = submittedDocs.filter(d => (d.license_status || (d as any).status) === "verified").length;
-        const isWebSignup = record.status === "pending_verification";
+        const isWebSignup = record.status === "pending_verification" && record.onboarding_status === "DOCS_SUBMITTED";
 
         return (
           <div className="flex flex-col gap-1.5">

@@ -44,15 +44,15 @@ const BottomActionRow: React.FC<BottomActionRowProps> = ({ stats }) => {
         </div>
       </div>
 
-      {/* Documents Pending */}
+      {/* Pending Onboarding */}
       <div className="bg-white dark:bg-slate-800 rounded-2xl p-3 border border-gray-200 dark:border-slate-700 flex items-center gap-3 cursor-pointer hover:shadow-md transition-shadow">
         <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center text-lg shrink-0">
           <FileTextOutlined />
         </div>
         <div className="flex flex-col flex-1">
-          <span className="text-gray-500 dark:text-gray-400 text-[11px] font-semibold mb-0.5">Documents Pending</span>
-          <span className="text-lg font-bold text-gray-800 leading-none mb-0.5">18</span>
-          <span className="text-amber-500 text-[9px] font-semibold">Verification</span>
+          <span className="text-gray-500 dark:text-gray-400 text-[11px] font-semibold mb-0.5">Pending Onboarding</span>
+          <span className="text-lg font-bold text-gray-800 leading-none mb-0.5">{stats?.onboardingPending || 0}</span>
+          <span className="text-amber-500 text-[9px] font-semibold">Applications</span>
         </div>
       </div>
 
