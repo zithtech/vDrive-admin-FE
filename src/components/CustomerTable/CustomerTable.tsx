@@ -29,6 +29,8 @@ const { Text } = Typography;
 import { useMemo, useRef, useState } from "react";
 import { format } from "date-fns-tz";
 import { useGetHeight } from "../../utilities/customheightWidth";
+import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import type { Customer } from "../../pages/Customers";
 import CustomerDetails from "../CustomerDetails/CustomerDetails";
 
@@ -53,6 +55,21 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef<InputRef>(null);
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.openCustomerDrawer && data.length > 0) {
+      const targetCustomerId = location.state.openCustomerDrawer;
+      const foundCustomer = data.find(
+        (c) => String(c.id || c.customer_id || "") === String(targetCustomerId)
+      );
+
+      if (foundCustomer) {
+        setSelectedCustomer(foundCustomer);
+        setDrawerOpen(true);
+      }
+    }
+  }, [location.state, data]);
 
   const openDrawer = (customer: Customer) => {
     setSelectedCustomer(customer);

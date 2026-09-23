@@ -21,6 +21,8 @@ import { ModuleProtectedRoute } from "../components/ModuleProtectedRoute";
 import RouteLoadingFallback from "../components/RouteLoadingFallback";
 
 // ── Lazy-loaded pages (moved here from App.tsx) ──────────────────────────────
+const Earnings = lazy(() => import("../pages/Earnings"));
+const Wallet = lazy(() => import("../pages/Wallet"));
 const Profile = lazy(() => import("../pages/Profile"));
 const Settings = lazy(() => import("../pages/Settings"));
 const Users = lazy(() => import("../pages/Users"));
@@ -64,9 +66,15 @@ const ManagePlans = lazy(
   () =>
     import("../pages/RechargePlans/ManagePlans") as Promise<{ default: React.ComponentType<any> }>,
 );
-const Subscriptions = lazy(
+const SubscriptionListdata = lazy(
   () =>
-    import("../pages/RechargePlans/Subscriptions") as Promise<{
+    import("../pages/RechargePlans/SubscriptionListdata") as Promise<{
+      default: React.ComponentType<any>;
+    }>,
+);
+const SubscriptionDashboard = lazy(
+  () =>
+    import("../pages/RechargePlans/SubscriptionDashboard") as Promise<{
       default: React.ComponentType<any>;
     }>,
 );
@@ -94,12 +102,27 @@ const TripVerifications = lazy(
 );
 const Notifications = lazy(() => import("../pages/Notifications"));
 const SupportTickets = lazy(() => import("../pages/SupportTickets"));
+const SosHandle = lazy(() => import("../pages/SosHandle"));
 const SupportAnalytics = lazy(() => import("../pages/SupportAnalytics"));
 const CustomerEnquiries = lazy(() => import("../pages/CustomerEnquiries"));
+const SosHistory = lazy(() => import("../pages/SosHistory"));
 
 type MenuItem = NonNullable<MenuProps["items"]>[number];
 
+export type TopLevelGroup = "dashboard" | "users" | "drivers" | "trips" | "plans" | "support";
+
+export const TOP_LEVEL_GROUPS: { key: TopLevelGroup; label: string; defaultPath: string }[] = [
+  { key: "dashboard", label: "Dashboard", defaultPath: "/" },
+  { key: "users", label: "Users", defaultPath: "/customers" },
+  { key: "drivers", label: "Drivers", defaultPath: "/drivers" },
+  { key: "trips", label: "Trips", defaultPath: "/TripDetails" },
+  { key: "plans", label: "Plans & Coupons", defaultPath: "/PricingAndFareRules" },
+  { key: "support", label: "Support", defaultPath: "/support-tickets" },
+];
+
 export interface ModuleEntry {
+  /** The top-level navigation group this module belongs to. */
+  topGroup: TopLevelGroup;
   /** RBAC gate for both the route and the menu item (read access). */
   rbacModule: string | string[];
   /** The route this entry contributes to the layout's children. */
@@ -123,6 +146,7 @@ const protect = (module: string | string[], node: React.ReactNode): React.ReactN
 export const MODULE_REGISTRY: ModuleEntry[] = [
   // Dashboard (DashBoard is eager-loaded, so no Suspense on the index route)
   {
+    topGroup: "dashboard",
     rbacModule: "dashboard",
     route: {
       index: true,
@@ -134,32 +158,58 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
     },
     menu: { label: <Link to="/">Dashboard</Link>, key: "/", icon: <HomeOutlined /> },
   },
+  /*
   {
+    topGroup: "dashboard",
+    rbacModule: "dashboard",
+    route: { path: "earnings", element: protect("dashboard", <Earnings />) },
+    menu: { label: <Link to="/earnings">Earnings</Link>, key: "/earnings", icon: <DollarOutlined /> },
+  },
+  {
+    topGroup: "dashboard",
+    rbacModule: "dashboard",
+    route: { path: "wallet", element: protect("dashboard", <Wallet />) },
+    menu: { label: <Link to="/wallet">Wallet</Link>, key: "/wallet", icon: <MdOutlineAccountBalanceWallet /> },
+  },
+  {
+    topGroup: "dashboard",
+    rbacModule: "dashboard",
+    route: { path: "subscription-dashboard", element: protect("dashboard", <SubscriptionDashboard />) },
+    menu: { label: <Link to="/subscription-dashboard">Subscription Dashboard</Link>, key: "/subscription-dashboard", icon: <TableOutlined /> },
+  },
+  */
+  {
+    topGroup: "dashboard",
     rbacModule: "dashboard",
     route: { path: "InvoiceTemplates", element: protect("dashboard", <InvoiceTemplates />) },
   },
   {
+    topGroup: "dashboard",
     rbacModule: "dashboard",
     route: { path: "profile", element: protect("dashboard", <Profile />) },
   },
   {
+    topGroup: "dashboard",
     rbacModule: "dashboard",
     route: { path: "settings", element: protect("dashboard", <Settings />) },
   },
 
   // Customers
   {
+    topGroup: "users",
     rbacModule: "customers",
     route: { path: "customers", element: protect("customers", <Customers />) },
     menu: { label: <Link to="/customers">Customers</Link>, key: "/customers", icon: <UserOutlined /> },
   },
   {
+    topGroup: "users",
     rbacModule: "customers",
     route: { path: "users", element: protect("customers", <Users />) },
   },
 
   // Pricing & Fare Rules
   {
+    topGroup: "plans",
     rbacModule: "pricing",
     route: {
       path: "PricingAndFareRules",
@@ -173,17 +223,20 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
     },
   },
   {
+    topGroup: "plans",
     rbacModule: "pricing",
     route: { path: "pricing-combinations", element: protect("pricing", <PricingCombinations />) },
   },
 
   // Drivers (two menu items, both gated by `drivers`)
   {
+    topGroup: "drivers",
     rbacModule: "drivers",
     route: { path: "drivers", element: protect("drivers", <Drivers />) },
     menu: { label: <Link to="/drivers">Drivers</Link>, key: "/drivers", icon: <PiSteeringWheel /> },
   },
   {
+    topGroup: "drivers",
     rbacModule: "drivers",
     route: { path: "driver-applications", element: protect("drivers", <DriverApplications />) },
     menu: {
@@ -193,6 +246,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
     },
   },
   {
+    topGroup: "drivers",
     rbacModule: "drivers",
     route: { path: "driver-offline-onboarding", element: protect("drivers", <DriverOfflineOnboarding />) },
     menu: {
@@ -204,6 +258,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
 
   // Driver Outreach
   {
+    topGroup: "drivers",
     rbacModule: "drivers_outreach",
     route: {
       path: "driver-reconciliation",
@@ -218,6 +273,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
 
   // Admins
   {
+    topGroup: "dashboard",
     rbacModule: "admins",
     route: { path: "admins", element: protect("admins", <Admins />) },
     menu: { label: <Link to="/admins">Admins</Link>, key: "/admins", icon: <RiAdminLine /> },
@@ -225,6 +281,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
 
   // Trip Details
   {
+    topGroup: "trips",
     rbacModule: "trips",
     route: { path: "TripDetails", element: protect("trips", <TripDetails />) },
     menu: { label: <Link to="/TripDetails">Trip Details</Link>, key: "/TripDetails", icon: <IoCarOutline /> },
@@ -232,6 +289,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
 
   // Trip Transactions
   {
+    topGroup: "trips",
     rbacModule: "trip_transaction",
     route: { path: "trip-transactions", element: protect("trip_transaction", <TripTransactions />) },
     menu: {
@@ -243,6 +301,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
 
   // Trip Verifications (also gated by `trips`)
   {
+    topGroup: "trips",
     rbacModule: "trips",
     route: { path: "trip-verifications", element: protect("trips", <TripVerifications />) },
     menu: {
@@ -254,6 +313,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
 
   // Deductions
   {
+    topGroup: "plans",
     rbacModule: "deductions",
     route: { path: "Deductions", element: protect("deductions", <Deductions />) },
     menu: {
@@ -265,6 +325,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
 
   // Recharge Plans (nested layout + submenu)
   {
+    topGroup: "plans",
     rbacModule: "recharge",
     route: {
       path: "recharge-plans",
@@ -283,7 +344,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
           path: "subscriptions",
           element: (
             <Suspense fallback={<RouteLoadingFallback />}>
-              <Subscriptions />
+              <SubscriptionListdata />
             </Suspense>
           ),
         },
@@ -312,7 +373,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
       children: [
         { label: <Link to="/recharge-plans/manage">Manage Plans</Link>, key: "/recharge-plans/manage" },
         {
-          label: <Link to="/recharge-plans/subscriptions">Subscriptions</Link>,
+          label: <Link to="/recharge-plans/subscriptions">Subscription Listdata</Link>,
           key: "/recharge-plans/subscriptions",
         },
         { label: <Link to="/recharge-plans/offers">Offers</Link>, key: "/recharge-plans/offers" },
@@ -326,6 +387,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
 
   // Taxes
   {
+    topGroup: "plans",
     rbacModule: "taxes",
     route: { path: "taxes", element: protect("taxes", <Tax />) },
     menu: { label: <Link to="/taxes">Tax Management</Link>, key: "/taxes", icon: <DollarOutlined /> },
@@ -333,6 +395,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
 
   // Coupons (read access on any of these modules)
   {
+    topGroup: "plans",
     rbacModule: ["coupons", "promos", "user_referrals", "driver_referrals"],
     route: {
       path: "coupons",
@@ -343,6 +406,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
 
   // Notifications
   {
+    topGroup: "support",
     rbacModule: "notifications",
     route: { path: "notifications", element: protect("notifications", <Notifications />) },
     menu: {
@@ -354,6 +418,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
 
   // Support Tickets
   {
+    topGroup: "support",
     rbacModule: "support_tickets",
     route: { path: "support-tickets", element: protect("support_tickets", <SupportTickets />) },
     menu: {
@@ -363,8 +428,27 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
     },
   },
 
+  // SOS Handle
+  {
+    topGroup: "dashboard",
+    rbacModule: "dashboard",
+    route: { path: "sos-handle", element: protect("dashboard", <SosHandle />) },
+    menu: {
+      label: <Link to="/sos-handle">Active SOS Alerts</Link>,
+      key: "/sos-handle",
+      icon: <BellOutlined />,
+    },
+  },
+  // SOS History
+  {
+    topGroup: "dashboard",
+    rbacModule: "dashboard",
+    route: { path: "sos-history", element: protect("dashboard", <SosHistory />) },
+  },
+
   // Support Analytics (also gated by `support_tickets`)
   {
+    topGroup: "support",
     rbacModule: "support_tickets",
     route: { path: "support-analytics", element: protect("support_tickets", <SupportAnalytics />) },
     menu: {
@@ -376,6 +460,7 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
 
   // Customer Enquiries
   {
+    topGroup: "support",
     rbacModule: "enquiries",
     route: { path: "customer-enquiries", element: protect("enquiries", <CustomerEnquiries />) },
     menu: {
@@ -385,6 +470,21 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
     },
   },
 ];
+
+/** 
+ * Returns the topGroup for a given path.
+ */
+export const getTopGroupByPath = (pathname: string): TopLevelGroup => {
+  // Find the module entry whose route path matches the current pathname
+  const entry = MODULE_REGISTRY.find(e => {
+    if (e.route.index && pathname === "/") return true;
+    if (!e.route.path) return false;
+    // Check if the pathname starts with the route path (e.g. /PricingAndFareRules)
+    return pathname.startsWith(`/${e.route.path}`);
+  });
+  
+  return entry ? entry.topGroup : "dashboard";
+};
 
 /** The layout route's `children` array, derived from the registry. */
 export const buildModuleRoutes = (): RouteObject[] => MODULE_REGISTRY.map((e) => e.route);

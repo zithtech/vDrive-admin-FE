@@ -201,14 +201,14 @@ const DriverTable = ({ data, onViewDetails, currentPage, pageSize, onPageChange 
       render: (_, record) => (
         <div className="flex items-center gap-1.5 group/copy">
           <span className="text-slate-500 dark:text-slate-400 text-[12px] font-medium font-mono truncate">
-            {record.vdrive_id || record.driverId || record.driver_id || record.id || "VDD-NEW"}
+            {record.t2driver || record.driverId || record.driver_id || record.id || "VDD-NEW"}
           </span>
           <Tooltip title="Copy ID">
             <CopyOutlined
               className="text-[12px] text-slate-300 hover:text-indigo-500 cursor-pointer transition-colors opacity-0 group-hover/copy:opacity-100 flex-shrink-0"
               onClick={(e) => {
                 e.stopPropagation();
-                const idToCopy = record.vdrive_id || record.driverId || record.driver_id || record.id || "";
+                const idToCopy = record.t2driver || record.driverId || record.driver_id || record.id || "";
                 navigator.clipboard.writeText(idToCopy);
                 message.success({
                   content: "Driver ID copied",

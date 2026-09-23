@@ -370,11 +370,11 @@ const DriverApprovalModal: React.FC<DriverApprovalModalProps> = ({ driver, open,
                 Driver ID
               </span>
               <span className="text-slate-800 dark:text-slate-100 font-mono font-bold flex items-center gap-1 group">
-                {(driver as any).vdrive_id || driver.id?.substring(0, 8)}
+                {(driver as any).t2driver || driver.id?.substring(0, 8)}
                 <CopyOutlined
                   className="cursor-pointer text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={() => {
-                    navigator.clipboard.writeText((driver as any).vdrive_id || driver.id || "");
+                    navigator.clipboard.writeText((driver as any).t2driver || driver.id || "");
                     message.success("Driver ID copied!");
                   }}
                 />
