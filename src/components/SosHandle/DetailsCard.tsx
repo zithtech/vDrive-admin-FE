@@ -1,5 +1,4 @@
 import React from 'react';
-import { Badge } from 'antd';
 
 interface DetailsCardProps {
   title: string;

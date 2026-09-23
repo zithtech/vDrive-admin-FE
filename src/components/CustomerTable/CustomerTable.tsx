@@ -61,7 +61,7 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
     if (location.state?.openCustomerDrawer && data.length > 0) {
       const targetCustomerId = location.state.openCustomerDrawer;
       const foundCustomer = data.find(
-        (c) => String(c.id || c.customer_id || "") === String(targetCustomerId)
+        (c) => String(c.id || (c as any).customer_id || "") === String(targetCustomerId)
       );
 
       if (foundCustomer) {

@@ -38,7 +38,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const EarningsOverviewChart: React.FC<EarningsOverviewChartProps> = ({ data, loading }) => {
+const EarningsOverviewChart: React.FC<EarningsOverviewChartProps> = ({ data }) => {
   const [period, setPeriod] = useState<string>("this_week");
 
   return (

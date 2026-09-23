@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button } from 'antd';
-import { PhoneOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { PhoneOutlined } from '@ant-design/icons';
 import { MapPin } from 'lucide-react';
 import type { SosAlert } from '../../store/slices/sosSlice';
 

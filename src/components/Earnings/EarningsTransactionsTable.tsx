@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Table, Typography, Tag, Avatar, Tabs } from "antd";
+import { Table, Avatar, Tabs } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 
 interface Transaction {
@@ -24,7 +24,7 @@ const STATUS_COLORS: Record<string, string> = {
   Failed: "red",
 };
 
-const EarningsTransactionsTable: React.FC<EarningsTransactionsTableProps> = ({ transactions, total }) => {
+const EarningsTransactionsTable: React.FC<EarningsTransactionsTableProps> = ({ transactions }) => {
   const [activeTab, setActiveTab] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 5;

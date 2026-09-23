@@ -4,8 +4,8 @@ import SosHeader from '../components/SosHandle/SosHeader';
 import SosActionForm from '../components/SosHandle/SosActionForm';
 import SosMap from '../components/SosHandle/SosMap';
 import DetailsCard from '../components/SosHandle/DetailsCard';
-import { PhoneOutlined, MailOutlined, CarOutlined, IdcardOutlined, CalendarOutlined, EnvironmentOutlined, HistoryOutlined, UserOutlined } from '@ant-design/icons';
-import { Button, Empty } from 'antd';
+import { PhoneOutlined, MailOutlined, CarOutlined, CalendarOutlined, EnvironmentOutlined, HistoryOutlined, UserOutlined } from '@ant-design/icons';
+import { Button } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSocket } from '../hooks/useSocket';
 
