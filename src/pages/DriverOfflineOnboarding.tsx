@@ -34,7 +34,7 @@ const DriverOfflineOnboarding: React.FC = () => {
     gender: "",
     language: "en",
   });
-  
+
   const [address, setAddress] = useState<AddressDetails>({
     street: "",
     city: "",
@@ -62,13 +62,13 @@ const DriverOfflineOnboarding: React.FC = () => {
     if (step === 0) {
       if (!personalDetails.first_name) newErrors.first_name = "First name is required";
       if (!personalDetails.last_name) newErrors.last_name = "Last name is required";
-      if (!personalDetails.phone_number || personalDetails.phone_number.length < 10) 
+      if (!personalDetails.phone_number || personalDetails.phone_number.length < 10)
         newErrors.phone_number = "Valid phone number is required";
       if (!personalDetails.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(personalDetails.email))
         newErrors.email = "Valid email is required";
       if (!personalDetails.date_of_birth) newErrors.date_of_birth = "Date of birth is required";
       if (!personalDetails.gender) newErrors.gender = "Gender is required";
-    } 
+    }
     else if (step === 1) {
       if (!address.street) newErrors.street = "Street address is required";
       if (!address.city) newErrors.city = "City is required";
@@ -79,7 +79,7 @@ const DriverOfflineOnboarding: React.FC = () => {
     else if (step === 2) {
       DOCUMENT_CONFIGS.forEach(config => {
         if (config.optional) return;
-        
+
         const doc = documents.find(d => d.document_type === config.type);
         if (!doc) {
           newErrors[config.type] = "Document is required";
@@ -128,7 +128,7 @@ const DriverOfflineOnboarding: React.FC = () => {
     }
 
     setIsSubmitting(true);
-    
+
     try {
       const payload: OfflineOnboardingPayload = {
         ...personalDetails,
@@ -144,7 +144,7 @@ const DriverOfflineOnboarding: React.FC = () => {
       };
 
       const resultAction = await dispatch(createDriverOffline(payload));
-      
+
       if (createDriverOffline.fulfilled.match(resultAction)) {
         message.success("Driver onboarded successfully!");
         setCreatedDriverId(resultAction.payload.t2driver || resultAction.payload.id);
@@ -168,16 +168,16 @@ const DriverOfflineOnboarding: React.FC = () => {
           title="Driver Successfully Onboarded!"
           subTitle={`The driver (ID: ${createdDriverId}) is now active and can log into the driver app.`}
           extra={[
-            <Button 
-              type="primary" 
-              key="drivers" 
+            <Button
+              type="primary"
+              key="drivers"
               onClick={() => navigate('/drivers')}
               className="bg-blue-600"
             >
               Go to Drivers List
             </Button>,
-            <Button 
-              key="add_another" 
+            <Button
+              key="add_another"
               onClick={() => {
                 setIsSuccess(false);
                 setCurrentStep(0);
@@ -195,8 +195,8 @@ const DriverOfflineOnboarding: React.FC = () => {
   }
 
   const steps = [
-    { title: "Personal Details", content: <PersonalDetailsStep data={personalDetails} onChange={(d) => setPersonalDetails({...personalDetails, ...d})} errors={errors} /> },
-    { title: "Address", content: <AddressStep data={address} onChange={(d) => setAddress({...address, ...d})} errors={errors} /> },
+    { title: "Personal Details", content: <PersonalDetailsStep data={personalDetails} onChange={(d) => setPersonalDetails({ ...personalDetails, ...d })} errors={errors} /> },
+    { title: "Address", content: <AddressStep data={address} onChange={(d) => setAddress({ ...address, ...d })} errors={errors} /> },
     { title: "Documents", content: <DocumentUploadStep documents={documents} onChange={setDocuments} errors={errors} /> },
     { title: "Review", content: <ReviewStep personalDetails={personalDetails} address={address} documents={documents} onEditStep={setCurrentStep} /> },
   ];
@@ -206,9 +206,9 @@ const DriverOfflineOnboarding: React.FC = () => {
       {/* Top Navbar */}
       <div className="bg-white dark:bg-slate-800 h-16 px-6 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between z-10 flex-shrink-0">
         <div className="flex items-center gap-4">
-          <Button 
-            type="text" 
-            icon={<ArrowLeftOutlined />} 
+          <Button
+            type="text"
+            icon={<ArrowLeftOutlined />}
             onClick={() => navigate(-1)}
             className="text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"
           />
@@ -225,11 +225,11 @@ const DriverOfflineOnboarding: React.FC = () => {
       {/* Main Content Area */}
       <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
         <div className="max-w-4xl mx-auto space-y-8">
-          
+
           {/* Stepper */}
           <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700">
-            <Steps 
-              current={currentStep} 
+            <Steps
+              current={currentStep}
               onChange={(step) => {
                 // Allow going back without validation, but require validation to go forward
                 if (step < currentStep) {
@@ -250,8 +250,8 @@ const DriverOfflineOnboarding: React.FC = () => {
 
           {/* Footer Actions */}
           <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 sticky bottom-6 z-20">
-            <Button 
-              onClick={prevStep} 
+            <Button
+              onClick={prevStep}
               disabled={currentStep === 0 || isSubmitting}
               icon={<ArrowLeftOutlined />}
               size="large"
@@ -261,8 +261,8 @@ const DriverOfflineOnboarding: React.FC = () => {
             </Button>
 
             {currentStep < steps.length - 1 ? (
-              <Button 
-                type="primary" 
+              <Button
+                type="primary"
                 onClick={nextStep}
                 icon={<ArrowRightOutlined />}
                 size="large"
@@ -271,8 +271,8 @@ const DriverOfflineOnboarding: React.FC = () => {
                 Continue
               </Button>
             ) : (
-              <Button 
-                type="primary" 
+              <Button
+                type="primary"
                 onClick={handleSubmit}
                 loading={isSubmitting}
                 icon={<CheckOutlined />}
@@ -286,7 +286,7 @@ const DriverOfflineOnboarding: React.FC = () => {
 
         </div>
       </div>
-      
+
       <style>{`
         .custom-stepper .ant-steps-item-title {
           font-size: 13px !important;

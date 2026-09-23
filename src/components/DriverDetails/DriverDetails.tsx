@@ -757,199 +757,199 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
       {driver?.documents?.map((originalDoc: any) => {
         const doc = { ...originalDoc };
         if (typeof doc.document_url === "string" && doc.document_url.startsWith("{")) {
-          try { doc.document_url = JSON.parse(doc.document_url); } catch (e) {}
+          try { doc.document_url = JSON.parse(doc.document_url); } catch (e) { }
         }
         return (
-        <div key={doc?.document_id} className="content-card p-2 document-preview-card">
-          <div className="flex justify-between items-start mb-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                <FileTextOutlined />
+          <div key={doc?.document_id} className="content-card p-2 document-preview-card">
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                  <FileTextOutlined />
+                </div>
+                <div>
+                  <Title level={5} className="m-0 text-gray-800 dark:text-slate-100">
+                    {capitalize(doc?.document_type?.replace(/_/g, " "))} Document
+                  </Title>
+                  {!doc?.document_type?.toLowerCase().includes("selfie") &&
+                    !doc?.document_type?.toLowerCase().includes("police") && (
+                      <Text type="secondary" className="text-[10px] font-mono tracking-wider">
+                        #{doc?.extracted_data?.extracted_number || doc?.document_number || "N/A"}
+                      </Text>
+                    )}
+                </div>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <Tag color={getStatusColor(doc?.license_status)} className="status-badge m-0">
+                  {capitalize(doc?.license_status)}
+                </Tag>
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<HistoryOutlined />}
+                  onClick={() => handleShowHistory(doc.document_id || doc.id, doc.document_type)}
+                  className="text-[10px] h-auto p-0 flex items-center gap-1 opacity-70 hover:opacity-100"
+                >
+                  View History
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
+              <div className="flex items-center gap-3">
+                {doc?.document_url ? (
+                  <>
+                    {typeof doc.document_url === "object" &&
+                      doc.document_url !== null &&
+                      (doc.document_url.front || doc.document_url.back) ? (
+                      <>
+                        {doc.document_url.front && (
+                          <Button
+                            type="primary"
+                            ghost
+                            icon={<EyeOutlined />}
+                            onClick={() => {
+                              setPreviewDoc({
+                                url: getMediaUrl(doc.document_url.front),
+                                type: `${doc?.document_type} (Front)`,
+                              });
+                              setIsPreviewModalOpen(true);
+                            }}
+                            className="font-semibold rounded-lg dark:!text-blue-400 dark:!border-blue-500 dark:hover:!text-blue-300 dark:hover:!border-blue-400"
+                          >
+                            View Front
+                          </Button>
+                        )}
+                        {doc.document_url.back && (
+                          <Button
+                            type="primary"
+                            ghost
+                            icon={<EyeOutlined />}
+                            onClick={() => {
+                              setPreviewDoc({
+                                url: getMediaUrl(doc.document_url.back),
+                                type: `${doc?.document_type} (Back)`,
+                              });
+                              setIsPreviewModalOpen(true);
+                            }}
+                            className="font-semibold rounded-lg dark:!text-blue-400 dark:!border-blue-500 dark:hover:!text-blue-300 dark:hover:!border-blue-400"
+                          >
+                            View Back
+                          </Button>
+                        )}
+                      </>
+                    ) : (
+                      <Button
+                        type="primary"
+                        ghost
+                        icon={<EyeOutlined />}
+                        onClick={() => {
+                          setPreviewDoc({
+                            url: getMediaUrl(
+                              typeof doc.document_url === "string"
+                                ? doc.document_url
+                                : doc.document_url?.url,
+                            ),
+                            type: doc?.document_type,
+                          });
+                          setIsPreviewModalOpen(true);
+                        }}
+                        className="font-semibold rounded-lg dark:!text-blue-400 dark:!border-blue-500 dark:hover:!text-blue-300 dark:hover:!border-blue-400"
+                      >
+                        View Document
+                      </Button>
+                    )}
+                  </>
+                ) : (
+                  <Text type="secondary" className="text-[12px] italic">
+                    No document file
+                  </Text>
+                )}
+
+                {doc?.document_url && (
+                  <Button
+                    type="default"
+                    icon={<DownloadOutlined />}
+                    onClick={() => {
+                      if (typeof doc?.document_url === "object" && doc.document_url !== null) {
+                        if (doc.document_url.front)
+                          window.open(getMediaUrl(doc.document_url.front), "_blank");
+                        if (doc.document_url.back)
+                          window.open(getMediaUrl(doc.document_url.back), "_blank");
+                      } else {
+                        window.open(
+                          getMediaUrl(
+                            typeof doc?.document_url === "string"
+                              ? doc.document_url
+                              : doc?.document_url?.url,
+                          ),
+                          "_blank",
+                        );
+                      }
+                    }}
+                    className="rounded-lg font-semibold dark:!bg-slate-700 dark:!text-slate-200 dark:!border-slate-600 dark:hover:!bg-slate-600 dark:hover:!text-white dark:hover:!border-slate-500"
+                  >
+                    Download
+                  </Button>
+                )}
               </div>
               <div>
-                <Title level={5} className="m-0 text-gray-800 dark:text-slate-100">
-                  {capitalize(doc?.document_type?.replace(/_/g, " "))} Document
-                </Title>
-                {!doc?.document_type?.toLowerCase().includes("selfie") &&
-                  !doc?.document_type?.toLowerCase().includes("police") && (
-                    <Text type="secondary" className="text-[10px] font-mono tracking-wider">
-                      #{doc?.extracted_data?.extracted_number || doc?.document_number || "N/A"}
-                    </Text>
+                {(doc?.document_type?.toLowerCase().includes("license") ||
+                  doc?.document_type?.toLowerCase().includes("dl")) && (
+                    <div className="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 whitespace-nowrap shrink-0">
+                      <CalendarOutlined className="text-red-400" />
+                      <div className="flex items-center gap-2">
+                        <Text
+                          type="secondary"
+                          className="text-[10px] uppercase font-bold tracking-tighter whitespace-nowrap"
+                        >
+                          Expiry:
+                        </Text>
+                        <Text strong className="text-[12px] whitespace-nowrap">
+                          {doc?.extracted_data?.extracted_expiry
+                            ? doc.extracted_data.extracted_expiry
+                            : doc?.expiry_date
+                              ? dayjs(doc.expiry_date).format("MMM D, YYYY")
+                              : "N/A"}
+                        </Text>
+                      </div>
+                    </div>
                   )}
               </div>
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <Tag color={getStatusColor(doc?.license_status)} className="status-badge m-0">
-                {capitalize(doc?.license_status)}
-              </Tag>
-              <Button
-                type="link"
-                size="small"
-                icon={<HistoryOutlined />}
-                onClick={() => handleShowHistory(doc.document_id || doc.id, doc.document_type)}
-                className="text-[10px] h-auto p-0 flex items-center gap-1 opacity-70 hover:opacity-100"
-              >
-                View History
-              </Button>
-            </div>
-          </div>
 
-          <div className="flex flex-col gap-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700">
-            <div className="flex items-center gap-3">
-              {doc?.document_url ? (
+            <div className="flex justify-end items-center pt-3 mt-4 border-t border-gray-100 gap-3">
+              {doc?.license_status !== "verified" && (
                 <>
-                  {typeof doc.document_url === "object" &&
-                  doc.document_url !== null &&
-                  (doc.document_url.front || doc.document_url.back) ? (
-                    <>
-                      {doc.document_url.front && (
-                        <Button
-                          type="primary"
-                          ghost
-                          icon={<EyeOutlined />}
-                          onClick={() => {
-                            setPreviewDoc({
-                              url: getMediaUrl(doc.document_url.front),
-                              type: `${doc?.document_type} (Front)`,
-                            });
-                            setIsPreviewModalOpen(true);
-                          }}
-                          className="font-semibold rounded-lg dark:!text-blue-400 dark:!border-blue-500 dark:hover:!text-blue-300 dark:hover:!border-blue-400"
-                        >
-                          View Front
-                        </Button>
-                      )}
-                      {doc.document_url.back && (
-                        <Button
-                          type="primary"
-                          ghost
-                          icon={<EyeOutlined />}
-                          onClick={() => {
-                            setPreviewDoc({
-                              url: getMediaUrl(doc.document_url.back),
-                              type: `${doc?.document_type} (Back)`,
-                            });
-                            setIsPreviewModalOpen(true);
-                          }}
-                          className="font-semibold rounded-lg dark:!text-blue-400 dark:!border-blue-500 dark:hover:!text-blue-300 dark:hover:!border-blue-400"
-                        >
-                          View Back
-                        </Button>
-                      )}
-                    </>
-                  ) : (
-                    <Button
-                      type="primary"
-                      ghost
-                      icon={<EyeOutlined />}
-                      onClick={() => {
-                        setPreviewDoc({
-                          url: getMediaUrl(
-                            typeof doc.document_url === "string"
-                              ? doc.document_url
-                              : doc.document_url?.url,
-                          ),
-                          type: doc?.document_type,
-                        });
-                        setIsPreviewModalOpen(true);
-                      }}
-                      className="font-semibold rounded-lg dark:!text-blue-400 dark:!border-blue-500 dark:hover:!text-blue-300 dark:hover:!border-blue-400"
-                    >
-                      View Document
-                    </Button>
-                  )}
-                </>
-              ) : (
-                <Text type="secondary" className="text-[12px] italic">
-                  No document file
-                </Text>
-              )}
-
-              {doc?.document_url && (
-                <Button
-                  type="default"
-                  icon={<DownloadOutlined />}
-                  onClick={() => {
-                    if (typeof doc?.document_url === "object" && doc.document_url !== null) {
-                      if (doc.document_url.front)
-                        window.open(getMediaUrl(doc.document_url.front), "_blank");
-                      if (doc.document_url.back)
-                        window.open(getMediaUrl(doc.document_url.back), "_blank");
-                    } else {
-                      window.open(
-                        getMediaUrl(
-                          typeof doc?.document_url === "string"
-                            ? doc.document_url
-                            : doc?.document_url?.url,
-                        ),
-                        "_blank",
-                      );
+                  <Button
+                    danger
+                    ghost
+                    icon={<CloseCircleOutlined />}
+                    loading={loadingAction === `reject-${doc.document_id || doc.id}`}
+                    onClick={() =>
+                      setRejectModalDoc({
+                        id: doc.document_id || doc.id,
+                        type: doc.document_type || doc.type,
+                      })
                     }
-                  }}
-                  className="rounded-lg font-semibold dark:!bg-slate-700 dark:!text-slate-200 dark:!border-slate-600 dark:hover:!bg-slate-600 dark:hover:!text-white dark:hover:!border-slate-500"
-                >
-                  Download
-                </Button>
-              )}
-            </div>
-            <div>
-              {(doc?.document_type?.toLowerCase().includes("license") ||
-                doc?.document_type?.toLowerCase().includes("dl")) && (
-                <div className="flex items-center gap-2 bg-white dark:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 whitespace-nowrap shrink-0">
-                  <CalendarOutlined className="text-red-400" />
-                  <div className="flex items-center gap-2">
-                    <Text
-                      type="secondary"
-                      className="text-[10px] uppercase font-bold tracking-tighter whitespace-nowrap"
-                    >
-                      Expiry:
-                    </Text>
-                    <Text strong className="text-[12px] whitespace-nowrap">
-                      {doc?.extracted_data?.extracted_expiry
-                        ? doc.extracted_data.extracted_expiry
-                        : doc?.expiry_date
-                          ? dayjs(doc.expiry_date).format("MMM D, YYYY")
-                          : "N/A"}
-                    </Text>
-                  </div>
-                </div>
+                    className="rounded-xl px-6"
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    type="primary"
+                    icon={<CheckCircleOutlined />}
+                    className="bg-green-600 hover:bg-green-700 border-none shadow-sm rounded-xl px-6"
+                    loading={loadingAction === `approve-${doc.document_id || doc.id}`}
+                    onClick={() => handleDocumentApprove(doc.document_id || doc.id)}
+                  >
+                    Approve
+                  </Button>
+                </>
               )}
             </div>
           </div>
-
-          <div className="flex justify-end items-center pt-3 mt-4 border-t border-gray-100 gap-3">
-            {doc?.license_status !== "verified" && (
-              <>
-                <Button
-                  danger
-                  ghost
-                  icon={<CloseCircleOutlined />}
-                  loading={loadingAction === `reject-${doc.document_id || doc.id}`}
-                  onClick={() =>
-                    setRejectModalDoc({
-                      id: doc.document_id || doc.id,
-                      type: doc.document_type || doc.type,
-                    })
-                  }
-                  className="rounded-xl px-6"
-                >
-                  Reject
-                </Button>
-                <Button
-                  type="primary"
-                  icon={<CheckCircleOutlined />}
-                  className="bg-green-600 hover:bg-green-700 border-none shadow-sm rounded-xl px-6"
-                  loading={loadingAction === `approve-${doc.document_id || doc.id}`}
-                  onClick={() => handleDocumentApprove(doc.document_id || doc.id)}
-                >
-                  Approve
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      );
-    })}
+        );
+      })}
     </div>
   );
 
@@ -2192,11 +2192,10 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
                   >
                     <div className="flex flex-col items-center">
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                          item.status === "verified"
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${item.status === "verified"
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
-                        }`}
+                          }`}
                       >
                         {item.status === "verified" ? (
                           <CheckCircleOutlined />
