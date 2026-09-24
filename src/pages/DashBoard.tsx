@@ -1,184 +1,170 @@
-import { FiActivity } from "react-icons/fi";
-import { Typography } from "antd";
-import DashboardCard from "../components/DashBoard/DashBoardCard";
-import DriverMetricsColumn from "../components/DashBoard/DriverMetricsColumn";
-import OnboardingMetrics from "../components/DashBoard/OnboardingMetrics";
-import ActivityFeed from "../components/DashBoard/ActivityFeed";
-import TripManagement from "../components/DashBoard/TripManagement";
-import QuickActions from "../components/DashBoard/QuickActions";
+import { useEffect, useState, useCallback } from "react";
+import { Typography, Select } from "antd";
+import { CarOutlined, UserOutlined, CalendarOutlined } from "@ant-design/icons";
+import { PiCurrencyInr } from "react-icons/pi";
 
-import { useEffect, useState } from "react";
+import StatCard from "../components/DashBoard/StatCard";
+import RidesOverviewChart from "../components/DashBoard/RidesOverviewChart";
+import RideStatusChart from "../components/DashBoard/RideStatusChart";
+import DashboardLiveMap from "../components/DashBoard/DashboardLiveMap";
+import RecentBookingsTable from "../components/DashBoard/RecentBookingsTable";
+import TopDriversList from "../components/DashBoard/TopDriversList";
+import BottomActionRow from "../components/DashBoard/BottomActionRow";
+
 import axiosIns from "../api/axios";
 import { useSocket } from "../hooks/useSocket";
-import { useHasPermission } from "../hooks/usePermission";
 
 const Dashboard = () => {
   const { socket } = useSocket();
-  // Dashboard overview loads with dashboard.read; the recent-trips list is real trip
-  // data and stays gated on trips.read (shown only if permitted, never 403s).
-  const canReadTrips = useHasPermission("trips", "read");
-  const [trips, setTrips] = useState<any[]>([]);
-  const [stats, setStats] = useState({
+
+  const [timeRange, setTimeRange] = useState("today");
+
+  const [stats, setStats] = useState<any>({
     activeDrivers: 0,
     totalDrivers: 0,
-    availableDrivers: 0,
-    onTripDrivers: 0,
     totalScheduledRides: 0,
-    acceptedScheduledRides: 0,
-    totalUsers: 0,
-    activeUsers: 0,
-    todayNewUsers: 0,
-    todayNewDrivers: 0,
-    todaySubscriptions: 0,
-    totalSubscriptions: 0,
     todayTrips: 0,
-    todayRevenue: 0,
     totalEarnings: 0,
-    totalCancellationsToday: 0,
-    pendingVerifications: 0,
-    documentExpiryAlerts: 0,
-    onboardingPending: 0,
-    onboardingDocRejected: 0,
-    onboardingRejected: 0,
-    complianceHealth: 0,
-    lastSyncAt: new Date().toISOString(),
-    trends: {
-      users: "0%",
-      drivers: "0%",
-      subscriptions: "0%",
-      trips: "0%",
-      revenue: "0%",
-    },
+    chartData: [],
+    rideStatus: [],
+    topDrivers: [],
+    recentBookings: [],
     loading: true,
   });
 
-
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const response = await axiosIns.get("/api/drivers/dashboard-stats");
+
       if (response.data.success) {
-        const data = response.data.data;
-        setStats((prev) => ({
+        setStats((prev: any) => ({
           ...prev,
-          ...data,
-          todaySubscriptions: data.todaySubscriptions,
+          ...response.data.data,
           loading: false,
         }));
       }
     } catch (error) {
       console.error("Failed to fetch dashboard stats:", error);
-      setStats((prev) => ({ ...prev, loading: false }));
+      setStats((prev: any) => ({ ...prev, loading: false }));
     }
-  };
-
-  const fetchLatestTrips = async () => {
-    // Skip silently if the viewer can't read trips — keeps the overview working with
-    // just dashboard.read, and never triggers a 403 for the recent-trips list.
-    if (!canReadTrips) return;
-    try {
-      const response = await axiosIns.get("/api/trips");
-      if (response.data.success) {
-        // Take only the last 15 trips for the dashboard feed
-        setTrips(response.data.data.slice(0, 15));
-      }
-    } catch (error) {
-      console.error("Failed to fetch latest trips:", error);
-    }
-  };
-
-  useEffect(() => {
-    fetchStats();
-    fetchLatestTrips();
   }, []);
 
+  // Fetch on mount and whenever the dateRange changes
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  // Socket listeners for real-time updates
   useEffect(() => {
     if (!socket) return;
-
     socket.emit("JOIN_ADMIN_ROOM");
 
-    const handleDriverEvent = () => {
-      // Refresh stats when any driver event occurs (online/offline/trip)
-      fetchStats();
-    };
+    const handleUpdate = () => fetchStats();
 
-    const handleNewTrip = () => {
-      fetchLatestTrips();
-      fetchStats();
-    };
-
-    const handleTripUpdate = () => {
-      fetchLatestTrips();
-      fetchStats();
-    };
-
-    socket.on("driver_event", handleDriverEvent);
-    socket.on("ADMIN_NEW_TRIP_ALERT", handleNewTrip);
-    socket.on("ADMIN_TRIP_ACCEPTED", handleTripUpdate);
-    socket.on("ADMIN_TRIP_STATUS_UPDATE", handleTripUpdate);
+    socket.on("driver_event", handleUpdate);
+    socket.on("ADMIN_NEW_TRIP_ALERT", handleUpdate);
+    socket.on("ADMIN_TRIP_ACCEPTED", handleUpdate);
+    socket.on("ADMIN_TRIP_STATUS_UPDATE", handleUpdate);
 
     return () => {
-      socket.off("driver_event", handleDriverEvent);
-      socket.off("ADMIN_NEW_TRIP_ALERT", handleNewTrip);
-      socket.off("ADMIN_TRIP_ACCEPTED", handleTripUpdate);
-      socket.off("ADMIN_TRIP_STATUS_UPDATE", handleTripUpdate);
+      socket.off("driver_event", handleUpdate);
+      socket.off("ADMIN_NEW_TRIP_ALERT", handleUpdate);
+      socket.off("ADMIN_TRIP_ACCEPTED", handleUpdate);
+      socket.off("ADMIN_TRIP_STATUS_UPDATE", handleUpdate);
     };
-  }, [socket]);
+  }, [socket, fetchStats]);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden p-3 gap-4 bg-gray-50/50 dark:bg-slate-900 transition-colors duration-300">
-      <div className="flex items-center justify-between shrink-0">
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center justify-center w-10 h-10 bg-blue-500 rounded-xl shadow-lg shadow-blue-500/20">
-            <FiActivity className="text-white text-2xl" />
-          </div>
-          <div>
-            <Typography.Title
-              level={4}
-              className="!m-0 text-lg sm:text-lg font-extrabold text-gray-900 dark:text-white tracking-tight"
-            >
-              Dashboard
-            </Typography.Title>
-            <Typography.Text className="block text-xs sm:text-sm text-gray-400 dark:text-gray-400 font-medium font-outfit uppercase tracking-widest text-[9px]">
-              Live operational metrics and insights
-            </Typography.Text>
-          </div>
-        </div>
-
-
-      </div>
-
-      <div className="shrink-0">
-        <DashboardCard stats={stats} />
-      </div>
-
-      <div className="flex items-center gap-4 shrink-0 py-1">
+    <div className="flex flex-col h-full overflow-y-auto p-3 md:p-4 gap-4 bg-white dark:bg-slate-900 transition-colors duration-300">
+      
+      {/* Header Row */}
+      <div className="shrink-0 flex justify-between items-center">
         <Typography.Title
-          level={5}
-          className="!m-0 text-gray-700 dark:text-gray-200 font-bold whitespace-nowrap text-sm tracking-tight uppercase"
+          level={3}
+          className="!m-0 text-2xl font-extrabold text-gray-900 dark:text-white tracking-tight"
         >
-          Operations & Live Feed
+          Overview of T2Drive platform
         </Typography.Title>
-        <div className="h-px bg-gray-200 dark:bg-slate-700 flex-1"></div>
+        <Select
+          value={timeRange}
+          onChange={(val) => setTimeRange(val)}
+          options={[
+            { value: "today", label: "Today" },
+            { value: "overall", label: "Overall" },
+          ]}
+          className="w-32"
+          size="large"
+        />
       </div>
 
-      {/* Main Dashboard Layout - 4 Column Top Grid with adjusted widths (3:2:3:2) */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-10 gap-2 min-h-0 overflow-hidden text-sm">
-        <div className="lg:col-span-3 flex flex-col min-h-0">
-          <DriverMetricsColumn stats={stats} />
+      {/* Row 1: Top Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
+        <StatCard
+          title="Total Rides"
+          value={(timeRange === 'today' ? (stats.todayTrips || 0) : (stats.totalTrips || 0)).toLocaleString()}
+          trend={stats.todayTripsTrend ?? 0}
+          trendText="vs yesterday"
+          icon={<CarOutlined />}
+          iconBgColor="linear-gradient(135deg, #60a5fa 0%, #2563eb 100%)"
+          iconColor="#ffffff"
+        />
+        <StatCard
+          title="Total Drivers"
+          value={(timeRange === 'today' ? (stats.todayNewDrivers || 0) : (stats.totalDrivers || 0)).toLocaleString()}
+          trend={stats.totalDriversTrend ?? 0}
+          trendText="vs yesterday"
+          icon={<UserOutlined />}
+          iconBgColor="linear-gradient(135deg, #34d399 0%, #059669 100%)"
+          iconColor="#ffffff"
+        />
+        <StatCard
+          title="Total Earnings"
+          value={`₹ ${(timeRange === 'today' ? (stats.todayRevenue || 0) : (stats.totalEarnings || 0)).toLocaleString()}`}
+          trend={stats.totalEarningsTrend ?? 0}
+          trendText="vs yesterday"
+          icon={<PiCurrencyInr />}
+          iconBgColor="linear-gradient(135deg, #a855f7 0%, #7e22ce 100%)"
+          iconColor="#ffffff"
+        />
+        <StatCard
+          title="Total Bookings"
+          value={(timeRange === 'today' ? (stats.todayScheduledRides || 0) : (stats.totalScheduledRides || 0)).toLocaleString()}
+          trend={stats.totalScheduledRidesTrend ?? 0}
+          trendText="vs yesterday"
+          icon={<CalendarOutlined />}
+          iconBgColor="linear-gradient(135deg, #fbbf24 0%, #d97706 100%)"
+          iconColor="#ffffff"
+        />
+      </div>
+
+      {/* Row 2: Charts and Map */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 shrink-0 min-h-[210px]">
+        <div className="lg:col-span-5 h-full">
+          <RidesOverviewChart />
         </div>
-        <div className="lg:col-span-3 flex flex-col min-h-0">
-          <TripManagement stats={stats} trips={trips} />
+        <div className="lg:col-span-4 h-full">
+          <RideStatusChart data={stats.rideStatus} />
         </div>
-        <div className="lg:col-span-4 flex flex-col min-h-0 gap-4 h-105">
-          <OnboardingMetrics stats={stats} />
-          <ActivityFeed />
+        <div className="lg:col-span-3 h-full">
+          <TopDriversList drivers={stats.topDrivers} />
         </div>
       </div>
 
-      {/* Bottom Horizontal Row - Full Width Quick Actions */}
-      <div className="shrink-0 h-32 mt-1">
-        <QuickActions />
+      {/* Row 3: Tables and Lists */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 shrink-0 min-h-[280px]">
+        <div className="lg:col-span-7 h-full">
+          <RecentBookingsTable bookings={stats.recentBookings} />
+        </div>
+        <div className="lg:col-span-5 h-full">
+          <DashboardLiveMap />
+        </div>
       </div>
+
+      {/* Row 4: Bottom Action Cards */}
+      <div className="shrink-0 mb-3">
+        <BottomActionRow stats={stats} />
+      </div>
+
     </div>
   );
 };

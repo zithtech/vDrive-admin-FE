@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button, Input, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import axiosIns from "../api/axios";
+import logoLight from "../assets/logo-light.png";
 
 export interface Reset {
   userName: string;
@@ -106,9 +107,9 @@ const ResetPassword = () => {
         <header className="flex flex-col items-center gap-4">
           <div className="relative group transition-transform duration-300 hover:scale-105">
             <img
-              src="/90.png"
+              src={logoLight}
               alt="T2Drive Logo"
-              className="h-24 w-auto object-contain filter brightness-0 invert drop-shadow-[0_0_8px_rgba(99,102,241,0.2)]"
+              className="h-24 w-auto object-contain drop-shadow-[0_0_8px_rgba(99,102,241,0.2)]"
             />
           </div>
           <div className="text-center">

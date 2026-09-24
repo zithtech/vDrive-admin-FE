@@ -26,7 +26,7 @@ import { getMediaUrl } from "../../components/DriverDetails/DriverDetails";
 
 /* ================= COMPONENT ================= */
 
-const Subscriptions: React.FC = () => {
+const SubscriptionListdata: React.FC = () => {
   const [activeSubscriptions, setActiveSubscriptions] = useState<any[]>([]);
   const [loadingActiveSubs, setLoadingActiveSubs] = useState(false);
   const [expiredSubscriptions, setExpiredSubscriptions] = useState<any[]>([]);
@@ -146,7 +146,7 @@ const Subscriptions: React.FC = () => {
         expiryDate: s.expiry_date || s.expiryDate,
         amountPaid: s.amount_paid || s.amountPaid,
         driverId: s.driver_id || s.driverId,
-        vdriveId: s.t2d_id || s.vdriveId,
+        vdriveId: s.t2driver || s.vdriveId,
         profilePicUrl: s.profile_pic_url || s.profilePicUrl || s.driverProfilePic || null,
       }));
 
@@ -187,7 +187,7 @@ const Subscriptions: React.FC = () => {
         expiryDate: s.expiry_date || s.expiryDate,
         amountPaid: s.amount_paid || s.amountPaid,
         driverId: s.driver_id || s.driverId,
-        vdriveId: s.t2d_id || s.vdriveId,
+        vdriveId: s.t2driver || s.vdriveId,
         profilePicUrl: s.profile_pic_url || s.profilePicUrl || s.driverProfilePic || null,
         status: s.status || "expired", // default to expired for UI handling
       }));
@@ -241,7 +241,7 @@ const Subscriptions: React.FC = () => {
           <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
             <Zap size={16} strokeWidth={2.5} />
           </div>
-          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Subscriptions</h1>
+          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Subscription Listdata</h1>
           <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0">Management</p>
         </div>
@@ -893,4 +893,4 @@ const Subscriptions: React.FC = () => {
   );
 };
 
-export default Subscriptions;
+export default SubscriptionListdata;

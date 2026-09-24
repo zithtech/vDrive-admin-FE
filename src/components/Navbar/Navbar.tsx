@@ -8,7 +8,7 @@ import {
   TeamOutlined,
   LogoutOutlined,
 } from "@ant-design/icons";
-import logo from "/90.png";
+import logoLight from "../../assets/logo-light.png";
 
 const Navbar: React.FC = () => {
   const location = useLocation();
@@ -86,9 +86,9 @@ const Navbar: React.FC = () => {
         <div className="flex items-center">
           <Link to="/">
             <img
-              src={logo}
+              src={logoLight}
               alt="AdminApp Logo"
-              className="h-10 w-auto mr-3 dark:invert dark:brightness-200 transition-all duration-300"
+              className="h-10 w-auto mr-3 transition-all duration-300"
             />
           </Link>
         </div>
@@ -106,9 +106,9 @@ const Navbar: React.FC = () => {
                 title={
                   <div className="flex gap-[4px] items-center">
                     <img
-                      src={logo}
+                      src={logoLight}
                       alt="AdminApp Logo"
-                      className="h-8 w-auto mr-3 dark:invert dark:brightness-200 transition-all duration-300"
+                      className="h-8 w-auto mr-3 transition-all duration-300"
                     />
                     <span>T2Drive Admin</span>
                   </div>

@@ -18,7 +18,8 @@ import {
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Layout, Menu, Avatar, ConfigProvider, Button, Drawer, App as AntdApp, theme, Dropdown } from "antd";
-import logo from "/90.png";
+import logoDark from "./assets/logo.png";
+import logoLight from "./assets/logo-light.png";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -39,7 +40,7 @@ import { useTripVerificationAlert } from "./hooks/useTripVerificationAlert";
 import SosMonitor from "./components/SosMonitor/SosMonitor";
 import { useTheme } from "./contexts/ThemeContext";
 import { hasModuleAccess, useHasPermission } from "./hooks/usePermission";
-import { MODULE_REGISTRY, buildModuleRoutes } from "./config/moduleRegistry";
+import { MODULE_REGISTRY, buildModuleRoutes, TOP_LEVEL_GROUPS, getTopGroupByPath } from "./config/moduleRegistry";
 import RouteLoadingFallback from "./components/RouteLoadingFallback";
 
 
@@ -56,7 +57,7 @@ const VerifyEmail = lazy(
 
 const { Content, Sider, Header } = Layout;
 
-const Logo: React.FC<{ collapsed: boolean; onToggle: () => void }> = ({ collapsed, onToggle }) => (
+const Logo: React.FC<{ collapsed: boolean; onToggle: () => void; isDarkMode?: boolean }> = ({ collapsed, onToggle, isDarkMode }) => (
   <div className="flex flex-col w-full">
     <div
       className={`flex items-center h-[64px] border-b border-gray-200 dark:border-slate-800 transition-all duration-300 ${collapsed ? "justify-center" : "justify-center px-4"
@@ -64,9 +65,9 @@ const Logo: React.FC<{ collapsed: boolean; onToggle: () => void }> = ({ collapse
     >
       <div className="flex items-center gap-2 overflow-hidden">
         <img
-          src={logo}
+          src={isDarkMode ? logoLight : logoDark}
           alt=""
-          className="w-8 h-8 object-contain dark:invert dark:brightness-200"
+          className="w-8 h-8 object-contain"
         />
         {!collapsed && (
           <span className="font-bold text-lg text-slate-900 dark:text-white whitespace-nowrap truncate">
@@ -105,6 +106,8 @@ const RootLayout: React.FC = () => {
   const { drivers } = useAppSelector((state: any) => state.drivers);
   const location = useLocation();
   const { isDarkMode, toggleTheme } = useTheme();
+
+  const activeTopGroup = useMemo(() => getTopGroupByPath(location.pathname), [location.pathname]);
 
   const awaitingCount = useMemo(() => {
     if (!drivers || !Array.isArray(drivers)) return 0;
@@ -181,6 +184,16 @@ const RootLayout: React.FC = () => {
       ) {
         setPendingVerificationsCount((prev) => Math.max(0, prev - 1));
       }
+
+      // Ignore SOS events as they are handled by SosMonitor component
+      if (
+        data.eventType === "SOS_TRIGGERED" ||
+        data.eventType === "SOS_RESOLVED" ||
+        data.eventType === "SOS_LOCATION_UPDATE"
+      ) {
+        return;
+      }
+
       let title = "Driver Notification";
       if (data.eventType === "NEW_DRIVER") title = "New Driver Registered";
       else if (data.eventType === "DRIVER_PROFILE_COMPLETED") title = "Profile Completed";
@@ -484,9 +497,9 @@ const RootLayout: React.FC = () => {
   const menuItems = React.useMemo<MenuProps["items"]>(
     () =>
       MODULE_REGISTRY.filter(
-        (entry) => entry.menu && hasModuleAccess(currentUser, entry.rbacModule),
+        (entry) => entry.topGroup === activeTopGroup && entry.menu && hasModuleAccess(currentUser, entry.rbacModule),
       ).map((entry) => entry.menu!),
-    [currentUser],
+    [currentUser, activeTopGroup],
   );
   return (
     <ConfigProvider
@@ -541,7 +554,7 @@ const RootLayout: React.FC = () => {
             >
               <div className="flex flex-col h-full bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800">
                 <div className="flex-shrink-0 group">
-                  <Logo collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+                  <Logo collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} isDarkMode={isDarkMode} />
                 </div>
 
                 <div className="flex-grow overflow-y-auto pt-2 pb-6 custom-scrollbar">
@@ -580,7 +593,7 @@ const RootLayout: React.FC = () => {
                 style={{
                   padding: "0 24px",
                   display: "flex",
-                  justifyContent: isMobile ? "space-between" : "flex-end",
+                  justifyContent: "space-between",
                   alignItems: "center",
                   position: isMobile ? "fixed" : "static",
                   top: 0,
@@ -591,23 +604,39 @@ const RootLayout: React.FC = () => {
                 }}
                 className="bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800"
               >
-                {isMobile && (
-                  <div className="flex items-center gap-3">
-                    <Button
-                      type="text"
-                      icon={<MenuOutlined />}
-                      onClick={showDrawer}
-                      style={{ fontSize: "16px" }}
-                    />
-                    <img
-                      src={logo}
-                      alt="Logo"
-                      className={`w-8 h-8 object-contain transition-all duration-300 ${isDarkMode ? "invert brightness-200" : ""}`}
-                    />
-                  </div>
-                )}
+                <div className="flex-1 flex items-center h-full">
+                  {isMobile && (
+                    <div className="flex items-center gap-3">
+                      <Button
+                        type="text"
+                        icon={<MenuOutlined />}
+                        onClick={showDrawer}
+                        style={{ fontSize: "16px" }}
+                      />
+                      <img
+                        src={isDarkMode ? logoLight : logoDark}
+                        alt="Logo"
+                        className={`w-8 h-8 object-contain transition-all duration-300`}
+                      />
+                    </div>
+                  )}
 
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                  {!isMobile && (
+                    <Menu
+                      mode="horizontal"
+                      selectedKeys={[activeTopGroup]}
+                      items={TOP_LEVEL_GROUPS.map((group) => ({
+                        key: group.key,
+                        label: <span className="font-semibold text-[14px]">{group.label}</span>,
+                        onClick: () => navigate(group.defaultPath),
+                      }))}
+                      className="border-none bg-transparent flex-1"
+                      style={{ lineHeight: '62px', minWidth: '400px' }}
+                    />
+                  )}
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: "16px", paddingLeft: "16px" }}>
                   {!isMobile && (
                     <div className="flex items-center gap-1 pr-2">
                       <div
@@ -743,9 +772,9 @@ const RootLayout: React.FC = () => {
               title={
                 <div className="flex items-center gap-2">
                   <img
-                    src={logo}
+                    src={isDarkMode ? logoLight : logoDark}
                     alt=""
-                    className={`w-8 h-8 object-contain transition-all duration-300 ${isDarkMode ? "invert brightness-200" : ""}`}
+                    className={`w-8 h-8 object-contain transition-all duration-300`}
                   />
                   <span>T2Drive Admin</span>
                 </div>
@@ -766,7 +795,28 @@ const RootLayout: React.FC = () => {
                 onTouchMove={handleTouchMove}
                 onTouchEnd={handleTouchEnd}
               >
-                <div style={{ flex: 1 }}>
+                <div className="p-4 border-b border-gray-200 dark:border-slate-800 mb-2">
+                  <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Modules</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {TOP_LEVEL_GROUPS.map((group) => (
+                      <div
+                        key={group.key}
+                        onClick={() => {
+                          navigate(group.defaultPath);
+                          onCloseDrawer();
+                        }}
+                        className={`px-3 py-2 text-center text-[13px] rounded-lg cursor-pointer transition-colors ${
+                          activeTopGroup === group.key
+                            ? "bg-[#3b82f6] text-white font-medium shadow-sm"
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
+                        }`}
+                      >
+                        {group.label}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ flex: 1, overflowY: "auto" }}>
                   <Menu
                     theme="dark"
                     mode="vertical"

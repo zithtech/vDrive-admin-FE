@@ -9,6 +9,7 @@ import {
 import { useSocket } from "../../hooks/useSocket";
 import { useHasPermission } from "../../hooks/usePermission";
 import { Card, Button, Modal, List, Badge, Typography } from "antd";
+import { useLocation, useNavigate } from "react-router-dom";
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 import {
   WarningOutlined,
@@ -35,6 +36,8 @@ const SosMonitor: React.FC = () => {
   const [selectedSosId, setSelectedSosId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAP_API || "",
@@ -53,15 +56,26 @@ const SosMonitor: React.FC = () => {
           // Format data to match SosAlert interface if needed
           const alerts = response.data.map((item: any) => ({
             sos_id: item.id || item.sos_id,
-            driver_id: item.user_id || item.driver_id,
+            user_id: item.user_id,
+            driver_id: item.user_type === 'driver' ? item.user_id : (item.trip?.driver_details?.id || null),
+            user_type: item.user_type,
             trip_id: item.trip_id,
-            status: "ACTIVE",
+            status: "ACTIVE" as const,
             created_at: item.created_at,
             latitude: item.latitude,
             longitude: item.longitude,
+            name: item.user?.full_name,
             driver_name: item.user?.full_name || item.driver?.full_name,
+            phone: item.user?.phone_number,
+            alt_phone: item.user?.alternate_contact,
+            email: item.user?.email,
+            profile_pic: item.user?.profile_pic_url || item.user?.profile_url,
             pickup_address: item.trip?.pickup_address,
+            drop_address: item.trip?.drop_address,
             trip_status: item.trip?.status,
+            trip_details: item.trip || undefined,
+            user_info: item.user || undefined,
+            trusted_contacts: item.trusted_contacts || [],
           }));
           dispatch(setSosAlerts(alerts));
         }
@@ -84,6 +98,7 @@ const SosMonitor: React.FC = () => {
           addSosAlert({
             sos_id: data.data.id || data.data.sos_id,
             user_id: data.data.user_id,
+            driver_id: data.data.user_type === 'driver' ? data.data.user_id : (data.data.trip?.driver_details?.id || null),
             user_type: data.data.user_type,
             trip_id: data.data.trip_id,
             status: "ACTIVE",
@@ -91,9 +106,17 @@ const SosMonitor: React.FC = () => {
             latitude: data.data.latitude || 0,
             longitude: data.data.longitude || 0,
             // Enriched data
-            name: data.data.user?.full_name || data.data.user?.full_name,
+            name: data.data.user?.full_name,
+            phone: data.data.user?.phone_number,
+            alt_phone: data.data.user?.alternate_contact,
+            email: data.data.user?.email,
+            profile_pic: data.data.user?.profile_pic_url || data.data.user?.profile_url,
             pickup_address: data.data.trip?.pickup_address,
+            drop_address: data.data.trip?.drop_address,
             trip_status: data.data.trip?.status,
+            trip_details: data.data.trip || undefined,
+            user_info: data.data.user || undefined,
+            trusted_contacts: data.data.trusted_contacts || [],
           }),
         );
       } else if (data.eventType === "SOS_RESOLVED") {
@@ -129,6 +152,10 @@ const SosMonitor: React.FC = () => {
   const activeAlert = activeAlerts.find((a) => a.sos_id === selectedSosId);
   console.log("activeAlerts", activeAlerts);
 
+  if (location.pathname === '/sos-handle') {
+    return null;
+  }
+
   return (
     <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 1000, width: 350 }}>
       {activeAlerts.length > 0 && (
@@ -151,10 +178,7 @@ const SosMonitor: React.FC = () => {
                     type="link"
                     icon={<EyeOutlined />}
                     onClick={() => {
-                      setSelectedSosId(item.sos_id);
-                      setIsModalOpen(true);
-                      // Join SOS tracking room
-                      socket?.emit("join", `sos_${item.sos_id}`);
+                      navigate('/sos-handle', { state: { selectedSosId: item.sos_id } });
                     }}
                   >
                     Track

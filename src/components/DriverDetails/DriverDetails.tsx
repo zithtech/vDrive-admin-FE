@@ -592,9 +592,9 @@ const DriverDetails: React.FC<DriverDetailsProps> = ({ driver, onClose, open }) 
                   ? `${driver.first_name || ""} ${driver.last_name || ""}`.trim()
                   : driver?.full_name || "N/A"}
               </span>
-              {driver?.t2d_id && (
+              {driver?.t2driver && (
                 <span className="text-[10px] font-bold bg-blue-50 text-blue-600 px-2 py-0.5 rounded mt-1 inline-block w-fit">
-                  ID: {driver.t2d_id}
+                  ID: {driver.t2driver}
                 </span>
               )}
             </div>

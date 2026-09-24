@@ -79,7 +79,7 @@ const Drivers = () => {
         (d) =>
           d.full_name?.toLowerCase().includes(searchText) ||
           d.driver_id?.toLowerCase().includes(searchText) ||
-          d.t2d_id?.toLowerCase().includes(searchText) ||
+          d.t2driver?.toLowerCase().includes(searchText) ||
           d.id?.toLowerCase().includes(searchText),
       );
     }

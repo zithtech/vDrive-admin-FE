@@ -147,7 +147,7 @@ const DriverOfflineOnboarding: React.FC = () => {
 
       if (createDriverOffline.fulfilled.match(resultAction)) {
         message.success("Driver onboarded successfully!");
-        setCreatedDriverId(resultAction.payload.t2d_id || resultAction.payload.id);
+        setCreatedDriverId(resultAction.payload.t2driver || resultAction.payload.id);
         setIsSuccess(true);
       } else {
         message.error(resultAction.payload as string || "Failed to onboard driver");

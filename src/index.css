@@ -141,6 +141,7 @@ p {
   border: none !important;
   padding: 0 !important;
   box-shadow: none !important;
+  border-radius: 0 !important;
 }
 
 .glass-input-wrapper .ant-input::placeholder {
@@ -332,6 +333,24 @@ p {
   background: #334155 !important;
 }
 
+/* Dark mode for dashboard-table */
+.dark .dashboard-table .ant-table {
+  background: transparent !important;
+}
+
+.dark .dashboard-table .ant-table-placeholder {
+  background: transparent !important;
+}
+
+.dark .dashboard-table .ant-table-placeholder .ant-table-cell {
+  border-bottom: none !important;
+  color: #94a3b8 !important; /* text-slate-400 */
+}
+
+.dark .dashboard-table .ant-empty-description {
+  color: #94a3b8 !important;
+}
+
 /* Dark mode for standard modals */
 .dark .dark-modal .ant-modal-content {
   background-color: #1e293b !important;
@@ -403,6 +422,18 @@ p {
   border: 1px solid #334155 !important;
 }
 
+.dark .ant-select-selector,
+.dark .ant-input,
+.dark .ant-input-affix-wrapper {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .ant-select-arrow {
+  color: #94a3b8 !important;
+}
+
 .dark .ant-select-item {
   color: #cbd5e1 !important;
 }
@@ -432,8 +463,49 @@ p {
 .dark .ant-dropdown-menu-item-active {
   background-color: #334155 !important;
 }
-input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active { -webkit-box-shadow: 0 0 0 30px transparent inset !important; transition: background-color 5000s ease-in-out 0s; }
+/* Fix for autofill input backgrounds in dark/premium themes */
+.premium-auth-bg input:-webkit-autofill,
+.premium-auth-bg input:-webkit-autofill:hover,
+.premium-auth-bg input:-webkit-autofill:focus,
+.premium-auth-bg input:-webkit-autofill:active,
+.premium-auth-bg .glass-input-wrapper .ant-input-affix-wrapper .ant-input:-webkit-autofill,
+.premium-auth-bg .glass-input-wrapper .ant-input-affix-wrapper .ant-input:-webkit-autofill:hover,
+.premium-auth-bg .glass-input-wrapper .ant-input-affix-wrapper .ant-input:-webkit-autofill:focus,
+.premium-auth-bg .glass-input-wrapper .ant-input-affix-wrapper .ant-input:-webkit-autofill:active,
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active,
+.dark .glass-input-wrapper .ant-input-affix-wrapper .ant-input:-webkit-autofill,
+.dark .glass-input-wrapper .ant-input-affix-wrapper .ant-input:-webkit-autofill:hover,
+.dark .glass-input-wrapper .ant-input-affix-wrapper .ant-input:-webkit-autofill:focus,
+.dark .glass-input-wrapper .ant-input-affix-wrapper .ant-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #1e293b inset !important;
+  box-shadow: 0 0 0 1000px #1e293b inset !important;
+  -webkit-text-fill-color: #f3f4f6 !important;
+  caret-color: #f3f4f6 !important;
+}
 
+/* Light mode autofill fix */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  caret-color: #0f172a !important;
+}
+
+/* Ensure affix wrappers perfectly match autofilled input backgrounds */
+.premium-auth-bg .ant-input-affix-wrapper:has(input:-webkit-autofill),
+.dark .ant-input-affix-wrapper:has(input:-webkit-autofill) {
+  background-color: #1e293b !important;
+  border-color: rgba(99, 102, 241, 0.4) !important;
+}
+
+.ant-input-affix-wrapper:not(.premium-auth-bg *):not(.dark *):has(input:-webkit-autofill) {
+  background-color: #ffffff !important;
+}
 /* Remove white line (box-shadow) under all primary buttons in dark mode */
 .dark .ant-btn-primary {
   box-shadow: none !important;
