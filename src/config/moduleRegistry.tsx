@@ -9,6 +9,7 @@ import {
   TableOutlined,
   EnvironmentOutlined,
   BellOutlined,
+  VideoCameraOutlined,
 } from "@ant-design/icons";
 import { PiSteeringWheel } from "react-icons/pi";
 import { RiAdminLine, RiQuestionLine } from "react-icons/ri";
@@ -242,6 +243,19 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
       label: <Link to="/driver-applications">Driver Applications</Link>,
       key: "/driver-applications",
       icon: <CheckCircleOutlined />,
+    },
+  },
+  {
+    topGroup: "users_drivers",
+    rbacModule: "drivers",
+    route: {
+      path: "driver-video-kyc",
+      element: <Navigate to="/driver-applications?view=video_kyc" replace />,
+    },
+    menu: {
+      label: <Link to="/driver-applications?view=video_kyc">Video KYC</Link>,
+      key: "/driver-video-kyc",
+      icon: <VideoCameraOutlined />,
     },
   },
   {

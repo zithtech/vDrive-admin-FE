@@ -254,6 +254,16 @@ const DriverTable = ({ data, onViewDetails, currentPage, pageSize, onPageChange 
                 🌐 Web Signup
               </span>
             )}
+            {record.onboarding_status === "VIDEO_KYC_WAITING" && (
+              <span className="inline-flex items-center gap-1 bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400 border border-cyan-200 dark:border-cyan-500/20 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-sm w-fit animate-pulse">
+                📹 Video KYC Req
+              </span>
+            )}
+            {record.onboarding_status === "VIDEO_KYC_IN_PROGRESS" && (
+              <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-sm w-fit">
+                📞 KYC In Call
+              </span>
+            )}
             <div className="inline-flex items-center gap-1.5 px-1 py-0.5">
               <FileTextOutlined className="text-slate-400 text-[12px]" />
               <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300">

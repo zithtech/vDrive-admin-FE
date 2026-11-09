@@ -29,6 +29,7 @@ import {
 } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "./store/hooks";
 import { logoutAsync, fetchCurrentUser } from "./store/slices/authSlice";
+import { fetchDrivers } from "./store/slices/driverSlice";
 import FullScreenLoader from "./components/FullScreenLoader";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { AntdStaticHolder, notificationApi } from "./utilities/antdStaticHolder";
@@ -38,6 +39,7 @@ import { useAdminTripAlert } from "./hooks/useAdminTripAlert";
 import { useUserAlert } from "./hooks/useUserAlert";
 import { useTripVerificationAlert } from "./hooks/useTripVerificationAlert";
 import SosMonitor from "./components/SosMonitor/SosMonitor";
+import VideoKycModal, { type KycSessionData } from "./components/VideoKycModal/VideoKycModal";
 import { useTheme } from "./contexts/ThemeContext";
 import { hasModuleAccess, useHasPermission } from "./hooks/usePermission";
 import { MODULE_REGISTRY, buildModuleRoutes, TOP_LEVEL_GROUPS, getTopGroupByPath } from "./config/moduleRegistry";
@@ -122,6 +124,8 @@ const RootLayout: React.FC = () => {
 
   const [openTicketsCount, setOpenTicketsCount] = useState(0);
   const [pendingVerificationsCount, setPendingVerificationsCount] = useState(0);
+  const [videoKycModalOpen, setVideoKycModalOpen] = useState(false);
+  const [activeKycSession, setActiveKycSession] = useState<KycSessionData | null>(null);
 
   // These header badges poll permission-gated endpoints — only fetch them if the user
   // can actually read that data, otherwise the call 403s for no reason.
@@ -135,7 +139,9 @@ const RootLayout: React.FC = () => {
     const fetchTicketCount = async () => {
       if (!canReadSupportTickets) return;
       try {
-        const { data: tickets } = await axiosIns.get("/api/support-management/tickets");
+        const { data: tickets } = await axiosIns.get("/api/support-management/tickets", {
+          silent: true,
+        } as any);
         if (tickets?.data?.tickets) {
           setOpenTicketsCount(tickets.data.tickets.filter((t: any) => t.status === "open").length);
         }
@@ -147,7 +153,9 @@ const RootLayout: React.FC = () => {
     const fetchPendingVerifications = async () => {
       if (!canReadTripVerifications) return;
       try {
-        const { data: verifications } = await axiosIns.get("/api/trip-verification/pending");
+        const { data: verifications } = await axiosIns.get("/api/trip-verification/pending", {
+          silent: true,
+        } as any);
         if (verifications?.success) {
           setPendingVerificationsCount(verifications.data.length || 0);
         }
@@ -250,6 +258,62 @@ const RootLayout: React.FC = () => {
       });
     });
 
+    socket.on("ADMIN_NEW_VIDEO_KYC_REQUEST", (kycData: any) => {
+      logger.info("📹 [Socket] Incoming Video KYC Request:", kycData);
+      dispatch(fetchDrivers());
+      try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.6);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.6);
+      } catch {
+        // Ignored if autoplay is blocked
+      }
+
+      const driverName = `${kycData?.driver?.first_name || ""} ${kycData?.driver?.last_name || ""}`.trim() || "Driver";
+      const driverPhone = kycData?.driver?.phone_number || "";
+
+      notificationApi?.open({
+        message: "📹 Incoming Live Video KYC Request",
+        description: `${driverName} (${driverPhone}) is waiting for document verification call.`,
+        placement: "topRight",
+        duration: 0,
+        btn: (
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => {
+              notificationApi?.destroy(`video_kyc_${kycData?.sessionId}`);
+              setActiveKycSession(kycData);
+              setVideoKycModalOpen(true);
+            }}
+          >
+            Review & Join Call
+          </Button>
+        ),
+        key: `video_kyc_${kycData?.sessionId}`,
+      });
+    });
+
+    socket.on("ADMIN_VIDEO_KYC_CANCELLED", (data: any) => {
+      dispatch(fetchDrivers());
+      notificationApi?.destroy(`video_kyc_${data?.sessionId}`);
+      notificationApi?.warning({
+        message: "Video KYC Cancelled",
+        description: "Driver cancelled the video verification request.",
+        placement: "topRight",
+        duration: 4,
+      });
+    });
+
     return () => {
       socket.off("driver_event", handleDriverEvent);
       socket.off("newSupportMessageNotification");
@@ -257,6 +321,8 @@ const RootLayout: React.FC = () => {
       socket.off("ADMIN_SUPPORT_TICKET_CLOSED");
       socket.off("ADMIN_SUPPORT_TICKET_ALERT");
       socket.off("ADMIN_SUPPORT_USER_TICKET_ALERT");
+      socket.off("ADMIN_NEW_VIDEO_KYC_REQUEST");
+      socket.off("ADMIN_VIDEO_KYC_CANCELLED");
     };
   }, [socket]);
 
@@ -843,6 +909,22 @@ const RootLayout: React.FC = () => {
 
           {/* SOS Monitor — only for users who can access SOS (gated under drivers) */}
           {isAuthenticated && canReadDrivers && <SosMonitor />}
+
+          {/* Live Video KYC Verification Modal */}
+          {isAuthenticated && videoKycModalOpen && activeKycSession && (
+            <VideoKycModal
+              open={videoKycModalOpen}
+              sessionData={activeKycSession}
+              onClose={() => {
+                setVideoKycModalOpen(false);
+                setActiveKycSession(null);
+              }}
+              onSessionComplete={() => {
+                setVideoKycModalOpen(false);
+                setActiveKycSession(null);
+              }}
+            />
+          )}
         </Layout>
       </AntdApp>
     </ConfigProvider>

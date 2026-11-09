@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { IoMdRefresh } from "react-icons/io";
 import { ClipboardCheck } from "lucide-react";
 import {
@@ -6,15 +7,19 @@ import {
   FileExclamationOutlined,
   CloseCircleOutlined,
   SearchOutlined,
+  VideoCameraOutlined,
 } from "@ant-design/icons";
-import { Button, Select, DatePicker, Spin, Pagination } from "antd";
+import { Button, Select, DatePicker, Spin, Pagination, message } from "antd";
 import DriverTable from "../components/DriverTable/DriverTable";
 import dayjs from "dayjs";
+import axiosIns from "../api/axios";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchDrivers } from "../store/slices/driverSlice";
 import type { Driver, DriverStatus } from "../store/slices/driverSlice";
 import DriverApprovalModal from "../components/DriverApplications/DriverApprovalModal";
 import ApplicationStats from "../components/DriverApplications/ApplicationStats";
+import VideoKycQueueSection from "../components/DriverApplications/VideoKycQueueSection";
+import VideoKycModal, { type KycSessionData } from "../components/VideoKycModal/VideoKycModal";
 
 export interface Filters {
   search: string;
@@ -26,6 +31,8 @@ export interface Filters {
 const STATUSES: DriverStatus[] = ["pending", "pending_verification"];
 
 const ONBOARDING_STATUSES = [
+  { value: "VIDEO_KYC_WAITING", label: "📹 Video KYC Waiting" },
+  { value: "VIDEO_KYC_IN_PROGRESS", label: "📞 Video KYC In Call" },
   { value: "PHONE_VERIFIED", label: "Phone Verified" },
   { value: "PROFILE_COMPLETED", label: "Profile Completed" },
   { value: "ADDRESS_COMPLETED", label: "Address Completed" },
@@ -34,12 +41,20 @@ const ONBOARDING_STATUSES = [
   { value: "DOCS_REJECTED", label: "Docs Rejected" },
 ];
 
+type ApplicationViewType = "pending" | "video_kyc" | "doc_rejected" | "rejected";
+
 const DriverApplications = () => {
   const dispatch = useAppDispatch();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { drivers: DATA, loading, error } = useAppSelector((state) => state.drivers);
   const [filteredData, setFilteredData] = useState<Driver[]>([]);
   const [approvalModalOpen, setApprovalModalOpen] = useState(false);
   const [selectedDriverForApproval, setSelectedDriverForApproval] = useState<Driver | null>(null);
+
+  // Video KYC Direct Call Modal State
+  const [videoKycOpen, setVideoKycOpen] = useState(false);
+  const [videoKycSession, setVideoKycSession] = useState<KycSessionData | null>(null);
+  const [kycLoadingDriverId, setKycLoadingDriverId] = useState<string | null>(null);
 
   const [filters, setFilters] = useState<Filters>({
     search: "",
@@ -48,7 +63,14 @@ const DriverApplications = () => {
     onboarding_status: [],
   });
 
-  const [currentView, setCurrentView] = useState<"pending" | "doc_rejected" | "rejected">("pending");
+  const [currentView, setCurrentView] = useState<ApplicationViewType>(() => {
+    const viewParam = searchParams.get("view") || searchParams.get("tab");
+    if (viewParam === "video_kyc" || viewParam === "video-kyc") return "video_kyc";
+    if (viewParam === "doc_rejected") return "doc_rejected";
+    if (viewParam === "rejected") return "rejected";
+    return "pending";
+  });
+
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<number>(15);
 
@@ -56,10 +78,27 @@ const DriverApplications = () => {
     dispatch(fetchDrivers());
   }, [dispatch]);
 
+  // Synchronize view from URL params if changed externally
+  useEffect(() => {
+    const viewParam = searchParams.get("view") || searchParams.get("tab");
+    if (viewParam === "video_kyc" || viewParam === "video-kyc") {
+      setCurrentView("video_kyc");
+    } else if (viewParam === "doc_rejected") {
+      setCurrentView("doc_rejected");
+    } else if (viewParam === "rejected") {
+      setCurrentView("rejected");
+    }
+  }, [searchParams]);
+
+  const handleViewChange = (view: ApplicationViewType) => {
+    setCurrentView(view);
+    setSearchParams({ view });
+  };
+
   useEffect(() => {
     let tempData = Array.isArray(DATA) ? [...DATA] : [];
 
-    // Filter ONLY pending drivers for this page
+    // Filter ONLY pending & onboarding drivers for this page
     tempData = tempData.filter(
       (d) =>
         d.status === "pending" ||
@@ -105,17 +144,34 @@ const DriverApplications = () => {
     setFilteredData(tempData);
   }, [DATA, filters]);
 
-  const { pendingApplications, docRejectedApplications, rejectedApplications, allTrackedApplications } = useMemo(() => {
+  const {
+    pendingApplications,
+    videoKycApplications,
+    docRejectedApplications,
+    rejectedApplications,
+    allTrackedApplications,
+  } = useMemo(() => {
+    const allTracked = DATA.filter(
+      (d) =>
+        d.status === "pending" ||
+        d.status === "pending_verification" ||
+        (d.onboarding_status &&
+          !["ONBOARDING_COMPLETED", "SUBSCRIPTION_ACTIVE", "ACTIVE"].includes(d.onboarding_status)),
+    );
+
     return {
-      allTrackedApplications: DATA.filter(
+      allTrackedApplications: allTracked,
+      videoKycApplications: filteredData.filter(
         (d) =>
-          d.status === "pending" ||
-          d.status === "pending_verification" ||
-          (d.onboarding_status &&
-            !["ONBOARDING_COMPLETED", "SUBSCRIPTION_ACTIVE", "ACTIVE"].includes(d.onboarding_status)),
+          d.onboarding_status === "VIDEO_KYC_WAITING" ||
+          d.onboarding_status === "VIDEO_KYC_IN_PROGRESS",
       ),
       pendingApplications: filteredData.filter(
-        (d) => d.status !== "rejected" && d.onboarding_status !== "DOCS_REJECTED",
+        (d) =>
+          d.status !== "rejected" &&
+          d.onboarding_status !== "DOCS_REJECTED" &&
+          d.onboarding_status !== "VIDEO_KYC_WAITING" &&
+          d.onboarding_status !== "VIDEO_KYC_IN_PROGRESS",
       ),
       docRejectedApplications: filteredData.filter(
         (d) => d.status !== "rejected" && d.onboarding_status === "DOCS_REJECTED",
@@ -138,34 +194,82 @@ const DriverApplications = () => {
     filters.joined_at ||
     filters.onboarding_status.length > 0;
 
-  const ViewItem = ({ icon, label, count, isActive, onClick, activeColorClass = "text-blue-600 dark:text-blue-400", bgActiveColorClass = "bg-blue-50/80 dark:bg-blue-500/10", badgeColorClass = "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300" }: any) => (
+  // Direct Start / Join Live Video KYC
+  const handleStartVideoKyc = async (driver: Driver) => {
+    try {
+      const driverId = driver.driver_id || driver.id || "";
+      setKycLoadingDriverId(driverId);
+      const res = await axiosIns.post(`/api/kyc/video/request/${driverId}`);
+      const data = res.data?.data || res.data;
+
+      const sessionPayload: KycSessionData = {
+        sessionId: data.sessionId,
+        driverId,
+        channelName: data.channelName,
+        token: data.token,
+        driver: {
+          id: driverId,
+          first_name: driver.first_name || driver.full_name?.split(" ")[0] || "Driver",
+          last_name: driver.last_name || driver.full_name?.split(" ").slice(1).join(" ") || "",
+          phone_number: driver.phone_number,
+          profile_pic_url: driver.profile_pic_url,
+          city: (driver as any).city,
+        },
+        documents: (driver.documents || []).map((d: any) => ({
+          id: d.id || d.document_id,
+          document_type: d.document_type,
+          document_url: d.document_url || d.document_path || d.url,
+          document_number: d.document_number,
+          status: d.license_status || d.status || "pending",
+        })),
+      };
+
+      setVideoKycSession(sessionPayload);
+      setVideoKycOpen(true);
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || err.message || "Failed to initiate Video KYC session");
+    } finally {
+      setKycLoadingDriverId(null);
+    }
+  };
+
+  const ViewItem = ({
+    icon,
+    label,
+    count,
+    isActive,
+    onClick,
+    activeColorClass = "text-blue-600 dark:text-blue-400",
+    bgActiveColorClass = "bg-blue-50/80 dark:bg-blue-500/10",
+    badgeColorClass = "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300",
+  }: any) => (
     <div
       onClick={onClick}
-      className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${isActive
-        ? `${bgActiveColorClass} ${activeColorClass} font-bold`
-        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
-        }`}
+      className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-all ${
+        isActive
+          ? `${bgActiveColorClass} ${activeColorClass} font-bold`
+          : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-800 dark:hover:text-slate-200 font-medium"
+      }`}
     >
       <div className="flex items-center gap-2 text-xs">
         <span className="text-xs">{icon}</span>
         <span>{label}</span>
       </div>
       {count !== undefined && (
-        <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${isActive
-          ? badgeColorClass
-          : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-          }`}>
+        <span
+          className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
+            isActive
+              ? badgeColorClass
+              : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+          }`}
+        >
           {count}
         </span>
       )}
     </div>
   );
 
-  const TableSection = ({
-    data,
-    flexClass = "flex-1",
-    extraClasses = "",
-  }: any) => (
+  const TableSection = ({ data, flexClass = "flex-1", extraClasses = "" }: any) => (
     <div
       className={`${flexClass} flex flex-col min-h-[400px] bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700 overflow-hidden pb-1 ${extraClasses}`}
     >
@@ -197,9 +301,13 @@ const DriverApplications = () => {
             <div className="w-8 h-8 rounded-lg bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center text-orange-600 dark:text-orange-400 shrink-0">
               <ClipboardCheck size={16} strokeWidth={2.5} />
             </div>
-            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Driver Applications</h1>
+            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">
+              Driver Applications
+            </h1>
             <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0">Review pending driver onboarding</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0">
+              Review pending onboarding & live video KYC
+            </p>
           </div>
 
           <div className="relative flex-1 max-w-xl mx-auto flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-indigo-500/20 focus-within:border-indigo-500 transition-all h-9">
@@ -230,7 +338,7 @@ const DriverApplications = () => {
               onClick={() => dispatch(fetchDrivers())}
               className="w-10 h-10 flex items-center justify-center rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-all"
             >
-              <IoMdRefresh className={`text-lg ${loading ? 'animate-spin' : ''}`} />
+              <IoMdRefresh className={`text-lg ${loading ? "animate-spin" : ""}`} />
             </button>
           </div>
         </div>
@@ -251,17 +359,37 @@ const DriverApplications = () => {
                     label="Pending Auth"
                     count={pendingApplications.length}
                     isActive={currentView === "pending"}
-                    onClick={() => setCurrentView("pending")}
+                    onClick={() => handleViewChange("pending")}
                     activeColorClass="text-orange-500"
                     bgActiveColorClass="bg-orange-50/80 dark:bg-orange-900/30"
                     badgeColorClass="bg-orange-100 dark:bg-orange-900/50 text-orange-600 dark:text-orange-400"
+                  />
+                  <ViewItem
+                    icon={
+                      <VideoCameraOutlined
+                        className={
+                          videoKycApplications.length > 0 ? "text-cyan-500 animate-pulse" : ""
+                        }
+                      />
+                    }
+                    label="Video KYC Queue"
+                    count={videoKycApplications.length}
+                    isActive={currentView === "video_kyc"}
+                    onClick={() => handleViewChange("video_kyc")}
+                    activeColorClass="text-cyan-500"
+                    bgActiveColorClass="bg-cyan-50/80 dark:bg-cyan-900/30"
+                    badgeColorClass={
+                      videoKycApplications.length > 0
+                        ? "bg-cyan-500 text-white animate-pulse"
+                        : "bg-cyan-100 dark:bg-cyan-900/50 text-cyan-600 dark:text-cyan-400"
+                    }
                   />
                   <ViewItem
                     icon={<FileExclamationOutlined />}
                     label="Docs Rejected"
                     count={docRejectedApplications.length}
                     isActive={currentView === "doc_rejected"}
-                    onClick={() => setCurrentView("doc_rejected")}
+                    onClick={() => handleViewChange("doc_rejected")}
                     activeColorClass="text-amber-500"
                     bgActiveColorClass="bg-amber-50/80 dark:bg-amber-900/30"
                     badgeColorClass="bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400"
@@ -271,7 +399,7 @@ const DriverApplications = () => {
                     label="Rejected"
                     count={rejectedApplications.length}
                     isActive={currentView === "rejected"}
-                    onClick={() => setCurrentView("rejected")}
+                    onClick={() => handleViewChange("rejected")}
                     activeColorClass="text-rose-500"
                     bgActiveColorClass="bg-rose-50/80 dark:bg-rose-900/30"
                     badgeColorClass="bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400"
@@ -283,66 +411,79 @@ const DriverApplications = () => {
 
           {/* RIGHT MAIN CONTENT */}
           <div className="flex-1 flex flex-col min-w-0 bg-slate-50/50 dark:bg-[#0f172a] relative">
-            <div className="flex-1 overflow-hidden p-4 flex flex-col gap-2 pb-20">
-              <ApplicationStats drivers={allTrackedApplications} loading={loading} />
+            <div
+              className={`flex-1 overflow-hidden p-4 flex flex-col gap-2 ${
+                currentView === "video_kyc" ? "pb-4" : "pb-20"
+              }`}
+            >
+              <ApplicationStats
+                drivers={allTrackedApplications}
+                loading={loading}
+                onSelectView={handleViewChange}
+                activeView={currentView}
+              />
 
-              {/* FILTERS TOOLBAR */}
-              <div className="bg-white dark:bg-slate-800 py-1 px-2 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm flex-shrink-0 dark-theme-select-override">
-                <div className="flex items-center gap-2 flex-1 min-w-[220px]">
-                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
-                    Status:
-                  </span>
-                  <Select
-                    mode="multiple"
-                    placeholder="Select status..."
-                    className="flex-1 text-xs custom-driver-select min-w-0"
-                    options={STATUSES.map((s) => ({ label: s.toUpperCase(), value: s }))}
-                    value={filters.status}
-                    onChange={(val) => applyFilters({ status: val })}
-                    maxTagCount="responsive"
-                  />
+              {/* FILTERS TOOLBAR (Shown for standard views) */}
+              {currentView !== "video_kyc" && (
+                <div className="bg-white dark:bg-slate-800 py-1 px-2 rounded-sm border border-slate-200 dark:border-slate-700 flex flex-wrap items-center gap-4 shadow-sm flex-shrink-0 dark-theme-select-override">
+                  <div className="flex items-center gap-2 flex-1 min-w-[220px]">
+                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
+                      Status:
+                    </span>
+                    <Select
+                      mode="multiple"
+                      placeholder="Select status..."
+                      className="flex-1 text-xs custom-driver-select min-w-0"
+                      options={STATUSES.map((s) => ({ label: s.toUpperCase(), value: s }))}
+                      value={filters.status}
+                      onChange={(val) => applyFilters({ status: val })}
+                      maxTagCount="responsive"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-1 min-w-[220px]">
+                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
+                      Step:
+                    </span>
+                    <Select
+                      mode="multiple"
+                      placeholder="Filter step..."
+                      className="flex-1 text-xs custom-driver-select min-w-0"
+                      options={ONBOARDING_STATUSES}
+                      value={filters.onboarding_status}
+                      onChange={(val) => applyFilters({ onboarding_status: val })}
+                      maxTagCount="responsive"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 flex-1 min-w-[220px]">
+                    <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
+                      Applied Date:
+                    </span>
+                    <DatePicker
+                      placeholder="Select Date"
+                      className="flex-1 text-xs custom-picker-compact min-w-0"
+                      onChange={(date) =>
+                        applyFilters({ joined_at: date ? date.toDate() : null })
+                      }
+                    />
+                  </div>
+
+                  {hasActiveFilters && (
+                    <Button
+                      type="text"
+                      danger
+                      icon={<CloseCircleOutlined />}
+                      className="text-[11px] font-bold uppercase tracking-wider"
+                      onClick={() =>
+                        setFilters({ search: "", status: [], joined_at: null, onboarding_status: [] })
+                      }
+                    >
+                      Clear
+                    </Button>
+                  )}
                 </div>
-
-                <div className="flex items-center gap-2 flex-1 min-w-[220px]">
-                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
-                    Step:
-                  </span>
-                  <Select
-                    mode="multiple"
-                    placeholder="Filter step..."
-                    className="flex-1 text-xs custom-driver-select min-w-0"
-                    options={ONBOARDING_STATUSES}
-                    value={filters.onboarding_status}
-                    onChange={(val) => applyFilters({ onboarding_status: val })}
-                    maxTagCount="responsive"
-                  />
-                </div>
-
-                <div className="flex items-center gap-2 flex-1 min-w-[220px]">
-                  <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase whitespace-nowrap">
-                    Applied Date:
-                  </span>
-                  <DatePicker
-                    placeholder="Select Date"
-                    className="flex-1 text-xs custom-picker-compact min-w-0"
-                    onChange={(date) => applyFilters({ joined_at: date ? date.toDate() : null })}
-                  />
-                </div>
-
-                {hasActiveFilters && (
-                  <Button
-                    type="text"
-                    danger
-                    icon={<CloseCircleOutlined />}
-                    className="text-[11px] font-bold uppercase tracking-wider"
-                    onClick={() =>
-                      setFilters({ search: "", status: [], joined_at: null, onboarding_status: [] })
-                    }
-                  >
-                    Clear
-                  </Button>
-                )}
-              </div>
+              )}
 
               {loading && allTrackedApplications.length === 0 ? (
                 <div className="flex-1 flex items-center justify-center p-20 bg-white dark:bg-slate-800 rounded-sm border border-slate-200 dark:border-slate-700">
@@ -354,6 +495,22 @@ const DriverApplications = () => {
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+                  {/* Dedicated Video KYC Queue View */}
+                  {currentView === "video_kyc" && (
+                    <VideoKycQueueSection
+                      drivers={filteredData}
+                      loading={loading}
+                      onJoinCall={handleStartVideoKyc}
+                      onViewDetails={(driver) => {
+                        setSelectedDriverForApproval(driver);
+                        setApprovalModalOpen(true);
+                      }}
+                      onRefresh={() => dispatch(fetchDrivers())}
+                      kycLoadingDriverId={kycLoadingDriverId}
+                    />
+                  )}
+
+                  {/* Standard Views */}
                   {currentView === "pending" && (
                     <TableSection
                       data={pendingApplications}
@@ -379,50 +536,78 @@ const DriverApplications = () => {
               )}
             </div>
 
-            {/* Sticky Pagination Footer */}
-            {(() => {
-              const currentViewData = currentView === "pending" ? pendingApplications : currentView === "doc_rejected" ? docRejectedApplications : rejectedApplications;
-              return (
-                <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-805 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
-                    Showing {currentViewData.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
-                    {Math.min(currentPage * pageSize, currentViewData.length)} of {currentViewData.length} applications
-                  </span>
-                  <Pagination
-                    current={currentPage}
-                    pageSize={pageSize}
-                    total={currentViewData.length}
-                    onChange={(page, size) => {
-                      setCurrentPage(page);
-                      setPageSize(size);
-                    }}
-                    showSizeChanger
-                    pageSizeOptions={[10, 15, 20, 50, 100]}
-                    size="small"
-                  />
-                </div>
-              );
-            })()}
+            {/* Sticky Pagination Footer (for standard table views) */}
+            {currentView !== "video_kyc" &&
+              (() => {
+                const currentViewData =
+                  currentView === "pending"
+                    ? pendingApplications
+                    : currentView === "doc_rejected"
+                    ? docRejectedApplications
+                    : rejectedApplications;
+
+                return (
+                  <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+                      Showing{" "}
+                      {currentViewData.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
+                      {Math.min(currentPage * pageSize, currentViewData.length)} of{" "}
+                      {currentViewData.length} applications
+                    </span>
+                    <Pagination
+                      current={currentPage}
+                      pageSize={pageSize}
+                      total={currentViewData.length}
+                      onChange={(page, size) => {
+                        setCurrentPage(page);
+                        setPageSize(size);
+                      }}
+                      showSizeChanger
+                      pageSizeOptions={[10, 15, 20, 50, 100]}
+                      size="small"
+                    />
+                  </div>
+                );
+              })()}
           </div>
         </div>
       </div>
 
+      {/* Driver Details & Document Review Modal */}
       <DriverApprovalModal
         driver={selectedDriverForApproval}
         open={approvalModalOpen}
         onClose={() => {
           setApprovalModalOpen(false);
-          setTimeout(() => setSelectedDriverForApproval(null), 300); // Clear after animation
+          setTimeout(() => setSelectedDriverForApproval(null), 300);
         }}
       />
+
+      {/* Live Video KYC Call Modal */}
+      {videoKycOpen && (
+        <VideoKycModal
+          open={videoKycOpen}
+          sessionData={videoKycSession}
+          onClose={() => {
+            setVideoKycOpen(false);
+            setVideoKycSession(null);
+          }}
+          onSessionComplete={() => {
+            setVideoKycOpen(false);
+            setVideoKycSession(null);
+            dispatch(fetchDrivers());
+          }}
+        />
+      )}
+
       <style>{`
         /* Filter input styling overrides to match dark mode search bar */
         .custom-driver-select .ant-select-selector {
           border-radius: 8px !important;
         }
 
-         .dark .dark-theme-select-override .custom-driver-select {
-           border-color: #334155 !important;
+        .dark .dark-theme-select-override .custom-driver-select {
+          border-color: #334155 !important;
           background-color: #0f172a !important;
           color: #f1f5f9 !important;
         }
