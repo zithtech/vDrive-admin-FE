@@ -133,8 +133,22 @@ axiosIns.interceptors.response.use(
 
     // Global Error Handling for other errors (500, 403, etc.)
     if (error.response && error.response.status !== 401) {
-      const errorMessage =
-        (error.response?.data as any)?.message || "An unexpected error occurred.";
+      // Check if the request explicitly opted out of global error toasts
+      if ((originalRequest as any)?.silent) {
+        return Promise.reject(error);
+      }
+
+      const resData = error.response?.data as any;
+      let errorMessage =
+        (typeof resData === "string" ? resData : resData?.message || resData?.error) ||
+        "An unexpected error occurred.";
+
+      // If backend returned a generic or unhelpful "Error", attach HTTP status & route for clarity
+      if (!errorMessage || errorMessage.trim().toLowerCase() === "error") {
+        const route = originalRequest?.url?.split("?")[0] || "endpoint";
+        errorMessage = `Error (${error.response.status}): Request to ${route} failed`;
+      }
+
       if (messageApi) {
         // Prevent spamming errors if multiple requests fail at once
         messageApi.open({
@@ -144,6 +158,9 @@ axiosIns.interceptors.response.use(
         });
       }
     } else if (error.code === "ERR_NETWORK") {
+      if ((originalRequest as any)?.silent) {
+        return Promise.reject(error);
+      }
       if (messageApi) {
         messageApi.open({
           type: "error",

@@ -190,7 +190,7 @@ const TripTransactions: React.FC = () => {
                     <SearchOutlined className="absolute left-4 top-1/2 -translate-y-1/2 text-indigo-400 text-lg transition-transform group-focus-within:scale-110 z-10" />
                     <Input
                       size="large"
-                      placeholder="Enter Trip ID (e.g. VDT-00343)"
+                      placeholder="Enter Trip ID (e.g. T2Dtrip-0343)"
                       className="!pl-12 !h-10 !rounded-md !bg-gray-50 dark:!bg-[#0f172a] !border-none !text-gray-700 dark:!text-slate-100 !font-bold !text-base placeholder:text-gray-400 dark:placeholder:text-slate-500 focus:!bg-white dark:focus:!bg-[#0f172a] focus:!shadow-inner transition-all"
                       value={searchId}
                       onChange={(e) => setSearchId(e.target.value)}

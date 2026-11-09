@@ -23,9 +23,12 @@ import {
   CopyOutlined,
   ReloadOutlined,
   HistoryOutlined,
+  VideoCameraOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { Loader2, Sparkles } from "lucide-react";
+import axiosIns from "../../api/axios";
+import VideoKycModal, { type KycSessionData } from "../VideoKycModal/VideoKycModal";
 import { useAppDispatch } from "../../store/hooks";
 import {
   updateDriverStatus,
@@ -62,6 +65,49 @@ const DriverApprovalModal: React.FC<DriverApprovalModalProps> = ({ driver, open,
 
   const [historyModalDoc, setHistoryModalDoc] = useState<{ id: string; type: string } | null>(null);
   const [documentHistory, setDocumentHistory] = useState<any[]>([]);
+
+  const [videoKycOpen, setVideoKycOpen] = useState(false);
+  const [videoKycSession, setVideoKycSession] = useState<KycSessionData | null>(null);
+  const [kycLoading, setKycLoading] = useState(false);
+
+  const handleStartVideoKyc = async () => {
+    if (!driver) return;
+    try {
+      setKycLoading(true);
+      const driverId = driver.driver_id || driver.id || "";
+      const res = await axiosIns.post(`/api/kyc/video/request/${driverId}`);
+      const data = res.data?.data || res.data;
+
+      const sessionPayload: KycSessionData = {
+        sessionId: data.sessionId,
+        driverId,
+        channelName: data.channelName,
+        token: data.token,
+        driver: {
+          id: driverId,
+          first_name: driver.first_name || driver.full_name?.split(" ")[0] || "Driver",
+          last_name: driver.last_name || driver.full_name?.split(" ").slice(1).join(" ") || "",
+          phone_number: driver.phone_number,
+          profile_pic_url: driver.profile_pic_url,
+          city: (driver as any).city,
+        },
+        documents: (driver.documents || []).map((d: any) => ({
+          id: d.id,
+          document_type: d.document_type,
+          document_url: d.document_url || d.document_path || d.url,
+          document_number: d.document_number,
+          status: d.status || d.license_status || "pending",
+        })),
+      };
+
+      setVideoKycSession(sessionPayload);
+      setVideoKycOpen(true);
+    } catch (err: any) {
+      message.error(err?.response?.data?.message || err.message || "Failed to initiate Video KYC session");
+    } finally {
+      setKycLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (open && driver) {
@@ -337,8 +383,26 @@ const DriverApprovalModal: React.FC<DriverApprovalModalProps> = ({ driver, open,
                     🌐 Web Signup
                   </Tag>
                 )}
+                {(driver.onboarding_status === "VIDEO_KYC_WAITING" || driver.onboarding_status === "VIDEO_KYC_IN_PROGRESS") && (
+                  <Tag color="cyan" className="m-0 text-[10px] uppercase font-bold border-0 animate-pulse">
+                    📹 Video KYC Req
+                  </Tag>
+                )}
               </div>
             </div>
+          </div>
+
+          {/* Video KYC Verification Button */}
+          <div className="mt-3">
+            <Button
+              type="primary"
+              className="w-full bg-blue-600 hover:bg-blue-500 border-0 flex items-center justify-center font-bold text-xs py-2 shadow-sm"
+              icon={<VideoCameraOutlined />}
+              onClick={handleStartVideoKyc}
+              loading={kycLoading}
+            >
+              Start Live Video KYC Verification
+            </Button>
           </div>
 
           {/* Contact Actions for Pending Web Signups */}
@@ -862,6 +926,24 @@ const DriverApprovalModal: React.FC<DriverApprovalModalProps> = ({ driver, open,
           )}
         </div>
       </Modal>
+
+      {/* Live Video KYC Call Modal */}
+      {videoKycOpen && (
+        <VideoKycModal
+          open={videoKycOpen}
+          sessionData={videoKycSession}
+          onClose={() => {
+            setVideoKycOpen(false);
+            setVideoKycSession(null);
+          }}
+          onSessionComplete={() => {
+            setVideoKycOpen(false);
+            setVideoKycSession(null);
+            dispatch(fetchDrivers());
+            onClose();
+          }}
+        />
+      )}
     </Modal>
   );
 };
