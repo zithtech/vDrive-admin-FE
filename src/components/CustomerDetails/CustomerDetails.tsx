@@ -114,9 +114,9 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
 
   const handleBlock = () => {
     showConfirm({
-      title: "Block this customer?",
+      title: "Block this rider?",
       description:
-        "The customer will be permanently prevented from using the app until manually unblocked.",
+        "The rider will be permanently prevented from using the app until manually unblocked.",
       confirmLabel: "Block",
       danger: true,
       requireReason: true,
@@ -124,11 +124,11 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
       onConfirm: async (reason) => {
         try {
           await dispatch(blockCustomer({ id: customer.id, reason: reason! })).unwrap();
-          message.success("Customer has been blocked.");
+          message.success("Rider has been blocked.");
           onClose();
         } catch (error: any) {
           console.log("block error:", error);
-          message.error("Failed to block customer.");
+          message.error("Failed to block rider.");
           onClose();
         }
       },
@@ -137,18 +137,18 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
 
   const handleUnblock = () => {
     showConfirm({
-      title: "Unblock this customer?",
-      description: "This will restore the customer's access to the app.",
+      title: "Unblock this rider?",
+      description: "This will restore the rider's access to the app.",
       confirmLabel: "Unblock",
       danger: false,
       onConfirm: async () => {
         try {
           await dispatch(unblockCustomer(customer.id)).unwrap();
-          message.success("Customer has been unblocked.");
+          message.success("Rider has been unblocked.");
           onClose();
         } catch (error: any) {
           console.log("unblock error:", error);
-          message.error("Failed to unblock customer.");
+          message.error("Failed to unblock rider.");
           onClose();
         }
       },
@@ -157,8 +157,8 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
 
   const handleDisable = () => {
     showConfirm({
-      title: "Suspend this customer?",
-      description: "The customer will be temporarily restricted from using the app.",
+      title: "Suspend this rider?",
+      description: "The rider will be temporarily restricted from using the app.",
       confirmLabel: "Suspend",
       danger: true,
       requireReason: true,
@@ -166,11 +166,11 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
       onConfirm: async (reason) => {
         try {
           await dispatch(disableCustomer({ id: customer.id, reason: reason! })).unwrap();
-          message.success("Customer has been suspended.");
+          message.success("Rider has been suspended.");
           onClose();
         } catch (error: any) {
           console.log("disable error:", error);
-          message.error("Failed to suspend customer.");
+          message.error("Failed to suspend rider.");
           onClose();
         }
       },
@@ -179,18 +179,18 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
 
   const handleEnable = () => {
     showConfirm({
-      title: "Activate this customer?",
-      description: "This will restore full access to the customer's account.",
+      title: "Activate this rider?",
+      description: "This will restore full access to the rider's account.",
       confirmLabel: "Activate",
       danger: false,
       onConfirm: async () => {
         try {
           await dispatch(enableCustomer(customer.id)).unwrap();
-          message.success("Customer has been activated.");
+          message.success("Rider has been activated.");
           onClose();
         } catch (error: any) {
           console.log("enable error:", error);
-          message.error("Failed to activate customer.");
+          message.error("Failed to activate rider.");
           onClose();
         }
       },
@@ -199,18 +199,18 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
 
   const handleDelete = () => {
     showConfirm({
-      title: "Delete this customer?",
-      description: "This action cannot be undone. The customer's data will be permanently removed.",
+      title: "Delete this rider?",
+      description: "This action cannot be undone. The rider's data will be permanently removed.",
       confirmLabel: "Delete",
       danger: true,
       onConfirm: async () => {
         try {
           await dispatch(deleteCustomer(customer.id)).unwrap();
-          message.success("Customer has been deleted.");
+          message.success("Rider has been deleted.");
           onClose();
         } catch (error: any) {
           console.log("delete error:", error);
-          message.error("Failed to delete customer.");
+          message.error("Failed to delete rider.");
         }
       },
     });
@@ -264,7 +264,7 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
                 loading={actionLoading}
                 onClick={handleEnable}
               >
-                Enable Customer
+                Enable Rider
               </Button>
             )}
             {canUpdate && (
@@ -777,7 +777,7 @@ const CustomerDetails: React.FC<CustomerDetailsProps> = ({
           <div className="cd-id-box">
             <div className="cd-id-col">
               <span className="cd-id-label">
-                Customer ID
+                Rider ID
               </span>
               <span className="cd-id-value">
                 {customer.user_code || "VDU-NEW"}

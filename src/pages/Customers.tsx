@@ -214,9 +214,9 @@ const Customers = () => {
             <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
               <Users size={16} strokeWidth={2.5} />
             </div>
-            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Customers</h1>
+            <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 !m-0 !mb-1 leading-none">Riders</h1>
             <div className="w-px h-5 bg-slate-300 dark:bg-slate-600"></div>
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0">View and manage customer data</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 m-0">View and manage rider data</p>
           </div>
 
           {/* Search Bar */}
@@ -224,7 +224,7 @@ const Customers = () => {
             <SearchOutlined className="absolute left-3 text-slate-400 text-[16px]" />
             <input
               type="text"
-              placeholder="Search customers..."
+              placeholder="Search riders..."
               className="w-full pl-10 pr-4 py-1.5 bg-transparent text-sm font-medium text-slate-800 dark:text-slate-200 focus:outline-none placeholder-slate-400"
               value={globalSearch}
               onChange={(e) => setGlobalSearch(e.target.value)}
@@ -268,7 +268,7 @@ const Customers = () => {
                 <div className="flex flex-col gap-1">
                   <ViewItem
                     icon={<TeamOutlined />}
-                    label="All Customers"
+                    label="All Riders"
                     count={allCustomers.length}
                     isActive={currentView === "all"}
                     onClick={() => setCurrentView("all")}
@@ -392,7 +392,7 @@ const Customers = () => {
             <div className="absolute bottom-0 left-0 right-0 h-14 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-805 px-6 flex items-center justify-between z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.02)]">
               <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
                 Showing {displayedData.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}–
-                {Math.min(currentPage * pageSize, displayedData.length)} of {displayedData.length} customers
+                {Math.min(currentPage * pageSize, displayedData.length)} of {displayedData.length} riders
               </span>
               <Pagination
                 current={currentPage}
