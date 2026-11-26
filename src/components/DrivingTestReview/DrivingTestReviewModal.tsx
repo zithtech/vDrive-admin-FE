@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Modal,
   Button,
@@ -11,6 +11,7 @@ import {
   Card,
   Progress,
   Divider,
+  Alert,
 } from "antd";
 import {
   PlayCircleOutlined,
@@ -22,6 +23,7 @@ import {
   SoundOutlined,
   AudioMutedOutlined,
   WarningOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import axiosIns from "../../api/axios";
 
@@ -46,6 +48,93 @@ interface RecordingItem {
   playbackUrl?: string | null;
 }
 
+interface ScoreBreakdown {
+  braking: number;
+  acceleration: number;
+  turning: number;
+  speed: number;
+  route: number;
+  parking: number;
+  signal: number;
+}
+
+interface InfractionsCount {
+  harshBrakes: number;
+  rapidAccels: number;
+  overspeeds: number;
+  signalViolations: number;
+}
+
+interface FlaggedEvent {
+  timestamp: number;
+  event?: string;
+  speedKmh?: number;
+}
+
+interface TelemetryPoint {
+  timestamp?: number;
+  speedKmh?: number;
+  lat?: number;
+  lng?: number;
+}
+
+type ReviewDecision = "APPROVED" | "REJECTED" | "RETEST_REQUESTED";
+type SessionDecision = ReviewDecision | "PENDING";
+
+interface SessionReportData {
+  id?: string;
+  first_name?: string;
+  last_name?: string;
+  phone_number?: string;
+  t2driver?: string;
+  started_at?: string;
+  total_duration_seconds?: number;
+  drive_score?: number | null;
+  score_override?: number | null;
+  auto_verdict?: string | null;
+  admin_decision?: SessionDecision | string | null;
+  admin_notes?: string | null;
+  notes?: string | null;
+  reviewed_at?: string | null;
+  reviewed_by?: string | null;
+  reviewed_by_name?: string | null;
+  attempt_number?: number | null;
+  is_retest?: boolean;
+  simultaneous_camera_supported?: boolean;
+  score_breakdown?: Partial<ScoreBreakdown> | string | null;
+  infractions_count?: Partial<InfractionsCount> | string | null;
+}
+
+const getStatusBadgeProps = (
+  rawDecision?: string | null
+): { color: string; label: string } => {
+  switch (rawDecision) {
+    case "APPROVED":
+      return { color: "success", label: "Approved" };
+    case "RETEST_REQUESTED":
+      return { color: "warning", label: "Retest Requested" };
+    case "REJECTED":
+      return { color: "error", label: "Rejected" };
+    case "PENDING":
+    case "PENDING_REVIEW":
+    default:
+      return { color: "processing", label: "Pending Verification" };
+  }
+};
+
+const formatDateTime = (iso?: string | null): string => {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
   open,
   sessionId,
@@ -53,14 +142,14 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
   onDecisionSubmitted,
 }) => {
   const [loading, setLoading] = useState(true);
-  const [sessionData, setSessionData] = useState<any>(null);
+  const [sessionData, setSessionData] = useState<SessionReportData | null>(null);
   const [mediaData, setMediaData] = useState<{
     frontVideos?: RecordingItem[];
     rearVideos?: RecordingItem[];
     totalSegments?: number;
   } | null>(null);
-  const [scrubberData, setScrubberData] = useState<any[]>([]);
-  const [flaggedEvents, setFlaggedEvents] = useState<any[]>([]);
+  const [scrubberData, setScrubberData] = useState<TelemetryPoint[]>([]);
+  const [flaggedEvents, setFlaggedEvents] = useState<FlaggedEvent[]>([]);
 
   // Video Sync Playback Controls
   const [isPlaying, setIsPlaying] = useState(false);
@@ -78,10 +167,11 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
   const rearVideoRef = useRef<HTMLVideoElement>(null);
 
   // Decision Form State
-  const [decision, setDecision] = useState<"APPROVED" | "REJECTED" | "RETEST_REQUESTED">("APPROVED");
+  const [decision, setDecision] = useState<ReviewDecision>("APPROVED");
   const [notes, setNotes] = useState("");
   const [scoreOverride, setScoreOverride] = useState<number | undefined>(undefined);
   const [submitting, setSubmitting] = useState(false);
+  const [isEditingDecision, setIsEditingDecision] = useState(false);
 
   const playableRearVideos = useMemo(
     () => (mediaData?.rearVideos || []).filter((v) => v.available !== false && Boolean(v.playbackUrl)),
@@ -103,12 +193,51 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
   const primaryDriver: "rear" | "front" | null = hasPlayableRear
     ? "rear"
     : hasPlayableFront
-    ? "front"
-    : null;
+      ? "front"
+      : null;
+
+  const fetchSessionReport = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await axiosIns.get(`/api/admin/driving-tests/admin/sessions/${sessionId}/report`);
+      if (res.data?.success) {
+        const session: SessionReportData = res.data.session || {};
+        setSessionData(session);
+        setMediaData(res.data.media || null);
+        setScrubberData(res.data.scrubber?.telemetry || []);
+        setFlaggedEvents(res.data.scrubber?.flaggedEvents || []);
+
+        if (session.total_duration_seconds) {
+          setTotalDurationSec(session.total_duration_seconds);
+        }
+
+        const effectiveScore = session.score_override ?? session.drive_score;
+        setScoreOverride(effectiveScore != null ? effectiveScore : undefined);
+
+        const existingDecision = session.admin_decision || "PENDING";
+        if (
+          existingDecision === "APPROVED" ||
+          existingDecision === "RETEST_REQUESTED" ||
+          existingDecision === "REJECTED"
+        ) {
+          setDecision(existingDecision);
+          setIsEditingDecision(false);
+        } else {
+          setDecision("APPROVED");
+          setIsEditingDecision(true);
+        }
+        setNotes(session.admin_notes || session.notes || "");
+      }
+    } catch (err) {
+      console.error("Failed to load session report:", err);
+      message.error("Could not load driving test recordings & report.");
+    } finally {
+      setLoading(false);
+    }
+  }, [sessionId]);
 
   useEffect(() => {
     if (open && sessionId) {
-      // Reset player & review form states cleanly for the selected session
       setIsPlaying(false);
       setCurrentTimeSec(0);
       setTotalDurationSec(0);
@@ -118,39 +247,18 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
       setFrontVideoError(null);
       setRearResolution("Road View");
       setFrontResolution("Cabin View");
+      setSessionData(null);
       setNotes("");
+      setScoreOverride(undefined);
       setDecision("APPROVED");
+      setIsEditingDecision(false);
       fetchSessionReport();
     } else if (!open) {
       frontVideoRef.current?.pause();
       rearVideoRef.current?.pause();
       setIsPlaying(false);
     }
-  }, [open, sessionId]);
-
-  const fetchSessionReport = async () => {
-    setLoading(true);
-    try {
-      const res = await axiosIns.get(`/api/admin/driving-tests/admin/sessions/${sessionId}/report`);
-      if (res.data?.success) {
-        setSessionData(res.data.session);
-        setMediaData(res.data.media);
-        setScrubberData(res.data.scrubber?.telemetry || []);
-        setFlaggedEvents(res.data.scrubber?.flaggedEvents || []);
-        if (res.data.session?.total_duration_seconds) {
-          setTotalDurationSec(res.data.session.total_duration_seconds);
-        }
-        if (res.data.session?.drive_score !== undefined) {
-          setScoreOverride(res.data.session.drive_score);
-        }
-      }
-    } catch (err: any) {
-      console.error("Failed to load session report:", err);
-      message.error("Could not load driving test recordings & report.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [open, sessionId, fetchSessionReport]);
 
   // Continue playback seamlessly when advancing across multi-part video segments
   useEffect(() => {
@@ -201,7 +309,11 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
       }
       return;
     }
-    if (camera === "front" && primaryDriver === "front" && frontSegmentIdx < playableFrontVideos.length - 1) {
+    if (
+      camera === "front" &&
+      primaryDriver === "front" &&
+      frontSegmentIdx < playableFrontVideos.length - 1
+    ) {
       setFrontSegmentIdx((i) => i + 1);
       return;
     }
@@ -274,16 +386,17 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
     try {
       await axiosIns.post(`/api/admin/driving-tests/admin/sessions/${sessionId}/decision`, {
         decision,
-        notes,
+        notes: notes.trim(),
         scoreOverride,
       });
 
-      message.success(`Driving test successfully ${decision.toLowerCase().replace("_", " ")}!`);
+      message.success(`Driving test successfully ${decision.toLowerCase().replace(/_/g, " ")}!`);
       onDecisionSubmitted();
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Decision submission error:", err);
-      message.error(err.response?.data?.message || "Failed to submit decision.");
+      const apiMsg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      message.error(apiMsg || "Failed to submit decision.");
     } finally {
       setSubmitting(false);
     }
@@ -306,7 +419,7 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
     if (!sessionData?.score_breakdown) return null;
     if (typeof sessionData.score_breakdown === "string") {
       try {
-        return JSON.parse(sessionData.score_breakdown);
+        return JSON.parse(sessionData.score_breakdown) as Partial<ScoreBreakdown>;
       } catch {
         return null;
       }
@@ -314,21 +427,21 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
     return sessionData.score_breakdown;
   })();
 
-  const scoreBreakdown = rawBreakdown || {
-    braking: 14,
-    acceleration: 10,
-    turning: 13,
-    speed: 13,
-    route: 15,
-    parking: 14,
-    signal: 15,
+  const scoreBreakdown: ScoreBreakdown = {
+    braking: rawBreakdown?.braking ?? 0,
+    acceleration: rawBreakdown?.acceleration ?? 0,
+    turning: rawBreakdown?.turning ?? 0,
+    speed: rawBreakdown?.speed ?? 0,
+    route: rawBreakdown?.route ?? 0,
+    parking: rawBreakdown?.parking ?? 0,
+    signal: rawBreakdown?.signal ?? 0,
   };
 
   const rawInfractions = (() => {
     if (!sessionData?.infractions_count) return null;
     if (typeof sessionData.infractions_count === "string") {
       try {
-        return JSON.parse(sessionData.infractions_count);
+        return JSON.parse(sessionData.infractions_count) as Partial<InfractionsCount>;
       } catch {
         return null;
       }
@@ -336,11 +449,11 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
     return sessionData.infractions_count;
   })();
 
-  const infractions = rawInfractions || {
-    harshBrakes: 0,
-    rapidAccels: 0,
-    overspeeds: 0,
-    signalViolations: 0,
+  const infractions: InfractionsCount = {
+    harshBrakes: rawInfractions?.harshBrakes ?? 0,
+    rapidAccels: rawInfractions?.rapidAccels ?? 0,
+    overspeeds: rawInfractions?.overspeeds ?? 0,
+    signalViolations: rawInfractions?.signalViolations ?? 0,
   };
 
   const rearMissingReason =
@@ -348,28 +461,40 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
   const frontMissingReason =
     mediaData?.frontVideos?.[0]?.error || "No Front Camera recording uploaded for this session";
 
+  const currentDecision = sessionData?.admin_decision || "PENDING";
+  const isPending = currentDecision === "PENDING" || currentDecision === "PENDING_REVIEW";
+  const isRetestRequested = currentDecision === "RETEST_REQUESTED";
+  const isApproved = currentDecision === "APPROVED";
+  const statusBadge = getStatusBadgeProps(currentDecision);
+  const existingRemarks = sessionData?.admin_notes || sessionData?.notes;
+
   return (
     <Modal
       title={
-        <div className="flex items-center justify-between pr-8">
+        <div className="flex items-center justify-between pr-8 flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <VideoCameraOutlined className="text-blue-600 text-lg" />
             <span className="font-semibold text-base">
               Driving Assessment Review: Session #{sessionId?.substring(0, 8)}
             </span>
+            {(sessionData?.is_retest || (sessionData?.attempt_number ?? 1) > 1) && (
+              <Tag color="purple" className="m-0">
+                {sessionData?.attempt_number ? `Retest #${sessionData.attempt_number}` : "Retest"}
+              </Tag>
+            )}
           </div>
-          {sessionData?.drive_score !== null && (
+          {sessionData?.drive_score != null && (
             <Tag
               color={
-                sessionData?.drive_score >= 80
+                sessionData.drive_score >= 80
                   ? "success"
-                  : sessionData?.drive_score >= 60
-                  ? "warning"
-                  : "error"
+                  : sessionData.drive_score >= 60
+                    ? "warning"
+                    : "error"
               }
-              className="text-sm px-3 py-1 font-bold"
+              className="text-sm px-3 py-1 font-bold m-0"
             >
-              Auto Score: {sessionData?.drive_score ?? "—"} / 100
+              Auto Score: {sessionData.drive_score} / 100
             </Tag>
           )}
         </div>
@@ -388,20 +513,23 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
       ) : (
         <div className="space-y-4">
           {/* TOP DRIVER & SESSION INFO */}
-          <div className="grid grid-cols-4 gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-gray-50 dark:bg-slate-800/60 p-3 rounded-lg border border-gray-200 dark:border-slate-700 text-xs">
             <div>
-              <span className="text-gray-500 block">Driver Name</span>
-              <span className="font-medium text-gray-900">
-                {sessionData?.first_name ? `${sessionData.first_name} ${sessionData.last_name || ""}` : "Driver"}
+              <span className="text-gray-500 dark:text-slate-400 block">Driver Name</span>
+              <span className="font-medium text-gray-900 dark:text-slate-100">
+                {[sessionData?.first_name, sessionData?.last_name].filter(Boolean).join(" ") ||
+                  "Driver"}
               </span>
             </div>
             <div>
-              <span className="text-gray-500 block">Contact Phone</span>
-              <span className="font-medium text-gray-900">{sessionData?.phone_number || "—"}</span>
+              <span className="text-gray-500 dark:text-slate-400 block">Contact Phone</span>
+              <span className="font-medium text-gray-900 dark:text-slate-100">
+                {sessionData?.phone_number || "—"}
+              </span>
             </div>
             <div>
-              <span className="text-gray-500 block">Hardware Concurrency</span>
-              <span className="font-medium text-gray-900">
+              <span className="text-gray-500 dark:text-slate-400 block">Hardware Concurrency</span>
+              <span className="font-medium text-gray-900 dark:text-slate-100">
                 {sessionData?.simultaneous_camera_supported ? (
                   <Tag color="green">Hardware Dual Cam</Tag>
                 ) : (
@@ -410,15 +538,17 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
               </span>
             </div>
             <div>
-              <span className="text-gray-500 block">Current Status</span>
-              <Tag color="processing">{sessionData?.admin_decision || "PENDING_REVIEW"}</Tag>
+              <span className="text-gray-500 dark:text-slate-400 block">Current Status</span>
+              <Tag color={statusBadge.color} className="mt-0.5 font-medium">
+                {statusBadge.label}
+              </Tag>
             </div>
           </div>
 
           {/* DUAL SYNCHRONIZED VIDEO PLAYERS */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* REAR CAMERA (ROAD VIEW) */}
-            <div className="bg-black rounded-lg overflow-hidden border border-gray-300">
+            <div className="bg-black rounded-lg overflow-hidden border border-gray-300 dark:border-slate-700">
               <div className="bg-gray-800 text-white text-xs px-3 py-1.5 flex justify-between items-center">
                 <span className="font-semibold flex items-center gap-1.5">
                   <span
@@ -429,7 +559,8 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
                   REAR CAMERA (Road View)
                 </span>
                 <span className="text-gray-400">
-                  {rearResolution} {formatBytes(activeRearVideo?.actualFileSizeBytes || activeRearVideo?.fileSizeBytes)}
+                  {rearResolution}{" "}
+                  {formatBytes(activeRearVideo?.actualFileSizeBytes || activeRearVideo?.fileSizeBytes)}
                 </span>
               </div>
               <div
@@ -496,7 +627,7 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
             </div>
 
             {/* FRONT CAMERA (CABIN VIEW) */}
-            <div className="bg-black rounded-lg overflow-hidden border border-gray-300">
+            <div className="bg-black rounded-lg overflow-hidden border border-gray-300 dark:border-slate-700">
               <div className="bg-gray-800 text-white text-xs px-3 py-1.5 flex justify-between items-center">
                 <span className="font-semibold flex items-center gap-1.5">
                   <span
@@ -507,7 +638,8 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
                   FRONT CAMERA (Driver Cabin)
                 </span>
                 <span className="text-gray-400">
-                  {frontResolution} {formatBytes(activeFrontVideo?.actualFileSizeBytes || activeFrontVideo?.fileSizeBytes)}
+                  {frontResolution}{" "}
+                  {formatBytes(activeFrontVideo?.actualFileSizeBytes || activeFrontVideo?.fileSizeBytes)}
                 </span>
               </div>
               <div
@@ -616,7 +748,9 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
                 <span className="text-xs text-gray-400">Flagged Events:</span>
                 {flaggedEvents.length > 0 ? (
                   flaggedEvents.map((ev, i) => {
-                    const startMs = sessionData?.started_at ? new Date(sessionData.started_at).getTime() : 0;
+                    const startMs = sessionData?.started_at
+                      ? new Date(sessionData.started_at).getTime()
+                      : 0;
                     const safeDur = Math.max(1, totalDurationSec);
                     const relSec =
                       startMs && ev.timestamp > startMs
@@ -655,15 +789,28 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
           </div>
 
           {/* SCORE BREAKDOWN & SENSOR AUDIT */}
-          <div className="grid grid-cols-3 gap-4">
-            <Card title="Score Breakdown (100 Max)" size="small" className="col-span-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card
+              title="Score Breakdown (100 Max)"
+              size="small"
+              className="md:col-span-2"
+              extra={
+                !rawBreakdown ? (
+                  <span className="text-xs text-gray-400">Breakdown unavailable</span>
+                ) : null
+              }
+            >
               <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs">
                 <div>
                   <div className="flex justify-between mb-1">
                     <span>Braking Control</span>
                     <span className="font-semibold">{scoreBreakdown.braking} / 15</span>
                   </div>
-                  <Progress percent={(scoreBreakdown.braking / 15) * 100} size="small" status="active" />
+                  <Progress
+                    percent={(scoreBreakdown.braking / 15) * 100}
+                    size="small"
+                    status={isPending ? "active" : "normal"}
+                  />
                 </div>
                 <div>
                   <div className="flex justify-between mb-1">
@@ -712,20 +859,28 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
 
             <Card title="Sensor Infractions Log" size="small">
               <div className="space-y-2 text-xs">
-                <div className="flex justify-between items-center p-1.5 bg-red-50 rounded">
-                  <span className="text-red-700 font-medium">Harsh Braking Events:</span>
+                <div className="flex justify-between items-center p-1.5 bg-red-50 dark:bg-red-950/30 rounded">
+                  <span className="text-red-700 dark:text-red-300 font-medium">
+                    Harsh Braking Events:
+                  </span>
                   <Tag color="red">{infractions.harshBrakes}</Tag>
                 </div>
-                <div className="flex justify-between items-center p-1.5 bg-yellow-50 rounded">
-                  <span className="text-yellow-700 font-medium">Speed Limit Violations:</span>
+                <div className="flex justify-between items-center p-1.5 bg-yellow-50 dark:bg-yellow-950/30 rounded">
+                  <span className="text-yellow-700 dark:text-yellow-300 font-medium">
+                    Speed Limit Violations:
+                  </span>
                   <Tag color="gold">{infractions.overspeeds}</Tag>
                 </div>
-                <div className="flex justify-between items-center p-1.5 bg-orange-50 rounded">
-                  <span className="text-orange-700 font-medium">Rapid Accelerations:</span>
+                <div className="flex justify-between items-center p-1.5 bg-orange-50 dark:bg-orange-950/30 rounded">
+                  <span className="text-orange-700 dark:text-orange-300 font-medium">
+                    Rapid Accelerations:
+                  </span>
                   <Tag color="orange">{infractions.rapidAccels}</Tag>
                 </div>
-                <div className="flex justify-between items-center p-1.5 bg-green-50 rounded">
-                  <span className="text-green-700 font-medium">Signal Stop Line Breaches:</span>
+                <div className="flex justify-between items-center p-1.5 bg-green-50 dark:bg-green-950/30 rounded">
+                  <span className="text-green-700 dark:text-green-300 font-medium">
+                    Signal Stop Line Breaches:
+                  </span>
                   <Tag color="green">{infractions.signalViolations}</Tag>
                 </div>
               </div>
@@ -734,72 +889,177 @@ export const DrivingTestReviewModal: React.FC<DrivingTestReviewModalProps> = ({
 
           <Divider className="my-2" />
 
-          {/* ADMIN DECISION PANEL */}
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <h4 className="font-semibold text-gray-900 text-sm mb-3">Admin Final Decision & Clearance</h4>
-
-            <div className="grid grid-cols-2 gap-4 mb-3">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Clearance Decision</label>
-                <Radio.Group
-                  value={decision}
-                  onChange={(e) => setDecision(e.target.value)}
-                  buttonStyle="solid"
+          {/* STATUS-AWARE AUDIT / DECISION SECTION */}
+          {!isPending && !isEditingDecision ? (
+            <div
+              className={`p-4 rounded-lg border ${
+                isApproved
+                  ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
+                  : isRetestRequested
+                    ? "bg-amber-50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-800"
+                    : "bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-4 flex-wrap mb-3">
+                <div>
+                  <h4 className="font-semibold text-gray-900 dark:text-slate-100 text-sm m-0 flex items-center gap-2">
+                    <span>
+                      {isApproved
+                        ? "Approved Clearance Record"
+                        : isRetestRequested
+                          ? "Retest Assessment Request"
+                          : "Rejection Audit Record"}
+                    </span>
+                    <Tag color={statusBadge.color} className="m-0">
+                      {statusBadge.label}
+                    </Tag>
+                  </h4>
+                  {isRetestRequested && (
+                    <p className="text-xs text-amber-800 dark:text-amber-300 mt-1 mb-0">
+                      This driver was requested to retake the driving test. Any newly submitted
+                      attempt appears under Pending Verification.
+                    </p>
+                  )}
+                </div>
+                <Button
+                  size="small"
+                  icon={<EditOutlined />}
+                  onClick={() => setIsEditingDecision(true)}
                 >
-                  <Radio.Button value="APPROVED" className="text-xs">
-                    <CheckCircleOutlined className="mr-1" /> Approve Driver
-                  </Radio.Button>
-                  <Radio.Button value="RETEST_REQUESTED" className="text-xs">
-                    <ReloadOutlined className="mr-1" /> Request Retest
-                  </Radio.Button>
-                  <Radio.Button value="REJECTED" className="text-xs">
-                    <CloseCircleOutlined className="mr-1" /> Reject
-                  </Radio.Button>
-                </Radio.Group>
+                  {isRetestRequested ? "Override Decision" : "Amend Decision"}
+                </Button>
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Score Override (Optional)
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs mb-3">
+                <div>
+                  <span className="text-gray-500 dark:text-slate-400 block">Final Score</span>
+                  <span className="font-semibold text-gray-900 dark:text-slate-100">
+                    {sessionData?.score_override ?? sessionData?.drive_score ?? "—"} / 100
+                    {sessionData?.score_override != null &&
+                      sessionData?.drive_score != null &&
+                      sessionData.score_override !== sessionData.drive_score && (
+                        <span className="text-gray-500 font-normal ml-1">
+                          (Auto: {sessionData.drive_score})
+                        </span>
+                      )}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500 dark:text-slate-400 block">Reviewed By</span>
+                  <span className="font-semibold text-gray-900 dark:text-slate-100">
+                    {sessionData?.reviewed_by_name || sessionData?.reviewed_by || "Admin"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-gray-500 dark:text-slate-400 block">Reviewed At</span>
+                  <span className="font-semibold text-gray-900 dark:text-slate-100">
+                    {formatDateTime(sessionData?.reviewed_at)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="text-xs bg-white/80 dark:bg-slate-900/60 p-3 rounded border border-gray-200 dark:border-slate-700">
+                <span className="text-gray-500 dark:text-slate-400 block mb-1 font-medium">
+                  Audit Review Remarks
+                </span>
+                <p className="text-gray-800 dark:text-slate-200 m-0 whitespace-pre-wrap">
+                  {existingRemarks || "No remarks recorded."}
+                </p>
+              </div>
+
+              <div className="flex justify-end mt-3">
+                <Button onClick={onClose} size="middle">
+                  Close
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-blue-50 dark:bg-slate-800/70 p-4 rounded-lg border border-blue-200 dark:border-slate-700">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold text-gray-900 dark:text-slate-100 text-sm m-0">
+                  Admin Final Decision & Clearance
+                </h4>
+                {!isPending && (
+                  <Button size="small" onClick={() => setIsEditingDecision(false)}>
+                    Cancel Override
+                  </Button>
+                )}
+              </div>
+
+              {!isPending && (
+                <Alert
+                  type="warning"
+                  showIcon
+                  className="mb-3 text-xs"
+                  message={`You are modifying an existing "${statusBadge.label}" decision. Submitting will overwrite the current audit status.`}
+                />
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">
+                    Clearance Decision
+                  </label>
+                  <Radio.Group
+                    value={decision}
+                    onChange={(e) => setDecision(e.target.value as ReviewDecision)}
+                    buttonStyle="solid"
+                  >
+                    <Radio.Button value="APPROVED" className="text-xs">
+                      <CheckCircleOutlined className="mr-1" /> Approve Driver
+                    </Radio.Button>
+                    <Radio.Button value="RETEST_REQUESTED" className="text-xs">
+                      <ReloadOutlined className="mr-1" /> Request Retest
+                    </Radio.Button>
+                    <Radio.Button value="REJECTED" className="text-xs">
+                      <CloseCircleOutlined className="mr-1" /> Reject
+                    </Radio.Button>
+                  </Radio.Group>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">
+                    Score Override (Optional)
+                  </label>
+                  <InputNumber
+                    min={0}
+                    max={100}
+                    value={scoreOverride}
+                    onChange={(val) => setScoreOverride(val ?? undefined)}
+                    className="w-32 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">
+                  Audit Review Remarks <span className="text-red-500">*</span>
                 </label>
-                <InputNumber
-                  min={0}
-                  max={100}
-                  value={scoreOverride}
-                  onChange={(val) => setScoreOverride(val ?? undefined)}
-                  className="w-32 text-xs"
+                <TextArea
+                  rows={2}
+                  placeholder="State reason for approval, retest requirement, or score adjustments..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="text-xs"
                 />
               </div>
-            </div>
 
-            <div className="mb-3">
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Audit Review Remarks <span className="text-red-500">*</span>
-              </label>
-              <TextArea
-                rows={2}
-                placeholder="State reason for approval, retest requirement, or score adjustments..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="text-xs"
-              />
+              <div className="flex justify-end gap-2">
+                <Button onClick={onClose} size="middle">
+                  Cancel
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={handleDecisionSubmit}
+                  loading={submitting}
+                  className={decision === "APPROVED" ? "bg-green-600 hover:bg-green-700" : ""}
+                  size="middle"
+                >
+                  Submit Decision & Update Driver Status
+                </Button>
+              </div>
             </div>
-
-            <div className="flex justify-end gap-2">
-              <Button onClick={onClose} size="middle">
-                Cancel
-              </Button>
-              <Button
-                type="primary"
-                onClick={handleDecisionSubmit}
-                loading={submitting}
-                className={decision === "APPROVED" ? "bg-green-600 hover:bg-green-700" : ""}
-                size="middle"
-              >
-                Submit Decision & Update Driver Status
-              </Button>
-            </div>
-          </div>
+          )}
         </div>
       )}
     </Modal>
