@@ -159,7 +159,7 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
   const columns: TableColumnsType<Customer> = useMemo(
     () => [
       {
-        title: "Customer",
+        title: "Rider",
         dataIndex: "full_name",
         key: "customer",
         width: 200,
@@ -189,7 +189,7 @@ const CustomerTable = ({ data, isSuperAdmin = false, currentPage, pageSize, onPa
                       e.stopPropagation();
                       navigator.clipboard.writeText(record.user_code || "");
                       message.success({
-                        content: "Customer ID copied",
+                        content: "Rider ID copied",
                         className: "premium-message",
                         icon: <CopyOutlined className="text-indigo-500" />,
                       });

@@ -21,7 +21,7 @@ const CustomerStats: React.FC<CustomerStatsProps> = ({ customers }) => {
 
   const stats = [
     {
-      title: "Total User",
+      title: "Total Riders",
       value: total,
       label: "records",
       icon: <UserOutlined />,
@@ -30,7 +30,7 @@ const CustomerStats: React.FC<CustomerStatsProps> = ({ customers }) => {
       sparklineColor: "blue",
     },
     {
-      title: "Active Users",
+      title: "Active Riders",
       value: active,
       label: "verified",
       icon: <CheckCircleOutlined />,
@@ -39,7 +39,7 @@ const CustomerStats: React.FC<CustomerStatsProps> = ({ customers }) => {
       sparklineColor: "green",
     },
     {
-      title: "New Members",
+      title: "New Riders",
       value: newThisMonth,
       label: "this month",
       icon: <RiseOutlined />,

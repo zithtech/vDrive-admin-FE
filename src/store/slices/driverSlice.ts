@@ -56,6 +56,7 @@ export interface Driver {
   };
   kyc_status?: string; // Backend fallback
   onboarding_status?: string;
+  signup_source?: "web" | "app" | "offline" | string;
   documents_submitted?: boolean;
   is_trip_verified?: boolean;
   language?: string;

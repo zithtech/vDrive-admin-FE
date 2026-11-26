@@ -26,7 +26,6 @@ import RouteLoadingFallback from "../components/RouteLoadingFallback";
 // const Wallet = lazy(() => import("../pages/Wallet"));
 const Profile = lazy(() => import("../pages/Profile"));
 const Settings = lazy(() => import("../pages/Settings"));
-const Users = lazy(() => import("../pages/Users"));
 const Customers = lazy(
   () => import("../pages/Customers") as Promise<{ default: React.ComponentType<any> }>,
 );
@@ -44,6 +43,9 @@ const Drivers = lazy(
 );
 const DriverApplications = lazy(
   () => import("../pages/DriverApplications") as Promise<{ default: React.ComponentType<any> }>,
+);
+const DrivingTestManagement = lazy(
+  () => import("../pages/DrivingTestManagement") as Promise<{ default: React.ComponentType<any> }>,
 );
 const DriverOfflineOnboarding = lazy(
   () => import("../pages/DriverOfflineOnboarding") as Promise<{ default: React.ComponentType<any> }>,
@@ -114,7 +116,7 @@ export type TopLevelGroup = "dashboard" | "users_drivers" | "trips" | "plans" | 
 
 export const TOP_LEVEL_GROUPS: { key: TopLevelGroup; label: string; defaultPath: string }[] = [
   { key: "dashboard", label: "Dashboard", defaultPath: "/" },
-  { key: "users_drivers", label: "Users/Drivers", defaultPath: "/customers" },
+  { key: "users_drivers", label: "Riders/Drivers", defaultPath: "/customers" },
   { key: "trips", label: "Trips", defaultPath: "/TripDetails" },
   { key: "plans", label: "Plans & Coupons", defaultPath: "/PricingAndFareRules" },
   { key: "support", label: "Support", defaultPath: "/support-tickets" },
@@ -194,17 +196,22 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
     route: { path: "settings", element: protect("dashboard", <Settings />) },
   },
 
-  // Customers
+  // Riders
   {
     topGroup: "users_drivers",
     rbacModule: "customers",
     route: { path: "customers", element: protect("customers", <Customers />) },
-    menu: { label: <Link to="/customers">Customers</Link>, key: "/customers", icon: <UserOutlined /> },
+    menu: { label: <Link to="/customers">Riders</Link>, key: "/customers", icon: <UserOutlined /> },
   },
   {
     topGroup: "users_drivers",
     rbacModule: "customers",
-    route: { path: "users", element: protect("customers", <Users />) },
+    route: { path: "riders", element: protect("customers", <Customers />) },
+  },
+  {
+    topGroup: "users_drivers",
+    rbacModule: "customers",
+    route: { path: "users", element: protect("customers", <Customers />) },
   },
 
   // Pricing & Fare Rules
@@ -243,6 +250,16 @@ export const MODULE_REGISTRY: ModuleEntry[] = [
       label: <Link to="/driver-applications">Driver Applications</Link>,
       key: "/driver-applications",
       icon: <CheckCircleOutlined />,
+    },
+  },
+  {
+    topGroup: "users_drivers",
+    rbacModule: "drivers",
+    route: { path: "driving-tests", element: protect("drivers", <DrivingTestManagement />) },
+    menu: {
+      label: <Link to="/driving-tests">Driving Assessments</Link>,
+      key: "/driving-tests",
+      icon: <VideoCameraOutlined />,
     },
   },
   {
